@@ -85,15 +85,19 @@ class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
         return law.util.rel_path(__file__, "bootstrap.sh")
 
     def htcondor_job_config(self, config, job_num, branches):
+        ana_path = os.getenv("ANALYSIS_PATH")
         # render_variables are rendered into all files sent with a job
-        config.render_variables["analysis_path"] = os.getenv("ANALYSIS_PATH")
+        config.render_variables["analysis_path"] = ana_path
         # force to run on CC7, http://batchdocs.web.cern.ch/batchdocs/local/submit.html#os-choice
         config.custom_content.append(("requirements", "(OpSysAndVer =?= \"CentOS7\")"))
         # maximum runtime
         config.custom_content.append(("+MaxRuntime", int(math.floor(self.max_runtime * 3600)) - 1))
         # copy the entire environment
         config.custom_content.append(("getenv", "true"))
-        # the CERN htcondor setup requires a "log" config, but we can safely set it to /dev/null
-        # if you are interested in the logs of the batch system itself, set a meaningful value here
-        config.custom_content.append(("log", "/dev/null"))
+
+        log_path = os.path.join(ana_path, "data", "logs")
+        os.makedirs(log_path, exist_ok=True)
+        config.custom_content.append(("log", os.path.join(log_path, 'job.$(ClusterId).$(ProcId).log')))
+        config.custom_content.append(("output", os.path.join(log_path, 'job.$(ClusterId).$(ProcId).out')))
+        config.custom_content.append(("error", os.path.join(log_path, 'job.$(ClusterId).$(ProcId).err')))
         return config

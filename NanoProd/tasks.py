@@ -102,8 +102,14 @@ class CreateNanoSkims(BaseTask, HTCondorWorkflow, law.LocalWorkflow):
             os.remove(input_file_local)
             output_files.append(output_file)
         output_path = self.output().path
-        output_tmp = output_path + '.tmp.root'
-        sh_call(['haddnano.py', output_tmp] + output_files, verbose=1)
-        for f in output_files:
-            os.remove(f)
+        os.makedirs(self.output().dirname, exist_ok=True)
+        if len(output_files) > 1:
+            output_tmp = output_path + '.tmp.root'
+            sh_call(['haddnano.py', output_tmp] + output_files, verbose=1)
+            for f in output_files:
+                os.remove(f)
+        elif len(output_files) == 1:
+            output_tmp = output_files[0]
+        else:
+            raise RuntimeError("No output files found.")
         shutil.move(output_tmp, output_path)

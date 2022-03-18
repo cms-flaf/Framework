@@ -482,7 +482,7 @@ VBFToBulkGravitonToHHTo2B2Tau_M-1750:
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-1750_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass : 1750
-VBFToBulkGravitonToHHTo2B2Tau_M-2000: 
+VBFToBulkGravitonToHHTo2B2Tau_M-2000:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-2000_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-2000_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton

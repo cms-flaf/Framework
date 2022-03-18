@@ -1,8 +1,8 @@
-import os
-import math
-
-import luigi
 import law
+import luigi
+import math
+import os
+import yaml
 
 
 law.contrib.load("htcondor")
@@ -14,18 +14,49 @@ class Task(law.Task):
     """
 
     version = luigi.Parameter()
+    periods = luigi.Parameter()
+
+    def __init__(self, *args, **kwargs):
+        super(Task, self).__init__(*args, **kwargs)
+        self.all_periods = [ p for p in self.periods.split(',') if len(p) > 0 ]
+
+    def load_sample_configs(self):
+        self.samples = {}
+        self.global_sample_params = {}
+        for period in self.all_periods:
+            self.samples[period] = {}
+            sample_config = os.path.join(self.ana_path(), 'config', f'samples_{period}.yaml')
+            with open(sample_config, 'r') as f:
+                samples = yaml.safe_load(f)
+            for key, value in samples.items():
+                if(type(value) != dict):
+                    raise RuntimeError(f'Invalid sample definition period="{period}", sample_name="{key}"' )
+                if key == 'GLOBAL':
+                    self.global_sample_params[period] = value
+                else:
+                    self.samples[period][key] = value
 
     def store_parts(self):
         return (self.__class__.__name__, self.version)
 
+    def ana_path(self):
+        return os.getenv("ANALYSIS_PATH")
+
     def ana_data_path(self):
         return os.getenv("ANALYSIS_DATA_PATH")
+
+    def ana_big_data_path(self):
+        return os.getenv("ANALYSIS_BIG_DATA_PATH")
 
     def central_path(self):
         return os.getenv("CENTRAL_STORAGE")
 
     def local_path(self, *path):
         parts = (self.ana_data_path(),) + self.store_parts() + path
+        return os.path.join(*parts)
+
+    def local_central_path(self, *path):
+        parts = (self.ana_big_data_path(),) + self.store_parts() + path
         return os.path.join(*parts)
 
     def local_target(self, *path):

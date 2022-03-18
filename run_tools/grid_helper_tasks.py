@@ -6,7 +6,7 @@ import re
 from run_tools.sh_tools import sh_call
 
 class CreateVomsProxy(law.Task):
-    time_limit = luigi.Parameter(default=24)
+    time_limit = luigi.Parameter(default='24')
 
     def __init__(self, *args, **kwargs):
         super(CreateVomsProxy, self).__init__(*args, **kwargs)
@@ -14,23 +14,22 @@ class CreateVomsProxy(law.Task):
         if os.path.exists(self.proxy_path):
             proxy_info = self.get_proxy_info()
             timeleft = self.get_proxy_timeleft(proxy_info)
-            if timeleft < self.time_limit:
-                print(f"Removing old proxy which expires in a less than {timeleft:.1f} hours.")
+            if timeleft < float(self.time_limit):
+                self.publish_message(f"Removing old proxy which expires in a less than {timeleft:.1f} hours.")
                 proxy_file.remove()
 
     def output(self):
         return law.LocalFileTarget(self.proxy_path)
 
     def create_proxy(self, proxy_file):
-        print("Creating voms proxy...")
+        self.publish_message("Creating voms proxy...")
         proxy_file.makedirs()
         sh_call(['voms-proxy-init', '-voms', 'cms', '-rfc', '-valid', '192:00', '--out', proxy_file.path])
 
     def get_proxy_info(self):
-        _, output = sh_call(['voms-proxy-info'], catch_stdout=True)
+        _, output = sh_call(['voms-proxy-info'], catch_stdout=True, split='\n')
         info = {}
         for line in output:
-            print(line)
             match = re.match(r'^(.+) : (.+)', line)
             key = match.group(1).strip()
             info[key] = match.group(2)

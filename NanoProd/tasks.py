@@ -72,7 +72,7 @@ class CreateDatasetInfos(BaseTask, law.LocalWorkflow):
 class CreateNanoSkims(BaseTask, HTCondorWorkflow, law.LocalWorkflow):
 
     def workflow_requires(self):
-        return {"proxy" : CreateVomsProxy.req(self), "dataset_info": CreateDatasetInfos.req(self) }
+        return {"proxy" : CreateVomsProxy.req(self), "dataset_info": CreateDatasetInfos.req(self, workflow='local') }
 
     def requires(self):
         return self.workflow_requires()

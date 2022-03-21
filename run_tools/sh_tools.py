@@ -40,7 +40,8 @@ def adler32sum(file_name):
 
 def xrd_copy(input_file_name, local_name, n_retries=4, n_retries_xrdcp=4, n_streams=1, retry_sleep_interval=10,
              expected_adler32sum=None, silent=True,
-             prefixes = [ 'root://cms-xrd-global.cern.ch/', 'root://xrootd-cms.infn.it/' ]):
+             prefixes = [ 'root://cms-xrd-global.cern.ch/', 'root://xrootd-cms.infn.it/',
+                          'root://cmsxrootd.fnal.gov/' ]):
     def try_download(prefix):
         try:
             xrdcp_args = ['xrdcp', '--retry', str(n_retries_xrdcp), '--streams', str(n_streams) ]

@@ -33,8 +33,11 @@ class BaseTask(Task):
         return branches
 
 class CreateDatasetInfos(BaseTask, law.LocalWorkflow):
+    def workflow_requires(self):
+        return { "proxy": CreateVomsProxy.req(self) }
+
     def requires(self):
-        return CreateVomsProxy.req(self)
+        return self.workflow_requires()
 
     def output(self):
         sample_name, period, das_dataset = self.branch_data
@@ -66,9 +69,13 @@ class CreateDatasetInfos(BaseTask, law.LocalWorkflow):
             result['files'].append(out_entry)
         self.output().dump(result, indent=2)
 
-class CreateNanoSkims(BaseTask, HTCondorWorkflow, law.LocalWorkflow):
+class CreateNanoSkims(BaseTask, law.LocalWorkflow):
+
+    def workflow_requires(self):
+        return {"proxy" : CreateVomsProxy.req(self), "dataset_info": CreateDatasetInfos.req(self) }
+
     def requires(self):
-        return (CreateVomsProxy.req(self), CreateDatasetInfos.req(self))
+        return self.workflow_requires()
 
     def output(self):
         sample_name, period, das_dataset = self.branch_data

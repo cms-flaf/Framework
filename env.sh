@@ -12,7 +12,7 @@ action() {
     export ANALYSIS_PATH="$this_dir"
     export ANALYSIS_DATA_PATH="$ANALYSIS_PATH/data"
     export X509_USER_PROXY="$ANALYSIS_DATA_PATH/voms.proxy"
-    export CENTRAL_STORAGE="/eos/home-k/kandroso/HH_bbtautau_resonant_Run2"
+    export CENTRAL_STORAGE="/eos/home-v/vdamante/HH_bbtautau_resonant_Run2"
 
     export PATH=$PATH:$HOME/.local/bin
     source /cvmfs/sft.cern.ch/lcg/views/setupViews.sh LCG_101 x86_64-centos7-gcc8-opt

@@ -69,7 +69,7 @@ class CreateDatasetInfos(BaseTask, law.LocalWorkflow):
             result['files'].append(out_entry)
         self.output().dump(result, indent=2)
 
-class CreateNanoSkims(BaseTask, law.LocalWorkflow):
+class CreateNanoSkims(BaseTask, HTCondorWorkflow, law.LocalWorkflow):
 
     def workflow_requires(self):
         return {"proxy" : CreateVomsProxy.req(self), "dataset_info": CreateDatasetInfos.req(self) }

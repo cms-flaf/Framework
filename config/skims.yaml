@@ -61,6 +61,7 @@ common:
         - Muon_segmentComp
         - Muon_jetRelIso
         - Muon_jetPtRelv2
+        - Muon_tkRelIso
         - Muon_dzErr
         - Muon_dxyErr
         - Muon_nTrackerLayers

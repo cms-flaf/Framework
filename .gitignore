@@ -1,3 +1,5 @@
 /.law
 /data*
 __pycache__
+/output
+/test

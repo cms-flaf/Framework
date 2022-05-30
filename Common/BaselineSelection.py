@@ -3,19 +3,17 @@ import os
 from scipy import stats
 import numpy as np
 #higgs_header_path = os.path.join(os.sep, str(ROOT.gROOT.GetTutorialDir()) + os.sep, "dataframe" + os.sep,
-header_path = "SkimmerHeader.h"
+header_path_Gen = f"{os.environ['ANALYSIS_PATH']}/Common/BaselineGenSelection.h"
+header_path_Reco = f"{os.environ['ANALYSIS_PATH']}/Common/BaselineRecoSelection.h"
 
-ROOT.gInterpreter.Declare('#include "{}"'.format(header_path))
+ROOT.gInterpreter.Declare('#include "{}"'.format(header_path_Gen))
+ROOT.gInterpreter.Declare('#include "{}"'.format(header_path_Reco))
 channelLegs = {
     "eTau": [ "Electron", "Tau" ],
     "muTau": [ "Muon", "Tau" ],
     "tauTau": [ "Tau", "Tau" ],
 }
-hlt_columns = {
-    "eTau":["HLT_Ele32_WPTight_Gsf","HLT_Ele35_WPTight_Gsf","HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTauHPS30_eta2p1_CrossL1","HLT_Ele28_eta2p1_WPTight_Gsf_HT150","HLT_Ele32_WPTight_Gsf_L1DoubleEG","HLT_PFMET120_PFMHT120_IDTight","HLT_Diphoton30_18_R9IdL_AND_HE_AND_IsoCaloId_NoPixelVeto","HLT_MediumChargedIsoPFTau180HighPtRelaxedIso_Trk50_eta2p1","HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165","HLT_DoubleMediumChargedIsoPFTauHPS35_Trk1_eta2p1_Reg","HLT_PFHT330PT30_QuadPFJet_75_60_45_40_TriplePFBTagDeepCSV_4p5"],
-    "muTau":["HLT_IsoMu24", "HLT_Mu50", "HLT_TkMu100", "HLT_OldMu100", "HLT_IsoMu20_eta2p1_LooseChargedIsoPFTauHPS27_eta2p1_CrossL1", "HLT_MonoCentralPFJet80_PFMETNoMu120_PFMHTNoMu120_IDTight", "HLT_MediumChargedIsoPFTau180HighPtRelaxedIso_Trk50_eta2p1", "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8", "HLT_Mu17_Photon30_IsoCaloId", "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight", "HLT_DoubleMu4_Mass3p8_DZ_PFHT350", "HLT_DoubleMu3_DCA_PFMET50_PFMHT60"],
-    "tauTau": ["HLT_DoubleMediumChargedIsoPFTauHPS35_Trk1_eta2p1_Reg","HLT_MediumChargedIsoPFTau180HighPtRelaxedIso_Trk50_eta2p1","HLT_PFMETNoMu120_PFMHTNoMu120_IDTight","HLT_MediumChargedIsoPFTau50_Trk30_eta2p1_1pr_MET100","HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np4","HLT_QuadPFJet103_88_75_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1","HLT_PFHT330PT30_QuadPFJet_75_60_45_40_TriplePFBTagDeepCSV_4p5","HLT_Photon35_TwoProngs35"]
-}
+
 
 def selectChannel(df, channel):
     df_channel = df.Define("leptons_indices", "GetLeptonIndices(event, GenPart_pdgId, GenPart_genPartIdxMother, GenPart_statusFlags)").Define("event_info", "GetEventInfo(event,leptons_indices, GenPart_pdgId, GenPart_genPartIdxMother, GenPart_status, GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass )").Filter(("event_info.channel==Channel::{}").format(channel))
@@ -52,11 +50,7 @@ def ThirdLeptonVeto(df):
     df_muVeto = df_eleVeto.Filter("MuonVeto(event_info,final_indices, Muon_pt, Muon_dz, Muon_dxy, Muon_eta, Muon_tightId, Muon_mediumId ,  Muon_pfRelIso04_all)")
     return df_muVeto
 
-def ApplyHLTRequirements(df, channel):
-    filter_str=" || ".join([ '( {} == 1 )'.format(p) for p in hlt_columns[channel]])
-    #print(filter_str)
-    df_filtered= df.Filter(filter_str)
-    return df_filtered
+
 
 
 def JetSelection(df, channel):
@@ -73,7 +67,7 @@ def GenMatching(df, channel):
 
 def FindInvMass(df, index_vec):
     # 1. define most two energetic jets
-    df = df.Define("genJet_idx", f"ReorderJets(GenJet_pt, {index_vec})")
+    df = df.Define("genJet_idx", f"ReorderObjects(GenJet_pt, {index_vec},2)")
     for n in range(2):
         df = df.Define(f"jet{n+1}_p4", f"LorentzVectorM(GenJet_pt[genJet_idx[{n}]],GenJet_eta[genJet_idx[{n}]],GenJet_phi[genJet_idx[{n}]],GenJet_mass[genJet_idx[{n}]])")
     df_invMass = df.Define("mjj", "(jet1_p4+jet2_p4).M()")

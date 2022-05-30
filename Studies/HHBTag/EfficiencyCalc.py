@@ -1,25 +1,32 @@
-from PrepareDataframe import *
-from GetHistoInfo import *
-from compute_interval import findMPV
+from Common.BaselineSelection import *
+from Visual.HistTools import *
+from Studies.HHBTag.Utils import findMPV
+import os
 # Enable multi-threading
 ROOT.EnableImplicitMT()
 ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptStat(1111)
+#ROOT.gInterpreter.Declare(f"static ParticleDB particleDB({particleDBFile}")
+header_path_Utils = f"{os.environ['ANALYSIS_PATH']}/Studies/HHBTag/Utilities.h"
+ROOT.gInterpreter.Declare('#include "{}"'.format(header_path_Utils))
 
-def FindNumerator(df, score):
+def FindNumerator(df, score):#vec_i ReorderObjects(const vec_f& VarToOrder, const vec_i& index_vec, const unsigned nMax=std::numeric_limits<unsigned>::max()
     # order jets in decreasing order w.r.t. the score
-    df_orderedJetsInScore = df.Define("AllRecoJetIndices", f"vec_i AllRecoJetIndices; for(int i=0; i<{score}.size();i++){{AllRecoJetIndices.push_back(i);}} return AllRecoJetIndices;").Define(f"JetsReorderedIn{score}", f"ReorderJets({score}, AllRecoJetIndices)")
+    df_orderedJetsInScore = df.Define("AllRecoJetIndices", f"vec_i AllRecoJetIndices; for(int i=0; i<{score}.size();i++){{AllRecoJetIndices.push_back(i);}} return AllRecoJetIndices;").Define(f"JetsReorderedIn{score}", f"ReorderObjects({score}, AllRecoJetIndices)")
     df_correspondanceJetOrderedRecoJet = df_orderedJetsInScore.Define("CorrespondenceSum", f"int CorrespondenceSum=0; for(auto& i:RecoJetIndices){{if(i==JetsReorderedIn{score}[0] || i==JetsReorderedIn{score}[1]) {{ CorrespondenceSum++;}} /*std::cout << \" reco jet has index \"<< i << \" reordered jets have indices \" << JetsReorderedIn{score}[0] << \" and \" << JetsReorderedIn{score}[1]<< \" CorrespondanceSum is \" << CorrespondenceSum << std::endl; */ }} /*std::cout << std::endl;*/ return CorrespondenceSum;").Filter("CorrespondenceSum==2")
     return df_correspondanceJetOrderedRecoJet
     # ask that the sum of the jets corresponding to the reco selected indices is 2
 
 #for file in os.listdir('nanoAOD'):
-file=os.listdir('nanoAOD')[0]
+filesPath=f"{os.environ['ANALYSIS_PATH']}/data/nanoAOD"
+files=os.listdir(filesPath)
+file=files[0]
+
 mass_start =  file.find('-')+1
 mass_end = file.find('.root')
 mass = file[ mass_start : mass_end]
 print(f"evaluating for mass {mass}")
-df = ROOT.RDataFrame("Events", "GluGluToRadionToHHTo2B2Tau_M-400.root")
+df = ROOT.RDataFrame("Events", f"{filesPath}/{file}")
 mpv = findMPV(df)
 print(f"mpv is {mpv}")
 

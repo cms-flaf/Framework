@@ -1,28 +1,23 @@
-from PrepareDataframe import *
-from GetHistoInfo import *
+from Common.BaselineSelection import *
+from Visual.HistTools import *
 # Enable multi-threading
+import ROOT
 ROOT.EnableImplicitMT()
 ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptStat(1111)
 
-df = ROOT.RDataFrame("Events", "GluGluToRadionToHHTo2B2Tau_M-400.root")
 
-def EvaluateConfInt(histo):
-    mean, sigma, entries = histo.GetMean(),histo.GetStdDev(),histo.GetEntries()
-    conf_int = stats.norm.interval(0.68, loc=mean, scale=sigma/np.sqrt(entries))
-    return conf_int
+filesPath=f"{os.environ['ANALYSIS_PATH']}/data/nanoAOD"
+files=os.listdir(filesPath)
+file=files[0]
 
-def EvaluateDiffInt(histo):
-    h_cumulative = histo.GetCumulative()
-    n_bins = h_cumulative.GetNbinsX()
-    diff_values = []
-    for i in range(0,n_bins):
-        for j in range(i,n_bins):
-            diff =  h_cumulative.GetBinContent(i)-h_cumulative.GetBinContent(j)
-            if (abs(diff) < 0.68):
-                diff_values.append(abs(diff))
-    return diff_values
-
+mass_start =  file.find('-')+1
+mass_end = file.find('.root')
+mass = file[ mass_start : mass_end]
+print(f"evaluating for mass {mass}")
+df = ROOT.RDataFrame("Events", f"{filesPath}/{file}")
+mpv = findMPV(df)
+print(f"mpv is {mpv}")
 
 
 for ch in ['eTau','muTau', 'tauTau']:#, 'muTau', 'tauTau']:#, 'eE', 'eMu', 'muMu']:
@@ -48,7 +43,7 @@ for ch in ['eTau','muTau', 'tauTau']:#, 'muTau', 'tauTau']:#, 'eE', 'eMu', 'muMu
 
     # (2) 2 most energetic b-jets for events with n GenJets >2
     df_Greater2_GenJets_b = df_GenJets_b.Filter("GenJet_b_PF_size>2")
-    df_Greater2_GenJets_b_2MostEnergeticsMass= df_Greater2_GenJets_b.Define("ReorderedJetsInPt", "ReorderJets(GenJet_pt, GenJet_b_PF)").Define("two_most_energetic_bGenJets", "vec_i twoMostEnergeticJets; for(int i = 0; i<2; i++){twoMostEnergeticJets.push_back(ReorderedJetsInPt[i]);}  return twoMostEnergeticJets;").Define("Two_MostEnergetic_bGenJets_invMass", "InvMassByIndices(two_most_energetic_bGenJets,GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass,GenJet_partonFlavour, true)")
+    df_Greater2_GenJets_b_2MostEnergeticsMass= df_Greater2_GenJets_b.Define("ReorderedJetsInPt", "ReorderObjects(GenJet_pt, GenJet_b_PF)").Define("two_most_energetic_bGenJets", "vec_i twoMostEnergeticJets; for(int i = 0; i<2; i++){twoMostEnergeticJets.push_back(ReorderedJetsInPt[i]);}  return twoMostEnergeticJets;").Define("Two_MostEnergetic_bGenJets_invMass", "InvMassByIndices(two_most_energetic_bGenJets,GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass,GenJet_partonFlavour, true)")
     hist_Two_MostEnergetic_bGenJets_invMass = df_Greater2_GenJets_b_2MostEnergeticsMass.Histo1D(("Two_MostEnergetic_bGenJets_invMass", "Two_MostEnergetic_bGenJets_invMass;m_{jj} (GeV);N_{Events}", 35, 0, 350),"Two_MostEnergetic_bGenJets_invMass").GetValue()
     myfile = ROOT.TFile( f"output/{ch}/AllHistos.root", 'UPDATE' )
     hist_Two_MostEnergetic_bGenJets_invMass.Write()
@@ -92,7 +87,7 @@ for ch in ['eTau','muTau', 'tauTau']:#, 'muTau', 'tauTau']:#, 'eE', 'eMu', 'muMu
 
     # (5) two most energetic final state hadrons from b  for events with n_final_b_had > 2
     df_Greater2lastHadrons_fromHbb = df_lastHadrons_fromHbb.Filter("lastHadronsIndices.size()>2")
-    df_Greater2lastHadrons_fromHbb_2MostEnergeticsMass= df_lastHadrons_fromHbb.Define("ReorderedHadronsInPt", "ReorderJets(GenPart_pt, lastHadronsIndices)").Define("two_most_energetic_HadronsFromHbb", "vec_i twoMostEnergeticHadrons; for(int i = 0; i<2; i++){twoMostEnergeticHadrons.push_back(ReorderedHadronsInPt[i]);} return twoMostEnergeticHadrons;").Define("Two_MostEnergetic_LastHadrons_invMass", "InvMassByIndices(two_most_energetic_HadronsFromHbb,GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass,GenPart_pdgId, false)")
+    df_Greater2lastHadrons_fromHbb_2MostEnergeticsMass= df_lastHadrons_fromHbb.Define("ReorderedHadronsInPt", "ReorderObjects(GenPart_pt, lastHadronsIndices)").Define("two_most_energetic_HadronsFromHbb", "vec_i twoMostEnergeticHadrons; for(int i = 0; i<2; i++){twoMostEnergeticHadrons.push_back(ReorderedHadronsInPt[i]);} return twoMostEnergeticHadrons;").Define("Two_MostEnergetic_LastHadrons_invMass", "InvMassByIndices(two_most_energetic_HadronsFromHbb,GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass,GenPart_pdgId, false)")
 
     hist_Greater2lastHadrons_fromHbb_2MostEnergeticsMass = df_Greater2lastHadrons_fromHbb_2MostEnergeticsMass.Histo1D(("Two_MostEnergetic_LastHadrons_invMass", "Two_MostEnergetic_LastHadrons_invMass;m_{hadrons} (GeV);N_{Events}", 30, 0, 110),"Two_MostEnergetic_LastHadrons_invMass").GetValue()
 

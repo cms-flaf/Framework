@@ -1,9 +1,8 @@
-#include "AnalysisTools.h"
 #pragma once
+#include "AnalysisTools.h"
 
-
-vec_s RecoEleSelectedIndices(int event, const vec_f& Electron_dz, const vec_f& Electron_dxy, const vec_f& Electron_eta, const vec_f& Electron_phi, const vec_f& Electron_pt, const vec_uc& Electron_mvaFall17V2Iso_WP80){
-  vec_s Electron_indices;
+RVecS RecoEleSelectedIndices(int event, const RVecF& Electron_dz, const RVecF& Electron_dxy, const RVecF& Electron_eta, const RVecF& Electron_phi, const RVecF& Electron_pt, const RVecUC& Electron_mvaFall17V2Iso_WP80){
+  RVecS Electron_indices;
   for(size_t i=0; i< Electron_pt.size(); i++ ){
       if(Electron_mvaFall17V2Iso_WP80[i]==1 && Electron_pt[i] > 20 && std::abs(Electron_eta[i])<2.3 && std::abs(Electron_dz[i])<0.2 &&  std::abs(Electron_dxy[i])<0.045 ){
           Electron_indices.push_back(i);
@@ -12,8 +11,8 @@ vec_s RecoEleSelectedIndices(int event, const vec_f& Electron_dz, const vec_f& E
   return Electron_indices;
 }
 
-vec_s RecoMuSelectedIndices(int event, const vec_f& Muon_dz,  const vec_f& Muon_dxy, const vec_f& Muon_eta, const vec_f& Muon_phi, const vec_f& Muon_pt, const vec_uc& Muon_tightId, const vec_uc& Muon_highPtId, const vec_f& Muon_tkRelIso,  const vec_f& isolation_variable_muon){
-  vec_s Muon_indices;
+RVecS RecoMuSelectedIndices(int event, const RVecF& Muon_dz,  const RVecF& Muon_dxy, const RVecF& Muon_eta, const RVecF& Muon_phi, const RVecF& Muon_pt, const RVecUC& Muon_tightId, const RVecUC& Muon_highPtId, const RVecF& Muon_tkRelIso,  const RVecF& isolation_variable_muon){
+  RVecS Muon_indices;
   for(size_t i=0; i< Muon_pt.size(); i++ ){
       //std::cout << Muon_pt[i] <<"\t"<< Muon_tightId[i] <<"\t"<< Muon_eta[i] <<"\t"<< Muon_dz[i] <<"\t"<< Muon_dxy[i]<<"\t"<< isolation_variable_muon[i] << std::endl;
       if(Muon_pt[i] > 20 && std::abs(Muon_eta[i])<2.3 && std::abs(Muon_dz[i])<0.2 &&  std::abs(Muon_dxy[i])<0.045  && ( ( Muon_tightId[i]==1  && isolation_variable_muon[i]<0.15) || (Muon_highPtId[i]==1 && Muon_tkRelIso[i]<0.1) ) ){
@@ -23,8 +22,8 @@ vec_s RecoMuSelectedIndices(int event, const vec_f& Muon_dz,  const vec_f& Muon_
   return Muon_indices;
 }
 
-vec_s RecoTauSelectedIndices(int event, EvtInfo& evt_info, const vec_f& Tau_dz, const vec_f& Tau_eta, const vec_f& Tau_phi, const vec_f& Tau_pt, const vec_uc& Tau_idDeepTau2017v2p1VSjet, const vec_uc&  Tau_idDeepTau2017v2p1VSmu, const vec_uc& Tau_idDeepTau2017v2p1VSe, const vec_i& Tau_decayMode ){
-  vec_s tau_indices;
+RVecS RecoTauSelectedIndices(int event, EvtInfo& evt_info, const RVecF& Tau_dz, const RVecF& Tau_eta, const RVecF& Tau_phi, const RVecF& Tau_pt, const RVecUC& Tau_idDeepTau2017v2p1VSjet, const RVecUC&  Tau_idDeepTau2017v2p1VSmu, const RVecUC& Tau_idDeepTau2017v2p1VSe, const RVecI& Tau_decayMode ){
+  RVecS tau_indices;
   for(size_t i=0; i< Tau_dz.size(); i++ ){
       if(Tau_decayMode[i]!=0 && Tau_decayMode[i]!=1 && Tau_decayMode[i]!=10 && Tau_decayMode[i]!=11) continue;
       if(Tau_pt[i] > 20 && std::abs(Tau_eta[i])<2.3 && std::abs(Tau_dz[i])<0.2){
@@ -42,13 +41,13 @@ vec_s RecoTauSelectedIndices(int event, EvtInfo& evt_info, const vec_f& Tau_dz, 
 }
 
 
-std::vector<std::pair<size_t, size_t>> GetPairs(const vec_s &indices_leg1,const  vec_s &indices_leg2, const vec_f& Phi_leg1, const vec_f& Eta_leg1, const vec_f& Phi_leg2, const vec_f& Eta_leg2){
+std::vector<std::pair<size_t, size_t>> GetPairs(const RVecS &indices_leg1,const  RVecS &indices_leg2, const RVecF& Phi_leg1, const RVecF& Eta_leg1, const RVecF& Phi_leg2, const RVecF& Eta_leg2){
   std::vector<std::pair<size_t, size_t>> pairs;
   for(size_t i=0; i< indices_leg1.size(); i++ ){
       for(size_t j=0; j< indices_leg2.size(); j++ ){
           size_t cand1 = indices_leg1.at(i);
           size_t cand2 = indices_leg2.at(j);
-          float current_dR = DeltaR(Phi_leg1[cand1], Eta_leg1[cand1],Phi_leg2[cand2], Eta_leg2[cand2]);
+          float current_dR = DeltaR(static_cast<float>(Phi_leg1[cand1]), static_cast<float>(Eta_leg1[cand1]),static_cast<float>(Phi_leg2[cand2]),static_cast<float>(Eta_leg2[cand2]));
           //std::cout<<"current_dR = " << current_dR << std::endl;
           if(current_dR > 0.5){
               pairs.push_back(std::make_pair(cand1, cand2));
@@ -58,8 +57,8 @@ std::vector<std::pair<size_t, size_t>> GetPairs(const vec_s &indices_leg1,const 
   return pairs;
 }
 
-vec_s GetFinalIndices(const std::vector<std::pair<size_t, size_t>>& pairs, int event, const vec_f& isolation_variable_first_cand, const vec_f& first_cand_pt, const vec_f& isolation_variable_second_cand, const vec_f& second_cand_pt, const vec_i& first_cand_charge,const vec_i& second_cand_charge){
-  vec_s final_indices;
+RVecS GetFinalIndices(const std::vector<std::pair<size_t, size_t>>& pairs, int event, const RVecF& isolation_variable_first_cand, const RVecF& first_cand_pt, const RVecF& isolation_variable_second_cand, const RVecF& second_cand_pt, const RVecI& first_cand_charge,const RVecI& second_cand_charge){
+  RVecS final_indices;
 
   const auto Comparitor = [&](std::pair<size_t, size_t> pair_1, std::pair<size_t, size_t> pair_2) -> bool
   {
@@ -133,8 +132,8 @@ vec_s GetFinalIndices(const std::vector<std::pair<size_t, size_t>>& pairs, int e
 }
 
 
-vec_s GetFinalIndices_tauTau(const std::vector<std::pair<size_t, size_t>>& pairs, int event, const vec_f& isolation_variable_tau,const vec_f& Tau_pt, const vec_i& Tau_charge){
-  vec_s final_indices;
+RVecS GetFinalIndices_tauTau(const std::vector<std::pair<size_t, size_t>>& pairs, int event, const RVecF& isolation_variable_tau,const RVecF& Tau_pt, const RVecI& Tau_charge){
+  RVecS final_indices;
   // define comparitor for tauTau
   //std::cout << "size tau pairs = " << pairs.size()<< std::endl;
 
@@ -176,8 +175,8 @@ vec_s GetFinalIndices_tauTau(const std::vector<std::pair<size_t, size_t>>& pairs
 
 
 bool GenRecoMatching(const LorentzVectorM& leg1_p4, const LorentzVectorM& leg2_p4, const LorentzVectorM& lep1_p4, const LorentzVectorM& lep2_p4){
-    auto dR_1 = DeltaR(leg1_p4.Phi(), leg1_p4.Eta(), lep1_p4.Phi(), lep1_p4.Eta());
-    auto dR_2 = DeltaR(leg2_p4.Phi(), leg2_p4.Eta(), lep2_p4.Phi(), lep2_p4.Eta());
+    double dR_1 = DeltaR(static_cast<float>(leg1_p4.Phi()), static_cast<float>(leg1_p4.Eta()), static_cast<float>(lep1_p4.Phi()), static_cast<float>(lep1_p4.Eta()));
+    double dR_2 = DeltaR(static_cast<float>(leg2_p4.Phi()), static_cast<float>(leg2_p4.Eta()), static_cast<float>(lep2_p4.Phi()), static_cast<float>(lep2_p4.Eta()));
     //std::cout << "DR_1 = " <<dR_1 <<"\t DR_2 = "<< dR_2<<std::endl;
     //std::cout << " are they smaller than 0.2 ? " <<(dR_1 < 0.2 && dR_2<0.2)<< std::endl;
     return (dR_1 < 0.2 && dR_2<0.2);
@@ -185,10 +184,10 @@ bool GenRecoMatching(const LorentzVectorM& leg1_p4, const LorentzVectorM& leg2_p
     //return correspondence;
 }
 
-bool JetLepSeparation(const LorentzVectorM& tau_p4, const vec_f& Jet_eta, const vec_f& Jet_phi, const vec_i & RecoJetIndices){
-  vec_i JetSeparatedWRTLeptons;
+bool JetLepSeparation(const LorentzVectorM& tau_p4, const RVecF& Jet_eta, const RVecF& Jet_phi, const RVecI & RecoJetIndices){
+  RVecI JetSeparatedWRTLeptons;
   for (auto& jet_idx:RecoJetIndices){
-    auto dR = DeltaR(tau_p4.Phi(), tau_p4.Eta(), Jet_phi[jet_idx], Jet_eta[jet_idx]);
+    float dR = DeltaR(static_cast<float>(tau_p4.Phi()), static_cast<float>(tau_p4.Eta()), Jet_phi[jet_idx], Jet_eta[jet_idx]);
     //auto dR_2 = DeltaR(leg2_p4.Phi(), leg2_p4.Eta(), Jet_phi[jet_idx], Jet_eta[jet_idx]);
     //if(dR_1>0.5 && dR_2>0.5){
     if(dR>0.5){
@@ -198,7 +197,7 @@ bool JetLepSeparation(const LorentzVectorM& tau_p4, const vec_f& Jet_eta, const 
   return (JetSeparatedWRTLeptons.size()>=2);
 }
 
-bool ElectronVeto(EvtInfo& evt_info, const vec_i& indices, const vec_f& Electron_pt, const vec_f& Electron_dz, const vec_f& Electron_dxy, const vec_f& Electron_eta, const vec_b& Electron_mvaFall17V2Iso_WP90, const vec_b& Electron_mvaFall17V2noIso_WP90 , const vec_f&  Electron_pfRelIso03_all){
+bool ElectronVeto(EvtInfo& evt_info, const RVecI& indices, const RVecF& Electron_pt, const RVecF& Electron_dz, const RVecF& Electron_dxy, const RVecF& Electron_eta, const RVecB& Electron_mvaFall17V2Iso_WP90, const RVecB& Electron_mvaFall17V2noIso_WP90 , const RVecF&  Electron_pfRelIso03_all){
 int nElectrons =0 ;
 // do not consider signal electron
 int signalElectron_idx = -1;
@@ -219,7 +218,7 @@ if(evt_info.channel==Channel::eTau){
   return true;
 }
 
-bool MuonVeto(EvtInfo& evt_info, const vec_i& indices,const vec_f& Muon_pt, const vec_f& Muon_dz, const vec_f& Muon_dxy, const vec_f& Muon_eta, const vec_b& Muon_tightId, const vec_b& Muon_mediumId , const vec_f&  Muon_pfRelIso04_all){
+bool MuonVeto(EvtInfo& evt_info, const RVecI& indices,const RVecF& Muon_pt, const RVecF& Muon_dz, const RVecF& Muon_dxy, const RVecF& Muon_eta, const RVecB& Muon_tightId, const RVecB& Muon_mediumId , const RVecF&  Muon_pfRelIso04_all){
 int nMuons =0 ;
 // do not consider signal muon
 int signalMuon_idx = -1;
@@ -240,9 +239,9 @@ if(evt_info.channel==Channel::muTau){
 }
 
 
-vec_f ReorderVSJet(EvtInfo& evt_info,const vec_i& final_indices, const vec_f& Tau_rawDeepTau2017v2p1VSjet){
+RVecF ReorderVSJet(EvtInfo& evt_info,const RVecI& final_indices, const RVecF& Tau_rawDeepTau2017v2p1VSjet){
 
-vec_f reordered_vs_jet ;
+RVecF reordered_vs_jet ;
 if(evt_info.channel == Channel::tauTau){
     for(auto& i : final_indices){
         reordered_vs_jet.push_back(Tau_rawDeepTau2017v2p1VSjet.at(i));
@@ -256,14 +255,14 @@ return reordered_vs_jet;
 
 
 
-int AK4JetFilter(EvtInfo& evt_info, const vec_i& indices, const LorentzVectorM& leg1_p4, const LorentzVectorM& leg2_p4, const vec_f&  Jet_eta, const vec_f&  Jet_phi, const vec_f&  Jet_pt, const vec_i&  Jet_jetId, const int& is2017){
+int AK4JetFilter(EvtInfo& evt_info, const RVecI& indices, const LorentzVectorM& leg1_p4, const LorentzVectorM& leg2_p4, const RVecF&  Jet_eta, const RVecF&  Jet_phi, const RVecF&  Jet_pt, const RVecI&  Jet_jetId, const int& is2017){
 int nFatJetsAdd=0;
 int nJetsAdd=0;
 
 for (size_t jet_idx =0 ; jet_idx < Jet_pt.size(); jet_idx++){
     if(Jet_pt.at(jet_idx)>20 && std::abs(Jet_eta.at(jet_idx)) < 2.5 && ( (Jet_jetId.at(jet_idx))&(1<<1) || is2017 == 1) ) {
-        float dr1 = DeltaR(leg1_p4.phi(), leg1_p4.eta(),Jet_phi[jet_idx], Jet_eta[jet_idx]);
-        float dr2 = DeltaR(leg2_p4.phi(), leg2_p4.eta(),Jet_phi[jet_idx], Jet_eta[jet_idx]);
+        float dr1 = DeltaR(static_cast<float>(leg1_p4.phi()), static_cast<float>(leg1_p4.eta()),Jet_phi[jet_idx], Jet_eta[jet_idx]);
+        float dr2 = DeltaR(static_cast<float>(leg2_p4.phi()), static_cast<float>(leg2_p4.eta()),Jet_phi[jet_idx], Jet_eta[jet_idx]);
         if(dr1 > 0.5 && dr2 >0.5 ){
             nJetsAdd +=1;
           }
@@ -279,12 +278,12 @@ if(nJetsAdd>=n_Jets){
 return 0;
 }
 
-int AK8JetFilter(EvtInfo& evt_info, const vec_i& indices, const LorentzVectorM& leg1_p4, const LorentzVectorM& leg2_p4, const vec_f&  FatJet_pt, const vec_f&  FatJet_eta, const vec_f&  FatJet_phi, const vec_f& FatJet_msoftdrop, const int& is2017){
+int AK8JetFilter(EvtInfo& evt_info, const RVecI& indices, const LorentzVectorM& leg1_p4, const LorentzVectorM& leg2_p4, const RVecF&  FatJet_pt, const RVecF&  FatJet_eta, const RVecF&  FatJet_phi, const RVecF& FatJet_msoftdrop, const int& is2017){
 int nFatJetsAdd=0;
 for (size_t fatjet_idx =0 ; fatjet_idx < FatJet_pt.size(); fatjet_idx++){
     if(FatJet_msoftdrop.at(fatjet_idx)>30 && std::abs(FatJet_eta.at(fatjet_idx)) < 2.5) {
-        float dr1 = DeltaR(leg1_p4.phi(), leg1_p4.eta(),FatJet_phi[fatjet_idx], FatJet_eta[fatjet_idx]);
-        float dr2 = DeltaR(leg2_p4.phi(), leg2_p4.eta(),FatJet_phi[fatjet_idx], FatJet_eta[fatjet_idx]);
+        float dr1 = DeltaR(static_cast<float>(leg1_p4.phi()), static_cast<float>(leg1_p4.eta()),FatJet_phi[fatjet_idx], FatJet_eta[fatjet_idx]);
+        float dr2 = DeltaR(static_cast<float>(leg2_p4.phi()), static_cast<float>(leg2_p4.eta()),FatJet_phi[fatjet_idx], FatJet_eta[fatjet_idx]);
         if(dr1 > 0.5 && dr2 >0.5 ){
             nFatJetsAdd +=1;
           }
@@ -301,8 +300,8 @@ if(nFatJetsAdd>=n_FatJets ){
 return 0;
 }
 
-vec_i FindRecoGenJetCorrespondence(const vec_i& RecoJet_genJetIdx, const vec_i& GenJet_taggedIndices){
-  vec_i RecoJetIndices;
+RVecI FindRecoGenJetCorrespondence(const RVecI& RecoJet_genJetIdx, const RVecI& GenJet_taggedIndices){
+  RVecI RecoJetIndices;
   for (int i =0 ; i<RecoJet_genJetIdx.size(); i++){
     for(auto& genJet_idx : GenJet_taggedIndices ){
       int recoJet_genJet_idx = RecoJet_genJetIdx[i];

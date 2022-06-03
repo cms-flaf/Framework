@@ -36,7 +36,7 @@ def SelectBestPair(df, channel):
         df_pair = df.Define("tau_indices", "RecoTauSelectedIndices(event, event_info, Tau_dz, Tau_eta, Tau_phi, Tau_pt, Tau_idDeepTau2017v2p1VSjet,  Tau_idDeepTau2017v2p1VSmu, Tau_idDeepTau2017v2p1VSe, Tau_decayMode)").Define("e_indices", "RecoEleSelectedIndices(event, Electron_dz, Electron_dxy, Electron_eta, Electron_phi, Electron_pt, Electron_mvaFall17V2Iso_WP80)").Define("eTau_pairs","GetPairs(e_indices, tau_indices, Electron_phi, Electron_eta,Tau_phi, Tau_eta)").Define("final_indices","GetFinalIndices(eTau_pairs, event,Electron_pfRelIso03_all, Electron_pt, Tau_rawDeepTau2017v2p1VSjet, Tau_pt, Electron_charge, Tau_charge)")
     else:
         print("this channel is not considered")
-        df_pair = df.Define("final_indices","vec_f final_indices; return final_indices;")
+        df_pair = df.Define("final_indices","RVecF final_indices; return final_indices;")
     df_pair=df_pair.Filter('final_indices.size()==2')
     return df_pair
 

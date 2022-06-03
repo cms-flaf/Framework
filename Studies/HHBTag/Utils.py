@@ -4,7 +4,13 @@ import ROOT
 from Common.BaselineSelection import *
 ROOT.EnableImplicitMT()
 ROOT.gStyle.SetOptStat(1111)
- 
+
+header_analysis_tools = os.path.join(os.sep, os.environ['ANALYSIS_PATH'] + os.sep, "Common"+ os.sep,"AnalysisTools.h")
+header_path_utils =os.path.join(os.sep, os.environ['ANALYSIS_PATH'] + os.sep, "Studies"+ os.sep,"HHBTag"+ os.sep,"Utilities.h") 
+
+
+ROOT.gInterpreter.Declare('#include "{}"'.format(header_path_utils))
+ROOT.gInterpreter.Declare('#include "{}"'.format(header_analysis_tools))
 
 #def GetMPV(df, drawHisto = False ):
 def findMPV(df):
@@ -12,11 +18,11 @@ def findMPV(df):
     df_muTau = DefineDataFrame(df, "muTau")
     df_tauTau = DefineDataFrame(df, "tauTau")
 
-    df_eTau_2bGenJets = df_eTau.Define("GenJet_b_PF", "vec_i GenJet_b_PF; for(int i =0 ; i<GenJet_partonFlavour.size(); i++){if (std::abs(GenJet_partonFlavour[i])==5){GenJet_b_PF.push_back(i);}} return GenJet_b_PF;").Define("GenJet_b_PF_size", "GenJet_b_PF.size()").Filter("GenJet_b_PF_size==2").Define("Two_bGenJets_invMass", "InvMassByFalvour(GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass, GenJet_partonFlavour, true)")
+    df_eTau_2bGenJets = df_eTau.Define("GenJet_b_PF", "RVecI GenJet_b_PF; for(int i =0 ; i<GenJet_partonFlavour.size(); i++){if (std::abs(GenJet_partonFlavour[i])==5){GenJet_b_PF.push_back(i);}} return GenJet_b_PF;").Define("GenJet_b_PF_size", "GenJet_b_PF.size()").Filter("GenJet_b_PF_size==2").Define("Two_bGenJets_invMass", "InvMassByFalvour(GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass, GenJet_partonFlavour, true)")
     histo_eTau_2bGenJets = df_eTau_2bGenJets.Histo1D(("Two_bGenJets_invMass_eTau", "Two_bGenJets_invMass_eTau", 400, -0.5, 199.5),"Two_bGenJets_invMass").GetValue()
-    df_muTau_2bGenJets = df_muTau.Define("GenJet_b_PF", "vec_i GenJet_b_PF; for(int i =0 ; i<GenJet_partonFlavour.size(); i++){if (std::abs(GenJet_partonFlavour[i])==5){GenJet_b_PF.push_back(i);}} return GenJet_b_PF;").Define("GenJet_b_PF_size", "GenJet_b_PF.size()").Filter("GenJet_b_PF_size==2").Define("Two_bGenJets_invMass", "InvMassByFalvour(GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass, GenJet_partonFlavour, true)")
+    df_muTau_2bGenJets = df_muTau.Define("GenJet_b_PF", "RVecI GenJet_b_PF; for(int i =0 ; i<GenJet_partonFlavour.size(); i++){if (std::abs(GenJet_partonFlavour[i])==5){GenJet_b_PF.push_back(i);}} return GenJet_b_PF;").Define("GenJet_b_PF_size", "GenJet_b_PF.size()").Filter("GenJet_b_PF_size==2").Define("Two_bGenJets_invMass", "InvMassByFalvour(GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass, GenJet_partonFlavour, true)")
     histo_muTau_2bGenJets = df_muTau_2bGenJets.Histo1D(("Two_bGenJets_invMass_muTau", "Two_bGenJets_invMass_muTau", 400, -0.5, 199.5),"Two_bGenJets_invMass").GetValue()
-    df_tauTau_2bGenJets = df_tauTau.Define("GenJet_b_PF", "vec_i GenJet_b_PF; for(int i =0 ; i<GenJet_partonFlavour.size(); i++){if (std::abs(GenJet_partonFlavour[i])==5){GenJet_b_PF.push_back(i);}} return GenJet_b_PF;").Define("GenJet_b_PF_size", "GenJet_b_PF.size()").Filter("GenJet_b_PF_size==2").Define("Two_bGenJets_invMass", "InvMassByFalvour(GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass, GenJet_partonFlavour, true)")
+    df_tauTau_2bGenJets = df_tauTau.Define("GenJet_b_PF", "RVecI GenJet_b_PF; for(int i =0 ; i<GenJet_partonFlavour.size(); i++){if (std::abs(GenJet_partonFlavour[i])==5){GenJet_b_PF.push_back(i);}} return GenJet_b_PF;").Define("GenJet_b_PF_size", "GenJet_b_PF.size()").Filter("GenJet_b_PF_size==2").Define("Two_bGenJets_invMass", "InvMassByFalvour(GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass, GenJet_partonFlavour, true)")
     histo_tauTau_2bGenJets = df_tauTau_2bGenJets.Histo1D(("Two_bGenJets_invMass_tauTau", "Two_bGenJets_invMass_tauTau", 400, -0.5, 199.5),"Two_bGenJets_invMass").GetValue()
 
     histo_tot = ROOT.TH1D(histo_eTau_2bGenJets)

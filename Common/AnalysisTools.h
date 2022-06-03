@@ -1,16 +1,16 @@
-#include <math.h>
+#pragma once
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <string>
-#pragma once
+
 
 using LorentzVectorM = ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>;
-using vec_i = ROOT::VecOps::RVec<int>;
-using vec_s = ROOT::VecOps::RVec<size_t>;
-using vec_f = ROOT::VecOps::RVec<float>;
-using vec_b = ROOT::VecOps::RVec<bool>;
-using vec_uc = ROOT::VecOps::RVec<unsigned char>;
-
+using RVecI = ROOT::RVecI;
+using RVecS = ROOT::VecOps::RVec<size_t>;
+using RVecUC = ROOT::VecOps::RVec<UChar_t>;
+using RVecF = ROOT::RVecF;
+using RVecB = ROOT::RVecB;
 namespace Channel{
     enum {
         eTau = 0,
@@ -35,31 +35,37 @@ struct ParticleInfo{
   std::string type;
 };
 
-float DeltaPhi(Float_t phi1, Float_t phi2){
-    static constexpr float pi = M_PI;
-    float dphi = phi1 - phi2;
-    if(dphi > pi){
-        dphi -= 2*pi;
-    }
-    else if(dphi <= -pi){
-        dphi += 2*pi;
-    }
-    return dphi;
+template<typename T>
+T DeltaPhi(T phi1, T phi2) {
+  return ROOT::Math::VectorUtil::Phi_mpi_pi(phi2 - phi1);
 }
-
-float DeltaEta(Float_t eta1, Float_t eta2){
+template<typename T>
+T DeltaEta(T eta1, T eta2){
   return (eta1-eta2);
 }
 
-float DeltaR(Float_t phi1,Float_t eta1,Float_t phi2,Float_t eta2) {
-  float dphi = DeltaPhi(phi1, phi2);
-  float deta = DeltaEta(eta1, eta2);
-  return (std::sqrt(deta * deta + dphi * dphi));
+template<typename T>
+T DeltaR(T eta1, T phi1, T eta2, T phi2) {
+  T dphi = DeltaPhi(phi1, phi2);
+  T deta = DeltaEta(eta1, eta2);
+  return std::hypot(dphi, deta);
 }
 
-vec_i ReorderObjects(const vec_f& VarToOrder, const vec_i& index_vec, const unsigned nMax=std::numeric_limits<unsigned>::max()){
 
-  vec_i reordered_jet_indices ;
+template<typename V>
+RVecI ReorderObjects(const V& varToOrder, const RVecI& indices, size_t nMax=std::numeric_limits<size_t>::max())
+{
+  RVecI ordered_indices = indices;
+  std::sort(ordered_indices.begin(), ordered_indices.end(), [&](int a, int b) {
+    return varToOrder.at(a) > varToOrder.at(b);
+  });
+  const size_t n = std::min(ordered_indices.size(), nMax);
+  ordered_indices.resize(n);
+  return ordered_indices;
+}/*
+RVecI ReorderObjects(const RVecF& VarToOrder, const RVecI& index_vec, const unsigned nMax=std::numeric_limits<unsigned>::max()){
+
+  RVecI reordered_jet_indices ;
   while(reordered_jet_indices.size()<nMax){
     float pt_max = 0;
     int i_max = -1;
@@ -78,12 +84,13 @@ vec_i ReorderObjects(const vec_f& VarToOrder, const vec_i& index_vec, const unsi
     }
   }
   return reordered_jet_indices;
-}
+}*/
 
-std::string FromDecimalToBinary(const int& decimalNumber)
+template<typename T, int n_binary_places=std::numeric_limits<T>::digits>
+std::string GetBinaryString(T x)
 {
-    int n=decimalNumber;
-    std::string r;
-    while(n!=0) {r=(n%2==0 ?"0":"1")+r; n/=2;}
-    return r;
+  std::bitset<n_binary_places> bs(x);
+  std::ostringstream ss;
+  ss << bs;
+  return ss.str();
 }

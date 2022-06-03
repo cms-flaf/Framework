@@ -112,6 +112,7 @@
 -4422,Xi_ccbar--,baryon,-2
 5434,Omega*_bc0,baryon,0
 4122,Lambda_c+,baryon,1
+4124,Lambda_c+,baryon,1
 -5222,Sigma_bbar-,baryon,-1
 -102,alpha,nucleus,2
 -2214,Deltabar-,baryon,-1
@@ -207,6 +208,7 @@
 2214,Delta+,baryon,1
 5222,Sigma_b+,baryon,1
 -4122,Lambda_cbar-,baryon,-1
+-4124,Lambda_cbar-,baryon,-1
 -5434,Omega*_bcbar0,baryon,0
 4422,Xi_cc++,baryon,2
 1000006,~t_1,quark,0.666667

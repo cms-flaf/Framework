@@ -27,7 +27,7 @@ for ch in ['eTau','muTau', 'tauTau']:#, 'muTau', 'tauTau']:#, 'eE', 'eMu', 'muMu
     if(not os.path.exists(dirName)):
         os.makedirs(dirName)
 
-    df_GenJets_b = df_matched.Define("GenJet_b_PF", "vec_i GenJet_b_PF; for(int i =0 ; i<GenJet_partonFlavour.size(); i++){if (std::abs(GenJet_partonFlavour[i])==5){GenJet_b_PF.push_back(i);}} return GenJet_b_PF;").Define("GenJet_b_PF_size", "GenJet_b_PF.size()")
+    df_GenJets_b = df_matched.Define("GenJet_b_PF", "RVecI GenJet_b_PF; for(int i =0 ; i<GenJet_partonFlavour.size(); i++){if (std::abs(GenJet_partonFlavour[i])==5){GenJet_b_PF.push_back(i);}} return GenJet_b_PF;").Define("GenJet_b_PF_size", "GenJet_b_PF.size()")
     df_lastHadrons_fromHbb = df_matched.Define("lastHadronsIndices","GetLastHadrons(GenPart_pdgId, GenPart_genPartIdxMother )")
     '''
     # (1) 2 genJet with b-flavour for events with n GenJets with b = 2
@@ -43,7 +43,7 @@ for ch in ['eTau','muTau', 'tauTau']:#, 'muTau', 'tauTau']:#, 'eE', 'eMu', 'muMu
 
     # (2) 2 most energetic b-jets for events with n GenJets >2
     df_Greater2_GenJets_b = df_GenJets_b.Filter("GenJet_b_PF_size>2")
-    df_Greater2_GenJets_b_2MostEnergeticsMass= df_Greater2_GenJets_b.Define("ReorderedJetsInPt", "ReorderObjects(GenJet_pt, GenJet_b_PF)").Define("two_most_energetic_bGenJets", "vec_i twoMostEnergeticJets; for(int i = 0; i<2; i++){twoMostEnergeticJets.push_back(ReorderedJetsInPt[i]);}  return twoMostEnergeticJets;").Define("Two_MostEnergetic_bGenJets_invMass", "InvMassByIndices(two_most_energetic_bGenJets,GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass,GenJet_partonFlavour, true)")
+    df_Greater2_GenJets_b_2MostEnergeticsMass= df_Greater2_GenJets_b.Define("ReorderedJetsInPt", "ReorderObjects(GenJet_pt, GenJet_b_PF)").Define("two_most_energetic_bGenJets", "RVecI twoMostEnergeticJets; for(int i = 0; i<2; i++){twoMostEnergeticJets.push_back(ReorderedJetsInPt[i]);}  return twoMostEnergeticJets;").Define("Two_MostEnergetic_bGenJets_invMass", "InvMassByIndices(two_most_energetic_bGenJets,GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass,GenJet_partonFlavour, true)")
     hist_Two_MostEnergetic_bGenJets_invMass = df_Greater2_GenJets_b_2MostEnergeticsMass.Histo1D(("Two_MostEnergetic_bGenJets_invMass", "Two_MostEnergetic_bGenJets_invMass;m_{jj} (GeV);N_{Events}", 35, 0, 350),"Two_MostEnergetic_bGenJets_invMass").GetValue()
     myfile = ROOT.TFile( f"output/{ch}/AllHistos.root", 'UPDATE' )
     hist_Two_MostEnergetic_bGenJets_invMass.Write()
@@ -87,7 +87,7 @@ for ch in ['eTau','muTau', 'tauTau']:#, 'muTau', 'tauTau']:#, 'eE', 'eMu', 'muMu
 
     # (5) two most energetic final state hadrons from b  for events with n_final_b_had > 2
     df_Greater2lastHadrons_fromHbb = df_lastHadrons_fromHbb.Filter("lastHadronsIndices.size()>2")
-    df_Greater2lastHadrons_fromHbb_2MostEnergeticsMass= df_lastHadrons_fromHbb.Define("ReorderedHadronsInPt", "ReorderObjects(GenPart_pt, lastHadronsIndices)").Define("two_most_energetic_HadronsFromHbb", "vec_i twoMostEnergeticHadrons; for(int i = 0; i<2; i++){twoMostEnergeticHadrons.push_back(ReorderedHadronsInPt[i]);} return twoMostEnergeticHadrons;").Define("Two_MostEnergetic_LastHadrons_invMass", "InvMassByIndices(two_most_energetic_HadronsFromHbb,GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass,GenPart_pdgId, false)")
+    df_Greater2lastHadrons_fromHbb_2MostEnergeticsMass= df_lastHadrons_fromHbb.Define("ReorderedHadronsInPt", "ReorderObjects(GenPart_pt, lastHadronsIndices)").Define("two_most_energetic_HadronsFromHbb", "RVecI twoMostEnergeticHadrons; for(int i = 0; i<2; i++){twoMostEnergeticHadrons.push_back(ReorderedHadronsInPt[i]);} return twoMostEnergeticHadrons;").Define("Two_MostEnergetic_LastHadrons_invMass", "InvMassByIndices(two_most_energetic_HadronsFromHbb,GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass,GenPart_pdgId, false)")
 
     hist_Greater2lastHadrons_fromHbb_2MostEnergeticsMass = df_Greater2lastHadrons_fromHbb_2MostEnergeticsMass.Histo1D(("Two_MostEnergetic_LastHadrons_invMass", "Two_MostEnergetic_LastHadrons_invMass;m_{hadrons} (GeV);N_{Events}", 30, 0, 110),"Two_MostEnergetic_LastHadrons_invMass").GetValue()
 

@@ -1,10 +1,10 @@
+#pragma once
 #include "AnalysisTools.h"
 #include "GenTools.h"
-#pragma once
 
 
 
-bool isTauDaughter(int tau_idx, int particle_idx, const vec_i& GenPart_genPartIdxMother){
+bool isTauDaughter(int tau_idx, int particle_idx, const RVecI& GenPart_genPartIdxMother){
    bool isTauDaughter = false;
    int idx_mother = GenPart_genPartIdxMother[particle_idx];
    while(1){
@@ -22,7 +22,7 @@ bool isTauDaughter(int tau_idx, int particle_idx, const vec_i& GenPart_genPartId
        }
    }
 }
-LorentzVectorM GetTauP4(int tau_idx, const vec_f& pt, const vec_f& eta, const vec_f& phi, const vec_f& mass, const vec_i& GenPart_genPartIdxMother, const vec_i& GenPart_pdgId, const vec_i& GenPart_status){
+LorentzVectorM GetTauP4(int tau_idx, const RVecF& pt, const RVecF& eta, const RVecF& phi, const RVecF& mass, const RVecI& GenPart_genPartIdxMother, const RVecI& GenPart_pdgId, const RVecI& GenPart_status){
     LorentzVectorM sum(0.,0.,0.,0.);
     LorentzVectorM TauP4;
 
@@ -49,7 +49,7 @@ LorentzVectorM GetTauP4(int tau_idx, const vec_f& pt, const vec_f& eta, const ve
     return TauP4;
 
 }
-std::map<std::string,std::set<int>> GetLeptonIndices(int evt, const vec_i& GenPart_pdgId, const vec_i& GenPart_genPartIdxMother, const vec_i& GenPart_statusFlags){
+std::map<std::string,std::set<int>> GetLeptonIndices(int evt, const RVecI& GenPart_pdgId, const RVecI& GenPart_genPartIdxMother, const RVecI& GenPart_statusFlags){
   std::map<std::string,std::set<int>> lep_indices;
   //lep_indices["Electron"] = std::set<int>;
   std::set<int> e_indices;
@@ -93,7 +93,7 @@ std::map<std::string,std::set<int>> GetLeptonIndices(int evt, const vec_i& GenPa
 }
 
 
-EvtInfo GetEventInfo(int evt, std::map<std::string, std::set<int>>& lep_indices, const vec_i& GenPart_pdgId, const vec_i& GenPart_genPartIdxMother, const vec_i& GenPart_status, const vec_f& GenPart_pt, const vec_f& GenPart_eta, const vec_f& GenPart_phi, const vec_f& GenPart_mass ){
+EvtInfo GetEventInfo(int evt, std::map<std::string, std::set<int>>& lep_indices, const RVecI& GenPart_pdgId, const RVecI& GenPart_genPartIdxMother, const RVecI& GenPart_status, const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass ){
   EvtInfo evt_info;
   // 1. tauTau
   if(lep_indices["Electron"].size()==0 && lep_indices["Muon"].size()==0 && lep_indices["Tau"].size()==2 ){

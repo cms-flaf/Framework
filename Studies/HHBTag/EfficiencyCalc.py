@@ -10,9 +10,9 @@ ROOT.gStyle.SetOptStat(1111)
 header_path_Utils = f"{os.environ['ANALYSIS_PATH']}/Studies/HHBTag/Utilities.h"
 ROOT.gInterpreter.Declare('#include "{}"'.format(header_path_Utils))
 
-def FindNumerator(df, score):#vec_i ReorderObjects(const vec_f& VarToOrder, const vec_i& index_vec, const unsigned nMax=std::numeric_limits<unsigned>::max()
+def FindNumerator(df, score):#RVecI ReorderObjects(const RVecF& VarToOrder, const RVecI& index_vec, const unsigned nMax=std::numeric_limits<unsigned>::max()
     # order jets in decreasing order w.r.t. the score
-    df_orderedJetsInScore = df.Define("AllRecoJetIndices", f"vec_i AllRecoJetIndices; for(int i=0; i<{score}.size();i++){{AllRecoJetIndices.push_back(i);}} return AllRecoJetIndices;").Define(f"JetsReorderedIn{score}", f"ReorderObjects({score}, AllRecoJetIndices)")
+    df_orderedJetsInScore = df.Define("AllRecoJetIndices", f"RVecI AllRecoJetIndices; for(int i=0; i<{score}.size();i++){{AllRecoJetIndices.push_back(i);}} return AllRecoJetIndices;").Define(f"JetsReorderedIn{score}", f"ReorderObjects({score}, AllRecoJetIndices)")
     df_correspondanceJetOrderedRecoJet = df_orderedJetsInScore.Define("CorrespondenceSum", f"int CorrespondenceSum=0; for(auto& i:RecoJetIndices){{if(i==JetsReorderedIn{score}[0] || i==JetsReorderedIn{score}[1]) {{ CorrespondenceSum++;}} /*std::cout << \" reco jet has index \"<< i << \" reordered jets have indices \" << JetsReorderedIn{score}[0] << \" and \" << JetsReorderedIn{score}[1]<< \" CorrespondanceSum is \" << CorrespondenceSum << std::endl; */ }} /*std::cout << std::endl;*/ return CorrespondenceSum;").Filter("CorrespondenceSum==2")
     return df_correspondanceJetOrderedRecoJet
     # ask that the sum of the jets corresponding to the reco selected indices is 2
@@ -36,7 +36,7 @@ for ch in ['eTau','muTau', 'tauTau']:#, 'muTau', 'tauTau']:#, 'eE', 'eMu', 'muMu
     df_matched = DefineDataFrame(df, ch)
     print(f"when applying preselection there are {df_matched.Count().GetValue()} events")
     # define b-GenJet indices
-    df_GenJets_b = df_matched.Define("GenJet_b_PF", "vec_i GenJet_b_PF; for(int i =0 ; i<GenJet_partonFlavour.size(); i++){if (std::abs(GenJet_partonFlavour[i])==5){GenJet_b_PF.push_back(i);}} return GenJet_b_PF;").Define("GenJet_b_PF_size", "GenJet_b_PF.size()").Filter('GenJet_b_PF_size>=2')
+    df_GenJets_b = df_matched.Define("GenJet_b_PF", "RVecI GenJet_b_PF; for(int i =0 ; i<GenJet_partonFlavour.size(); i++){if (std::abs(GenJet_partonFlavour[i])==5){GenJet_b_PF.push_back(i);}} return GenJet_b_PF;").Define("GenJet_b_PF_size", "GenJet_b_PF.size()").Filter('GenJet_b_PF_size>=2')
     print(f"when requiring at least 2 bjets there are {df_GenJets_b.Count().GetValue()} events")
     # Tag 2 GenJet with b PartonFlavour with the MPV algo
     df_GenJets_b_2ClosestToMPVMass= df_GenJets_b.Define("TwobJetsClosestToMPV", f"(FindTwoJetsClosestToMPV({mpv},GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass, GenJet_partonFlavour))")

@@ -19,10 +19,10 @@ class ParticleDB {
 public:
   static void Initialize(const std::string_view inputFile) {
     std::ifstream file (inputFile, ios::in );
-     std::string line; 
+     std::string line;
      while (getline(file, line)){
        auto values= analysis::SplitValueList(line,true,",",true);
-       if(values.size()!=4 || values.size()!=5){
+       if(values.size()!=4 && values.size()!=5){ 
          throw analysis::exception("invalid line %1%")%line;
        }
        ParticleInfo currentInfo;

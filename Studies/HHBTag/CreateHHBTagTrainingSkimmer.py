@@ -5,8 +5,8 @@ import ROOT
 #ROOT.EnableImplicitMT()
 _rootpath = os.path.abspath(os.path.dirname(__file__)+"/../../..")
 ROOT.gROOT.ProcessLine(".include "+_rootpath)
-print(_rootpath)
-ROOT.gROOT.ProcessLine("#include "+_rootpath+"Common/TextIO.cpp")
+particleFile = f"{os.environ['ANALYSIS_PATH']}/config/pdg_name_type_charge.txt"
+ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{particleFile}\");")
 ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptStat(1111)
 import argparse
@@ -62,7 +62,7 @@ for file in files:
         df_GenJets_b = df_matched.Define("GenJet_b_PF", "RVecI GenJet_b_PF; for(int i =0 ; i<GenJet_partonFlavour.size(); i++){if (std::abs(GenJet_partonFlavour[i])==5){GenJet_b_PF.push_back(i);}} return GenJet_b_PF;").Define("GenJet_b_PF_size", "GenJet_b_PF.size()")
 
         df_withDaughters = GetDaughters(df_matched)
-        df_lastHadrons_fromHbb = df_withDaughters.Define("lastHadronsIndices","GetLastHadrons(GenPart_pdgId, GenPart_genPartIdxMother )")
+        df_lastHadrons_fromHbb = df_withDaughters.Define("lastHadronsIndices","GetLastHadrons(GenPart_pdgId, GenPart_genPartIdxMother, genPart_daughters )")
 
 
         df_Greater2_GenJets_b = df_GenJets_b.Filter("GenJet_b_PF_size>2")

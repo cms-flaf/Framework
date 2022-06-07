@@ -1,12 +1,13 @@
 #pragma once
 #include "Framework/Common/AnalysisTools.h"
-//#include "/Users/valeriadamante/Desktop/Dottorato/lxplus/hhbbTauTauRes/Framework/Common/AnalysisTools.h"
+#include "Framework/Common/GenTools.h"
 
 float InvMassByFalvour(const RVecF &GenJet_pt,const RVecF &GenJet_eta,const RVecF &GenJet_phi,const RVecF &GenJet_mass, const RVecI& GenJet_partonFlavour, bool wantOnlybPartonFlavour){
     LorentzVectorM genParticle_Tot_momentum;
     for(int part_idx = 0 ;part_idx<GenJet_pt.size(); part_idx++){
       if(wantOnlybPartonFlavour==true && abs(GenJet_partonFlavour[part_idx])!=5)continue;
-      const float particleMass = (particleMasses.find(GenJet_partonFlavour[part_idx]) != particleMasses.end()) ? particleMasses.at(GenJet_partonFlavour[part_idx]) : GenJet_mass[part_idx];
+      ParticleInfo particle_information = ParticleDB::GetParticleInfo(GenJet_partonFlavour[part_idx]);
+      const float particleMass = particle_information.mass>0? particle_information.mass : GenJet_mass[part_idx];
       genParticle_Tot_momentum+=LorentzVectorM(GenJet_pt[part_idx], GenJet_eta[part_idx], GenJet_phi[part_idx],particleMass);
     }
     return genParticle_Tot_momentum.M();
@@ -18,12 +19,9 @@ float InvMassByIndices(const RVecI &indices, const RVecF& GenPart_pt,const RVecF
     //if(evt!=905) return 0.;
     for(int i = 0 ;i<indices.size(); i++){
       auto part_idx = indices.at(i);
-      //std::cout << part_idx<<"\n";
-      //std::cout << GenPart_pt.size()<<"\n";
       if(wantOnlybParticle && abs(GenPart_pdgId[part_idx])!=5) continue;
-      //if(wantOnlybPartonFlavour==true && abs(GenJet_pdgId[part_idx])!=5)continue;
-      const float particleMass = (particleMasses.find(GenPart_pdgId[part_idx]) != particleMasses.end()) ? particleMasses.at(GenPart_pdgId[part_idx]) : GenPart_mass[part_idx];
-      //std::cout << GenPart_pt[part_idx]<<"\t"<< GenPart_eta[part_idx]<<"\t"<< GenPart_phi[part_idx]<<"\t"<<particleMass<< std::endl;
+      ParticleInfo particle_information = ParticleDB::GetParticleInfo(GenPart_pdgId[part_idx]);
+      const float particleMass = particle_information.mass>0? particle_information.mass : GenPart_mass[part_idx];
       genParticle_Tot_momentum+=LorentzVectorM(GenPart_pt[part_idx], GenPart_eta[part_idx], GenPart_phi[part_idx],particleMass);
     }
     return genParticle_Tot_momentum.M();
@@ -34,7 +32,6 @@ RVecI FindTwoJetsClosestToMPV(float mpv, const RVecF& GenPart_pt,const RVecF &Ge
   RVecI indices;
   int i_min, j_min;
   float delta_min = 100;
-  //float closest_value=10.*mpv;
   for(int i =0 ; i< GenPart_pt.size(); i++){
     for(int j=0; j<i; j++){
       RVecI temporary_indices;
@@ -46,7 +43,6 @@ RVecI FindTwoJetsClosestToMPV(float mpv, const RVecF& GenPart_pt,const RVecF &Ge
         i_min=i;
         j_min=j;
         delta_min = delta_mass;
-        //closest_value = inv_mass
       }
     }
   }

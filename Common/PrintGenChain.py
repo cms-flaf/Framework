@@ -2,10 +2,9 @@ import ROOT
 import argparse
 import os
 from Common.BaselineSelection import DefineDataFrame,GetDaughters
- 
+
 _rootpath = os.path.abspath(os.path.dirname(__file__)+"/../../..")
-ROOT.gROOT.ProcessLine(".include "+_rootpath)
-ROOT.gROOT.ProcessLine("#include \""+_rootpath+"/hhbbTauTauRes/Framework/Common/exception.cpp\"")
+ROOT.gROOT.ProcessLine(".include "+_rootpath) 
 ROOT.gROOT.SetBatch(True)
 def PrintDecayChain(df, evtId, outFile):
     df_Chain = df.Filter(f"event=={evtId}")

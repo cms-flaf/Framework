@@ -2,15 +2,16 @@
 # Enable multi-threading
 import ROOT
 from Common.BaselineSelection import *
-ROOT.EnableImplicitMT()
+_rootpath = os.path.abspath(os.path.dirname(__file__)+"/../../..")
+ROOT.gROOT.ProcessLine(".include "+_rootpath)
 ROOT.gStyle.SetOptStat(1111)
 
-header_analysis_tools = os.path.join(os.sep, os.environ['ANALYSIS_PATH'] + os.sep, "Common"+ os.sep,"AnalysisTools.h")
-header_path_utils =os.path.join(os.sep, os.environ['ANALYSIS_PATH'] + os.sep, "Studies"+ os.sep,"HHBTag"+ os.sep,"Utilities.h") 
+#header_analysis_tools = os.path.join(os.sep, os.environ['ANALYSIS_PATH'] + os.sep, "Common"+ os.sep,"AnalysisTools.h")
+header_path_utils =os.path.join(os.sep, os.environ['ANALYSIS_PATH'] + os.sep, "Studies"+ os.sep,"HHBTag"+ os.sep,"Utilities.h")
 
 
 ROOT.gInterpreter.Declare('#include "{}"'.format(header_path_utils))
-ROOT.gInterpreter.Declare('#include "{}"'.format(header_analysis_tools))
+#ROOT.gInterpreter.Declare('#include "{}"'.format(header_analysis_tools))
 
 #def GetMPV(df, drawHisto = False ):
 def findMPV(df):

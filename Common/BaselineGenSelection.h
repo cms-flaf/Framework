@@ -1,7 +1,7 @@
 #pragma once
 #include "AnalysisTools.h"
 #include "GenTools.h"
-
+#include "TextIO.h"
 
 
 bool isTauDaughter(int tau_idx, int particle_idx, const RVecI& GenPart_genPartIdxMother){
@@ -22,7 +22,7 @@ bool isTauDaughter(int tau_idx, int particle_idx, const RVecI& GenPart_genPartId
        }
    }
 }
-LorentzVectorM GetTauP4(int tau_idx, const RVecF& pt, const RVecF& eta, const RVecF& phi, const RVecF& mass, const RVecI& GenPart_genPartIdxMother, const RVecI& GenPart_pdgId, const RVecI& GenPart_status){
+LorentzVectorM GetTauP4(int tau_idx, const RVecF& pt, const RVecF& eta, const RVecF& phi, const RVecF& GenPart_mass, const RVecI& GenPart_genPartIdxMother, const RVecI& GenPart_pdgId, const RVecI& GenPart_status){
     LorentzVectorM sum(0.,0.,0.,0.);
     LorentzVectorM TauP4;
 
@@ -33,14 +33,9 @@ LorentzVectorM GetTauP4(int tau_idx, const RVecF& pt, const RVecF& eta, const RV
         bool isRelatedToTau = isTauDaughter(tau_idx, particle_idx, GenPart_genPartIdxMother);
         if(isRelatedToTau){
             LorentzVectorM current_particleP4 ;
-            float p_mass ;
-            if (particleMasses.find(GenPart_pdgId[particle_idx]) != particleMasses.end()){
-                p_mass=particleMasses.at(GenPart_pdgId[particle_idx]);
-            }
-            else{
-                p_mass = mass[particle_idx];
-            }
-            current_particleP4=LorentzVectorM(pt[particle_idx], eta[particle_idx], phi[particle_idx],p_mass);
+            ParticleInfo particle_information = ParticleDB::GetParticleInfo(GenPart_pdgId[particle_idx]);
+            float particleMass = particle_information.mass>0? particle_information.mass : GenPart_mass[particle_idx];
+            current_particleP4=LorentzVectorM(pt[particle_idx], eta[particle_idx], phi[particle_idx],particleMass);
             sum = sum + current_particleP4;
         }
 
@@ -179,7 +174,11 @@ EvtInfo GetEventInfo(int evt, std::map<std::string, std::set<int>>& lep_indices,
       std::set<int>::iterator it_mu = lep_indices["Muon"].begin();
       while (it_mu != lep_indices["Muon"].end()){
           int mu_idx = *it_mu;
-          evt_info.leg_p4[leg_p4_index] =  LorentzVectorM(GenPart_pt[mu_idx], GenPart_eta[mu_idx],GenPart_phi[mu_idx], muon_mass);
+
+          ParticleInfo particle_information = ParticleDB::GetParticleInfo(GenPart_pdgId[mu_idx]);
+          float mu_mass = particle_information.mass>0? particle_information.mass : GenPart_mass[mu_idx];
+
+          evt_info.leg_p4[leg_p4_index] =  LorentzVectorM(GenPart_pt[mu_idx], GenPart_eta[mu_idx],GenPart_phi[mu_idx], mu_mass);
           leg_p4_index++;
           it_mu++;
       } // closes loop over mu_indices
@@ -237,7 +236,9 @@ EvtInfo GetEventInfo(int evt, std::map<std::string, std::set<int>>& lep_indices,
       std::set<int>::iterator it_e = lep_indices["Electron"].begin();
       while (it_e != lep_indices["Electron"].end()){
           int e_idx = *it_e;
-          evt_info.leg_p4[leg_p4_index] = LorentzVectorM(GenPart_pt[e_idx], GenPart_eta[e_idx],GenPart_phi[e_idx], electron_mass);
+          ParticleInfo particle_information = ParticleDB::GetParticleInfo(GenPart_pdgId[e_idx]);
+          float e_mass = particle_information.mass>0? particle_information.mass : GenPart_mass[e_idx];
+          evt_info.leg_p4[leg_p4_index] = LorentzVectorM(GenPart_pt[e_idx], GenPart_eta[e_idx],GenPart_phi[e_idx], e_mass);
           leg_p4_index++;
           it_e++;
       } // closes loop over e_indices
@@ -290,7 +291,9 @@ EvtInfo GetEventInfo(int evt, std::map<std::string, std::set<int>>& lep_indices,
       std::set<int>::iterator it_mu = lep_indices["Muon"].begin();
       while (it_mu != lep_indices["Muon"].end()){
           int mu_idx = *it_mu;
-          evt_info.leg_p4[leg_p4_index] =  LorentzVectorM(GenPart_pt[mu_idx], GenPart_eta[mu_idx],GenPart_phi[mu_idx], muon_mass);
+          ParticleInfo particle_information = ParticleDB::GetParticleInfo(GenPart_pdgId[mu_idx]);
+          float mu_mass = particle_information.mass>0? particle_information.mass : GenPart_mass[mu_idx];
+          evt_info.leg_p4[leg_p4_index] =  LorentzVectorM(GenPart_pt[mu_idx], GenPart_eta[mu_idx],GenPart_phi[mu_idx], mu_mass);
           leg_p4_index++;
           it_mu++;
       } // closes loop over mu_indices
@@ -335,7 +338,9 @@ EvtInfo GetEventInfo(int evt, std::map<std::string, std::set<int>>& lep_indices,
       std::set<int>::iterator it_e = lep_indices["Electron"].begin();
       while (it_e != lep_indices["Electron"].end()){
           int e_idx = *it_e;
-          evt_info.leg_p4[leg_p4_index] = LorentzVectorM(GenPart_pt[e_idx], GenPart_eta[e_idx],GenPart_phi[e_idx], electron_mass);
+          ParticleInfo particle_information = ParticleDB::GetParticleInfo(GenPart_pdgId[e_idx]);
+          float e_mass = particle_information.mass>0? particle_information.mass : GenPart_mass[e_idx];
+          evt_info.leg_p4[leg_p4_index] = LorentzVectorM(GenPart_pt[e_idx], GenPart_eta[e_idx],GenPart_phi[e_idx], e_mass);
           leg_p4_index++;
           it_e++;
       } // closes loop over e_indices
@@ -385,7 +390,9 @@ EvtInfo GetEventInfo(int evt, std::map<std::string, std::set<int>>& lep_indices,
       std::set<int>::iterator it_mu = lep_indices["Muon"].begin();
       while (it_mu != lep_indices["Muon"].end()){
           int mu_idx = *it_mu;
-          evt_info.leg_p4[leg_p4_index] =  LorentzVectorM(GenPart_pt[mu_idx], GenPart_eta[mu_idx],GenPart_phi[mu_idx], muon_mass);
+          ParticleInfo particle_information = ParticleDB::GetParticleInfo(GenPart_pdgId[mu_idx]);
+          float mu_mass = particle_information.mass>0? particle_information.mass : GenPart_mass[mu_idx];
+          evt_info.leg_p4[leg_p4_index] =  LorentzVectorM(GenPart_pt[mu_idx], GenPart_eta[mu_idx],GenPart_phi[mu_idx], mu_mass);
           leg_p4_index++;
           it_mu++;
       } // closes loop over mu_indices
@@ -394,7 +401,9 @@ EvtInfo GetEventInfo(int evt, std::map<std::string, std::set<int>>& lep_indices,
       std::set<int>::iterator it_e = lep_indices["Electron"].begin();
       while (it_e != lep_indices["Electron"].end()){
           int e_idx = *it_e;
-          evt_info.leg_p4[leg_p4_index] = LorentzVectorM(GenPart_pt[e_idx], GenPart_eta[e_idx],GenPart_phi[e_idx], electron_mass);
+          ParticleInfo particle_information = ParticleDB::GetParticleInfo(GenPart_pdgId[e_idx]);
+          float e_mass = particle_information.mass>0? particle_information.mass : GenPart_mass[e_idx];
+          evt_info.leg_p4[leg_p4_index] = LorentzVectorM(GenPart_pt[e_idx], GenPart_eta[e_idx],GenPart_phi[e_idx], e_mass);
           leg_p4_index++;
           it_e++;
       } // closes loop over e_indices

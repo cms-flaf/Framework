@@ -4,6 +4,7 @@ from Visual.HistTools import *
 ROOT.EnableImplicitMT()
 #ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptStat(1111)
+ROOT.gROOT.ProcessLine(".include "+_rootpath)
 
 df = ROOT.RDataFrame("Events", "GluGluToRadionToHHTo2B2Tau_M-400.root")
 

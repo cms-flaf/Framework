@@ -2,11 +2,9 @@ from Common.BaselineSelection import *
 from Visual.HistTools import *
 from Studies.HHBTag.Utils import findMPV
 import os
-# Enable multi-threading
-ROOT.EnableImplicitMT()
+ROOT.gROOT.ProcessLine(".include "+_rootpath)
 ROOT.gROOT.SetBatch(True)
-ROOT.gStyle.SetOptStat(1111)
-#ROOT.gInterpreter.Declare(f"static ParticleDB particleDB({particleDBFile}")
+ROOT.gStyle.SetOptStat(1111) 
 header_path_Utils = f"{os.environ['ANALYSIS_PATH']}/Studies/HHBTag/Utilities.h"
 ROOT.gInterpreter.Declare('#include "{}"'.format(header_path_Utils))
 

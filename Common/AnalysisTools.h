@@ -28,12 +28,6 @@ struct EvtInfo{
     std::array<LorentzVectorM,2> leg_p4;
 };
 
-struct ParticleInfo{
-  int pdgId;
-  int charge;
-  std::string name;
-  std::string type;
-};
 
 template<typename T>
 T DeltaPhi(T phi1, T phi2) {

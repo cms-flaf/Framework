@@ -1,8 +1,9 @@
 from Common.BaselineSelection import *
 from Visual.HistTools import *
-# Enable multi-threading
 import ROOT
-ROOT.EnableImplicitMT()
+#ROOT.EnableImplicitMT()
+_rootpath = os.path.abspath(os.path.dirname(__file__)+"/../../..")
+ROOT.gROOT.ProcessLine(".include "+_rootpath)
 ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptStat(1111)
 

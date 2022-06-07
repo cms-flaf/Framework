@@ -2,7 +2,8 @@ import ROOT
 import os
 from scipy import stats
 import numpy as np
-#higgs_header_path = os.path.join(os.sep, str(ROOT.gROOT.GetTutorialDir()) + os.sep, "dataframe" + os.sep,
+_rootpath = os.path.abspath(os.path.dirname(__file__)+"/../../..")
+ROOT.gROOT.ProcessLine(".include "+_rootpath) 
 header_path_Gen = f"{os.environ['ANALYSIS_PATH']}/Common/BaselineGenSelection.h"
 header_path_Reco = f"{os.environ['ANALYSIS_PATH']}/Common/BaselineRecoSelection.h"
 
@@ -73,6 +74,9 @@ def FindInvMass(df, index_vec):
     df_invMass = df.Define("mjj", "(jet1_p4+jet2_p4).M()")
     return df_invMass
 
+def GetDaughters(df):
+    df_daughters = df.Define("genPart_daughters","GetDaughters(GenPart_genPartIdxMother )")
+    return df_daughters
 
 def DefineDataFrame(df, ch):
     df_channel=selectChannel(df,ch)

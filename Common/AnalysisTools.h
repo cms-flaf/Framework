@@ -23,19 +23,13 @@ namespace Channel{
 }
 
 
-struct EvtInfo{
-    int channel;
-    std::array<LorentzVectorM,2> leg_p4;
-};
-
-
 template<typename T>
 T DeltaPhi(T phi1, T phi2) {
   return ROOT::Math::VectorUtil::Phi_mpi_pi(phi2 - phi1);
 }
 template<typename T>
 T DeltaEta(T eta1, T eta2){
-  return (eta1-eta2);
+  return (eta2-eta1);
 }
 
 template<typename T>
@@ -45,6 +39,11 @@ T DeltaR(T eta1, T phi1, T eta2, T phi2) {
   return std::hypot(dphi, deta);
 }
 
+RVecS CreateIndexes(size_t vecSize){
+  RVecS i(vecSize);
+  std::iota(i.begin(), i.end(), 0);
+  return i;
+}
 
 template<typename V>
 RVecI ReorderObjects(const V& varToOrder, const RVecI& indices, size_t nMax=std::numeric_limits<size_t>::max())
@@ -56,29 +55,7 @@ RVecI ReorderObjects(const V& varToOrder, const RVecI& indices, size_t nMax=std:
   const size_t n = std::min(ordered_indices.size(), nMax);
   ordered_indices.resize(n);
   return ordered_indices;
-}/*
-RVecI ReorderObjects(const RVecF& VarToOrder, const RVecI& index_vec, const unsigned nMax=std::numeric_limits<unsigned>::max()){
-
-  RVecI reordered_jet_indices ;
-  while(reordered_jet_indices.size()<nMax){
-    float pt_max = 0;
-    int i_max = -1;
-    for(auto&i :index_vec){
-      //std::cout << "i " << i << "\t i max "<< i_max<< "\tVarToOrder " << VarToOrder.at(i) << "\tpt_max " << pt_max << std::endl;
-      if(std::find(reordered_jet_indices.begin(), reordered_jet_indices.end(), i)!=reordered_jet_indices.end()) continue;
-      if(VarToOrder.at(i)>pt_max){
-        pt_max=VarToOrder.at(i);
-        i_max = i;
-      }
-    }
-    if(i_max>=0){
-      reordered_jet_indices.push_back(i_max);
-      pt_max = 0;
-      i_max = -1;
-    }
-  }
-  return reordered_jet_indices;
-}*/
+}
 
 template<typename T, int n_binary_places=std::numeric_limits<T>::digits>
 std::string GetBinaryString(T x)
@@ -87,4 +64,12 @@ std::string GetBinaryString(T x)
   std::ostringstream ss;
   ss << bs;
   return ss.str();
+}
+
+std::vector<LorentzVectorM> GetP4(const RVecF& pt, const RVecF& eta, const RVecF& phi, const RVecF& mass, const RVecS &indices){
+  std::vector<LorentzVectorM> p4 ;
+  for (auto& idx:indices){
+    p4.push_back(LorentzVectorM(pt[idx], eta[idx],phi[idx], mass[idx]));
+  }
+  return p4;
 }

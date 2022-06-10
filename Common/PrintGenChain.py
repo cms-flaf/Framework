@@ -1,10 +1,10 @@
 import ROOT
 import argparse
 import os
-from Common.BaselineSelection import DefineDataFrame,GetDaughters
+from Common.BaselineSelection import DefineDataFrame
 
 _rootpath = os.path.abspath(os.path.dirname(__file__)+"/../../..")
-ROOT.gROOT.ProcessLine(".include "+_rootpath) 
+ROOT.gROOT.ProcessLine(".include "+_rootpath)
 ROOT.gROOT.SetBatch(True)
 def PrintDecayChain(df, evtId, outFile):
     df_Chain = df.Filter(f"event=={evtId}")
@@ -12,7 +12,7 @@ def PrintDecayChain(df, evtId, outFile):
         print(f"attention: event {evtId} not present in the dF")
         return
     else:
-        df_Chain = df_Chain.Define("printer", f"PrintDecayChain({evtId},  GenPart_pdgId, GenPart_genPartIdxMother, GenPart_statusFlags, GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, GenPart_status,genPart_daughtersm {outFile})")
+        df_Chain = df_Chain.Define("printer", f"PrintDecayChain({evtId},  GenPart_pdgId, GenPart_genPartIdxMother, GenPart_statusFlags, GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, GenPart_status,GenPart_daughters, {outFile})")
     histo = df_Chain.Histo1D("printer").GetValue()
     return
 
@@ -52,10 +52,10 @@ for file in files:
     df = ROOT.RDataFrame("Events", f"{filesPath}/{file}")
     for ch in ['eTau']:#'muTau', 'tauTau']:
         df_matched = DefineDataFrame(df, ch)
-        df_withDaughters = GetDaughters(df_matched)
+        #df_withDaughters = GetDaughters(df_matched)
         outDir=f"{outDir_prefix}/{ch}/DecayChains/"
         if not os.path.exists(outDir):
             os.makedirs(outDir)
         outFile = f"\"{outDir}/output_{mass}_{args.evtId}.txt\""
         #print(outFile)
-        PrintDecayChain(df_withDaughters, args.evtId, outFile)
+        PrintDecayChain(df_matched, args.evtId, outFile)

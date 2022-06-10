@@ -54,19 +54,17 @@ for file in files:
         outFileName = args.outFile if(args.outFile!='') else f"output_{mass}.root"
         outFile = f"{outDir}/{outFileName}"
         print(outFile)
+        df_matched = DefineDataFrame(df, ch)
         mpv = findMPV(df)
         print(f"the mpv is {mpv}")
+        '''
         df_matched = DefineDataFrame(df, ch)
-
-
         df_GenJets_b = df_matched.Define("GenJet_b_PF", "RVecI GenJet_b_PF; for(int i =0 ; i<GenJet_partonFlavour.size(); i++){if (std::abs(GenJet_partonFlavour[i])==5){GenJet_b_PF.push_back(i);}} return GenJet_b_PF;").Define("GenJet_b_PF_size", "GenJet_b_PF.size()")
 
-        df_withDaughters = GetDaughters(df_matched)
-        df_lastHadrons_fromHbb = df_withDaughters.Define("lastHadronsIndices","GetLastHadrons(GenPart_pdgId, GenPart_genPartIdxMother, genPart_daughters )")
-
+        #df_withDaughters = GetDaughters(df_matched)
+        df_lastHadrons_fromHbb = df_matched.Define("lastHadronsIndices","GetLastHadrons(GenPart_pdgId, GenPart_genPartIdxMother, GenPart_daughters )")
 
         df_Greater2_GenJets_b = df_GenJets_b.Filter("GenJet_b_PF_size>2")
-
 
         df_Greater2_GenJets_b_2ClosestToMPVMass= df_Greater2_GenJets_b.Define("TwobJetsClosestToMPV", f"(FindTwoJetsClosestToMPV({mpv},GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass, GenJet_partonFlavour))").Define("Two_ClosestToMPV_bGenJets_invMass", "InvMassByIndices(TwobJetsClosestToMPV,GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass,GenJet_partonFlavour, true)")
         hist_Greater2_GenJets_b_2ClosestToMPVMass = df_Greater2_GenJets_b_2ClosestToMPVMass.Histo1D(("Two_ClosestToMPV_bGenJets_invMass", "Two_ClosestToMPV_bGenJets_invMass;m_{jj} (GeV);N_{Events}", 30, 10, 350),"Two_ClosestToMPV_bGenJets_invMass").GetValue()
@@ -76,3 +74,4 @@ for file in files:
         myfile.Close()
 
         df_Greater2_GenJets_b_2ClosestToMPVMass.Snapshot("Events", outFile, "GenJet_b_PF_size",snapshotOptions)
+        '''

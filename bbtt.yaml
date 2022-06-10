@@ -15,6 +15,8 @@ dependencies:
   - backports.functools_lru_cache=1.6.4=pyhd8ed1ab_0
   - beautifulsoup4=4.11.1=pyha770c72_0
   - bleach=5.0.0=pyhd8ed1ab_0
+  - boost=1.78.0=py38ha47dcfc_0
+  - boost-cpp=1.78.0=h8b082ac_1
   - bzip2=1.0.8=h0d85af4_4
   - c-ares=1.18.1=h0d85af4_0
   - c-compiler=1.4.2=had99412_0
@@ -176,6 +178,7 @@ dependencies:
   - readline=8.1=h05e3726_0
   - root=6.26.2=py38h13d9824_3
   - root_base=6.26.2=py38h4001706_3
+  - scipy=1.8.1=py38h2c99f22_0
   - scitokens-cpp=0.6.3=h27338ba_2
   - send2trash=1.8.0=pyhd8ed1ab_0
   - setuptools=62.3.2=py38h50d1736_0

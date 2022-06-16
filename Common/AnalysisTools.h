@@ -4,13 +4,14 @@
 #include <fstream>
 #include <string>
 
-
 using LorentzVectorM = ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>;
 using RVecI = ROOT::RVecI;
 using RVecS = ROOT::VecOps::RVec<size_t>;
 using RVecUC = ROOT::VecOps::RVec<UChar_t>;
 using RVecF = ROOT::RVecF;
 using RVecB = ROOT::RVecB;
+using RVecVecI = ROOT::VecOps::RVec<RVecI>;
+
 namespace Channel{
     enum {
         eTau = 0,

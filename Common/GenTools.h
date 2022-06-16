@@ -1,4 +1,5 @@
 #pragma once
+
 #include "AnalysisTools.h"
 #include "exception.h"
 #include "TextIO.h"
@@ -56,11 +57,11 @@ public:
   }
 
 
-  static float GetMass(int pdgId, float mass){
-    static const std::set<int> pdgId_noMass {11,  12,  13,  14,  15,  16,  22,  111,     211,    311,     321,     421,     411   };
-    if(pdgId_noMass.count(std::abs(pdgId))){
+  static float GetMass(int pdgId, float mass)
+  {
+    static const std::set<int> pdgId_noMass { 11, 12, 13, 14, 15, 16, 22, 111, 211, 311, 321, 421, 411 };
+    if(pdgId_noMass.count(std::abs(pdgId)))
       return GetParticleInfo(pdgId).mass;
-    }
     return mass;
   }
 
@@ -197,42 +198,53 @@ RVecI GetLastHadrons(const RVecI& GenPart_pdgId, const RVecI& GenPart_genPartIdx
 
 
 
-void PrintDecayChainParticle(const ULong64_t evt, const int& mother_idx, const RVecI& GenPart_pdgId, const RVecI& GenPart_genPartIdxMother, const RVecI& GenPart_statusFlags, const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass, const RVecI& GenPart_status, const std::string pre, const ROOT::VecOps::RVec<RVecI>& GenPart_daughters, std::ostream& os)
+void PrintDecayChainParticle(ULong64_t evt, int genPart_idx, const RVecI& GenPart_pdgId,
+                             const RVecI& GenPart_genPartIdxMother, const RVecI& GenPart_statusFlags,
+                             const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi,
+                             const RVecF& GenPart_mass, const RVecI& GenPart_status, const std::string pre,
+                             const ROOT::VecOps::RVec<RVecI>& GenPart_daughters, std::ostream& os)
 {
-  ParticleInfo particle_information = ParticleDB::GetParticleInfo(GenPart_pdgId[mother_idx]);
-  RVecI daughters = GenPart_daughters.at(mother_idx);
-  const float particleMass = particle_information.mass>0? particle_information.mass : GenPart_mass[mother_idx];
-  const LorentzVectorM genParticle_momentum = LorentzVectorM(GenPart_pt[mother_idx], GenPart_eta[mother_idx], GenPart_phi[mother_idx],particleMass);
-  int mother_mother_index = GenPart_genPartIdxMother[mother_idx];
-  const auto flag = GenPart_statusFlags[mother_idx];
+  const ParticleInfo& particle_information = ParticleDB::GetParticleInfo(GenPart_pdgId[genPart_idx]);
+  const float particleMass = ParticleDB::GetMass(GenPart_pdgId[genPart_idx], GenPart_mass[genPart_idx]);
+  const LorentzVectorM genParticle_momentum(GenPart_pt[genPart_idx], GenPart_eta[genPart_idx],
+                                            GenPart_phi[genPart_idx], particleMass);
 
-  os << particle_information.name      << " <" << GenPart_pdgId[mother_idx]
-     << "> pt = " << genParticle_momentum.Pt()      << " eta = " << genParticle_momentum.Eta()
-     << " phi = " << genParticle_momentum.Phi()     << " E = " << genParticle_momentum.E()
-     << " m = "   << genParticle_momentum.M()       << " index = " << mother_idx
-     << " flag = " << GetBinaryString(flag)     << " particleStatus = " << GenPart_status[mother_idx]
-     << " charge = " << particle_information.charge << " type = " << particle_information.type
-     << " mother_idx = " << mother_mother_index;
-  os << "\n";
+  os << particle_information.name
+     << " <" << GenPart_pdgId[genPart_idx] << '>'
+     << " pt = " << genParticle_momentum.pt()
+     << " eta = " << genParticle_momentum.eta()
+     << " phi = " << genParticle_momentum.phi()
+     << " E = " << genParticle_momentum.energy()
+     << " m = "   << genParticle_momentum.mass()
+     << " index = " << genPart_idx
+     << " flag = " << GetBinaryString<int, 15>(GenPart_statusFlags[genPart_idx])
+     << " status = " << GenPart_status[genPart_idx]
+     << " charge = " << particle_information.charge
+     << " type = " << particle_information.type
+     << '\n';
 
-    if(daughters.size()==0 ) return;
-    for(int d_idx =0; d_idx<daughters.size(); d_idx++) {
-      int n = daughters[d_idx];
-      os << pre << "+-> ";
-      const char pre_first = d_idx == daughters.size() -1 ?  ' ' : '|';
-      const std::string pre_d = pre + pre_first ;//+ "  ";
-      PrintDecayChainParticle(evt, n, GenPart_pdgId, GenPart_genPartIdxMother, GenPart_statusFlags, GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, GenPart_status, pre_d, GenPart_daughters, os);
-
+  const RVecI& daughters = GenPart_daughters.at(genPart_idx);
+  for(int d_idx = 0; d_idx < daughters.size(); ++d_idx) {
+    const int n = daughters[d_idx];
+    os << pre << "+-> ";
+    const char pre_first = d_idx == daughters.size() - 1 ?  ' ' : '|';
+    const std::string pre_d = pre + pre_first ;
+    PrintDecayChainParticle(evt, n, GenPart_pdgId, GenPart_genPartIdxMother, GenPart_statusFlags, GenPart_pt,
+                            GenPart_eta, GenPart_phi, GenPart_mass, GenPart_status, pre_d, GenPart_daughters, os);
   }
 }
-int PrintDecayChain(const ULong64_t evt, const RVecI& GenPart_pdgId, const RVecI& GenPart_genPartIdxMother, const RVecI& GenPart_statusFlags, const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass, const RVecI& GenPart_status,const ROOT::VecOps::RVec<RVecI>& GenPart_daughters,const std::string& outFile)
-{
-    std::ofstream out_file(outFile);
-    for(int mother_idx =0; mother_idx<GenPart_pdgId.size(); mother_idx++){
-      bool isStartingParticle = ( GenPart_genPartIdxMother[mother_idx] == -1);//&& (GenPart_pdgId[mother_idx] == 21 || GenPart_pdgId[mother_idx] == 9);
-      if(!isStartingParticle) continue;
-      PrintDecayChainParticle(evt, mother_idx, GenPart_pdgId, GenPart_genPartIdxMother, GenPart_statusFlags, GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, GenPart_status, "", GenPart_daughters, out_file);
-    }
 
-return 0;
+int PrintDecayChain(ULong64_t evt, const RVecI& GenPart_pdgId, const RVecI& GenPart_genPartIdxMother,
+                    const RVecI& GenPart_statusFlags, const RVecF& GenPart_pt, const RVecF& GenPart_eta,
+                    const RVecF& GenPart_phi, const RVecF& GenPart_mass, const RVecI& GenPart_status,
+                    const RVecVecI& GenPart_daughters, const std::string& outFile)
+{
+  std::ofstream out_file(outFile, std::ios_base::app);
+  out_file << "event=" << evt << '\n';
+  for(int genPart_idx = 0; genPart_idx < GenPart_pdgId.size(); ++genPart_idx) {
+    if(GenPart_genPartIdxMother[genPart_idx] == -1)
+      PrintDecayChainParticle(evt, genPart_idx, GenPart_pdgId, GenPart_genPartIdxMother, GenPart_statusFlags, GenPart_pt,
+                              GenPart_eta, GenPart_phi, GenPart_mass, GenPart_status, "", GenPart_daughters, out_file);
+  }
+  return 0;
 }

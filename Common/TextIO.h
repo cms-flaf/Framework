@@ -1,5 +1,4 @@
-/*! Definition of primitives for a text based input/output.
-This file is part of https://github.com/hh-italian-group/AnalysisTools. */
+/*! Definition of primitives for a text based input/output. */
 
 #pragma once
 
@@ -106,12 +105,12 @@ std::string CollectionToString(const Collection& col, const std::string& separat
     return ss.str();
 }
 
-std::string RemoveFileExtension(const std::string& file_name)
+inline std::string RemoveFileExtension(const std::string& file_name)
 {
     return boost::filesystem::change_extension(file_name, "").string();
 }
 
-std::string GetFileNameWithoutPath(const std::string& file_name)
+inline std::string GetFileNameWithoutPath(const std::string& file_name)
 {
     const size_t lastindex = file_name.find_last_of("/");
     if(lastindex == std::string::npos)
@@ -120,8 +119,8 @@ std::string GetFileNameWithoutPath(const std::string& file_name)
         return file_name.substr(lastindex+1);
 }
 
-std::vector<std::string> SplitValueList(const std::string& _values_str, bool allow_duplicates,
-                                        const std::string& separators, bool enable_token_compress)
+inline std::vector<std::string> SplitValueList(const std::string& _values_str, bool allow_duplicates,
+                                               const std::string& separators, bool enable_token_compress)
 {
     std::string values_str = _values_str;
     std::vector<std::string> result;
@@ -144,17 +143,18 @@ std::vector<std::string> SplitValueList(const std::string& _values_str, bool all
 
 template<typename T, typename Collection=std::vector<T>>
 Collection SplitValueListT(const std::string& values_str, bool allow_duplicates = true,
-                                        const std::string& separators = " \t",
-                                        bool enable_token_compress = true)
+                           const std::string& separators = " \t",
+                           bool enable_token_compress = true)
 {
     std::vector<std::string> list = SplitValueList(values_str,allow_duplicates,separators,enable_token_compress);
     Collection collection;
-    std::transform(list.begin(), list.end(), std::inserter(collection, collection.end()), [](const std::string& str) { return Parse<T>(str);});
+    std::transform(list.begin(), list.end(), std::inserter(collection, collection.end()),
+                   [](const std::string& str) { return Parse<T>(str);});
     return collection;
 }
 
-std::vector<std::string> ReadValueList(std::istream& stream, size_t number_of_items, bool allow_duplicates,
-                                       const std::string& separators, bool enable_token_compress)
+inline std::vector<std::string> ReadValueList(std::istream& stream, size_t number_of_items, bool allow_duplicates,
+                                              const std::string& separators, bool enable_token_compress)
 {
     const auto stream_exceptions = stream.exceptions();
     stream.exceptions(std::istream::goodbit);
@@ -198,8 +198,8 @@ std::vector<std::string> ReadValueList(std::istream& stream, size_t number_of_it
 enum class LVectorRepr { PtEtaPhiM, PtEtaPhiE, PtEtaPhiME, PxPyPzE, PtPhi, PxPyPtPhi };
 
 namespace detail {
-  std::string LorentzVectorToString(double px, double py, double pz, double E, double mass, double pt, double eta,
-                                    double phi, LVectorRepr repr, bool print_prefix)
+  inline std::string LorentzVectorToString(double px, double py, double pz, double E, double mass, double pt,
+                                           double eta, double phi, LVectorRepr repr, bool print_prefix)
   {
       static const std::map<LVectorRepr, std::string> prefix = {
           { LVectorRepr::PtEtaPhiM, "pt, eta, phi, m" },

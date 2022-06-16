@@ -13,7 +13,6 @@ struct ParticleInfo{
   int mass{-1};
 };
 
-
 class ParticleDB {
 public:
   static void Initialize(const std::string_view inputFile) {
@@ -56,7 +55,6 @@ public:
     throw analysis::exception("Particle with name '%1%' not found.") % particle_name;
   }
 
-
   static float GetMass(int pdgId, float mass)
   {
     static const std::set<int> pdgId_noMass { 11, 12, 13, 14, 15, 16, 22, 111, 211, 311, 321, 421, 411 };
@@ -71,9 +69,8 @@ private:
     static std::map<int, ParticleInfo> p;
     return p;
   }
-
-
 };
+
 struct PdG {
   static int tau()
   {
@@ -91,6 +88,19 @@ struct PdG {
     return pdg;
   }
 };
+
+inline Leg PdGToLeg(int pdg)
+{
+    static const std::map<int, Leg> pdg_to_leg = {
+      { PdG::e(), Leg::e },
+      { PdG::mu(), Leg::mu },
+      { PdG::tau(), Leg::tau },
+    };
+    const auto iter = pdg_to_leg.find(pdg);
+    if(iter == pdg_to_leg.end())
+      throw analysis::exception("Unknown leg type. leg_pdg = %1%.") % pdg;
+    return iter->second;
+}
 
 bool isRelated(int potential_mother, int particle_idx, const RVecI& GenPart_genPartIdxMother)
 {

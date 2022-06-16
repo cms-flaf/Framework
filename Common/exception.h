@@ -1,7 +1,7 @@
-/*! Definition of the base exception class for the analysis namespace.
-This file is part of https://github.com/hh-italian-group/AnalysisTools. */
+/*! Definition of the base exception class for the analysis namespace. */
 
 #pragma once
+
 #include <exception>
 #include <memory>
 #include <boost/format.hpp>

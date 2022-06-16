@@ -6,17 +6,13 @@
 
 struct HTTCand {
   std::array<LorentzVectorM, 2> leg_p4;
-  std::array<int, 2> leg_pdg;
+  std::array<Leg, 2> leg_type;
   std::array<int, 2> leg_index;
   std::array<int, 2> leg_charge;
-  int channel=-1;
 
-  int GetChannel() const
+  Channel GetChannel() const
   {
-    //std::cout<<"channel is "<<channel<<std::endl;
-    if(channel>=0){
-      return channel;
-    }
+    return LegsToChannel(leg_type[0], leg_type[1]);
     static const std::map<std::pair<int, int>, int> pdg_to_channel = {
       { { PdG::e(), PdG::tau() }, Channel::eTau },
       { { PdG::mu(), PdG::tau() }, Channel::muTau },
@@ -30,9 +26,6 @@ struct HTTCand {
     if(iter == pdg_to_channel.end())
       throw analysis::exception("Unknown channel. leg_pdg = %1%, %2%") % leg_pdg[0] % leg_pdg[1];
     return iter->second;
-  }
-  std::pair<int, int> GetAsPair(std::array<int, 2> legs){
-    return std::make_pair(legs[0], legs[1]);
   }
 
 };

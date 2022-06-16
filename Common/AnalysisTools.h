@@ -12,17 +12,34 @@ using RVecF = ROOT::RVecF;
 using RVecB = ROOT::RVecB;
 using RVecVecI = ROOT::VecOps::RVec<RVecI>;
 
-namespace Channel{
-    enum {
-        eTau = 0,
-        muTau = 1,
-        tauTau = 2,
-        eMu = 3,
-        eE =4,
-        muMu = 5
-    } ;
+enum class Leg {
+  e = 1,
+  mu = 2,
+  tau = 3,
+  jet = 4
+};
+
+enum class Channel {
+  eTau = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::tau),
+  muTau = static_cast<int>(Leg::mu) * 10 + static_cast<int>(Leg::tau),
+  tauTau = static_cast<int>(Leg::tau) * 10 + static_cast<int>(Leg::tau),
+  eMu = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::mu),
+  eE = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::e),
+  muMu = static_cast<int>(Leg::mu) * 10 + static_cast<int>(Leg::mu)
+};
+
+inline Channel LegsToChannel(Leg leg1, Leg leg2)
+{
+  return static_cast<Channel>(static_cast<int>(leg1) * 10 + statc_cast<int>(leg2));
 }
 
+inline std::pair<Leg, Leg> ChannelToLegs(Channel channel)
+{
+  const int c = static_cast<int>(channel)
+  const Leg leg1 = static_cast<Leg>(c / 10);
+  const Leg leg2 = static_cast<Leg>(c % 10);
+  return std::make_pair(leg1, leg2);
+}
 
 template<typename T>
 T DeltaPhi(T phi1, T phi2) {
@@ -67,10 +84,11 @@ std::string GetBinaryString(T x)
   return ss.str();
 }
 
-std::vector<LorentzVectorM> GetP4(const RVecF& pt, const RVecF& eta, const RVecF& phi, const RVecF& mass, const RVecS &indices){
-  std::vector<LorentzVectorM> p4 ;
-  for (auto& idx:indices){
-    p4.push_back(LorentzVectorM(pt[idx], eta[idx],phi[idx], mass[idx]));
-  }
+std::vector<LorentzVectorM> GetP4(const RVecF& pt, const RVecF& eta, const RVecF& phi, const RVecF& mass,
+                                  const RVecS &indices){
+  std::vector<LorentzVectorM> p4;
+  p4.reserve(indices.size());
+  for (auto& idx:indices)
+    p4.emplace_back(pt[idx], eta[idx],phi[idx], mass[idx]);
   return p4;
 }

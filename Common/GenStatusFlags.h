@@ -3,7 +3,8 @@
  * enum for generator status flags */
 
 #pragma once
- #include <bitset>
+
+#include <bitset>
 
 class GenStatusFlags{
 public:
@@ -114,6 +115,4 @@ public:
     const std::bitset<15>& getFlags() const {return flags;}
  private:
      std::bitset<15> flags;
-
-
 };

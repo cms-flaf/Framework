@@ -42,15 +42,24 @@ RVecS RecoTauSelectedIndices(HTTCand& HTT_Cand, const RVecF& Tau_dz, const RVecF
 
 
 
-ROOT::VecOps::RVec<HTTCand> GetPotentialHTTCandidates(int channel, const RVecS &indices_leg1, const  RVecS &indices_leg2, const RVecF& Pt_leg1, const RVecF& Phi_leg1, const RVecF& Eta_leg1,const RVecF& Mass_leg1, const RVecS &charge_leg1, const RVecF& Pt_leg2, const RVecF& Phi_leg2, const RVecF& Eta_leg2,const RVecF& Mass_leg2, const RVecS &charge_leg2, float dR_thr = 0.5){
+ROOT::VecOps::RVec<HTTCand> GetPotentialHTTCandidates( int channel, const RVecS &indices_leg1, const  RVecS &indices_leg2, const RVecF& Pt_leg1, const RVecF& Phi_leg1, const RVecF& Eta_leg1,const RVecF& Mass_leg1, const RVecS &charge_leg1, const RVecF& Pt_leg2, const RVecF& Phi_leg2, const RVecF& Eta_leg2,const RVecF& Mass_leg2, const RVecS &charge_leg2, float dR_thr = 0.5){
+  //std::cout << indices_leg1.size() << std::endl;
+  //std::cout << indices_leg2.size() << std::endl;
   ROOT::VecOps::RVec<HTTCand> HTTCandidates;
   for(size_t i=0; i< indices_leg1.size(); i++ ){
       for(size_t j=0; j< indices_leg2.size(); j++ ){
           size_t cand1 = indices_leg1.at(i);
           size_t cand2 = indices_leg2.at(j);
-          LorentzVectorM vector_1 = LorentzVectorM(Pt_leg1[cand1], Eta_leg1[cand1],Phi_leg1[cand1], Mass_leg1[cand1]);
-          LorentzVectorM vector_2 = LorentzVectorM(Pt_leg2[cand2], Eta_leg2[cand2],Phi_leg2[cand2], Mass_leg2[cand2]);
+          const LorentzVectorM vector_1 = LorentzVectorM(Pt_leg1[cand1], Eta_leg1[cand1],Phi_leg1[cand1], Mass_leg1[cand1]);
+          const LorentzVectorM vector_2 = LorentzVectorM(Pt_leg2[cand2], Eta_leg2[cand2],Phi_leg2[cand2], Mass_leg2[cand2]);
           float current_dR = ROOT::Math::VectorUtil::DeltaR(vector_1, vector_2);
+          /*
+          std::cout << event<< "\t" <<Pt_leg1[cand1] << " " << Eta_leg1[cand1] << " " << Phi_leg1[cand1] << " " << Mass_leg1[cand1] << "\t" <<current_dR<< std::endl;
+          std::cout << event<< "\t" <<vector_1.Pt() << " " << vector_1.Eta() << " " << vector_1.Phi() << " " << vector_1.M() << "\t" <<current_dR<< "\n"<<std::endl;
+
+          std::cout << event<< "\t" <<Pt_leg2[cand2] << " " << Eta_leg2[cand2] << " " << Phi_leg2[cand2] << " " << Mass_leg2[cand2] << "\t" <<current_dR<< std::endl;
+          std::cout << event<< "\t" <<vector_2.Pt() << " " << vector_2.Eta() << " " << vector_2.Phi() << " " << vector_2.M() << "\t" <<current_dR<< "\n" << std::endl;
+          */
           if(current_dR > dR_thr){
               HTTCand potential_HTTcanditate;
               potential_HTTcanditate.channel=channel;
@@ -60,6 +69,10 @@ ROOT::VecOps::RVec<HTTCand> GetPotentialHTTCandidates(int channel, const RVecS &
               potential_HTTcanditate.leg_charge[1]=charge_leg2[cand2];
               potential_HTTcanditate.leg_p4[0]=vector_1;
               potential_HTTcanditate.leg_p4[1]=vector_2;
+              /*std::cout << event<< "\t" <<vector_1.Pt() << " " << vector_1.Eta() << " " << vector_1.Phi() << " " << vector_1.M() << "\t" <<current_dR<< "\n" << std::endl;
+              std::cout << event<< "\t" <<vector_2.Pt() << " " << vector_2.Eta() << " " << vector_2.Phi() << " " << vector_2.M() << "\t" <<current_dR<< "\n" << std::endl;
+              std::cout << event<< "\t" <<potential_HTTcanditate.leg_p4[0].Pt() << " " << potential_HTTcanditate.leg_p4[0].Eta() << " " << potential_HTTcanditate.leg_p4[0].Phi() << " " << potential_HTTcanditate.leg_p4[0].M() << "\t" <<current_dR<< "\n" << std::endl;
+              std::cout << event<< "\t" <<potential_HTTcanditate.leg_p4[1].Pt() << " " << potential_HTTcanditate.leg_p4[1].Eta() << " " << potential_HTTcanditate.leg_p4[1].Phi() << " " << potential_HTTcanditate.leg_p4[1].M() << "\t" <<current_dR<< "\n" << std::endl;*/
               HTTCandidates.push_back(potential_HTTcanditate);
           }
       }
@@ -67,7 +80,7 @@ ROOT::VecOps::RVec<HTTCand> GetPotentialHTTCandidates(int channel, const RVecS &
   return HTTCandidates;
 }
 
-HTTCand GetBestHTTCand(const ROOT::VecOps::RVec<HTTCand>& HTTCandidates, int event, const RVecF& isolation_variable_first_cand, const RVecF& first_cand_pt, const RVecF& isolation_variable_second_cand, const RVecF& second_cand_pt){
+HTTCand GetBestHTTCand(const ROOT::VecOps::RVec<HTTCand>& HTTCandidates, const RVecF& isolation_variable_first_cand, const RVecF& first_cand_pt, const RVecF& isolation_variable_second_cand, const RVecF& second_cand_pt){
   HTTCand BestHTTCand;
 
   const auto& Comparitor = [&](HTTCand HTT_Cand1, HTTCand HTT_Cand2) -> bool
@@ -156,7 +169,8 @@ HTTCand GetBestHTTCand(const ROOT::VecOps::RVec<HTTCand>& HTTCandidates, int eve
 
    if(!HTTCandidates.empty()){
          BestHTTCand= *std::min_element(HTTCandidates.begin(), HTTCandidates.end(), Comparitor);
-         std::cout<<typeid(BestHTTCand.leg_p4[0]).name()<<std::endl;
+         //std::cout<<typeid(BestHTTCand.leg_p4[0]).name()<<std::endl;
+
          //if(first_cand_charge[best_pair.first]!= second_cand_charge[best_pair.second]){
          //const std::pair<int, int> best_pair = HTT_Cand1.leg_index;
          //const std::pair<int, int> pair_2 = HTT_Cand2.leg_index;
@@ -194,11 +208,12 @@ bool JetLepSeparation(const LorentzVectorM& tau_p4, const RVecF& Jet_eta, const 
   return (JetSeparatedWRTLeptons.size()>=2);
 }*/
 
-bool ElectronVeto(HTTCand& HTT_Cand, const RVecF& Electron_pt, const RVecF& Electron_dz, const RVecF& Electron_dxy, const RVecF& Electron_eta, const RVecB& Electron_mvaFall17V2Iso_WP90, const RVecB& Electron_mvaFall17V2noIso_WP90 , const RVecF&  Electron_pfRelIso03_all){
+bool ElectronVeto(const HTTCand& HTT_Cand, const RVecF& Electron_pt, const RVecF& Electron_dz, const RVecF& Electron_dxy, const RVecF& Electron_eta, const RVecB& Electron_mvaFall17V2Iso_WP90, const RVecB& Electron_mvaFall17V2noIso_WP90 , const RVecF&  Electron_pfRelIso03_all){
 int nElectrons =0 ;
 // do not consider signal electron
 int signalElectron_idx = -1;
-if(HTT_Cand.GetChannel()==Channel::eTau){
+
+if(HTT_Cand.channel==Channel::eTau){
   signalElectron_idx =  HTT_Cand.leg_index[0];
 }
 
@@ -215,11 +230,11 @@ if(HTT_Cand.GetChannel()==Channel::eTau){
   return true;
 }
 
-bool MuonVeto(HTTCand& HTT_Cand, const RVecF& Muon_pt, const RVecF& Muon_dz, const RVecF& Muon_dxy, const RVecF& Muon_eta, const RVecB& Muon_tightId, const RVecB& Muon_mediumId , const RVecF&  Muon_pfRelIso04_all){
+bool MuonVeto(const HTTCand& HTT_Cand, const RVecF& Muon_pt, const RVecF& Muon_dz, const RVecF& Muon_dxy, const RVecF& Muon_eta, const RVecB& Muon_tightId, const RVecB& Muon_mediumId , const RVecF&  Muon_pfRelIso04_all){
 int nMuons =0 ;
 // do not consider signal muon
 int signalMuon_idx = -1;
-if(HTT_Cand.GetChannel()==Channel::muTau){
+if(HTT_Cand.channel ==Channel::muTau){
   signalMuon_idx =  HTT_Cand.leg_index[0];
 }
   for (size_t mu_idx =0 ; mu_idx < Muon_pt.size(); mu_idx++){
@@ -235,55 +250,21 @@ if(HTT_Cand.GetChannel()==Channel::muTau){
   return true;
 }
 
-int JetFilter(HTTCand& HTT_Cand, int nJets=2){
 
-  if(HTT_Cand.GetChannel()==Channel::tauTau)
-    return 0;
-  return 1;
-}
-/*
-int JetFilter(int n_Jets=2){
+int JetFilter(HTTCand& HTT_Cand, ROOT::VecOps::RVec<LorentzVectorM> Jet_p4, int n_Jets=2){
   int nJetsAdd=0;
   for (int jet_idx =0 ; jet_idx < Jet_p4.size(); jet_idx++){
-
         float dr1 = ROOT::Math::VectorUtil::DeltaR(HTT_Cand.leg_p4[0], Jet_p4[jet_idx]);
         float dr2 = ROOT::Math::VectorUtil::DeltaR(HTT_Cand.leg_p4[1], Jet_p4[jet_idx]);
         if(dr1 > 0.5 && dr2 >0.5 ){
             nJetsAdd +=1;
       }
   }
-  //int n_Jets = 2;
-  //if(HTT_Cand.GetChannel()!=Channel::tauTau){
-  //     n_Jets = 1;
-  //}
   if(nJetsAdd>=n_Jets){
       return 1;
   }
   return 0;
-}*/
-/*
-int AK8JetFilter(HTTCand& HTT_Cand, const RVecF&  FatJet_pt, const RVecF&  FatJet_eta, const RVecF&  FatJet_phi, const RVecF& FatJet_msoftdrop, const int& is2017){
-int nFatJetsAdd=0;
-for (size_t fatjet_idx =0 ; fatjet_idx < FatJet_pt.size(); fatjet_idx++){
-    if(FatJet_msoftdrop.at(fatjet_idx)>30 && std::abs(FatJet_eta.at(fatjet_idx)) < 2.5) {
-        float dr1 = DeltaR(static_cast<float>(HTT_cand.leg_p4[0].phi()), static_cast<float>(HTT_cand.leg_p4[0].eta()),FatJet_phi[fatjet_idx], FatJet_eta[fatjet_idx]);
-        float dr2 = DeltaR(static_cast<float>(leg2_p4.phi()), static_cast<float>(leg2_p4.eta()),FatJet_phi[fatjet_idx], FatJet_eta[fatjet_idx]);
-        if(dr1 > 0.5 && dr2 >0.5 ){
-            nFatJetsAdd +=1;
-          }
-    }
 }
-//std::cout << nFatJetsAdd << "\t" <<nJetsAdd << std::endl;
-int n_FatJets = 1 ;
-//if(HTT_Cand.GetChannel()!=Channel::tauTau){
-//     n_Jets = 1;
-//}
-if(nFatJetsAdd>=n_FatJets ){
-    return 1;
-}
-return 0;
-}
-*/
 RVecI FindRecoGenJetCorrespondence(const RVecI& RecoJet_genJetIdx, const RVecI& GenJet_taggedIndices){
   RVecI RecoJetIndices;
   for (int i =0 ; i<RecoJet_genJetIdx.size(); i++){

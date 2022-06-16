@@ -9,10 +9,14 @@ struct HTTCand {
   std::array<int, 2> leg_pdg;
   std::array<int, 2> leg_index;
   std::array<int, 2> leg_charge;
-  int channel;
+  int channel=-1;
 
   int GetChannel() const
   {
+    //std::cout<<"channel is "<<channel<<std::endl;
+    if(channel>=0){
+      return channel;
+    }
     static const std::map<std::pair<int, int>, int> pdg_to_channel = {
       { { PdG::e(), PdG::tau() }, Channel::eTau },
       { { PdG::mu(), PdG::tau() }, Channel::muTau },
@@ -24,7 +28,7 @@ struct HTTCand {
     const auto key = std::make_pair(std::abs(leg_pdg[0]), std::abs(leg_pdg[1]));
     const auto iter = pdg_to_channel.find(key);
     if(iter == pdg_to_channel.end())
-      throw analysis::exception("Unknown channel. leg_pdgs = %1%, %2%") % leg_pdg[0] % leg_pdg[1];
+      throw analysis::exception("Unknown channel. leg_pdg = %1%, %2%") % leg_pdg[0] % leg_pdg[1];
     return iter->second;
   }
   std::pair<int, int> GetAsPair(std::array<int, 2> legs){

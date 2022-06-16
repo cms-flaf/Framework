@@ -15,20 +15,20 @@ public:
 public:
     enum StatusBits {
         kIsPrompt = 0,
-        kIsDecayedLeptonHadron,
-        kIsTauDecayProduct,
-        kIsPromptTauDecayProduct,
-        kIsDirectTauDecayProduct,
-        kIsDirectPromptTauDecayProduct,
-        kIsDirectHadronDecayProduct,
-        kIsHardProcess,
-        kFromHardProcess,
-        kIsHardProcessTauDecayProduct,
-        kIsDirectHardProcessTauDecayProduct,
-        kFromHardProcessBeforeFSR,
-        kIsFirstCopy,
-        kIsLastCopy,
-        kIsLastCopyBeforeFSR
+        kIsDecayedLeptonHadron = 1,
+        kIsTauDecayProduct = 2,
+        kIsPromptTauDecayProduct = 3,
+        kIsDirectTauDecayProduct = 4,
+        kIsDirectPromptTauDecayProduct = 5,
+        kIsDirectHadronDecayProduct = 6,
+        kIsHardProcess = 7,
+        kFromHardProcess = 8,
+        kIsHardProcessTauDecayProduct = 9,
+        kIsDirectHardProcessTauDecayProduct = 10,
+        kFromHardProcessBeforeFSR = 11,
+        kIsFirstCopy = 12,
+        kIsLastCopy = 13,
+        kIsLastCopyBeforeFSR = 14
     };
 
     /////////////////////////////////////////////////////////////////////////////

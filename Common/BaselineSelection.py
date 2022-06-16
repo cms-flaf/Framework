@@ -3,13 +3,19 @@ import os
 from scipy import stats
 import numpy as np
 import enum
-_rootpath = os.path.abspath(os.path.dirname(__file__)+"/../../..")
-ROOT.gROOT.ProcessLine(".include "+_rootpath)
-header_path_Gen = f"{os.environ['ANALYSIS_PATH']}/Common/BaselineGenSelection.h"
-header_path_Reco = f"{os.environ['ANALYSIS_PATH']}/Common/BaselineRecoSelection.h"
 
-ROOT.gInterpreter.Declare('#include "{}"'.format(header_path_Gen))
-ROOT.gInterpreter.Declare('#include "{}"'.format(header_path_Reco))
+initialized = False
+
+def Initialize():
+    global initialized
+    if not initialized:
+        import os
+        header_path_Gen = f"{os.environ['ANALYSIS_PATH']}/Common/BaselineGenSelection.h"
+        header_path_Reco = f"{os.environ['ANALYSIS_PATH']}/Common/BaselineRecoSelection.h"
+        ROOT.gInterpreter.Declare(f'#include "{header_path_Gen}"')
+        #ROOT.gInterpreter.Declare(f'#include "{header_path_Reco}"')
+        initialized = True
+
 channelLegs = {
     "eTau": [ "Electron", "Tau" ],
     "muTau": [ "Muon", "Tau" ],
@@ -98,13 +104,6 @@ threshold_baseline = {
 
         },
 }
-
-
-
-
-def GetDaughters(df):
-    df_daughters = df.Define("GenPart_daughters","GetDaughters(GenPart_genPartIdxMother )")
-    return df_daughters
 
 def selectChannel(df, channel):
     df_daughters = GetDaughters(df)
@@ -200,6 +199,16 @@ def FindInvMass(df, index_vec):
         df = df.Define(f"jet{n+1}_p4", f"LorentzVectorM(GenJet_pt[genJet_idx[{n}]],GenJet_eta[genJet_idx[{n}]],GenJet_phi[genJet_idx[{n}]],GenJet_mass[genJet_idx[{n}]])")
     df_invMass = df.Define("mjj", "(jet1_p4+jet2_p4).M()")
     return df_invMass
+
+
+
+def ApplyGenBaseline(df):
+    df = df.Define("GenPart_daughters", "GetDaughters(GenPart_genPartIdxMother )")
+    df = df.Define("httCand", """GetGenHTTCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
+                                                    GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass)
+                              """)
+    return df.Filter("PassAcceptance(httCand)")
+
 
 def DefineDataFrame(df, ch):
     df_channel=selectChannel(df,ch)

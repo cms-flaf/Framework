@@ -3,9 +3,10 @@
 #include "AnalysisTools.h"
 #include "exception.h"
 #include "TextIO.h"
+#include "GenStatusFlags.h"
 
 
-struct ParticleInfo{
+struct ParticleInfo {
   int pdgId;
   int charge;
   std::string name;
@@ -31,10 +32,8 @@ public:
        if(values.size()>4){
          currentInfo.mass = analysis::Parse<float>(values.at(4));
        }
-       particles()[currentInfo.pdgId]= currentInfo ;
+       particles()[currentInfo.pdgId] = currentInfo;
      }
-
-
   }
 
   static const ParticleInfo& GetParticleInfo(int pdgId)
@@ -72,20 +71,18 @@ private:
 };
 
 struct PdG {
-  static int tau()
+  static int e() { static const int pdg = ParticleDB::GetParticleInfo("e-").pdgId; return pdg; }
+  static int mu() { static const int pdg = ParticleDB::GetParticleInfo("mu-").pdgId; return pdg; }
+  static int tau() { static const int pdg = ParticleDB::GetParticleInfo("tau-").pdgId; return pdg; }
+  static int Higgs() { static const int pdg = ParticleDB::GetParticleInfo("h0").pdgId; return pdg; }
+  static int nu_e() { static const int pdg = ParticleDB::GetParticleInfo("nu_e").pdgId; return pdg; }
+  static int nu_mu() { static const int pdg = ParticleDB::GetParticleInfo("nu_mu").pdgId; return pdg; }
+  static int nu_tau() { static const int pdg = ParticleDB::GetParticleInfo("nu_tau").pdgId; return pdg; }
+
+  static bool isNeutrino(int pdg)
   {
-    static const int pdg = ParticleDB::GetParticleInfo("tau-").pdgId;
-    return pdg;
-  }
-  static int e()
-  {
-    static const int pdg = ParticleDB::GetParticleInfo("e-").pdgId;
-    return pdg;
-  }
-  static int mu()
-  {
-    static const int pdg = ParticleDB::GetParticleInfo("mu-").pdgId;
-    return pdg;
+    static const std::set<int> neutrinos = { nu_e(), nu_mu(), nu_tau() };
+    return neutrinos.count(std::abs(pdg)) > 0;
   }
 };
 
@@ -96,7 +93,7 @@ inline Leg PdGToLeg(int pdg)
       { PdG::mu(), Leg::mu },
       { PdG::tau(), Leg::tau },
     };
-    const auto iter = pdg_to_leg.find(pdg);
+    const auto iter = pdg_to_leg.find(std::abs(pdg));
     if(iter == pdg_to_leg.end())
       throw analysis::exception("Unknown leg type. leg_pdg = %1%.") % pdg;
     return iter->second;
@@ -110,9 +107,48 @@ bool isRelated(int potential_mother, int particle_idx, const RVecI& GenPart_genP
   return isRelated(potential_mother, mother_idx, GenPart_genPartIdxMother);
 }
 
+int GetLastCopy(int genPart, const RVecI& GenPart_pdgId, const RVecI& GenPart_statusFlags,
+                const RVecVecI& GenPart_daughters)
+{
+  GenStatusFlags pFlags(GenPart_statusFlags.at(genPart));
+  int genPart_copy = genPart;
+  while(true) {
+    GenStatusFlags flags(GenPart_statusFlags.at(genPart_copy));
+    if(flags.isLastCopy())
+      return genPart_copy;
+    std::vector<int> copies;
+    for(int daughter : GenPart_daughters.at(genPart_copy)) {
+       GenStatusFlags daughter_flags(GenPart_statusFlags.at(daughter));
+      if(GenPart_pdgId.at(daughter) == GenPart_pdgId.at(genPart_copy) && daughter_flags.fromHardProcess())
+        copies.push_back(daughter);
+    }
+    if(copies.size() != 1) break;
+    genPart_copy = copies[0];
+  }
+  throw analysis::exception("Last copy not found.");
+}
+
+LorentzVectorM GetVisibleP4(int genPart, const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters,
+                            const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi,
+                            const RVecF& GenPart_mass) {
+    LorentzVectorXYZ sum(0.,0.,0.,0.);
+    std::function<void(int)> addParticle;
+    addParticle = [&](int p) {
+      if(GenPart_daughters.at(p).empty() && !PdG::isNeutrino(p)) {
+        sum += LorentzVectorM(GenPart_pt.at(p), GenPart_eta.at(p), GenPart_phi.at(p),
+                              ParticleDB::GetMass(p, GenPart_mass.at(p)));
+      }
+      for(int daughter : GenPart_daughters.at(p))
+        addParticle(daughter);
+    };
+    addParticle(genPart);
+    return LorentzVectorM(sum);
+}
+
+
 LorentzVectorM GetGenParticleVisibleP4(int tau_idx, const RVecF& pt, const RVecF& eta, const RVecF& phi,
                                       const RVecF& GenPart_mass, const RVecI& GenPart_genPartIdxMother,
-                                      const RVecI& GenPart_pdgId, const RVecI& GenPart_status, const ROOT::VecOps::RVec<RVecI>& GenPart_daughters){
+                                      const RVecI& GenPart_pdgId, const RVecI& GenPart_status, const RVecVecI& GenPart_daughters){
     LorentzVectorM sum(0.,0.,0.,0.);
     LorentzVectorM TauP4;
     RVecI tau_daughters = GenPart_daughters.at(tau_idx);

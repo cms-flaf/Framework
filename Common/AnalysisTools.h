@@ -4,7 +4,9 @@
 #include <fstream>
 #include <string>
 
+using LorentzVectorXYZ = ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double>>;
 using LorentzVectorM = ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>;
+using LorentzVectorE = ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiE4D<double>>;
 using RVecI = ROOT::RVecI;
 using RVecS = ROOT::VecOps::RVec<size_t>;
 using RVecUC = ROOT::VecOps::RVec<UChar_t>;
@@ -30,12 +32,12 @@ enum class Channel {
 
 inline Channel LegsToChannel(Leg leg1, Leg leg2)
 {
-  return static_cast<Channel>(static_cast<int>(leg1) * 10 + statc_cast<int>(leg2));
+  return static_cast<Channel>(static_cast<int>(leg1) * 10 + static_cast<int>(leg2));
 }
 
 inline std::pair<Leg, Leg> ChannelToLegs(Channel channel)
 {
-  const int c = static_cast<int>(channel)
+  const int c = static_cast<int>(channel);
   const Leg leg1 = static_cast<Leg>(c / 10);
   const Leg leg2 = static_cast<Leg>(c % 10);
   return std::make_pair(leg1, leg2);

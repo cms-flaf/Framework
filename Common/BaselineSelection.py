@@ -204,10 +204,9 @@ def FindInvMass(df, index_vec):
 
 def ApplyGenBaseline(df):
     df = df.Define("GenPart_daughters", "GetDaughters(GenPart_genPartIdxMother )")
-    df = df.Define("httCand", """GetGenHTTCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
-                                                    GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass)
-                              """)
-    return df.Filter("PassAcceptance(httCand)")
+    df = df.Define("genHttCand", """GetGenHTTCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
+                                                       GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass)""")
+    return df.Filter("PassGenAcceptance(genHttCand)")
 
 
 def DefineDataFrame(df, ch):

@@ -37,23 +37,34 @@ HTTCand GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
         tau_idx = GetLastCopy(tau_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
 
         int lepton_idx = tau_idx;
-        for(int tau_daughter : GenPart_daughters.at(tau_idx))
-        {
-        const GenStatusFlags status(GenPart_statusFlags.at(tau_daughter));
-        if(!((GenPart_pdgId[tau_daughter] == PdG::e() || GenPart_pdgId[tau_daughter] == PdG::mu())
-            && status.isDirectPromptTauDecayProduct())) continue;
-        if(lepton_idx != tau_idx)
-            throw analysis::exception("Invalid tau decay. tau_idx = %1%") % tau_idx;
-        lepton_idx = tau_daughter;
+        size_t n_neutrinos = 0;
+        for(int tau_daughter : GenPart_daughters.at(tau_idx)) {
+            if(PdG::isNeutrino(GenPart_pdgId[tau_daughter]))
+                ++n_neutrinos;
+            const GenStatusFlags status(GenPart_statusFlags.at(tau_daughter));
+            const int tau_daughter_pdg = std::abs(GenPart_pdgId[tau_daughter]);
+            if(!((tau_daughter_pdg == PdG::e() || tau_daughter_pdg == PdG::mu())
+                && status.isDirectPromptTauDecayProduct())) continue;
+            if(lepton_idx != tau_idx)
+                throw analysis::exception("Invalid tau decay. tau_idx = %1%") % tau_idx;
+            lepton_idx = tau_daughter;
         }
+
+        if(!((lepton_idx == tau_idx && n_neutrinos == 1) || (lepton_idx != tau_idx && n_neutrinos == 2)))
+            throw analysis::exception("Invalid number of neutrinos = %1% in tau decay. tau_idx = %2%")
+                % n_neutrinos % tau_idx;
+
         lepton_idx = GetLastCopy(lepton_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
         htt_cand.leg_index.at(leg_idx) = lepton_idx;
         ++leg_idx;
     }
-    if(std::abs(GenPart_pdgId.at(htt_cand.leg_index.at(0))) > std::abs(GenPart_pdgId.at(htt_cand.leg_index.at(1))))
+    int leg0_pdg = std::abs(GenPart_pdgId.at(htt_cand.leg_index.at(0)));
+    int leg1_pdg = std::abs(GenPart_pdgId.at(htt_cand.leg_index.at(1)));
+    if(leg0_pdg > leg1_pdg || (leg0_pdg == leg1_pdg
+            && GenPart_pt.at(htt_cand.leg_index.at(0)) < GenPart_pt.at(htt_cand.leg_index.at(1))))
         std::swap(htt_cand.leg_index.at(0), htt_cand.leg_index.at(1));
 
-    for(leg_idx = 0; leg_idx < htt_cand.leg_index.size(); ++ leg_idx) {
+    for(leg_idx = 0; leg_idx < htt_cand.leg_index.size(); ++leg_idx) {
         const int genPart_index = htt_cand.leg_index.at(leg_idx);
         const int genPart_pdg = GenPart_pdgId.at(genPart_index);
         const auto& genPart_info = ParticleDB::GetParticleInfo(genPart_pdg);
@@ -69,8 +80,8 @@ HTTCand GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
   }
 }
 
-bool PassAcceptance(const HTTCand& HTT_Cand){
-    for(size_t i =0; i<HTT_Cand.leg_p4.size(); i++){
+bool PassGenAcceptance(const HTTCand& HTT_Cand){
+    for(size_t i = 0; i < HTT_Cand.leg_p4.size(); ++i){
         if(!(HTT_Cand.leg_p4.at(i).pt()>20 && std::abs(HTT_Cand.leg_p4.at(i).eta())<2.3 )){
             return false;
         }

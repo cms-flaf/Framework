@@ -1,6 +1,7 @@
 # from Visual.HistTools import *
 # from Studies.HHBTag.Utils import *
 import ROOT
+import numpy as np
 
 import Common.BaselineSelection as Baseline
 
@@ -73,9 +74,18 @@ import Common.BaselineSelection as Baseline
 def createSkim(inFile, outFile):
     Baseline.Initialize()
     df = ROOT.RDataFrame("Events", inFile)
+    print(df.Count().GetValue())
 
     df = Baseline.ApplyGenBaseline(df)
     print(df.Count().GetValue())
+    df = df.Define('genChannel', 'genHttCand.channel()')
+    channels = df.AsNumpy(['genChannel'])['genChannel']
+    ch, cnt = np.unique(channels, return_counts=True)
+    print(ch)
+    print(cnt)
+    # print(df.Filter('genHttCand.channel() == Channel::eTau').Count().GetValue())
+    # print(df.Filter('genHttCand.channel() == Channel::muTau').Count().GetValue())
+    # print(df.Filter('genHttCand.channel() == Channel::tauTau').Count().GetValue())
     # df = ApplyRecoBaselineL0(df)
     # df = ApplyRecoBaselineL1(df)
     # df = ApplyGenRecoMatch(df)

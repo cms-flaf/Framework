@@ -20,7 +20,7 @@ dependencies:
   - bzip2=1.0.8=h0d85af4_4
   - c-ares=1.18.1=h0d85af4_0
   - c-compiler=1.4.2=had99412_0
-  - ca-certificates=2022.5.18.1=h033912b_0
+  - ca-certificates=2022.6.15=h033912b_0
   - cairo=1.16.0=h1680b09_1011
   - cctools=973.0.1=h351d84c_10
   - cctools_osx-64=973.0.1=h3eff9a4_10
@@ -74,6 +74,7 @@ dependencies:
   - gts=0.7.6=hccb3bdf_2
   - harfbuzz=4.3.0=h00bb2c2_0
   - icu=70.1=h96cf925_0
+  - iminuit=2.11.2=py38h038c8f4_1
   - importlib-metadata=4.11.4=py38h50d1736_0
   - importlib_resources=5.7.1=pyhd8ed1ab_1
   - ipykernel=6.13.0=py38h60dac5d_0
@@ -174,6 +175,7 @@ dependencies:
   - python-dateutil=2.8.2=pyhd8ed1ab_0
   - python-fastjsonschema=2.15.3=pyhd8ed1ab_0
   - python_abi=3.8=2_cp38
+  - pyyaml=6.0=py38hed1de0f_4
   - pyzmq=23.0.0=py38h34ba744_0
   - readline=8.1=h05e3726_0
   - root=6.26.2=py38h13d9824_3
@@ -210,4 +212,4 @@ dependencies:
   - zipp=3.8.0=pyhd8ed1ab_0
   - zlib=1.2.11=h6c3fc93_1014
   - zstd=1.5.2=ha9df2e0_1
-prefix: /Users/valeriadamante/miniconda3/envs/bbtt
+prefix: /opt/miniconda3/envs/bbtt

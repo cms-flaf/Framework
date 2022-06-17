@@ -74,25 +74,30 @@ import Common.BaselineSelection as Baseline
 def createSkim(inFile, outFile):
     Baseline.Initialize()
 
-    counts = []
     df = ROOT.RDataFrame("Events", inFile)
-    counts.append(df.Count())
 
     df = Baseline.ApplyGenBaseline(df)
-    counts.append(df.Count())
     df = Baseline.ApplyRecoBaseline0(df)
-    counts.append(df.Count())
     df = Baseline.ApplyRecoBaseline1(df)
-    counts.append(df.Count())
-
-    for evt_count in counts:
-        print(evt_count.GetValue())
-
+    df = Baseline.ApplyRecoBaseline2(df)
     df = df.Define('genChannel', 'genHttCand.channel()')
-    channels = df.AsNumpy(['genChannel'])['genChannel']
-    ch, cnt = np.unique(channels, return_counts=True)
+    df = df.Define('recoChannel', 'httCand.channel()')
+
+    df = df.Filter("genChannel == recoChannel", "SameGenRecoChannels")
+    df = df.Filter("GenRecoMatching(genHttCand, httCand, 0.2)", "SameGenRecoHTT")
+
+    report = df.Report()
+    channels = df.AsNumpy(['genChannel', 'recoChannel'])
+
+    report.Print()
+
+    ch, cnt = np.unique(channels['genChannel'], return_counts=True)
     print(ch)
     print(cnt)
+    ch, cnt = np.unique(channels['recoChannel'], return_counts=True)
+    print(ch)
+    print(cnt)
+
     # print(df.Filter('genHttCand.channel() == Channel::eTau').Count().GetValue())
     # print(df.Filter('genHttCand.channel() == Channel::muTau').Count().GetValue())
     # print(df.Filter('genHttCand.channel() == Channel::tauTau').Count().GetValue())

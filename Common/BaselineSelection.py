@@ -13,13 +13,20 @@ def Initialize():
         header_path_Gen = f"{os.environ['ANALYSIS_PATH']}/Common/BaselineGenSelection.h"
         header_path_Reco = f"{os.environ['ANALYSIS_PATH']}/Common/BaselineRecoSelection.h"
         ROOT.gInterpreter.Declare(f'#include "{header_path_Gen}"')
-        #ROOT.gInterpreter.Declare(f'#include "{header_path_Reco}"')
+        ROOT.gInterpreter.Declare(f'#include "{header_path_Reco}"')
         initialized = True
+
+leg_names = [ "Electron", "Muon", "Tau" ]
+
+channels = [ 'muMu', 'eMu', 'eE', 'muTau', 'eTau', 'tauTau' ] # in order of importance during the channel selection
 
 channelLegs = {
     "eTau": [ "Electron", "Tau" ],
     "muTau": [ "Muon", "Tau" ],
     "tauTau": [ "Tau", "Tau" ],
+    "muMu": [ "Muon", "Muon" ],
+    "eMu": [ "Electron", "Muon" ],
+    "eE": [ "Electron", "Electron" ],
 }
 
 class WorkingPointsTauVSmu:
@@ -141,7 +148,7 @@ def ApplyGenBaseline(df):
     df = df.Define("GenPart_daughters", "GetDaughters(GenPart_genPartIdxMother )")
     df = df.Define("genHttCand", """GetGenHTTCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
                                                        GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass)""")
-    return df.Filter("PassGenAcceptance(genHttCand)")
+    return df.Filter("PassGenAcceptance(genHttCand)", "GenAcceptance")
 
 def ApplyRecoBaseline0(df):
     for obj in [ "Electron", "Muon", "Tau", "Jet", "FatJet" ]:
@@ -179,11 +186,11 @@ def ApplyRecoBaseline0(df):
         Tau_B0 && (Tau_idDeepTau2017v2p1VSjet & {WorkingPointsTauVSjet.Medium})
     """)
 
-    legs = [ "Electron", "Muon", "Tau" ]
+
     ch_filters = []
-    for leg1_idx in range(len(legs)):
-        for leg2_idx in range(max(1, leg1_idx), len(legs)):
-            leg1, leg2 = legs[leg1_idx], legs[leg2_idx]
+    for leg1_idx in range(len(leg_names)):
+        for leg2_idx in range(max(1, leg1_idx), len(leg_names)):
+            leg1, leg2 = leg_names[leg1_idx], leg_names[leg2_idx]
             ch_filter = f"{leg1}{leg2}_B0"
             ch_filters.append(ch_filter)
             if leg1 == leg2:
@@ -195,20 +202,89 @@ def ApplyRecoBaseline0(df):
                 """
             df = df.Define(ch_filter, ch_filter_def)
 
-    return df.Filter(" || ".join(ch_filters))
+    return df.Filter(" || ".join(ch_filters), "RecoBaseline0")
 
 def ApplyRecoBaseline1(df, is2017=0):
     df = df.Define("Jet_B1", f"Jet_pt>20 && abs(Jet_eta) < 2.5 && ( (Jet_jetId & 2) || {is2017} == 1 )")
-    df = df.Define("FatJet_B1", "FatJet_msoftdrop>30 && abs(FatJet_eta) < 2.5")
+    df = df.Define("FatJet_B1", "FatJet_msoftdrop > 30 && abs(FatJet_eta) < 2.5")
 
     df = df.Define("Lepton_p4_B0", "std::vector<RVecLV>{Electron_p4[Electron_B0], Muon_p4[Muon_B0], Tau_p4[Tau_B0]}")
-    df = df.Define("Jet_B1T",
-        "RemoveOverlaps(Jet_p4, Jet_B1, Lepton_p4_B0, 2, 0.5)")
-    df = df.Define("FatJet_B1T",
-        "RemoveOverlaps(FatJet_p4, FatJet_B1, Lepton_p4_B0, 2, 0.5)")
+    df = df.Define("Jet_B1T", "RemoveOverlaps(Jet_p4, Jet_B1, Lepton_p4_B0, 2, 0.5)")
+    df = df.Define("FatJet_B1T", "RemoveOverlaps(FatJet_p4, FatJet_B1, Lepton_p4_B0, 2, 0.5)")
 
-    return df.Filter("Jet_idx[Jet_B1T].size() >= 2 || FatJet_idx[FatJet_B1T].size() >= 1")
+    return df.Filter("Jet_idx[Jet_B1T].size() >= 2 || FatJet_idx[FatJet_B1T].size() >= 1", "RecoBaseline1")
 
+def ApplyRecoBaseline2(df):
+    df = df.Define("Electron_iso", "Electron_pfRelIso03_all") \
+           .Define("Muon_iso", "Muon_pfRelIso04_all") \
+           .Define("Tau_iso", "-Tau_rawDeepTau2017v2p1VSjet")
+
+    df = df.Define("Electron_B2_eTau_1", "Electron_B0 && Electron_mvaFall17V2Iso_WP80")
+    df = df.Define("Tau_B2_eTau_2", f"""
+        Tau_B0
+        && (Tau_idDeepTau2017v2p1VSe & {WorkingPointsTauVSe.VLoose})
+        && (Tau_idDeepTau2017v2p1VSmu & {WorkingPointsTauVSmu.Tight})
+    """)
+
+    df = df.Define("Muon_B2_muTau_1", """
+        Muon_B0 && ( (Muon_tightId && Muon_pfRelIso04_all < 0.15)
+                     || (Muon_highPtId && Muon_tkRelIso < 0.15) )
+    """)
+    df = df.Define("Tau_B2_muTau_2", f"""
+        Tau_B0
+        && (Tau_idDeepTau2017v2p1VSe & {WorkingPointsTauVSe.VLoose})
+        && (Tau_idDeepTau2017v2p1VSmu & {WorkingPointsTauVSmu.Tight})
+    """)
+
+    df = df.Define("Tau_B2_tauTau_1", f"""
+        Tau_B0
+        && (Tau_idDeepTau2017v2p1VSe & {WorkingPointsTauVSe.VVLoose})
+        && (Tau_idDeepTau2017v2p1VSmu & {WorkingPointsTauVSmu.VLoose})
+        && (Tau_idDeepTau2017v2p1VSjet & {WorkingPointsTauVSjet.Medium})
+    """)
+
+    df = df.Define("Tau_B2_tauTau_2", f"""
+        Tau_B0
+        && (Tau_idDeepTau2017v2p1VSe & {WorkingPointsTauVSe.VVLoose})
+        && (Tau_idDeepTau2017v2p1VSmu & {WorkingPointsTauVSmu.VLoose})
+    """)
+
+    df = df.Define("Muon_B2_muMu_1", """
+        Muon_B0 && ( (Muon_tightId && Muon_pfRelIso04_all < 0.15)
+                     || (Muon_highPtId && Muon_tkRelIso < 0.15) )
+    """)
+    df = df.Define("Muon_B2_muMu_2", """
+        Muon_B0 && ( (Muon_tightId && Muon_pfRelIso04_all < 0.3) || (Muon_highPtId && Muon_tkRelIso < 0.3) )
+    """)
+
+    df = df.Define("Electron_B2_eMu_1", """
+        Electron_B0 && Electron_mvaFall17V2noIso_WP80 && Electron_pfRelIso03_all < 0.3
+    """)
+    df = df.Define("Muon_B2_eMu_2", """
+        Muon_B0 && ( (Muon_tightId && Muon_pfRelIso04_all < 0.15) || (Muon_highPtId && Muon_tkRelIso < 0.15) )
+    """)
+
+    df = df.Define("Electron_B2_eE_1", """
+        Electron_B0
+        && (Electron_mvaFall17V2Iso_WP80 || Electron_mvaFall17V2noIso_WP80 && Electron_pfRelIso03_all < 0.15)
+    """)
+    df = df.Define("Electron_B2_eE_2", """
+        Electron_B0 && Electron_mvaFall17V2noIso_WP80 && Electron_pfRelIso03_all < 0.3
+    """)
+
+    cand_columns = []
+    for ch in channels:
+        leg1, leg2 = channelLegs[ch]
+        cand_column = f"httCands_{ch}"
+        df = df.Define(cand_column, f"""
+            GetHTTCandidates(Channel::{ch}, 0.4, {leg1}_B2_{ch}_1, {leg1}_p4, {leg1}_iso, {leg1}_charge,
+                                                 {leg2}_B2_{ch}_2, {leg2}_p4, {leg2}_iso, {leg2}_charge)
+        """)
+        cand_columns.append(cand_column)
+    cand_filters = [ f'{c}.size() > 0' for c in cand_columns ]
+    df = df.Filter(" || ".join(cand_filters), "RecoBaseline2")
+    cand_list_str = ', '.join([ '&' + c for c in cand_columns])
+    return df.Define('httCand', f'GetBestHTTCandidate({{ {cand_list_str} }})')
 
 def DefineDataFrame(df, ch):
     df_channel=selectChannel(df,ch)

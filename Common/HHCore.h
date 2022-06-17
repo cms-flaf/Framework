@@ -1,8 +1,7 @@
 #pragma once
+
 #include "AnalysisTools.h"
 #include "GenTools.h"
-
-
 
 struct HTTCand {
   std::array<LorentzVectorM, 2> leg_p4;

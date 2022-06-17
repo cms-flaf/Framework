@@ -73,11 +73,21 @@ import Common.BaselineSelection as Baseline
 
 def createSkim(inFile, outFile):
     Baseline.Initialize()
+
+    counts = []
     df = ROOT.RDataFrame("Events", inFile)
-    print(df.Count().GetValue())
+    counts.append(df.Count())
 
     df = Baseline.ApplyGenBaseline(df)
-    print(df.Count().GetValue())
+    counts.append(df.Count())
+    df = Baseline.ApplyRecoBaseline0(df)
+    counts.append(df.Count())
+    df = Baseline.ApplyRecoBaseline1(df)
+    counts.append(df.Count())
+
+    for evt_count in counts:
+        print(evt_count.GetValue())
+
     df = df.Define('genChannel', 'genHttCand.channel()')
     channels = df.AsNumpy(['genChannel'])['genChannel']
     ch, cnt = np.unique(channels, return_counts=True)
@@ -86,7 +96,7 @@ def createSkim(inFile, outFile):
     # print(df.Filter('genHttCand.channel() == Channel::eTau').Count().GetValue())
     # print(df.Filter('genHttCand.channel() == Channel::muTau').Count().GetValue())
     # print(df.Filter('genHttCand.channel() == Channel::tauTau').Count().GetValue())
-    # df = ApplyRecoBaselineL0(df)
+    #df = Baseline.ApplyRecoBaselineL0(df)
     # df = ApplyRecoBaselineL1(df)
     # df = ApplyGenRecoMatch(df)
     # df = DefineDataFrame(df, ch)

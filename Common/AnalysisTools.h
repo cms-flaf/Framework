@@ -13,6 +13,7 @@ using RVecUC = ROOT::VecOps::RVec<UChar_t>;
 using RVecF = ROOT::RVecF;
 using RVecB = ROOT::RVecB;
 using RVecVecI = ROOT::VecOps::RVec<RVecI>;
+using RVecLV = ROOT::VecOps::RVec<LorentzVectorM>;
 
 enum class Leg {
   e = 1,
@@ -86,11 +87,38 @@ std::string GetBinaryString(T x)
   return ss.str();
 }
 
-std::vector<LorentzVectorM> GetP4(const RVecF& pt, const RVecF& eta, const RVecF& phi, const RVecF& mass,
-                                  const RVecS &indices){
-  std::vector<LorentzVectorM> p4;
+RVecLV GetP4(const RVecF& pt, const RVecF& eta, const RVecF& phi, const RVecF& mass, const RVecS &indices)
+{
+  RVecLV p4;
   p4.reserve(indices.size());
   for (auto& idx:indices)
-    p4.emplace_back(pt[idx], eta[idx],phi[idx], mass[idx]);
+    p4.emplace_back(pt[idx], eta[idx], phi[idx], mass[idx]);
   return p4;
+}
+
+RVecB RemoveOverlaps(const RVecLV& obj_p4, const RVecB& pre_sel, const std::vector<RVecLV>& other_objects,
+                     size_t min_number_of_non_overlaps, double min_deltaR)
+{
+  RVecB result(pre_sel);
+  const double min_deltaR2 = std::pow(min_deltaR, 2);
+
+  const auto hasMinNumberOfNonOverlaps = [&](const LorentzVectorM& p4) {
+    size_t cnt = 0;
+    for(const auto& other_obj_col : other_objects) {
+      for(const auto& other_obj_p4 : other_obj_col) {
+        const double dR2 = ROOT::Math::VectorUtil::DeltaR2(p4, other_obj_p4);
+        if(dR2 > min_deltaR2) {
+          ++cnt;
+          if(cnt >= min_number_of_non_overlaps)
+            return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  for(size_t obj_idx = 0; obj_idx < obj_p4.size(); ++obj_idx) {
+    result[obj_idx] = pre_sel[obj_idx] && hasMinNumberOfNonOverlaps(obj_p4.at(obj_idx));
+  }
+  return result;
 }

@@ -22,13 +22,13 @@ channelLegs = {
     "tauTau": [ "Tau", "Tau" ],
 }
 
-class WorkingPointsTauVSMu(enum.Enum):
+class WorkingPointsTauVSmu:
     VLoose = 1
     Loose = 2
     Medium = 4
     Tight = 8
 
-class WorkingPointsTauVSJet(enum.Enum):
+class WorkingPointsTauVSjet:
    VVVLoose =1
    VVLoose= 2
    VLoose= 4
@@ -38,7 +38,7 @@ class WorkingPointsTauVSJet(enum.Enum):
    VTight= 64
    VVTight= 128
 
-class WorkingPointsTauVSe(enum.Enum):
+class WorkingPointsTauVSe:
     VVVLoose = 1
     VVLoose = 2
     VLoose = 4
@@ -47,63 +47,6 @@ class WorkingPointsTauVSe(enum.Enum):
     Tight = 32
     VTight = 64
     VVTight = 128
-
-
-channelWPs_baseline = {
-    "eTau": [ WorkingPointsTauVSe.VLoose.value,WorkingPointsTauVSMu.Tight.value, WorkingPointsTauVSJet.VVVLoose.value ],
-    "muTau": [ WorkingPointsTauVSe.VLoose.value,WorkingPointsTauVSMu.Tight.value, WorkingPointsTauVSJet.VVVLoose.value ],
-    "tauTau": [ WorkingPointsTauVSe.VVLoose.value,WorkingPointsTauVSMu.VLoose.value, WorkingPointsTauVSJet.VVVLoose.value ],
-}
-threshold_baseline = {
-    "eTau":
-        {
-        "electron":
-            {
-            "pT" : 20,
-            "eta": 2.1,
-            "dz" : 0.2,
-            "dxy":0.045
-            },
-        "tau":
-            {
-            "dz" : 0.2,
-            "pT" : 20,
-            "eta": 2.3,
-
-            }
-
-        },
-    "muTau":
-        {
-        "muon":
-            {
-            "pT" : 20,
-            "eta": 2.1,
-            "dz" : 0.2,
-            "dxy":0.045
-            },
-        "tau":
-            {
-            "dz" : 0.2,
-            "pT" : 20,
-            "eta": 2.3,
-            "isolation":0.15,
-            "tkIso":0.1,
-            }
-
-        },
-    "tauTau":
-        {
-        "tau":
-            {
-            "dz" : 0.2,
-            "pT" : 20,
-            "eta": 2.3,
-
-            }
-
-        },
-}
 
 def selectChannel(df, channel):
     df_daughters = GetDaughters(df)
@@ -142,14 +85,6 @@ def SelectBestPair(df, channel):
         print("this channel is not considered")
         df_pair = df.Define("BestHTTCand","HTTCand BestHTTCand; return BestHTTCand;")
     return df_pair
-'''
-def DefineLegP4(df, channel):
-    df = df.Define('final_indices', 'RVecI final_indices; final_indices.push_back(BestHTTCand.leg_index.first); final_indices.push_back(BestHTTCand.leg_index.second); return final_indices;')
-    for n in range(2):
-        df = df.Define('leg{}_p4'.format(n+1), 'LorentzVectorM({0}_pt[final_indices[{1}]], {0}_eta[final_indices[{1}]],{0}_phi[final_indices[{1}]], {0}_mass[final_indices[{1}]])'.format(channelLegs[channel][n],n)).Define('genLep{}_p4'.format(n+1), ('HTT_Cand.leg_p4[{}]').format(n))
-    df = df.Define(f"BestHTTCand", f"RecoHTTCand BestHTTCand; BestHTTCand.channel=BestHTTCand.channel; BestHTTCand.leg_index=BestHTTCand.leg_index; BestHTTCand.leg_p4[0]=leg1_p4;BestHTTCand.leg_p4[1]=leg2_p4; return BestHTTCand;")
-    return df
-'''
 
 
 def JetSelection(df, channel):
@@ -207,6 +142,72 @@ def ApplyGenBaseline(df):
     df = df.Define("genHttCand", """GetGenHTTCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
                                                        GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass)""")
     return df.Filter("PassGenAcceptance(genHttCand)")
+
+def ApplyRecoBaseline0(df):
+    for obj in [ "Electron", "Muon", "Tau", "Jet", "FatJet" ]:
+        df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())") \
+               .Define(f"{obj}_p4", f"GetP4({obj}_pt, {obj}_eta, {obj}_phi, {obj}_mass, {obj}_idx)")
+
+    df = df.Define("Electron_B0", """
+        Electron_pt > 20 && abs(Electron_eta) < 2.1 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
+        && (Electron_mvaFall17V2Iso_WP90 || (Electron_mvaFall17V2noIso_WP90 && Electron_pfRelIso03_all < 0.5))
+    """)
+
+    df = df.Define("Muon_B0", """
+        Muon_pt > 20 && abs(Muon_eta) < 2.3 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045
+        && ( ((Muon_tightId || Muon_mediumId) && Muon_pfRelIso04_all < 0.5) || (Muon_highPtId && Muon_tkRelIso < 0.5) )
+    """)
+
+    df = df.Define("Tau_B0", f"""
+        Tau_pt > 20 && abs(Tau_eta) < 2.3 && abs(Tau_dz) < 0.2 && Tau_decayMode != 5 && Tau_decayMode != 6
+        && (Tau_idDeepTau2017v2p1VSe & {WorkingPointsTauVSe.VVLoose})
+        && (Tau_idDeepTau2017v2p1VSmu & {WorkingPointsTauVSmu.VLoose})
+        && (Tau_idDeepTau2017v2p1VSjet & {WorkingPointsTauVSjet.VVVLoose})
+    """)
+
+    df = df.Define("Electron_B0T", """
+        Electron_B0 && (Electron_mvaFall17V2Iso_WP80
+                        || (Electron_mvaFall17V2noIso_WP80 && Electron_pfRelIso03_all < 0.15))
+    """)
+
+    df = df.Define("Muon_B0T", """
+        Muon_B0 && ( ((Muon_tightId || Muon_mediumId) && Muon_pfRelIso04_all < 0.15)
+                    || (Muon_highPtId && Muon_tkRelIso < 0.15) )
+    """)
+
+    df = df.Define("Tau_B0T", f"""
+        Tau_B0 && (Tau_idDeepTau2017v2p1VSjet & {WorkingPointsTauVSjet.Medium})
+    """)
+
+    legs = [ "Electron", "Muon", "Tau" ]
+    ch_filters = []
+    for leg1_idx in range(len(legs)):
+        for leg2_idx in range(max(1, leg1_idx), len(legs)):
+            leg1, leg2 = legs[leg1_idx], legs[leg2_idx]
+            ch_filter = f"{leg1}{leg2}_B0"
+            ch_filters.append(ch_filter)
+            if leg1 == leg2:
+                ch_filter_def = f"{leg1}_idx[{leg1}_B0].size() > 1 && {leg1}_idx[{leg1}_B0T].size() > 0"
+            else:
+                ch_filter_def = f"""
+                    ({leg1}_idx[{leg1}_B0].size() > 0 && {leg2}_idx[{leg2}_B0T].size() > 0)
+                    || ({leg1}_idx[{leg1}_B0T].size() > 0 && {leg2}_idx[{leg2}_B0].size() > 0)
+                """
+            df = df.Define(ch_filter, ch_filter_def)
+
+    return df.Filter(" || ".join(ch_filters))
+
+def ApplyRecoBaseline1(df, is2017=0):
+    df = df.Define("Jet_B1", f"Jet_pt>20 && abs(Jet_eta) < 2.5 && ( (Jet_jetId & 2) || {is2017} == 1 )")
+    df = df.Define("FatJet_B1", "FatJet_msoftdrop>30 && abs(FatJet_eta) < 2.5")
+
+    df = df.Define("Lepton_p4_B0", "std::vector<RVecLV>{Electron_p4[Electron_B0], Muon_p4[Muon_B0], Tau_p4[Tau_B0]}")
+    df = df.Define("Jet_B1T",
+        "RemoveOverlaps(Jet_p4, Jet_B1, Lepton_p4_B0, 2, 0.5)")
+    df = df.Define("FatJet_B1T",
+        "RemoveOverlaps(FatJet_p4, FatJet_B1, Lepton_p4_B0, 2, 0.5)")
+
+    return df.Filter("Jet_idx[Jet_B1T].size() >= 2 || FatJet_idx[FatJet_B1T].size() >= 1")
 
 
 def DefineDataFrame(df, ch):

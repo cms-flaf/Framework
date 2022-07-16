@@ -17,7 +17,7 @@ struct ParticleInfo {
 class ParticleDB {
 public:
   static void Initialize(const std::string_view inputFile) {
-    std::ifstream file (inputFile, ios::in );
+    std::ifstream file (std::string(inputFile).c_str(), ios::in );
      std::string line;
      while (getline(file, line)){
        auto values= analysis::SplitValueList(line,true,",",true);

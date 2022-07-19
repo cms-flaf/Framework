@@ -76,6 +76,29 @@ bool GenRecoMatching(const HTTCand& genHttCand, const HTTCand& recoHttCand, doub
   return (matching[0] && matching[3]) || (matching[1] && matching[2]);
 }
 
+
+std::vector<std::pair<int, int>>  GenRecoJetMatching(const int event, const RVecLV& Jet_p4, const RVecLV& GenJet_p4, const RVecB& GenJet_ClosestToMPV,double dR_thr=0.2)
+{
+  const double dR2_thr = std::pow(dR_thr, 2);
+  std::vector<std::pair<int, int>> RecoJetMatched(GenJet_p4.size());
+  for(size_t gen_idx = 0; gen_idx < GenJet_p4.size(); ++gen_idx) { 
+    if(GenJet_ClosestToMPV[gen_idx]==false) continue;
+    for(size_t reco_idx = 0; reco_idx < Jet_p4.size(); ++reco_idx) {  
+        const double dR2 =  ROOT::Math::VectorUtil::DeltaR2(GenJet_p4[gen_idx], Jet_p4[reco_idx]);
+        if(dR2 < dR2_thr){
+          RecoJetMatched[reco_idx] = std::make_pair<int, int>(1,gen_idx);  
+      }
+    }
+  }
+  return RecoJetMatched;
+}
+
+int map_acc(int lhs, const std::pair<int, int> & rhs)
+{
+  return lhs + rhs.first;
+}
+
+
 // /*
 // bool JetLepSeparation(const LorentzVectorM& tau_p4, const RVecF& Jet_eta, const RVecF& Jet_phi, const RVecI & RecoJetIndices){
 //   RVecI JetSeparatedWRTLeptons;

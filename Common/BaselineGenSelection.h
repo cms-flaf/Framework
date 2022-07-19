@@ -88,3 +88,32 @@ bool PassGenAcceptance(const HTTCand& HTT_Cand){
     }
     return true;
 }
+
+
+RVecB FindTwoJetsClosestToMPV(float mpv, const RVecLV& GenPart_p4, const RVecB& pre_sel,const RVecI& GenPart_pdgId, bool WantOnlySpecificParticle, int ParticleType=5){
+  RVecB result(pre_sel);
+  int i_min, j_min;
+  float delta_min = 10000;
+  for(int i =0 ; i< GenPart_p4.size(); i++){
+    for(int j=0; j<i; j++){
+      RVecI temporary_indices;
+      temporary_indices.push_back(i);
+      temporary_indices.push_back(j);
+      float inv_mass = InvMassByIndices(temporary_indices, GenPart_p4 ,GenPart_pdgId,  WantOnlySpecificParticle,  ParticleType);
+      float delta_mass = abs(inv_mass-mpv);
+      if(delta_mass<=delta_min){
+        i_min=i;
+        j_min=j;
+        delta_min = delta_mass;
+      }
+    }
+  }
+   const auto isAGoodIndex = [&](const int& idx){
+     if(idx==i_min || idx==j_min ) return true;
+     return false;
+   };
+  for(size_t part_idx = 0; part_idx < GenPart_p4.size(); ++part_idx) {
+    result[part_idx] = pre_sel[part_idx] && isAGoodIndex(part_idx);
+  } 
+  return result;
+}

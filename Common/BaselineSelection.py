@@ -286,15 +286,52 @@ def ApplyRecoBaseline2(df):
     cand_list_str = ', '.join([ '&' + c for c in cand_columns])
     return df.Define('httCand', f'GetBestHTTCandidate({{ {cand_list_str} }})')
 
-def DefineDataFrame(df, ch):
-    df_channel=selectChannel(df,ch)
-    df_acceptance = passAcceptance(df_channel)
-    df_pairs = SelectBestPair(df_acceptance, ch)
-    df_JetFiltered= JetSelection(df_pairs, ch)
-    df_lepVeto = ThirdLeptonVeto(df_JetFiltered)
-    #df_matched = GenMatching(df_lepVeto, ch)
-    print(df_JetFiltered.Count().GetValue())
-    return df_JetFiltered
 
-    #return df_pairs
-    #print(f"for the channel {ch}:\nthe number of initial events is {df_channel.Count().GetValue()}\nthe number of events that pass the acceptance is {df_acceptance.Count().GetValue()}\nthe number of events with final best pair with size 2 is {df_pairs.Count().GetValue()}\nafter applying the Jet filter {df_JetFiltered.Count().GetValue()}\nafter applying the third lepton veto {df_lepVeto.Count().GetValue()}\nafter the filter on gen-reco matching {df_matched.Count().GetValue()} \n\n")
+def FindMPV(df):
+    dfCols = df.GetColumnNames()
+    if('genHttCand' not in dfCols):
+        df = ApplyGenBaseline(df)
+    if('Tau_B0T' not in dfCols):
+        df.ApplyRecoBaseline0(df)
+    if('Jet_B1T' not in dfCols):
+        df = ApplyRecoBaseline1(df)
+    if('httCand'not in dfCols):
+        df = ApplyRecoBaseline2(df)
+    if('Jet_B2T' not in dfCols):
+        df = ApplyRecoBaseline3(df)
+    if('GenJet_idx' not in dfCols):
+        df = df.Define("GenJet_idx", f"CreateIndexes(GenJet_pt.size())") \
+            .Define("GenJet_p4", f"GetP4(GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass, GenJet_idx)")
+    df = df.Filter("genChannel==recoChannel")
+    df = df.Filter("genChannel==Channel::eTau || genChannel == Channel::muTau || genChannel == Channel::tauTau")
+    if('GenJet_b_PF' not in dfCols):
+        df = df.Define("GenJet_b_PF", "abs(GenJet_partonFlavour)==5").Define("GenJet_b_PF_idx", "GenJet_idx[GenJet_b_PF]")
+    df = df.Filter("GenJet_b_PF_idx.size()==2")
+    df = df.Define("Two_bGenJets_invMass", "InvMassByFalvour(GenJet_p4, GenJet_partonFlavour, true)")
+    histo = df.Histo1D(("Two_bGenJets_invMass", "Two_bGenJets_invMass", 400, -0.5, 199.5),"Two_bGenJets_invMass").GetValue()
+    y_max = histo.GetMaximumBin()
+    x_max = histo.GetXaxis().GetBinCenter(y_max)
+    return x_max
+
+
+def ApplyGenBaseline1(df):
+    df = df.Define("GenJet_idx", f"CreateIndexes(GenJet_pt.size())") \
+            .Define("GenJet_p4", f"GetP4(GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass, GenJet_idx)")
+    
+    df = df.Define("GenJet_b_PF", "abs(GenJet_partonFlavour)==5")
+    df = df.Define("GenJet_b_PF_idx", "GenJet_idx[GenJet_b_PF]").Filter("GenJet_b_PF_idx.size()>=2", "AtLeastTwoPartonJets")
+    x_max = FindMPV(df)
+    print(f"the mpv is {x_max}")
+    df = df.Define("TwoClosestJetToMPV",f"FindTwoJetsClosestToMPV({x_max}, GenJet_p4, GenJet_b_PF,GenJet_partonFlavour, true,5)")
+    return df 
+
+
+def ApplyRecoBaseline3(df):
+    df = df.Define("Jet_B2T", "RemoveOverlaps(Jet_p4, Jet_B1T,{{{{httCand.leg_p4[0]}}, {{httCand.leg_p4[1]}}}}, 2, 0.5)") 
+    return df.Filter("Jet_idx[Jet_B2T].size()>=2", "ApplyRecoBaseline3")
+ 
+def ApplyGenRecoJetMatching(df):
+    df = df.Define("JetRecoMatched","GenRecoJetMatching( event,Jet_p4,  GenJet_p4, TwoClosestJetToMPV,0.2)") 
+    df = df.Define("n_matched","std::accumulate(JetRecoMatched.begin(), JetRecoMatched.end(), 0, map_acc)") 
+    return df.Filter("n_matched>=2", "AtLeastTwoDifferentMatches")
+    

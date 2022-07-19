@@ -294,3 +294,30 @@ int PrintDecayChain(ULong64_t evt, const RVecI& GenPart_pdgId, const RVecI& GenP
   }
   return 0;
 }
+
+float InvMassByIndices(const RVecI &indices, const RVecLV& GenPart_p4,const RVecI& GenPart_pdgId,bool WantOnlySpecificParticle, int ParticleType=5){
+    LorentzVectorM genParticle_Tot_momentum;
+    //if(evt!=905) return 0.;
+    for(size_t i = 0 ;i<indices.size(); i++){
+      auto part_idx = indices.at(i);
+      if(WantOnlySpecificParticle && abs(GenPart_pdgId[part_idx])!=ParticleType) continue;
+      ParticleInfo particle_information = ParticleDB::GetParticleInfo(GenPart_pdgId[part_idx]);
+      const float particleMass = particle_information.mass>0? particle_information.mass : GenPart_p4[part_idx].M();
+      genParticle_Tot_momentum+=LorentzVectorM(GenPart_p4[part_idx].Pt(), GenPart_p4[part_idx].Eta(), GenPart_p4[part_idx].Phi(),particleMass);
+    }
+    return genParticle_Tot_momentum.M();
+}
+
+
+float InvMassByFalvour(const RVecLV& GenPart_p4,const RVecI& GenJet_partonFlavour,bool WantOnlySpecificParticle, int ParticleType=5){
+    LorentzVectorM genParticle_Tot_momentum;
+    //if(evt!=905) return 0.;
+    for(size_t i = 0 ;i<GenPart_p4.size(); i++){
+      auto part_idx = i;
+      if(WantOnlySpecificParticle && abs(GenJet_partonFlavour[part_idx])!=ParticleType) continue;
+      ParticleInfo particle_information = ParticleDB::GetParticleInfo(GenJet_partonFlavour[part_idx]);
+      const float particleMass = particle_information.mass>0? particle_information.mass : GenPart_p4[part_idx].M();
+      genParticle_Tot_momentum+=LorentzVectorM(GenPart_p4[part_idx].Pt(), GenPart_p4[part_idx].Eta(), GenPart_p4[part_idx].Phi(),particleMass);
+    }
+    return genParticle_Tot_momentum.M();
+}

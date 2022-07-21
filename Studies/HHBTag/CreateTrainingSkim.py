@@ -85,11 +85,11 @@ if __name__ == "__main__":
     import re 
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year', type=str, default='2018')
-    parser.add_argument('--inFile', type=str, default="prod_v1/nanoAOD/2018/GluGluToBulkGravitonToHHTo2B2Tau_M-350.root")
-    parser.add_argument('--outFile', type=str, default="output/skim.root")
-    parser.add_argument('--mass', type=int, default=350)
-    parser.add_argument('--sample', type=str, default="GluGluToBulkGraviton")
+    parser.add_argument('--year', type=str)
+    parser.add_argument('--inFile', type=str)
+    parser.add_argument('--outFile', type=str)
+    parser.add_argument('--mass', type=int)
+    parser.add_argument('--sample', type=str)
     parser.add_argument('--particleFile', type=str,
                         default=f"{os.environ['ANALYSIS_PATH']}/config/pdg_name_type_charge.txt")
     args = parser.parse_args()
@@ -98,22 +98,6 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
     ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");")
-    inFile = f"{os.environ['CENTRAL_STORAGE']}/{args.inFile}"
-    outDir = 'output' 
-    '''
-    for file in os.listdir(inDir):
-        inFile = f"{inDir}/{file}"
-        substring= re.split("-|_|\.|ToHH",file)
-        year=args.year
-        sample=substring[0]
-        X_mass = int(substring[3])
-        outFile = f"{outDir}/{file}"
-        if(X_mass != 350 or sample!='GluGluToBulkGraviton'): continue # and sample!='GluGluToRadion'): continue
-        print(inFile)
-        print(outFile)
-        print(X_mass)
-        print(sample)
-        print()
-        '''
+    outDir = 'output'   
     createSkim(inFile, args.outFile, args.year, args.sample, args.mass)
-        #python Studies/HHBTag/CreateTrainingSkim.py --inFile $CENTRAL_STORAGE/prod_v1/nanoAOD/2018/GluGluToBulkGravitonToHHTo2B2Tau_M-350.root --outFile output/skim.root
+        

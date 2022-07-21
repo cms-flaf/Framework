@@ -22,29 +22,43 @@ def createSkim(inFile, outFile, year, sample, X_mass):
     df = df.Filter("GenRecoMatching(genHttCand, httCand, 0.2)", "SameGenRecoHTT")
     df = Baseline.ApplyRecoBaseline3(df)
     df = Baseline.ApplyGenBaseline1(df)
-    #df = Baseline.ApplyGenRecoJetMatching(df)
-    df = df.Define("year", f"{year}")
-    df = df.Define("sample", f"\"{sample}\"")
-    df = df.Define("X_mass", f"{X_mass}")
+    df = Baseline.ApplyGenRecoJetMatching(df)
+    df = df.Define("year", f"static_cast<std::string>(\"{year}\")")
+    df = df.Define("sample", f"static_cast<std::string>(\"{sample}\")") 
+    df = df.Define("X_mass", f"static_cast<int>({X_mass})")
 
+    
+ 
+    df = df.Define("httCand_leg0_pt", "httCand.leg_p4[0].Pt()")
+    df = df.Define("httCand_leg0_eta", "httCand.leg_p4[0].Eta()")
+    df = df.Define("httCand_leg0_phi", "httCand.leg_p4[0].Phi()")
+    df = df.Define("httCand_leg0_mass", "httCand.leg_p4[0].M()")
+    df = df.Define("httCand_leg1_pt", "httCand.leg_p4[1].Pt()")
+    df = df.Define("httCand_leg1_eta", "httCand.leg_p4[1].Eta()")
+    df = df.Define("httCand_leg1_phi", "httCand.leg_p4[1].Phi()")
+    df = df.Define("httCand_leg1_mass", "httCand.leg_p4[1].M()")
+    df = df.Define("GenChannel", "static_cast<int>(genChannel)")
+    df = df.Define("RecoChannel", "static_cast<int>(recoChannel)")
+    
+    
+    df = df.Define("jet_pt", "std::vector<float> jet_pt(Jet_p4.size()); for (size_t i = 0 ; i < Jet_p4.size(); i++) {jet_pt[i]=Jet_p4[i].Pt();} return jet_pt;")
+    df = df.Define("jet_eta", "std::vector<float> jet_eta(Jet_p4.size()); for (size_t i = 0 ; i < Jet_p4.size(); i++) {jet_eta[i]=Jet_p4[i].Eta();} return jet_eta;")
+    df = df.Define("jet_phi", "std::vector<float> jet_phi(Jet_p4.size()); for (size_t i = 0 ; i < Jet_p4.size(); i++) {jet_phi[i]=Jet_p4[i].Phi();} return jet_phi;")
+    df = df.Define("jet_mass", "std::vector<float> jet_mass(Jet_p4.size()); for (size_t i = 0 ; i < Jet_p4.size(); i++) {jet_mass[i]=Jet_p4[i].M();} return jet_mass;")
+    #df.Filter("n_matched>2").Display({"event", "n_matched", "JetRecoMatched"}).Print()
+
+    df = df.Filter("n_matched>=2", "AtLeastTwoDifferentMatches") 
+    #print(df.GetColumnNames())
     report = df.Report()
-    report.Print()
-    
+    report.Print() 
+    colToSave = ["event","luminosityBlock", "n_matched", "GenJetAssociated","nJet","Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass", "httCand_leg0_pt", "httCand_leg0_eta",
+                "httCand_leg0_phi", "httCand_leg0_mass", "httCand_leg1_pt", "httCand_leg1_eta", "httCand_leg1_phi","httCand_leg1_mass", "GenChannel", "RecoChannel","sample","year","X_mass",
+                "Jet_btagCSVV2", "Jet_btagDeepB", "Jet_btagDeepFlavB", "Jet_btagDeepFlavCvB", "Jet_btagDeepFlavCvL", "Jet_btagDeepFlavQG" ] 
 
-    
-    colToSave = ["year", "event","sample","run","lumi","X_mass", "Jet_p4", "RecoJetMatch", "httCand",
-                 "genChannel", "recoChannel", "Jet_btagCMVA", "Jet_btagCSVV2", "Jet_btagDeepB", "Jet_btagDeepC", 
-                 "Jet_btagDeepCvB", "Jet_btagDeepCvL", "Jet_btagDeepFlavB", "Jet_btagDeepFlavC", "Jet_btagDeepFlavCvB", 
-                 "Jet_btagDeepFlavCvL", "Jet_btagDeepFlavQG", "Jet_qgl"]
-    
-    '''
     varToSave = ROOT.std.vector("string")()
     for col in colToSave:
-        varToSave.push_back(col)
-    for trg in triggers[year]: 
-        varToSave.push_back(trg)
-    df.Snapshot("Event", outFile, varToSave())
-    '''
+        varToSave.push_back(col) 
+    df.Snapshot("Event", outFile, varToSave)
     '''
     channels = df.AsNumpy(['genChannel', 'recoChannel'])
     ch, cnt = np.unique(channels['genChannel'], return_counts=True)
@@ -72,8 +86,10 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--year', type=str, default='2018')
-    #parser.add_argument('--inFile', type=str)
-    #parser.add_argument('--outFile', type=str)
+    parser.add_argument('--inFile', type=str, default="prod_v1/nanoAOD/2018/GluGluToBulkGravitonToHHTo2B2Tau_M-350.root")
+    parser.add_argument('--outFile', type=str, default="output/skim.root")
+    parser.add_argument('--mass', type=int, default=350)
+    parser.add_argument('--sample', type=str, default="GluGluToBulkGraviton")
     parser.add_argument('--particleFile', type=str,
                         default=f"{os.environ['ANALYSIS_PATH']}/config/pdg_name_type_charge.txt")
     args = parser.parse_args()
@@ -82,8 +98,9 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
     ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");")
-    inDir = f"{os.environ['CENTRAL_STORAGE']}/prod_v1/nanoAOD/{args.year}"
+    inFile = f"{os.environ['CENTRAL_STORAGE']}/{args.inFile}"
     outDir = 'output' 
+    '''
     for file in os.listdir(inDir):
         inFile = f"{inDir}/{file}"
         substring= re.split("-|_|\.|ToHH",file)
@@ -97,5 +114,6 @@ if __name__ == "__main__":
         print(X_mass)
         print(sample)
         print()
-        createSkim(inFile, outFile, year, sample, X_mass)
-        
+        '''
+    createSkim(inFile, args.outFile, args.year, args.sample, args.mass)
+        #python Studies/HHBTag/CreateTrainingSkim.py --inFile $CENTRAL_STORAGE/prod_v1/nanoAOD/2018/GluGluToBulkGravitonToHHTo2B2Tau_M-350.root --outFile output/skim.root

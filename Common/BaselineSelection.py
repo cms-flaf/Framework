@@ -332,6 +332,11 @@ def ApplyRecoBaseline3(df):
  
 def ApplyGenRecoJetMatching(df):
     df = df.Define("JetRecoMatched","GenRecoJetMatching( event,Jet_p4,  GenJet_p4, TwoClosestJetToMPV,0.2)") 
-    df = df.Define("n_matched","std::accumulate(JetRecoMatched.begin(), JetRecoMatched.end(), 0, map_acc)") 
-    return df.Filter("n_matched>=2", "AtLeastTwoDifferentMatches")
+    
+    df = df.Define("isMatched", "std::vector<int> isMatched(JetRecoMatched.size()) ; for (size_t i =0 ; i<JetRecoMatched.size(); i++){isMatched[i]=JetRecoMatched[i].first; }return isMatched; ")
+    df = df.Define("GenJetAssociated", "std::vector<int> GenJetAss(JetRecoMatched.size()) ; for (size_t i =0 ; i<JetRecoMatched.size(); i++){GenJetAss[i]=JetRecoMatched[i].second;} return GenJetAss; ") 
+    df = df.Define("n_matched","std::accumulate(isMatched.begin(), isMatched.end(), 0)") 
+    #df = df.Define("n_matched","AtLeastTwoCorrespondence(JetRecoMatched)") 
+    #df.Display({"JetRecoMatched", "n_matched"}).Print()
+    return df#.Filter("n_matched>=2", "AtLeastTwoDifferentMatches")
     

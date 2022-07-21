@@ -79,18 +79,49 @@ bool GenRecoMatching(const HTTCand& genHttCand, const HTTCand& recoHttCand, doub
 
 std::vector<std::pair<int, int>>  GenRecoJetMatching(const int event, const RVecLV& Jet_p4, const RVecLV& GenJet_p4, const RVecB& GenJet_ClosestToMPV,double dR_thr=0.2)
 {
-  const double dR2_thr = std::pow(dR_thr, 2);
-  std::vector<std::pair<int, int>> RecoJetMatched(GenJet_p4.size());
+  const double dR2_thr = std::pow(dR_thr, 2); 
+  std::vector<std::pair<int, int>> RecoJetMatched (Jet_p4.size(), std::make_pair(0, -1));
+  std::vector<size_t> already_gen_counted;
+  
   for(size_t gen_idx = 0; gen_idx < GenJet_p4.size(); ++gen_idx) { 
+    /*if(event == 23022){
+        std::cout << "gen_idx = " << gen_idx << std::endl;
+        std::cout << "is closest to MPV ? " << GenJet_ClosestToMPV[gen_idx] << std::endl;
+        bool already_found = (std::find(already_gen_counted.begin(),already_gen_counted.end(),gen_idx)!=already_gen_counted.end());
+        std::cout << "is already counted ? " << already_found << std::endl;
+    }*/
     if(GenJet_ClosestToMPV[gen_idx]==false) continue;
+    if(gen_idx!=0 && std::find(already_gen_counted.begin(),already_gen_counted.end(),gen_idx)!=already_gen_counted.end()) continue;
     for(size_t reco_idx = 0; reco_idx < Jet_p4.size(); ++reco_idx) {  
         const double dR2 =  ROOT::Math::VectorUtil::DeltaR2(GenJet_p4[gen_idx], Jet_p4[reco_idx]);
+        /*if(event == 23022){
+            std::cout << "gen_idx = " << gen_idx << std::endl;
+            std::cout << "reco_idx = " << reco_idx << std::endl;
+            std::cout << "deltaR ? " << dR2 << std::endl;
+            bool below_thr=dR2<dR2_thr;
+            std::cout << "is dR2<dR2_thr?  " << below_thr << std::endl;
+        }*/
         if(dR2 < dR2_thr){
           RecoJetMatched[reco_idx] = std::make_pair<int, int>(1,gen_idx);  
-      }
+          already_gen_counted.push_back(gen_idx);
+      } 
+      //if(event == 23022){ std::cout << "\n"<< "reco_idx" << reco_idx << std::endl;}
+      //if(event == 23022){ std::cout  << "RecoJetMatched " << RecoJetMatched[reco_idx].first  << std::endl;}
+      //if(event == 23022){ std::cout << "RecoJetMatched " << RecoJetMatched[reco_idx].second << "\n" << std::endl;}
+    
     }
   }
   return RecoJetMatched;
+}
+
+int AtLeastTwoCorrespondence(std::vector<std::pair<int, int>>& RecoGenMatched){
+  int nMatched=0;
+    for (size_t jet_idx =0 ; jet_idx<(RecoGenMatched.size()); jet_idx++){
+      if(RecoGenMatched[jet_idx].first==1){
+        nMatched++;
+      }
+    }
+    return nMatched;
 }
 
 int map_acc(int lhs, const std::pair<int, int> & rhs)

@@ -38,20 +38,13 @@ def createSkim(inFile, outFile, year, sample, X_mass):
     df = df.Define("httCand_leg1_phi", "httCand.leg_p4[1].Phi()")
     df = df.Define("httCand_leg1_mass", "httCand.leg_p4[1].M()")
     df = df.Define("GenChannel", "static_cast<int>(genChannel)")
-    df = df.Define("RecoChannel", "static_cast<int>(recoChannel)")
-    
-    
-    df = df.Define("jet_pt", "std::vector<float> jet_pt(Jet_p4.size()); for (size_t i = 0 ; i < Jet_p4.size(); i++) {jet_pt[i]=Jet_p4[i].Pt();} return jet_pt;")
-    df = df.Define("jet_eta", "std::vector<float> jet_eta(Jet_p4.size()); for (size_t i = 0 ; i < Jet_p4.size(); i++) {jet_eta[i]=Jet_p4[i].Eta();} return jet_eta;")
-    df = df.Define("jet_phi", "std::vector<float> jet_phi(Jet_p4.size()); for (size_t i = 0 ; i < Jet_p4.size(); i++) {jet_phi[i]=Jet_p4[i].Phi();} return jet_phi;")
-    df = df.Define("jet_mass", "std::vector<float> jet_mass(Jet_p4.size()); for (size_t i = 0 ; i < Jet_p4.size(); i++) {jet_mass[i]=Jet_p4[i].M();} return jet_mass;")
-    #df.Filter("n_matched>2").Display({"event", "n_matched", "JetRecoMatched"}).Print()
+    df = df.Define("RecoChannel", "static_cast<int>(recoChannel)") 
 
-    df = df.Filter("n_matched>=2", "AtLeastTwoDifferentMatches") 
+    
     #print(df.GetColumnNames())
     report = df.Report()
     report.Print() 
-    colToSave = ["event","luminosityBlock", "n_matched", "GenJetAssociated","nJet","Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass", "httCand_leg0_pt", "httCand_leg0_eta",
+    colToSave = ["event","luminosityBlock", "JetRecoMatched", "GenJetAssociated","nJet","Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass", "httCand_leg0_pt", "httCand_leg0_eta",
                 "httCand_leg0_phi", "httCand_leg0_mass", "httCand_leg1_pt", "httCand_leg1_eta", "httCand_leg1_phi","httCand_leg1_mass", "GenChannel", "RecoChannel","sample","year","X_mass",
                 "Jet_btagCSVV2", "Jet_btagDeepB", "Jet_btagDeepFlavB", "Jet_btagDeepFlavCvB", "Jet_btagDeepFlavCvL", "Jet_btagDeepFlavQG" ] 
 
@@ -99,5 +92,5 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
     ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");")
     outDir = 'output'   
-    createSkim(inFile, args.outFile, args.year, args.sample, args.mass)
+    createSkim(args.inFile, args.outFile, args.year, args.sample, args.mass)
         

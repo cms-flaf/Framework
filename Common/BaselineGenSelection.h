@@ -90,16 +90,14 @@ bool PassGenAcceptance(const HTTCand& HTT_Cand){
 }
 
 
-RVecB FindTwoJetsClosestToMPV(float mpv, const RVecLV& GenPart_p4, const RVecB& pre_sel,const RVecI& GenPart_pdgId, bool WantOnlySpecificParticle, int ParticleType=5){
+RVecB FindTwoJetsClosestToMPV(float mpv, const RVecLV& GenJet_p4, const RVecB& pre_sel){
   RVecB result(pre_sel);
-  int i_min, j_min;
-  float delta_min = 10000;
-  for(int i =0 ; i< GenPart_p4.size(); i++){
-    for(int j=0; j<i; j++){
-      RVecI temporary_indices;
-      temporary_indices.push_back(i);
-      temporary_indices.push_back(j);
-      float inv_mass = InvMassByIndices(temporary_indices, GenPart_p4 ,GenPart_pdgId,  WantOnlySpecificParticle,  ParticleType);
+  int i_min=-1;
+  int j_min=-1;
+  float delta_min = 100000; 
+  for(int i =0 ; i< GenJet_p4.size(); i++){
+    for(int j=0; j<i; j++){ 
+      float inv_mass = (GenJet_p4[i]+GenJet_p4[j]).M();
       float delta_mass = abs(inv_mass-mpv);
       if(delta_mass<=delta_min){
         i_min=i;
@@ -109,11 +107,12 @@ RVecB FindTwoJetsClosestToMPV(float mpv, const RVecLV& GenPart_p4, const RVecB& 
     }
   }
    const auto isAGoodIndex = [&](const int& idx){
-     if(idx==i_min || idx==j_min ) return true;
+     if(idx==i_min || idx==j_min )  return true;
      return false;
    };
-  for(size_t part_idx = 0; part_idx < GenPart_p4.size(); ++part_idx) {
-    result[part_idx] = pre_sel[part_idx] && isAGoodIndex(part_idx);
+  for(size_t genJet_idx = 0; genJet_idx < GenJet_p4.size(); ++genJet_idx) {
+    result[genJet_idx] = pre_sel[genJet_idx] && (genJet_idx==i_min || genJet_idx==j_min );
   } 
   return result;
 }
+

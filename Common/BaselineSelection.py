@@ -288,26 +288,8 @@ def ApplyRecoBaseline2(df):
 
 
 def FindMPV(df):
-    dfCols = df.GetColumnNames()
-    if('genHttCand' not in dfCols):
-        df = ApplyGenBaseline(df)
-    if('Tau_B0T' not in dfCols):
-        df.ApplyRecoBaseline0(df)
-    if('Jet_B1T' not in dfCols):
-        df = ApplyRecoBaseline1(df)
-    if('httCand'not in dfCols):
-        df = ApplyRecoBaseline2(df)
-    if('Jet_B2T' not in dfCols):
-        df = ApplyRecoBaseline3(df)
-    if('GenJet_idx' not in dfCols):
-        df = df.Define("GenJet_idx", f"CreateIndexes(GenJet_pt.size())") \
-            .Define("GenJet_p4", f"GetP4(GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass, GenJet_idx)")
-    df = df.Filter("genChannel==recoChannel")
-    df = df.Filter("genChannel==Channel::eTau || genChannel == Channel::muTau || genChannel == Channel::tauTau")
-    if('GenJet_b_PF' not in dfCols):
-        df = df.Define("GenJet_b_PF", "abs(GenJet_partonFlavour)==5").Define("GenJet_b_PF_idx", "GenJet_idx[GenJet_b_PF]")
-    df = df.Filter("GenJet_b_PF_idx.size()==2")
-    df = df.Define("Two_bGenJets_invMass", "InvMassByFalvour(GenJet_p4, GenJet_partonFlavour, true)")
+    df = df.Filter("genChannel==Channel::eTau || genChannel == Channel::muTau || genChannel == Channel::tauTau").Filter("GenJet_idx[GenJet_b_PF].size()==2")
+    df = df.Define("Two_bGenJets_invMass", "JetInvMass(GenJet_b_PF, GenJet_p4)")
     histo = df.Histo1D(("Two_bGenJets_invMass", "Two_bGenJets_invMass", 400, -0.5, 199.5),"Two_bGenJets_invMass").GetValue()
     y_max = histo.GetMaximumBin()
     x_max = histo.GetXaxis().GetBinCenter(y_max)
@@ -322,7 +304,7 @@ def ApplyGenBaseline1(df):
     df = df.Define("GenJet_b_PF_idx", "GenJet_idx[GenJet_b_PF]").Filter("GenJet_b_PF_idx.size()>=2", "AtLeastTwoPartonJets")
     x_max = FindMPV(df)
     print(f"the mpv is {x_max}")
-    df = df.Define("TwoClosestJetToMPV",f"FindTwoJetsClosestToMPV({x_max}, GenJet_p4, GenJet_b_PF,GenJet_partonFlavour, true,5)")
+    df = df.Define("TwoClosestJetToMPV",f"FindTwoJetsClosestToMPV({x_max}, GenJet_p4, GenJet_b_PF)")
     return df 
 
 
@@ -331,12 +313,7 @@ def ApplyRecoBaseline3(df):
     return df.Filter("Jet_idx[Jet_B2T].size()>=2", "ApplyRecoBaseline3")
  
 def ApplyGenRecoJetMatching(df):
-    df = df.Define("JetRecoMatched","GenRecoJetMatching( event,Jet_p4,  GenJet_p4, TwoClosestJetToMPV,0.2)") 
-    
-    df = df.Define("isMatched", "std::vector<int> isMatched(JetRecoMatched.size()) ; for (size_t i =0 ; i<JetRecoMatched.size(); i++){isMatched[i]=JetRecoMatched[i].first; }return isMatched; ")
-    df = df.Define("GenJetAssociated", "std::vector<int> GenJetAss(JetRecoMatched.size()) ; for (size_t i =0 ; i<JetRecoMatched.size(); i++){GenJetAss[i]=JetRecoMatched[i].second;} return GenJetAss; ") 
-    df = df.Define("n_matched","std::accumulate(isMatched.begin(), isMatched.end(), 0)") 
-    #df = df.Define("n_matched","AtLeastTwoCorrespondence(JetRecoMatched)") 
-    #df.Display({"JetRecoMatched", "n_matched"}).Print()
-    return df#.Filter("n_matched>=2", "AtLeastTwoDifferentMatches")
+    df = df.Define("GenJetAssociated","GenRecoJetMatching( event,Jet_p4,  GenJet_p4, TwoClosestJetToMPV,0.2)") 
+    df = df.Define("JetRecoMatched","GenJetAssociated>=0")
+    return df.Filter("Jet_p4[JetRecoMatched].size()>=2", "AtLeastTwoDifferentMatches") 
     

@@ -33,26 +33,9 @@ def createSkim(inFile, outFile, year, sample, X_mass):
 
     
     colToSave = ["year", "event","sample","run","lumi","X_mass", "Jet_p4", "RecoJetMatch", "httCand",
-    
-                 "genChannel", "recoChannel", "Jet_btagDeepFlavB","Jet_btagDeepFlavCvB"]
-    triggers ={
-        "2018": ["HLT_Ele32_WPTight_Gsf", "HLT_Ele35_WPTight_Gsf", 
-                    "HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTauHPS30_eta2p1_CrossL1", "HLT_Ele28_eta2p1_WPTight_Gsf_HT150", 
-                    "HLT_Ele32_WPTight_Gsf_L1DoubleEG", "HLT_PFMET120_PFMHT120_IDTight", 
-                    "HLT_Diphoton30_18_R9IdL_AND_HE_AND_IsoCaloId_NoPixelVeto", 
-                    "HLT_MediumChargedIsoPFTau180HighPtRelaxedIso_Trk50_eta2p1", "HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165", 
-                    "HLT_DoubleMediumChargedIsoPFTauHPS35_Trk1_eta2p1_Reg", 
-                    "HLT_PFHT330PT30_QuadPFJet_75_60_45_40_TriplePFBTagDeepCSV_4p5", "HLT_IsoMu24", "HLT_Mu50", "HLT_TkMu100",
-                    "HLT_OldMu100", "HLT_IsoMu20_eta2p1_LooseChargedIsoPFTauHPS27_eta2p1_CrossL1", 
-                    "HLT_MonoCentralPFJet80_PFMETNoMu120_PFMHTNoMu120_IDTight",
-                    "HLT_MediumChargedIsoPFTau180HighPtRelaxedIso_Trk50_eta2p1", "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8", 
-                    "HLT_Mu17_Photon30_IsoCaloId", "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight", "HLT_DoubleMu4_Mass3p8_DZ_PFHT350", 
-                    "HLT_DoubleMu3_DCA_PFMET50_PFMHT60", "HLT_DoubleMediumChargedIsoPFTauHPS35_Trk1_eta2p1_Reg", 
-                    "HLT_MediumChargedIsoPFTau180HighPtRelaxedIso_Trk50_eta2p1", "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight", 
-                    "HLT_MediumChargedIsoPFTau50_Trk30_eta2p1_1pr_MET100", "HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np4", 
-                    "HLT_QuadPFJet103_88_75_15_DoublePFBTagDeepCSV_1p3_7p7_VBF1", 
-                    "HLT_PFHT330PT30_QuadPFJet_75_60_45_40_TriplePFBTagDeepCSV_4p5", "HLT_Photon35_TwoProngs35"],
-    }
+                 "genChannel", "recoChannel", "Jet_btagCMVA", "Jet_btagCSVV2", "Jet_btagDeepB", "Jet_btagDeepC", 
+                 "Jet_btagDeepCvB", "Jet_btagDeepCvL", "Jet_btagDeepFlavB", "Jet_btagDeepFlavC", "Jet_btagDeepFlavCvB", 
+                 "Jet_btagDeepFlavCvL", "Jet_btagDeepFlavQG", "Jet_qgl"]
     
     '''
     varToSave = ROOT.std.vector("string")()

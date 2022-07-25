@@ -145,45 +145,7 @@ LorentzVectorM GetVisibleP4(int genPart, const RVecI& GenPart_pdgId, const RVecV
     return LorentzVectorM(sum);
 }
 
-
-LorentzVectorM GetGenParticleVisibleP4(int tau_idx, const RVecF& pt, const RVecF& eta, const RVecF& phi,
-                                      const RVecF& GenPart_mass, const RVecI& GenPart_genPartIdxMother,
-                                      const RVecI& GenPart_pdgId, const RVecI& GenPart_status, const RVecVecI& GenPart_daughters){
-    LorentzVectorM sum(0.,0.,0.,0.);
-    LorentzVectorM TauP4;
-    RVecI tau_daughters = GenPart_daughters.at(tau_idx);
-
-    for (int idx = 0; idx<tau_daughters.size(); idx++){
-        int daughter_idx = tau_daughters[idx];
-        if(GenPart_pdgId[daughter_idx] == 12 || GenPart_pdgId[daughter_idx] == 14 || GenPart_pdgId[daughter_idx] == 16) continue;
-        if(GenPart_status[daughter_idx]!= 1 ) continue;
-        LorentzVectorM current_particleP4 ;
-        ParticleInfo particle_information = ParticleDB::GetParticleInfo(GenPart_pdgId[daughter_idx]);
-        float particleMass = particle_information.mass>0? particle_information.mass : GenPart_mass[daughter_idx];
-        current_particleP4=LorentzVectorM(pt[daughter_idx], eta[daughter_idx], phi[daughter_idx],particleMass);
-        sum = sum + current_particleP4;
-    }
-
-    /*
-    for(size_t particle_idx=0; particle_idx< GenPart_pdgId.size(); particle_idx++ ){
-        if(GenPart_pdgId[particle_idx] == 12 || GenPart_pdgId[particle_idx] == 14 || GenPart_pdgId[particle_idx] == 16) continue;
-        if(GenPart_status[particle_idx]!= 1 ) continue;
-
-        bool isRelatedToTau = isRelated(tau_idx, particle_idx, GenPart_genPartIdxMother);
-        if(isRelatedToTau){
-            LorentzVectorM current_particleP4 ;
-            ParticleInfo particle_information = ParticleDB::GetParticleInfo(GenPart_pdgId[particle_idx]);
-            float particleMass = particle_information.mass>0? particle_information.mass : GenPart_mass[particle_idx];
-            current_particleP4=LorentzVectorM(pt[particle_idx], eta[particle_idx], phi[particle_idx],particleMass);
-            sum = sum + current_particleP4;
-        }
-
-    }
-    */
-    TauP4=LorentzVectorM(sum.Pt(), sum.Eta(), sum.Phi(), sum.M());
-    return TauP4;
-
-}
+ 
 
 
 

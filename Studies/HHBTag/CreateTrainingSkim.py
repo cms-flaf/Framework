@@ -1,10 +1,13 @@
-# from Visual.HistTools import *
-# from Studies.HHBTag.Utils import *
 import ROOT
 import numpy as np
+import Common.Utilities as Utilities
 
 import Common.BaselineSelection as Baseline
  
+snapshotOptions = ROOT.RDF.RSnapshotOptions()
+snapshotOptions.fOverwriteIfExists=True
+snapshotOptions.fCompressionLevel=9
+snapshotOptions.fCompressionAlgorithm=ROOT.kLZMA 
 
 def createSkim(inFile, outFile, year, sample, X_mass):
     Baseline.Initialize()
@@ -20,11 +23,16 @@ def createSkim(inFile, outFile, year, sample, X_mass):
 
     df = df.Filter("genChannel == recoChannel", "SameGenRecoChannels")
     df = df.Filter("GenRecoMatching(genHttCand, httCand, 0.2)", "SameGenRecoHTT")
+    
     df = Baseline.ApplyRecoBaseline3(df)
+    df = Baseline.ApplyRecoBaseline4(df)
+    
     df = Baseline.ApplyGenBaseline1(df)
-    df = Baseline.ApplyGenRecoJetMatching(df)
-    df = df.Define("year", f"static_cast<std::string>(\"{year}\")")
-    df = df.Define("sample", f"static_cast<std::string>(\"{sample}\")") 
+    
+      
+    df = Baseline.ApplyGenRecoJetMatching(df)  
+    df = df.Define("sample", f"static_cast<int>(Sample::{sample})") 
+    df = df.Define("year", f"static_cast<int>(Year::Year_{year})") 
     df = df.Define("X_mass", f"static_cast<int>({X_mass})")
 
     
@@ -37,39 +45,19 @@ def createSkim(inFile, outFile, year, sample, X_mass):
     df = df.Define("httCand_leg1_eta", "httCand.leg_p4[1].Eta()")
     df = df.Define("httCand_leg1_phi", "httCand.leg_p4[1].Phi()")
     df = df.Define("httCand_leg1_mass", "httCand.leg_p4[1].M()")
-    df = df.Define("GenChannel", "static_cast<int>(genChannel)")
-    df = df.Define("RecoChannel", "static_cast<int>(recoChannel)") 
+    df = df.Define("Channel", "static_cast<int>(genChannel)")
+    df = Baseline.JetSavingCondition(df)
 
-    
-    #print(df.GetColumnNames())
+
+     
     report = df.Report()
     report.Print() 
-    colToSave = ["event","luminosityBlock", "JetRecoMatched", "GenJetAssociated","nJet","Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass", "httCand_leg0_pt", "httCand_leg0_eta",
-                "httCand_leg0_phi", "httCand_leg0_mass", "httCand_leg1_pt", "httCand_leg1_eta", "httCand_leg1_phi","httCand_leg1_mass", "GenChannel", "RecoChannel","sample","year","X_mass",
-                "Jet_btagCSVV2", "Jet_btagDeepB", "Jet_btagDeepFlavB", "Jet_btagDeepFlavCvB", "Jet_btagDeepFlavCvL", "Jet_btagDeepFlavQG" ] 
+    colToSave = ["event","luminosityBlock", "RecoJet_n","RecoJet_pt", "RecoJet_eta", "RecoJet_phi", "RecoJet_mass","RecoJet_idx", "RecoJetIndices_DeepFlavour",
+                "httCand_leg0_pt", "httCand_leg0_eta", "httCand_leg0_phi", "httCand_leg0_mass", "httCand_leg1_pt", "httCand_leg1_eta", "httCand_leg1_phi","httCand_leg1_mass", 
+                "Channel","sample","year","X_mass", "RecoJet_btagCSVV2", "RecoJet_btagDeepB", "RecoJet_btagDeepFlavB", "RecoJet_btagDeepFlavCvB", "RecoJet_btagDeepFlavCvL", "RecoJet_btagDeepFlavQG", "MET_pt", "MET_phi"] 
 
-    varToSave = ROOT.std.vector("string")()
-    for col in colToSave:
-        varToSave.push_back(col) 
-    df.Snapshot("Event", outFile, varToSave)
-    '''
-    channels = df.AsNumpy(['genChannel', 'recoChannel'])
-    ch, cnt = np.unique(channels['genChannel'], return_counts=True)
-    print(ch)
-    print(cnt)
-    ch, cnt = np.unique(channels['recoChannel'], return_counts=True)
-    print(ch)
-    print(cnt)
-    '''
-    # print(df.Filter('genHttCand.channel() == Channel::eTau').Count().GetValue())
-    # print(df.Filter('genHttCand.channel() == Channel::muTau').Count().GetValue())
-    # print(df.Filter('genHttCand.channel() == Channel::tauTau').Count().GetValue())
-    #df = Baseline.ApplyRecoBaselineL0(df)
-    # df = ApplyRecoBaselineL1(df)
-    # df = ApplyGenRecoMatch(df)
-    # df = DefineDataFrame(df, ch)
-    # mpv = findMPV(df)
-    # print(f"the mpv is {mpv}")
+    varToSave = Utilities.ListToVector(colToSave) 
+    df.Snapshot("Event", outFile, varToSave,snapshotOptions) 
 
 
 if __name__ == "__main__":
@@ -90,7 +78,6 @@ if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
-    ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");")
-    outDir = 'output'   
+    ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");") 
     createSkim(args.inFile, args.outFile, args.year, args.sample, args.mass)
         

@@ -89,30 +89,28 @@ bool PassGenAcceptance(const HTTCand& HTT_Cand){
     return true;
 }
 
-
-RVecB FindTwoJetsClosestToMPV(float mpv, const RVecLV& GenJet_p4, const RVecB& pre_sel){
-  RVecB result(pre_sel);
-  int i_min=-1;
-  int j_min=-1;
-  float delta_min = 100000; 
-  for(int i =0 ; i< GenJet_p4.size(); i++){
-    for(int j=0; j<i; j++){ 
-      float inv_mass = (GenJet_p4[i]+GenJet_p4[j]).M();
-      float delta_mass = abs(inv_mass-mpv);
-      if(delta_mass<=delta_min){
-        i_min=i;
-        j_min=j;
+RVecB FindTwoJetsClosestToMPV(float mpv, const RVecLV& GenJet_p4, const RVecB& pre_sel)
+{
+  int i_min=-1, j_min = -1;
+  float delta_min = std::numeric_limits<float>::infinity();
+  for(int i = 0; i < GenJet_p4.size(); i++) {
+    if(!pre_sel[i]) continue;
+    for(int j = 0; j < i; j++) {
+      if(!pre_sel[j]) continue;
+      const float inv_mass = (GenJet_p4[i]+GenJet_p4[j]).M();
+      const float delta_mass = std::abs(inv_mass - mpv);
+      if(delta_mass < delta_min) {
+        i_min = i;
+        j_min = j;
         delta_min = delta_mass;
       }
     }
   }
-   const auto isAGoodIndex = [&](const int& idx){
-     if(idx==i_min || idx==j_min )  return true;
-     return false;
-   };
-  for(size_t genJet_idx = 0; genJet_idx < GenJet_p4.size(); ++genJet_idx) {
-    result[genJet_idx] = pre_sel[genJet_idx] && (genJet_idx==i_min || genJet_idx==j_min );
-  } 
+  RVecB result(GenJet_p4.size(), false);
+  if(i_min >= 0) {
+    result[i_min] = true;
+    result[j_min] = true;
+  }
   return result;
 }
-
+ 

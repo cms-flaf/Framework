@@ -21,6 +21,22 @@ enum class Leg {
   tau = 3,
   jet = 4
 };
+enum class Year : int {
+  Year_2016 = 1,
+  Year_2016APV = 2,
+  Year_2017 = 3,
+  Year_2018 = 4,
+
+};
+
+enum class Sample : int {
+  GluGluToRadion = 1,
+  GluGluToBulkGraviton = 2,
+  VBFToRadion = 3,
+  VBFToBulkGraviton = 4
+};
+
+ 
 
 enum class Channel {
   eTau = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::tau),
@@ -121,4 +137,15 @@ RVecB RemoveOverlaps(const RVecLV& obj_p4, const RVecB& pre_sel, const std::vect
     result[obj_idx] = pre_sel[obj_idx] && hasMinNumberOfNonOverlaps(obj_p4.at(obj_idx));
   }
   return result;
+}
+
+template<typename T>
+ROOT::VecOps::RVec<T> SaveNewObject(const ROOT::VecOps::RVec<T> objToSelect, const RVecB& pre_sel){
+  ROOT::VecOps::RVec<T> newObj;
+  for(size_t k =0; k<objToSelect.size(); k++){
+    if(pre_sel[k]!=0){
+      newObj.push_back(objToSelect[k]);
+    }
+  }
+  return newObj;
 }

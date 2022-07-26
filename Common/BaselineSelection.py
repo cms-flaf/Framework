@@ -230,7 +230,7 @@ def ApplyGenBaseline1(df):
     
     df = df.Define("GenJet_b_PF", "abs(GenJet_partonFlavour)==5").Filter("GenJet_p4[GenJet_b_PF].size()>=2", "Two b-parton jets at least") 
     x_max = FindMPV(df)
-    print(f"the mpv is {x_max}")
+    #print(f"the mpv is {x_max}")
     df = df.Define("TwoClosestJetToMPV",f"FindTwoJetsClosestToMPV({x_max}, GenJet_p4, GenJet_b_PF)")
     return df 
 

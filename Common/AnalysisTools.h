@@ -15,21 +15,21 @@ using RVecB = ROOT::RVecB;
 using RVecVecI = ROOT::VecOps::RVec<RVecI>;
 using RVecLV = ROOT::VecOps::RVec<LorentzVectorM>;
 
-enum class Leg {
+enum class Leg : int {
   e = 1,
   mu = 2,
   tau = 3,
   jet = 4
 };
-enum class Year : int {
-  Year_2016 = 1,
-  Year_2016APV = 2,
-  Year_2017 = 3,
-  Year_2018 = 4,
+enum class Period : int {
+  Run2016 = 1,
+  Run2016APV = 2,
+  Run2017 = 3,
+  Run2018 = 4,
 
 };
 
-enum class Sample : int {
+enum class SampleType : int {
   GluGluToRadion = 1,
   GluGluToBulkGraviton = 2,
   VBFToRadion = 3,
@@ -38,7 +38,7 @@ enum class Sample : int {
 
  
 
-enum class Channel {
+enum class Channel : int {
   eTau = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::tau),
   muTau = static_cast<int>(Leg::mu) * 10 + static_cast<int>(Leg::tau),
   tauTau = static_cast<int>(Leg::tau) * 10 + static_cast<int>(Leg::tau),

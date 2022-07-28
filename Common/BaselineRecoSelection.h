@@ -81,7 +81,8 @@ RVecB GenRecoJetMatching(const RVecI& Jet_genJetIdx, const RVecB& GenJet_sel)
 {
   RVecB recoJetMatched (Jet_genJetIdx.size());
   for(size_t reco_idx = 0; reco_idx < Jet_genJetIdx.size(); ++reco_idx) {
-      recoJetMatched[reco_idx] = GenJet_sel[Jet_genJetIdx[reco_idx]];
+      const int genJetIdx = Jet_genJetIdx[reco_idx];
+      recoJetMatched[reco_idx] = genJetIdx >= 0 && GenJet_sel[genJetIdx];
   }
   return recoJetMatched;
 } 

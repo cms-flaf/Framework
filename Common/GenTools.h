@@ -255,14 +255,4 @@ int PrintDecayChain(ULong64_t evt, const RVecI& GenPart_pdgId, const RVecI& GenP
                               GenPart_eta, GenPart_phi, GenPart_mass, GenPart_status, "", GenPart_daughters, out_file);
   }
   return 0;
-}
-
-
-float JetInvMass(const RVecB& pre_sel, const RVecLV& GenPart_p4){
-    LorentzVectorM genParticle_Tot_momentum; 
-    for(size_t part_idx = 0 ;part_idx<GenPart_p4.size(); part_idx++){ 
-      if(pre_sel[part_idx]==0) continue; 
-      genParticle_Tot_momentum+=GenPart_p4[part_idx];
-    }
-    return genParticle_Tot_momentum.M();
-}
+} 

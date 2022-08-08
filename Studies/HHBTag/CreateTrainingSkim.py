@@ -6,9 +6,11 @@ import Common.BaselineSelection as Baseline
  
 snapshotOptions = ROOT.RDF.RSnapshotOptions()
 snapshotOptions.fOverwriteIfExists=True
+
+jetVar_list = [ "pt", "eta", "phi", "mass", "btagCSVV2", "btagDeepB", "btagDeepFlavB", "RecoMatched" ]
 def JetSavingCondition(df): 
-    df = df.Define('Jet_selIdx', 'ReorderObjects(RecoJet_btagDeepFlavB, Jet_idx[Jet_B3T])')
-    for var in [ "pt", "eta", "phi", "mass", "btagCSVV2", "btagDeepB", "btagDeepFlavB", "JetRecoMatched" ]:
+    df = df.Define('Jet_selIdx', 'ReorderObjects(Jet_btagDeepFlavB, Jet_idx[Jet_B3T])')
+    for var in jetVar_list:
         df = df.Define(f"RecoJet_{var}", f"Take(Jet_{var}, Jet_selIdx)") 
     return df
 
@@ -27,14 +29,16 @@ def createSkim(inFile, outFile, year, sample, X_mass):
 
     df = df.Filter("genChannel == recoChannel", "SameGenRecoChannels")
     df = df.Filter("GenRecoMatching(genHttCand, httCand, 0.2)", "SameGenRecoHTT")
-    
+   
     df = Baseline.ApplyRecoBaseline3(df)
-    df = Baseline.ApplyRecoBaseline4(df)
-    df = Baseline.ApplyGenBaselineAcceptance(df)
-    x_max = Baseline.FindMPV(df)
-    df = Baseline.ApplyGenBaseline1(df, x_max)
+    df = Baseline.ApplyRecoBaseline4(df) 
     
-      
+    df = Baseline.ApplyGenBaselineAcceptance(df)
+    
+    df = Baseline.ApplyGenBaseline1(df)
+    x_max = Baseline.FindMPV(df)
+    df = Baseline.FindTwoClosestJets(df, x_max)
+    
     df = Baseline.ApplyGenRecoJetMatching(df)  
     df = df.Define("sample", f"static_cast<int>(SampleType::{sample})") 
     df = df.Define("year", f"static_cast<int>(Period::Run{year})") 
@@ -57,12 +61,11 @@ def createSkim(inFile, outFile, year, sample, X_mass):
      
     report = df.Report()
     report.Print() 
-    colToSave = ["event","luminosityBlock","RecoJet_pt", "RecoJet_eta", "RecoJet_phi", "RecoJet_mass", 
+    colToSave = ["event","luminosityBlock", "Jet_selIdx",
                 "httCand_leg0_pt", "httCand_leg0_eta", "httCand_leg0_phi", "httCand_leg0_mass", "httCand_leg1_pt", "httCand_leg1_eta", "httCand_leg1_phi","httCand_leg1_mass", 
-                "Channel","sample","year","X_mass", "RecoJet_btagCSVV2", "RecoJet_btagDeepB", "RecoJet_btagDeepFlavB", "MET_pt", "MET_phi"] 
+                "Channel","sample","year","X_mass", "MET_pt", "MET_phi"] 
 
-    remove: RecoJet_n, RecoJet_idx, RecoJetIndices_DeepFlavour, RecoJet_btagDeepFlavCvB, RecoJet_btagDeepFlavCvL, RecoJet_btagDeepFlavQG
-reuse list of branches for reco jets used before to avoid duplications
+    colToSave+=[f"RecoJet_{var}" for var in jetVar_list]
 
     varToSave = Utilities.ListToVector(colToSave) 
     df.Snapshot("Event", outFile, varToSave,snapshotOptions) 
@@ -80,16 +83,17 @@ if __name__ == "__main__":
     parser.add_argument('--mass', type=int)
     parser.add_argument('--sample', type=str)
     parser.add_argument('--compressionLevel', type=int, default=9)
-    parser.add_argument('--compressionAlgo', type=str, default="KLZMA")
+    parser.add_argument('--compressionAlgo', type=str, default="kLZMA")
     parser.add_argument('--particleFile', type=str,
                         default=f"{os.environ['ANALYSIS_PATH']}/config/pdg_name_type_charge.txt")
     args = parser.parse_args()
-
-    snapshotOptions.fCompressionLevel=args.compressionLevel 
-    setattr(snapshotOptions, 'fCompressionAlgorithm', args.compressionAlgo)
+    
+    
     ROOT.gROOT.SetBatch(True)
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
     ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");") 
+    snapshotOptions.fCompressionLevel=args.compressionLevel 
+    setattr(snapshotOptions, 'fCompressionAlgorithm', Utilities.compression_algorithms[args.compressionAlgo])
     createSkim(args.inFile, args.outFile, args.year, args.sample, args.mass)
         

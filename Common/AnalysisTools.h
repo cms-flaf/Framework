@@ -138,14 +138,4 @@ RVecB RemoveOverlaps(const RVecLV& obj_p4, const RVecB& pre_sel, const std::vect
   }
   return result;
 }
-
-template<typename T>
-ROOT::VecOps::RVec<T> SaveNewObject(const ROOT::VecOps::RVec<T> objToSelect, const RVecB& pre_sel){
-  ROOT::VecOps::RVec<T> newObj;
-  for(size_t k =0; k<objToSelect.size(); k++){
-    if(pre_sel[k]!=0){
-      newObj.push_back(objToSelect[k]);
-    }
-  }
-  return newObj;
-}
+ 

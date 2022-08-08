@@ -18,7 +18,7 @@ HTTCand GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
         const auto& daughters = GenPart_daughters.at(n);
         int n_tau_daughters = std::count_if(daughters.begin(), daughters.end(), [&](int idx) {
         return std::abs(GenPart_pdgId.at(idx)) == PdG::tau();
-        });
+        }); 
         if(n_tau_daughters == 0) continue;
         if(n_tau_daughters != 2)
         throw analysis::exception("Invalid H->tautau decay. n_tau_daughters = %1%, higgs_idx = %2%")

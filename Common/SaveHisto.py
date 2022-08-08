@@ -1,6 +1,4 @@
 
-
-
 def CreateHisto(list, labels, name, file):
     canvas = ROOT.TCanvas(name, name, 800, 600)
     n_points = len(list)
@@ -13,8 +11,7 @@ def CreateHisto(list, labels, name, file):
     for i in range(0, n_points):
         h.SetBinContent(i+1, list[i])
         h.GetXaxis().SetBinLabel(i+1, labels[i])    
-    h.Draw()
-    #graph.Draw("LP")  
+    h.Draw() 
     canvas.SetBottomMargin(0.18)
     canvas.SetRightMargin(0.15)
     canvas.Update()

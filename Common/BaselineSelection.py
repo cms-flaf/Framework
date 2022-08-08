@@ -57,7 +57,7 @@ class WorkingPointsTauVSe:
  
 
 def ApplyGenBaseline(df):
-    df = df.Define("GenPart_daughters", "GetDaughters(GenPart_genPartIdxMother )")
+    df = df.Define("GenPart_daughters", "GetDaughters(GenPart_genPartIdxMother)")
     df = df.Define("genHttCand", """GetGenHTTCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
                                                        GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass)""")
     return df.Filter("PassGenAcceptance(genHttCand)", "GenAcceptance")
@@ -209,13 +209,14 @@ def FindMPV(df):
 def ApplyGenBaselineAcceptance(df):
     df = df.Define("GenJet_idx", f"CreateIndexes(GenJet_pt.size())") \
             .Define("GenJet_p4", f"GetP4(GenJet_pt, GenJet_eta, GenJet_phi, GenJet_mass, GenJet_idx)")
-    df = df.Filter("GenJet_pt > 20 && abs(GenJet_eta) < 2.5", "GenJet Acceptance")
-    return df
+    df = df.Define("GenJetAcceptance","GenJet_pt > 20 && abs(GenJet_eta) < 2.5", )
+    return df.Filter("GenJet_idx[GenJetAcceptance].size()>=0","GenJet Acceptance")
 
-def ApplyGenBaseline1(df, x_max):
+def ApplyGenBaseline1(df):
     df = df.Define("GenJet_b_PF", "abs(GenJet_partonFlavour)==5").Filter("GenJet_p4[GenJet_b_PF].size()>=2", "Two b-parton jets at least") 
-    
-    #print(f"the mpv is {x_max}")
+    return df 
+
+def FindTwoClosestJets(df, x_max): 
     df = df.Define("TwoClosestJetToMPV",f"FindTwoJetsClosestToMPV({x_max}, GenJet_p4, GenJet_b_PF)")
     return df 
 
@@ -233,6 +234,6 @@ def ApplyRecoBaseline4(df):
 
 
 def ApplyGenRecoJetMatching(df):
-    df = df.Define("JetRecoMatched", "GenRecoJetMatching(Jet_genJetIdx, TwoClosestJetToMPV)") 
-    return df.Filter("Jet_p4[JetRecoMatched].size()>=2", "Two different gen-reco jet matches at least") 
+    df = df.Define("Jet_RecoMatched", "GenRecoJetMatching(Jet_genJetIdx, TwoClosestJetToMPV)") 
+    return df.Filter("Jet_p4[Jet_RecoMatched].size()>=2", "Two different gen-reco jet matches at least") 
     

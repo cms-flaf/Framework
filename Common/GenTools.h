@@ -78,6 +78,8 @@ struct PdG {
   static int nu_e() { static const int pdg = ParticleDB::GetParticleInfo("nu_e").pdgId; return pdg; }
   static int nu_mu() { static const int pdg = ParticleDB::GetParticleInfo("nu_mu").pdgId; return pdg; }
   static int nu_tau() { static const int pdg = ParticleDB::GetParticleInfo("nu_tau").pdgId; return pdg; }
+  static int b() { static const int pdg = ParticleDB::GetParticleInfo("b").pdgId; return pdg; }
+  static int bbar() { static const int pdg = ParticleDB::GetParticleInfo("bbar").pdgId; return pdg; }
 
   static bool isNeutrino(int pdg)
   {
@@ -92,6 +94,8 @@ inline Leg PdGToLeg(int pdg)
       { PdG::e(), Leg::e },
       { PdG::mu(), Leg::mu },
       { PdG::tau(), Leg::tau },
+      { PdG::b(), Leg::b },
+      { PdG::bbar(), Leg::bbar },
     };
     const auto iter = pdg_to_leg.find(std::abs(pdg));
     if(iter == pdg_to_leg.end())
@@ -145,7 +149,7 @@ LorentzVectorM GetVisibleP4(int genPart, const RVecI& GenPart_pdgId, const RVecV
     return LorentzVectorM(sum);
 }
 
- 
+
 
 
 
@@ -154,8 +158,8 @@ ROOT::VecOps::RVec<RVecI> GetDaughters(const RVecI& GenPart_genPartIdxMother ){
   for (int part_idx =0; part_idx<GenPart_genPartIdxMother.size(); part_idx++){
     if(GenPart_genPartIdxMother[part_idx]>=0){
       daughters.at(GenPart_genPartIdxMother[part_idx]).push_back(part_idx);
-    }
-  }
+    } 
+  } 
   return daughters;
 }
 RVecI GetMothers(const int &part_idx, const RVecI& GenPart_genPartIdxMother ){

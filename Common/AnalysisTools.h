@@ -19,7 +19,9 @@ enum class Leg : int {
   e = 1,
   mu = 2,
   tau = 3,
-  jet = 4
+  jet = 4,
+  b = 5,
+  bbar = 6,
 };
 enum class Period : int {
   Run2016 = 1,

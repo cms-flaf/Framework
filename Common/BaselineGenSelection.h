@@ -78,7 +78,64 @@ HTTCand GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
   } catch(analysis::exception& e) {
     throw analysis::exception("GetGenHTTCandidate (event=%1%): %2%") % evt % e.message();
   }
-}
+} 
+
+HTTCand GetGenHBBCandidate(int evt, const RVecI& GenPart_pdgId,
+                           const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
+                           const RVecF& GenPart_pt, const RVecF& GenPart_eta,
+                           const RVecF& GenPart_phi, const RVecF& GenPart_mass)
+{
+  try {
+    std::set<int> hbb_indices;
+    for(int n = 0; n < GenPart_pdgId.size(); ++n) {
+        const GenStatusFlags status(GenPart_statusFlags.at(n));
+        if(!(GenPart_pdgId[n] == PdG::Higgs() && status.isLastCopy())) continue;
+        const auto& daughters = GenPart_daughters.at(n);
+        int n_b_daughters = std::count_if(daughters.begin(), daughters.end(), [&](int idx) {
+        return std::abs(GenPart_pdgId.at(idx)) == PdG::b();
+        }); 
+        if(n_b_daughters == 0) continue;
+        if(n_b_daughters != 2)
+        throw analysis::exception("Invalid H->bb decay. n_b_daughters = %1%, higgs_idx = %2%")
+            % n_b_daughters % n;
+        hbb_indices.insert(n);
+    }
+    if(hbb_indices.empty())
+        throw analysis::exception("H->bb not found.");
+    if(hbb_indices.size() != 1)
+        throw analysis::exception("Multiple H->bb candidates.");
+    const int hbb_index = *hbb_indices.begin();
+    HTTCand hbb_cand;
+    int leg_idx = 0;
+    for(int b_idx : GenPart_daughters.at(hbb_index)) {
+        if(std::abs(GenPart_pdgId.at(b_idx)) != PdG::b()) continue;
+        //b_idx = GetLastCopy(b_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
+        hbb_cand.leg_index.at(leg_idx) = b_idx ; 
+        ++leg_idx;
+    }
+    int leg0_pdg = std::abs(GenPart_pdgId.at(hbb_cand.leg_index.at(0)));
+    int leg1_pdg = std::abs(GenPart_pdgId.at(hbb_cand.leg_index.at(1)));
+    if(leg0_pdg > leg1_pdg || (leg0_pdg == leg1_pdg
+            && GenPart_pt.at(hbb_cand.leg_index.at(0)) < GenPart_pt.at(hbb_cand.leg_index.at(1))))
+        std::swap(hbb_cand.leg_index.at(0), hbb_cand.leg_index.at(1));
+
+    for(leg_idx = 0; leg_idx < hbb_cand.leg_index.size(); ++leg_idx) {
+        const int genPart_index = hbb_cand.leg_index.at(leg_idx);
+        const int genPart_pdg = GenPart_pdgId.at(genPart_index);
+        const auto& genPart_info = ParticleDB::GetParticleInfo(genPart_pdg);
+        hbb_cand.leg_type[leg_idx] = PdGToLeg(genPart_pdg);
+        hbb_cand.leg_charge[leg_idx] = genPart_info.charge;
+        hbb_cand.leg_p4[leg_idx] = GetVisibleP4(genPart_index, GenPart_pdgId, GenPart_daughters,
+                                                GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
+    }
+
+    return hbb_cand;
+  } catch(analysis::exception& e) {
+    throw analysis::exception("GetGenHbbCandidate (event=%1%): %2%") % evt % e.message();
+  }
+} 
+
+
 
 bool PassGenAcceptance(const HTTCand& HTT_Cand){
     for(size_t i = 0; i < HTT_Cand.leg_p4.size(); ++i){
@@ -106,9 +163,12 @@ RVecB FindTwoJetsClosestToMPV(float mpv, const RVecLV& GenJet_p4, const RVecB& p
       }
     }
   }
-  RVecB result(GenJet_p4.size(), false);
+  RVecB result(pre_sel.size(), false);
   if(i_min >= 0) {
     result[i_min] = true;
+    
+  }
+  if(j_min>=0){
     result[j_min] = true;
   }
   return result;

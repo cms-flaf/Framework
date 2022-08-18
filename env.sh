@@ -15,8 +15,8 @@ action() {
     export CENTRAL_STORAGE="/eos/home-v/vdamante/HH_bbtautau_resonant_Run2"
     export ANALYSIS_BIG_DATA_PATH="$CENTRAL_STORAGE/tmp/$(whoami)/data"
     export PATH=$PATH:$HOME/.local/bin:$ANALYSIS_PATH/scripts
-    source /cvmfs/sft.cern.ch/lcg/views/setupViews.sh LCG_101 x86_64-centos7-gcc8-opt
-
+    # source /cvmfs/sft.cern.ch/lcg/views/setupViews.sh LCG_101 x86_64-centos7-gcc8-opt
+    conda activate bbtt
     source "$( law completion )" ""
 }
 action

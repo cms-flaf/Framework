@@ -145,7 +145,7 @@ RVecB FindTwoJetsClosestToMPV(float mpv, const RVecLV& GenJet_p4, const RVecB& p
   } 
   return result;
 }
-RVecB FindAK8Jet(const RVecF& GenJetAK8_mass, const RVecB& pre_sel){
+RVecB FindGenJetAK8(const RVecF& GenJetAK8_mass, const RVecB& pre_sel){
   
   int i_max = -1;
   float max_mass = -1.;

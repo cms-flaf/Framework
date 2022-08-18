@@ -5,7 +5,7 @@ import Common.Utilities as Utilities
 import Common.BaselineSelection as Baseline
 def FindMPV(df):  
     df = df.Define("bJetp4", " GenJet_p4[GenJet_B1]").Filter("bJetp4.size()==2").Filter("ROOT::Math::VectorUtil::DeltaR(bJetp4[0],bJetp4[1])>0.4").Define("Two_bGenJets_invMass", "(bJetp4[0]+bJetp4[1]).M()")  
-    histo = df.Histo1D(("Two_bGenJets_invMass", "Two_bGenJets_invMass", 60, -0.5, 399.5),"Two_bGenJets_invMass").GetValue()  
+    histo = df.Histo1D(("Two_bGenJets_invMass", "Two_bGenJets_invMass", 801, -0.25, 400.25),"Two_bGenJets_invMass").GetValue()  
     y_max = histo.GetMaximumBin()
     x_max = histo.GetXaxis().GetBinCenter(y_max)  
     return x_max

@@ -20,13 +20,15 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv):
     df = ROOT.RDataFrame("Events", inFile)
 
     df = Baseline.DefineGenObjects(df, mpv)  
+   
     df = Baseline.ApplyGenBaseline0(df)  
     df = Baseline.ApplyGenBaseline1(df)
     df = Baseline.ApplyGenBaseline2(df) 
-    df = Baseline.ApplyGenBaseline3(df) 
-    is2017 = int(period=="2017")
+  
+
+    df = Baseline.ApplyGenBaseline3(df)  
     df = Baseline.ApplyRecoBaseline0(df)
-    df = Baseline.ApplyRecoBaseline1(df,is2017 )
+    df = Baseline.ApplyRecoBaseline1(df)
     df = Baseline.ApplyRecoBaseline2(df)
     df = Baseline.ApplyRecoBaseline3(df)
 
@@ -34,11 +36,7 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv):
     df = df.Define('recoChannel', 'httCand.channel()')
 
     df = df.Filter("genChannel == recoChannel", "SameGenRecoChannels")
-    df = df.Filter("GenRecoMatching(genHttCand, httCand, 0.2)", "SameGenRecoHTT") 
-    
-    report = df.Report()
-    report.Print() 
-      
+    df = df.Filter("GenRecoMatching(genHttCand, httCand, 0.2)", "SameGenRecoHTT")  
     df = Baseline.ApplyRecoBaseline4(df)   
     
     df = Baseline.ApplyGenRecoJetMatching(df)  
@@ -57,8 +55,6 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv):
     df = df.Define("Channel", "static_cast<int>(genChannel)")
     df = JetSavingCondition(df)
 
-
-     
     report = df.Report()
     report.Print() 
     colToSave = ["event","luminosityBlock", "Jet_selIdx",
@@ -70,6 +66,7 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv):
     varToSave = Utilities.ListToVector(colToSave) 
     print(type(snapshotOptions)) 
     df.Snapshot("Event", outFile, varToSave, snapshotOptions) 
+
     
 
 if __name__ == "__main__":

@@ -8,22 +8,24 @@ snapshotOptions = ROOT.RDF.RSnapshotOptions()
 snapshotOptions.fOverwriteIfExists=True
  
 
-def truthStudies(inFile, X_mass, mpv):
+def truthStudies(inFile, X_mass, mpv, run_nonClosest=False):
     Baseline.Initialize()
 
     df = ROOT.RDataFrame("Events", inFile)
-    df = Baseline.DefineGenObjects(df, 116.2)  
-    df = df.Define("GenJet_Hbb_v2",f"FindTwoJetsClosestToMPV(122.8, GenJet_p4, GenJet_b_PF)") 
+    df = Baseline.DefineGenObjects(df, 119.5)  
+    df = df.Define("GenJet_Hbb_v2",f"FindTwoJetsClosestToMPV(123., GenJet_p4, GenJet_b_PF)") 
     df = df.Filter("GenJet_idx[GenJet_b_PF].size()>2")
     df = df.Define("n_overlaps", "GenJet_idx[GenJet_Hbb && GenJet_Hbb_v2].size()")
     h0 = df.Histo1D("n_overlaps")
     print(h0.GetValue().GetBinContent(h0.GetValue().FindBin(2.))/ h0.GetValue().GetEntries())
-    #df = df.Define("GenJet_idx_NotClosest", "GenJet_idx[GenJet_b_PF && !GenJet_Hbb]")
-    #df = df.Define("GenJet_idx_Closest", "GenJet_idx[GenJet_Hbb]")
-
-    #df = df.Define("invariantMass", "RVecF inv_mass; for(auto& i : GenJet_idx_NotClosest){for(auto& j : GenJet_idx_Closest){inv_mass.push_back((GenJet_p4[i]+GenJet_p4[j]).M())} } ")
-    #h0 = df.Histo1D("invariantMass")
     '''
+    if run_nonClosest:
+        df = df.Define("GenJet_idx_NotClosest", "GenJet_idx[GenJet_b_PF && !GenJet_Hbb]")
+        df = df.Define("GenJet_idx_Closest", "GenJet_idx[GenJet_Hbb]")
+
+        df = df.Define("invariantMass", "RVecF inv_mass; for(auto& i : GenJet_idx_NotClosest){for(auto& j : GenJet_idx_Closest){inv_mass.push_back((GenJet_p4[i]+GenJet_p4[j]).M())} } ")
+        h0_1 = df.Histo1D("invariantMass")
+    
     df = df.Define("n_GenJet", "GenJet_idx[GenJet_b_PF].size()")
     df = df.Define("n_GenJetAK8", "GenJetAK8_idx[GenJetAK8_b_PF].size()") 
     df = df.Define("GenJet_b_invMass", "GenJet_p4[GenJet_b_PF][0].M()").Define("GenJetAK8_b_invMass", "GenJetAK8_p4[GenJetAK8_b_PF][0].M()").Define("Hbb_pt", "GenPart_pt[genHbbIdx]")
@@ -42,10 +44,11 @@ def truthStudies(inFile, X_mass, mpv):
     df = df.Filter("n_GenJet==1 && n_GenJetAK8 == 1") 
     scatter_plot3 = df.Histo2D(("Hbb_ptVSGenJet_b_invMass", "Hbb_ptVSGenJet_b_invMass", 100, 0., X_mass, 100, 0., 250.), "Hbb_pt", "GenJet_b_invMass") 
     scatter_plot4 = df.Histo2D(("Hbb_ptVSGenJetAK8_b_invMass", "Hbb_ptVSGenJetAK8_b_invMass", 100, 0., X_mass, 100, 0., 250.), "Hbb_pt", "GenJetAK8_b_invMass")
-    '''
+    
     histFile = ROOT.TFile(f"output/GenJets_b_mass_m{X_mass}.root", "RECREATE") 
     h0.GetValue().Write()
-    '''
+    if run_nonClosest: 
+        h0_1.GetValue().Write()
     h1.GetValue().Write()
     h2.GetValue().Write()
     h3.GetValue().Write()
@@ -61,8 +64,9 @@ def truthStudies(inFile, X_mass, mpv):
     scatter_plot2.GetValue().Write()
     scatter_plot3.GetValue().Write()
     scatter_plot4.GetValue().Write()
-    '''
+ 
     histFile.Close()  
+    '''
 
 if __name__ == "__main__":
     import argparse
@@ -72,7 +76,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser() 
     parser.add_argument('--inFile', type=str) 
     parser.add_argument('--mass', type=int)
-    parser.add_argument('--mpv', type=float, default=120.75)  
+    parser.add_argument('--mpv', type=float, default=122.8)  
     parser.add_argument('--compressionLevel', type=int, default=9)
     parser.add_argument('--compressionAlgo', type=str, default="kLZMA")
     parser.add_argument('--particleFile', type=str,

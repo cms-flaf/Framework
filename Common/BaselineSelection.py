@@ -68,7 +68,8 @@ def DefineGenObjects(df, Hbb_AK4mass_mpv):
     df = df.Define("GenJet_b_PF", "abs(GenJet_partonFlavour)==5")  
     df = df.Define("GenJetAK8_b_PF", "abs(GenJetAK8_partonFlavour)==5") 
     df = df.Define("GenJet_Hbb",f"FindTwoJetsClosestToMPV({Hbb_AK4mass_mpv}, GenJet_p4, GenJet_b_PF)") 
-    df = df.Define("GenJetAK8_Hbb", "FindAK8Jet(GenJetAK8_mass, GenJetAK8_b_PF)") 
+    df = df.Define("GenJetAK8_Hbb", "FindGenJetAK8(GenJetAK8_mass, GenJetAK8_b_PF)") 
+    df = df.Define("genHbb_isBoosted", "GenPart_pt[genHbbIdx]>550")
     return df
 
 def ApplyGenBaseline0(df):
@@ -76,13 +77,13 @@ def ApplyGenBaseline0(df):
 
 def ApplyGenBaseline1(df): 
     df = df.Define("GenJet_B1","GenJet_pt > 20 && abs(GenJet_eta) < 2.5 && GenJet_Hbb")   
-    df = df.Define("GenJetAK8_B1","GenJetAK8_pt > 170 && abs(GenJet_eta) < 2.5 && GenJetAK8_Hbb && GenPart_pt[genHbbIdx]>550")     
-    return df.Filter("GenJet_idx[GenJet_B1].size()==2 || GenJetAK8_idx[GenJetAK8_B1].size()==1", "(One)Two b-parton (Fat)jets at least")  
+    df = df.Define("GenJetAK8_B1","GenJetAK8_pt > 170 && abs(GenJetAK8_eta) < 2.5 && GenJetAK8_Hbb")     
+    return df.Filter("GenJet_idx[GenJet_B1].size()==2 || (GenJetAK8_idx[GenJetAK8_B1].size()==1 && genHbb_isBoosted)", "(One)Two b-parton (Fat)jets at least")  
 
 def ApplyGenBaseline2(df):
     for var in ["GenJet", "GenJetAK8"]:
         df = df.Define(f"{var}_B2", f"RemoveOverlaps({var}_p4, {var}_B1,{{{{genHttCand.leg_p4[0], genHttCand.leg_p4[1]}},}}, 2, 0.5)" ) 
-    return df.Filter("GenJet_idx[GenJet_B2].size()==2 || GenJetAK8_idx[GenJetAK8_B2].size()==1", "No overlap between genJets and genHttCands")
+    return df.Filter("GenJet_idx[GenJet_B2].size()==2 || (GenJetAK8_idx[GenJetAK8_B2].size()==1 && genHbb_isBoosted)", "No overlap between genJets and genHttCands")
 
 def ApplyGenBaseline3(df):
     return df.Filter("GenJet_idx[GenJet_B2].size()==2", "Resolved topology")
@@ -143,8 +144,8 @@ def ApplyRecoBaseline0(df):
     return df.Filter(" || ".join(ch_filters), "Reco leptons requirements")
 
  
-def ApplyRecoBaseline1(df, is2017=0): # same for GenJets ??? 
-    df = df.Define("Jet_B1", f"Jet_pt>20 && abs(Jet_eta) < 2.5 && ( (Jet_jetId & 2) || {is2017} == 1 )")
+def ApplyRecoBaseline1(df): # same for GenJets ??? 
+    df = df.Define("Jet_B1", f"Jet_pt>20 && abs(Jet_eta) < 2.5 && ( (Jet_jetId & 2) )")
     df = df.Define("FatJet_B1", "FatJet_msoftdrop > 30 && abs(FatJet_eta) < 2.5")
 
     df = df.Define("Lepton_p4_B0", "std::vector<RVecLV>{Electron_p4[Electron_B0], Muon_p4[Muon_B0], Tau_p4[Tau_B0]}")

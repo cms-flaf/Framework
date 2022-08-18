@@ -8,5 +8,9 @@ __pycache__
 /prova.root
 /.vscode
 Studies/HHBTag/compute_intervals.py
+Studies/HHBTag/Utilities.h
 Studies/HHBTag/Utils.py
+Studies/Visual
 /command_base.sh
+/documentation_2017.html
+Common/SaveHisto.py

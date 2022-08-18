@@ -86,8 +86,12 @@ if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
-    ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");") 
+    ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");")  
+    snapshotOptions = ROOT.RDF.RSnapshotOptions()
+    snapshotOptions.fOverwriteIfExists=True
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel 
-    truthStudies(args.inFile, args.mass, args.mpv)
-        
+
+    truthStudies(args.inFile, args.mass, args.mpv, snapshotOptions)
+    createSkim(args.inFile, args.outFile, args.period, args.sample, args.mass, args.mpv, snapshotOptions)
+ 

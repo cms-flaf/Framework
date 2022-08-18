@@ -52,17 +52,18 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv, snapshotOptions):
     df = df.Define("httCand_leg1_eta", "httCand.leg_p4[1].Eta()")
     df = df.Define("httCand_leg1_phi", "httCand.leg_p4[1].Phi()")
     df = df.Define("httCand_leg1_mass", "httCand.leg_p4[1].M()")
-    df = df.Define("Channel", "static_cast<int>(genChannel)")
+    df = df.Define("channel", "static_cast<int>(genChannel)")
     n_MoreThanTwoMatches = df.Filter("Jet_idx[Jet_genMatched].size()>2").Count()  
     df = JetSavingCondition(df)
 
     report = df.Report()
     histReport=ReportTools.SaveReport(report.GetValue())
-    print(n_MoreThanTwoMatches.GetValue()) 
-    #report.Print() 
+    if(n_MoreThanTwoMatches.GetValue()!=0) :
+        raise RuntimeError('There are more than two jets matched! ') 
+
     colToSave = ["event","luminosityBlock", "Jet_genMatched",
                 "httCand_leg0_pt", "httCand_leg0_eta", "httCand_leg0_phi", "httCand_leg0_mass", "httCand_leg1_pt", "httCand_leg1_eta", "httCand_leg1_phi","httCand_leg1_mass", 
-                "Channel","sample","period","X_mass", "MET_pt", "MET_phi"] 
+                "channel","sample","period","X_mass", "MET_pt", "MET_phi", "PuppiMET_pt", "PuppiMET_phi","DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi"] 
 
     colToSave+=[f"RecoJet_{var}" for var in jetVar_list]
 

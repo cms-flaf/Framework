@@ -5,8 +5,6 @@ import Common.ReportTools as ReportTools
 
 import Common.BaselineSelection as Baseline
  
-snapshotOptions = ROOT.RDF.RSnapshotOptions()
-snapshotOptions.fOverwriteIfExists=True
 
 jetVar_list = [ "pt", "eta", "phi", "mass", "btagCSVV2", "btagDeepB", "btagDeepFlavB", "genJetIdx_matched" ]
 def JetSavingCondition(df): 
@@ -15,7 +13,7 @@ def JetSavingCondition(df):
         df = df.Define(f"RecoJet_{var}", f"Take(Jet_{var}, Jet_selIdx)") 
     return df
 
-def createSkim(inFile, outFile, period, sample, X_mass, mpv):
+def createSkim(inFile, outFile, period, sample, X_mass, mpv, snapshotOptions):
     Baseline.Initialize()
 
     df = ROOT.RDataFrame("Events", inFile)
@@ -98,7 +96,9 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
     ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");")  
+    snapshotOptions = ROOT.RDF.RSnapshotOptions()
+    snapshotOptions.fOverwriteIfExists=True
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel 
-    createSkim(args.inFile, args.outFile, args.period, args.sample, args.mass, args.mpv)
+    createSkim(args.inFile, args.outFile, args.period, args.sample, args.mass, args.mpv, snapshotOptions)
         

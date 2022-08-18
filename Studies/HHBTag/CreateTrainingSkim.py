@@ -6,7 +6,7 @@ import Common.ReportTools as ReportTools
 import Common.BaselineSelection as Baseline
  
 
-jetVar_list = [ "pt", "eta", "phi", "mass", "btagCSVV2", "btagDeepB", "btagDeepFlavB", "genJetIdx_matched" ]
+jetVar_list = [ "pt", "eta", "phi", "mass", "btagCSVV2", "btagDeepB", "btagDeepFlavB" ,"genMatched"]
 def JetSavingCondition(df): 
     df = df.Define('Jet_selIdx', 'ReorderObjects(Jet_btagDeepFlavB, Jet_idx[Jet_B3T])')
     for var in jetVar_list:
@@ -61,7 +61,7 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv, snapshotOptions):
     if(n_MoreThanTwoMatches.GetValue()!=0) :
         raise RuntimeError('There are more than two jets matched! ') 
 
-    colToSave = ["event","luminosityBlock", "Jet_genMatched",
+    colToSave = ["event","luminosityBlock", 
                 "httCand_leg0_pt", "httCand_leg0_eta", "httCand_leg0_phi", "httCand_leg0_mass", "httCand_leg1_pt", "httCand_leg1_eta", "httCand_leg1_phi","httCand_leg1_mass", 
                 "channel","sample","period","X_mass", "MET_pt", "MET_phi", "PuppiMET_pt", "PuppiMET_phi","DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi"] 
 

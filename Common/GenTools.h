@@ -93,9 +93,7 @@ inline Leg PdGToLeg(int pdg)
     static const std::map<int, Leg> pdg_to_leg = {
       { PdG::e(), Leg::e },
       { PdG::mu(), Leg::mu },
-      { PdG::tau(), Leg::tau },
-      { PdG::b(), Leg::b },
-      { PdG::bbar(), Leg::bbar },
+      { PdG::tau(), Leg::tau }, 
     };
     const auto iter = pdg_to_leg.find(std::abs(pdg));
     if(iter == pdg_to_leg.end())

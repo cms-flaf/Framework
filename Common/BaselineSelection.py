@@ -56,19 +56,37 @@ class WorkingPointsTauVSe:
     VVTight = 128
  
 
-def ApplyGenBaseline0(df):
+def DefineGenObjects(df, Hbb_AK4mass_mpv):
     df = df.Define("GenPart_daughters", "GetDaughters(GenPart_genPartIdxMother)")
     df = df.Define("genHttCand", """GetGenHTTCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
                                                        GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass)""")
-    df = df.Define("genHbbCand", """GetGenHBBCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
-                                                       GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass)""")
+    df = df.Define("genHbbIdx", """GetGenHBBIndex(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags)""")
     for var in ["GenJet", "GenJetAK8"]: 
         df = df.Define(f"{var}_idx", f"CreateIndexes({var}_pt.size())")
         df = df.Define(f"{var}_p4", f"GetP4({var}_pt,{var}_eta,{var}_phi,{var}_mass, {var}_idx)")  
-    
-    df = df.Define("GenJetAK8_idx_ordered", "ReorderObjects(GenJetAK8_mass, GenJetAK8_idx)")   
+     
     df = df.Define("GenJet_b_PF", "abs(GenJet_partonFlavour)==5")  
+    df = df.Define("GenJetAK8_b_PF", "abs(GenJetAK8_partonFlavour)==5") 
+    df = df.Define("GenJet_Hbb",f"FindTwoJetsClosestToMPV({Hbb_AK4mass_mpv}, GenJet_p4, GenJet_b_PF)") 
+    df = df.Define("GenJetAK8_Hbb", "FindAK8Jet(GenJetAK8_mass, GenJetAK8_b_PF)") 
+    return df
+
+def ApplyGenBaseline0(df):
     return df.Filter("PassGenAcceptance(genHttCand)", "GenHttCand Acceptance")
+
+def ApplyGenBaseline1(df): 
+    df = df.Define("GenJet_B1","GenJet_pt > 20 && abs(GenJet_eta) < 2.5 && GenJet_Hbb")   
+    df = df.Define("GenJetAK8_B1","GenJetAK8_pt > 170 && abs(GenJet_eta) < 2.5 && GenJetAK8_Hbb && GenPart_pt[genHbbIdx]>550")     
+    return df.Filter("GenJet_idx[GenJet_B1].size()==2 || GenJetAK8_idx[GenJetAK8_B1].size()==1", "(One)Two b-parton (Fat)jets at least")  
+
+def ApplyGenBaseline2(df):
+    for var in ["GenJet", "GenJetAK8"]:
+        df = df.Define(f"{var}_B2", f"RemoveOverlaps({var}_p4, {var}_B1,{{{{genHttCand.leg_p4[0], genHttCand.leg_p4[1]}},}}, 2, 0.5)" ) 
+    return df.Filter("GenJet_idx[GenJet_B2].size()==2 || GenJetAK8_idx[GenJetAK8_B2].size()==1", "No overlap between genJets and genHttCands")
+
+def ApplyGenBaseline3(df):
+    return df.Filter("GenJet_idx[GenJet_B2].size()==2", "Resolved topology")
+
 
 def ApplyRecoBaseline0(df):
     for obj in [ "Electron", "Muon", "Tau", "Jet", "FatJet" ]:
@@ -135,26 +153,7 @@ def ApplyRecoBaseline1(df, is2017=0): # same for GenJets ???
 
     return df.Filter("Jet_idx[Jet_B1T].size() >= 2 || FatJet_idx[FatJet_B1T].size() >= 1", "Reco Jet Acceptance")
 
-
-def ApplyGenBaseline1(df, mpv):
-    df = df.Define("GenJet_B1",f"FindTwoJetsClosestToMPV({mpv}, GenJet_p4, GenJet_b_PF)") 
-    df = df.Define("GenJetAK8_B1", "abs(GenJetAK8_partonFlavour)==5 && GenJetAK8_mass>80") 
-    
-    return df 
-
-def ApplyGenBaseline2(df): 
-    for var in ["GenJet", "GenJetAK8"]: 
-        df = df.Define(f"{var}_B2",f"{var}_pt > 20 && abs({var}_eta) < 2.5 && {var}_B1")   
-    return df.Filter("GenJet_idx[GenJet_B1].size()==2 || GenJetAK8_idx_ordered[GenJetAK8_B1].size()==1", "(One)Two b-parton (Fat)jets at least")  
-
-def ApplyGenBaseline3(df):
-    for var in ["GenJet", "GenJetAK8"]:
-        df = df.Define(f"{var}_B3", f"RemoveOverlaps({var}_p4, {var}_B2,{{{{genHttCand.leg_p4[0], genHttCand.leg_p4[1]}},}}, 2, 0.5)" ) 
-    return df.Filter("GenJet_idx[GenJet_B3].size()==2 || GenJetAK8_idx[GenJetAK8_B3].size()==1", "No overlap between genJets and genHttCands")
-
-def ApplyGenBaseline4(df):
-    return df.Filter("GenJet_idx[GenJet_B3].size()==2", "Gen Baseline4")
-
+ 
 def ApplyRecoBaseline2(df):
     df = df.Define("Electron_iso", "Electron_pfRelIso03_all") \
            .Define("Muon_iso", "Muon_pfRelIso04_all") \
@@ -228,13 +227,6 @@ def ApplyRecoBaseline2(df):
     return df.Define('httCand', f'GetBestHTTCandidate({{ {cand_list_str} }})')
 
 
-def FindMPV(df): 
-    df = df.Define("bJetp4", " GenJet_p4[GenJet_b_PF]").Filter("bJetp4.size()==2").Define("Two_bGenJets_invMass", "(bJetp4[0]+bJetp4[1]).M()")  
-    histo = df.Histo1D(("Two_bGenJets_invMass", "Two_bGenJets_invMass", 60, -0.5, 399.5),"Two_bGenJets_invMass").GetValue()  
-    y_max = histo.GetMaximumBin()
-    x_max = histo.GetXaxis().GetBinCenter(y_max)  
-    return x_max
- 
 
 def ApplyRecoBaseline3(df):
     df = df.Define("Jet_B3T", "RemoveOverlaps(Jet_p4, Jet_B1T,{{httCand.leg_p4[0], httCand.leg_p4[1]},}, 2, 0.5)") 
@@ -247,7 +239,6 @@ def ApplyRecoBaseline4(df):
 
 
 def ApplyGenRecoJetMatching(df):
-    df = df.Define("Jet_RecoMatched", "GenRecoJetMatching(Jet_genJetIdx, GenJet_B1)") 
-    #df = df.Define("Jet_RecoMatched", "GenRecoJetMatching(Jet_genJetIdx, GenJet_B3)") 
+    df = df.Define("Jet_RecoMatched", "GenRecoJetMatching(Jet_genJetIdx, GenJet_B2)")  
     return df.Filter("Jet_p4[Jet_RecoMatched].size()>=2", "Two different gen-reco jet matches at least") 
-    
+

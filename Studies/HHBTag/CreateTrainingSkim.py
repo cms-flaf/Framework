@@ -19,13 +19,14 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv):
 
     df = ROOT.RDataFrame("Events", inFile)
 
-    df = Baseline.ApplyGenBaseline0(df)
-    df = Baseline.ApplyGenBaseline1(df,mpv)
+    df = Baseline.DefineGenObjects(df, mpv)  
+    df = Baseline.ApplyGenBaseline0(df)  
+    df = Baseline.ApplyGenBaseline1(df)
     df = Baseline.ApplyGenBaseline2(df) 
     df = Baseline.ApplyGenBaseline3(df) 
-
+    is2017 = int(period=="2017")
     df = Baseline.ApplyRecoBaseline0(df)
-    df = Baseline.ApplyRecoBaseline1(df)
+    df = Baseline.ApplyRecoBaseline1(df,is2017 )
     df = Baseline.ApplyRecoBaseline2(df)
     df = Baseline.ApplyRecoBaseline3(df)
 
@@ -37,9 +38,7 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv):
     
     report = df.Report()
     report.Print() 
-     
-    
-    df = Baseline.ApplyGenBaseline4(df)   
+      
     df = Baseline.ApplyRecoBaseline4(df)   
     
     df = Baseline.ApplyGenRecoJetMatching(df)  
@@ -83,7 +82,7 @@ if __name__ == "__main__":
     parser.add_argument('--inFile', type=str)
     parser.add_argument('--outFile', type=str)
     parser.add_argument('--mass', type=int)
-    parser.add_argument('--mpv', type=float, default=120.75) 
+    parser.add_argument('--mpv', type=float, default=122.8) 
     parser.add_argument('--sample', type=str)
     parser.add_argument('--compressionLevel', type=int, default=9)
     parser.add_argument('--compressionAlgo', type=str, default="kLZMA")

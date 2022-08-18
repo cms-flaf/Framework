@@ -3,7 +3,7 @@ import numpy as np
 import Common.Utilities as Utilities
 import Common.PrintGenChain as PrintGenChain
 import Common.BaselineSelection as Baseline
- 
+import Studies.HHBTag.GetMPV as MPV
 snapshotOptions = ROOT.RDF.RSnapshotOptions()
 snapshotOptions.fOverwriteIfExists=True
  
@@ -12,12 +12,13 @@ def truthStudies(inFile, X_mass, mpv, run_nonClosest=False):
     Baseline.Initialize()
 
     df = ROOT.RDataFrame("Events", inFile)
-    df = Baseline.DefineGenObjects(df, 119.5)  
-    df = df.Define("GenJet_Hbb_v2",f"FindTwoJetsClosestToMPV(123., GenJet_p4, GenJet_b_PF)") 
+    mpv = MPV.GetMPV(inFile)
+    df = Baseline.DefineGenObjects(df, mpv)  
+    df = df.Define("GenJet_Hbb_v2",f"FindTwoJetsClosestToMPV(125., GenJet_p4, GenJet_b_PF)") 
     df = df.Filter("GenJet_idx[GenJet_b_PF].size()>2")
     df = df.Define("n_overlaps", "GenJet_idx[GenJet_Hbb && GenJet_Hbb_v2].size()")
     h0 = df.Histo1D("n_overlaps")
-    print(h0.GetValue().GetBinContent(h0.GetValue().FindBin(2.))/ h0.GetValue().GetEntries())
+    print(X_mass, h0.GetValue().GetBinContent(h0.GetValue().FindBin(2.))/ h0.GetValue().GetEntries())
     '''
     if run_nonClosest:
         df = df.Define("GenJet_idx_NotClosest", "GenJet_idx[GenJet_b_PF && !GenJet_Hbb]")

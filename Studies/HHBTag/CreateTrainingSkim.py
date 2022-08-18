@@ -1,6 +1,7 @@
 import ROOT
 import numpy as np
 import Common.Utilities as Utilities
+import Common.ReportTools as ReportTools
 
 import Common.BaselineSelection as Baseline
  
@@ -56,16 +57,19 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv):
     df = JetSavingCondition(df)
 
     report = df.Report()
-    report.Print() 
+    histReport=ReportTools.SaveReport(report.GetValue())
+    #report.Print() 
     colToSave = ["event","luminosityBlock", "Jet_selIdx",
                 "httCand_leg0_pt", "httCand_leg0_eta", "httCand_leg0_phi", "httCand_leg0_mass", "httCand_leg1_pt", "httCand_leg1_eta", "httCand_leg1_phi","httCand_leg1_mass", 
                 "Channel","sample","period","X_mass", "MET_pt", "MET_phi"] 
 
     colToSave+=[f"RecoJet_{var}" for var in jetVar_list]
 
-    varToSave = Utilities.ListToVector(colToSave) 
-    print(type(snapshotOptions)) 
+    varToSave = Utilities.ListToVector(colToSave)  
     df.Snapshot("Event", outFile, varToSave, snapshotOptions) 
+    outputRootFile= ROOT.TFile(outFile, "UPDATE")
+    outputRootFile.WriteTObject(histReport, "Report", "Overwrite")
+    outputRootFile.Close()
 
     
 
@@ -79,7 +83,7 @@ if __name__ == "__main__":
     parser.add_argument('--inFile', type=str)
     parser.add_argument('--outFile', type=str)
     parser.add_argument('--mass', type=int)
-    parser.add_argument('--mpv', type=float, default=122.8) 
+    parser.add_argument('--mpv', type=float, default=125) 
     parser.add_argument('--sample', type=str)
     parser.add_argument('--compressionLevel', type=int, default=9)
     parser.add_argument('--compressionAlgo', type=str, default="kLZMA")

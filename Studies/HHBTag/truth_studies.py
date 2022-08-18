@@ -3,7 +3,7 @@ import numpy as np
 import Common.Utilities as Utilities
 import Common.PrintGenChain as PrintGenChain
 import Common.BaselineSelection as Baseline
-import Studies.HHBTag.GetMPV as MPV
+import Studies.HHBTag.GetMPV as GetMPV
 snapshotOptions = ROOT.RDF.RSnapshotOptions()
 snapshotOptions.fOverwriteIfExists=True
  
@@ -12,14 +12,13 @@ def truthStudies(inFile, X_mass, mpv, run_nonClosest=False):
     Baseline.Initialize()
 
     df = ROOT.RDataFrame("Events", inFile)
-    mpv = MPV.GetMPV(inFile)
+    mpv = GetMPV.GetMPV(inFile)
     df = Baseline.DefineGenObjects(df, mpv)  
-    df = df.Define("GenJet_Hbb_v2",f"FindTwoJetsClosestToMPV(125., GenJet_p4, GenJet_b_PF)") 
+    df = df.Define("GenJet_Hbb_v2","FindTwoJetsClosestToMPV(125., GenJet_p4, GenJet_b_PF)") 
     df = df.Filter("GenJet_idx[GenJet_b_PF].size()>2")
     df = df.Define("n_overlaps", "GenJet_idx[GenJet_Hbb && GenJet_Hbb_v2].size()")
     h0 = df.Histo1D("n_overlaps")
-    print(X_mass, h0.GetValue().GetBinContent(h0.GetValue().FindBin(2.))/ h0.GetValue().GetEntries())
-    '''
+    print(X_mass, h0.GetValue().GetBinContent(h0.GetValue().FindBin(2.))/ h0.GetValue().GetEntries()) 
     if run_nonClosest:
         df = df.Define("GenJet_idx_NotClosest", "GenJet_idx[GenJet_b_PF && !GenJet_Hbb]")
         df = df.Define("GenJet_idx_Closest", "GenJet_idx[GenJet_Hbb]")
@@ -66,8 +65,7 @@ def truthStudies(inFile, X_mass, mpv, run_nonClosest=False):
     scatter_plot3.GetValue().Write()
     scatter_plot4.GetValue().Write()
  
-    histFile.Close()  
-    '''
+    histFile.Close()   
 
 if __name__ == "__main__":
     import argparse
@@ -79,7 +77,7 @@ if __name__ == "__main__":
     parser.add_argument('--mass', type=int)
     parser.add_argument('--mpv', type=float, default=122.8)  
     parser.add_argument('--compressionLevel', type=int, default=9)
-    parser.add_argument('--compressionAlgo', type=str, default="kLZMA")
+    parser.add_argument('--compressionAlgo', type=str, default="LZMA")
     parser.add_argument('--particleFile', type=str,
                         default=f"{os.environ['ANALYSIS_PATH']}/config/pdg_name_type_charge.txt")
     args = parser.parse_args()
@@ -89,7 +87,7 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
     ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");") 
-    snapshotOptions.fCompressionLevel=args.compressionLevel 
-    setattr(snapshotOptions, 'fCompressionAlgorithm', Utilities.compression_algorithms[args.compressionAlgo])
+    snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
+    snapshotOptions.fCompressionLevel = args.compressionLevel 
     truthStudies(args.inFile, args.mass, args.mpv)
         

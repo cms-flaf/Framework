@@ -8,7 +8,7 @@ import Common.BaselineSelection as Baseline
 snapshotOptions = ROOT.RDF.RSnapshotOptions()
 snapshotOptions.fOverwriteIfExists=True
 
-jetVar_list = [ "pt", "eta", "phi", "mass", "btagCSVV2", "btagDeepB", "btagDeepFlavB", "RecoMatched" ]
+jetVar_list = [ "pt", "eta", "phi", "mass", "btagCSVV2", "btagDeepB", "btagDeepFlavB", "genJetIdx_matched" ]
 def JetSavingCondition(df): 
     df = df.Define('Jet_selIdx', 'ReorderObjects(Jet_btagDeepFlavB, Jet_idx[Jet_B3T])')
     for var in jetVar_list:
@@ -22,6 +22,7 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv):
 
     df = Baseline.DefineGenObjects(df, mpv)  
    
+    df = df.Define("n_GenJet", "GenJet_idx.size()")
     df = Baseline.ApplyGenBaseline0(df)  
     df = Baseline.ApplyGenBaseline1(df)
     df = Baseline.ApplyGenBaseline2(df) 
@@ -54,12 +55,14 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv):
     df = df.Define("httCand_leg1_phi", "httCand.leg_p4[1].Phi()")
     df = df.Define("httCand_leg1_mass", "httCand.leg_p4[1].M()")
     df = df.Define("Channel", "static_cast<int>(genChannel)")
+    n_MoreThanTwoMatches = df.Filter("Jet_idx[Jet_genMatched].size()>2").Count()  
     df = JetSavingCondition(df)
 
     report = df.Report()
     histReport=ReportTools.SaveReport(report.GetValue())
+    print(n_MoreThanTwoMatches.GetValue()) 
     #report.Print() 
-    colToSave = ["event","luminosityBlock", "Jet_selIdx",
+    colToSave = ["event","luminosityBlock", "Jet_genMatched",
                 "httCand_leg0_pt", "httCand_leg0_eta", "httCand_leg0_phi", "httCand_leg0_mass", "httCand_leg1_pt", "httCand_leg1_eta", "httCand_leg1_phi","httCand_leg1_mass", 
                 "Channel","sample","period","X_mass", "MET_pt", "MET_phi"] 
 
@@ -85,7 +88,7 @@ if __name__ == "__main__":
     parser.add_argument('--mpv', type=float, default=125) 
     parser.add_argument('--sample', type=str)
     parser.add_argument('--compressionLevel', type=int, default=9)
-    parser.add_argument('--compressionAlgo', type=str, default="kLZMA")
+    parser.add_argument('--compressionAlgo', type=str, default="LZMA")
     parser.add_argument('--particleFile', type=str,
                         default=f"{os.environ['ANALYSIS_PATH']}/config/pdg_name_type_charge.txt")
     args = parser.parse_args()

@@ -95,7 +95,7 @@ def ApplyRecoBaseline0(df):
                .Define(f"{obj}_p4", f"GetP4({obj}_pt, {obj}_eta, {obj}_phi, {obj}_mass, {obj}_idx)")
 
     df = df.Define("Electron_B0", """
-        Electron_pt > 20 && abs(Electron_eta) < 2.1 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
+        Electron_pt > 20 && abs(Electron_eta) < 2.3 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
         && (Electron_mvaFall17V2Iso_WP90 || (Electron_mvaFall17V2noIso_WP90 && Electron_pfRelIso03_all < 0.5))
     """)
 
@@ -145,7 +145,7 @@ def ApplyRecoBaseline0(df):
 
  
 def ApplyRecoBaseline1(df): # same for GenJets ??? 
-    df = df.Define("Jet_B1", f"Jet_pt>20 && abs(Jet_eta) < 2.5 && ( (Jet_jetId & 2) )")
+    df = df.Define("Jet_B1", f"Jet_pt>20 && abs(Jet_eta) < 2.5 && ( Jet_jetId & 2 )")
     df = df.Define("FatJet_B1", "FatJet_msoftdrop > 30 && abs(FatJet_eta) < 2.5")
 
     df = df.Define("Lepton_p4_B0", "std::vector<RVecLV>{Electron_p4[Electron_B0], Muon_p4[Muon_B0], Tau_p4[Tau_B0]}")
@@ -239,7 +239,8 @@ def ApplyRecoBaseline4(df):
     return df.Filter("Jet_idx[Jet_B3T].size()>=2", "Reco Baseline 4")
 
 
-def ApplyGenRecoJetMatching(df):
-    df = df.Define("Jet_RecoMatched", "GenRecoJetMatching(Jet_genJetIdx, GenJet_B2)")  
-    return df.Filter("Jet_p4[Jet_B3T && Jet_RecoMatched].size()>=2", "Two different gen-reco jet matches at least") 
+def ApplyGenRecoJetMatching(df): 
+    df = df.Define("Jet_genJetIdx_matched", "GenRecoJetMatching(event,Jet_idx, GenJet_idx, Jet_B3T, GenJet_B2, GenJet_p4, Jet_p4 , 0.3)")
+    df = df.Define("Jet_genMatched", "Jet_genJetIdx_matched>=0") 
+    return df.Filter("Jet_genJetIdx_matched[Jet_genMatched].size()>=2", "Two different gen-reco jet matches at least") 
 

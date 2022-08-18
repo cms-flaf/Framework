@@ -14,13 +14,9 @@ def GetMPV(inFile):
     Baseline.Initialize()
 
     df = ROOT.RDataFrame("Events", inFile) 
-    df = Baseline.DefineGenObjects(df, 125.)  
-    h1 = df.Histo1D("GenJet_pt")
+    df = Baseline.DefineGenObjects(df, 125.)   
     df = df.Define("GenJet_B1","GenJet_pt > 20 && abs(GenJet_eta) < 2.5 && GenJet_b_PF")   
     #df = df.Define("GenJet_B1","GenJet_pt > 50 && abs(GenJet_eta) < 2.5 && GenJet_b_PF")   
-    outFile = ROOT.TFile("output/prova_pt.root", "RECREATE")
-    h1.GetValue().Write()
-    outFile.Close()
     df = Baseline.ApplyGenBaseline0(df)  
     x_max = FindMPV(df)
     return x_max

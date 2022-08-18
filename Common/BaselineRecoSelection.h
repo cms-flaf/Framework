@@ -77,13 +77,26 @@ bool GenRecoMatching(const HTTCand& genHttCand, const HTTCand& recoHttCand, doub
 }
 
 
-RVecB GenRecoJetMatching(const RVecI& Jet_genJetIdx, const RVecB& GenJet_sel)
+RVecI GenRecoJetMatching(int event,const RVecI& Jet_idx, const RVecI& GenJet_idx,  const RVecB& Jet_sel, const RVecB& GenJet_sel,   const RVecLV& GenJet_p4, const RVecLV& Jet_p4 , float DeltaR_thr)
 {
-  RVecB recoJetMatched (Jet_genJetIdx.size());
-  for(size_t reco_idx = 0; reco_idx < Jet_genJetIdx.size(); ++reco_idx) {
-      const int genJetIdx = Jet_genJetIdx[reco_idx];
-      recoJetMatched[reco_idx] = genJetIdx >= 0 && GenJet_sel[genJetIdx];
+  RVecI recoJetMatched (Jet_idx.size(), -1);
+  std::set<size_t> taken_jets;
+  for(size_t gen_idx = 0; gen_idx < GenJet_p4.size(); ++gen_idx) {
+    if(GenJet_sel[gen_idx]!=1) continue;
+    size_t best_jet_idx = Jet_p4.size();
+    float deltaR_min = std::numeric_limits<float>::infinity(); 
+    for(size_t reco_idx = 0; reco_idx < Jet_p4.size(); ++reco_idx) {
+      if(Jet_sel[reco_idx]!=1 || taken_jets.count(reco_idx)) continue;
+      auto deltaR = ROOT::Math::VectorUtil::DeltaR(Jet_p4[reco_idx], GenJet_p4[gen_idx]);
+      if(deltaR<deltaR_min && deltaR<DeltaR_thr){
+        best_jet_idx = reco_idx;
+        deltaR_min=deltaR;
+      }
+    }
+    if(best_jet_idx<Jet_p4.size()) {
+      taken_jets.insert(best_jet_idx);
+      recoJetMatched.at(best_jet_idx) = gen_idx;
+    }
   }
   return recoJetMatched;
-} 
-
+}

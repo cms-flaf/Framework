@@ -75,8 +75,7 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv):
 
 if __name__ == "__main__":
     import argparse
-    import os
-    import re 
+    import os 
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--period', type=str)
@@ -95,8 +94,8 @@ if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
-    ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");") 
-    snapshotOptions.fCompressionLevel=args.compressionLevel 
-    setattr(snapshotOptions, 'fCompressionAlgorithm', Utilities.compression_algorithms[args.compressionAlgo])
+    ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");")  
+    snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
+    snapshotOptions.fCompressionLevel = args.compressionLevel 
     createSkim(args.inFile, args.outFile, args.period, args.sample, args.mass, args.mpv)
         

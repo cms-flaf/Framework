@@ -1,5 +1,5 @@
 import ROOT
-def SaveReport(report,PrintOut=False):
+def SaveReport(report,printOut=False):
     cuts = [c for c in report] 
     hist = ROOT.TH1D("Report","Report", len(cuts)+1, 0, len(cuts)+1)
     hist.GetXaxis().SetBinLabel(1, "Initial")
@@ -7,11 +7,8 @@ def SaveReport(report,PrintOut=False):
     for c_id, cut in enumerate(cuts):       
         hist.SetBinContent(c_id+2, cut.GetPass())
         hist.GetXaxis().SetBinLabel(c_id+2, cut.GetName())
-        if(PrintOut): 
-            print(cut.GetName())
-            print(cut.GetPass())
-            print(cut.GetAll())
-            print(cut.GetEff())    
+        if(printOut): 
+            print(f"for the cut {cut.GetName()} there are {cut.GetPass()} events passed over {cut.GetAll()}, resulting in an efficiency of {cut.GetEff()}") 
     return hist
     
 

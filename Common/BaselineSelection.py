@@ -241,5 +241,5 @@ def ApplyRecoBaseline4(df):
 
 def ApplyGenRecoJetMatching(df):
     df = df.Define("Jet_RecoMatched", "GenRecoJetMatching(Jet_genJetIdx, GenJet_B2)")  
-    return df.Filter("Jet_p4[Jet_RecoMatched].size()>=2", "Two different gen-reco jet matches at least") 
+    return df.Filter("Jet_p4[Jet_B3T && Jet_RecoMatched].size()>=2", "Two different gen-reco jet matches at least") 
 

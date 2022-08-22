@@ -5,9 +5,9 @@ import os
 import shutil
 import yaml
 
-from run_tools.grid_helper_tasks import CreateVomsProxy
+from RunKit.grid_helper_tasks import CreateVomsProxy
+from RunKit.sh_tools import sh_call, xrd_copy
 from run_tools.law_customizations import Task, HTCondorWorkflow
-from run_tools.sh_tools import sh_call, xrd_copy
 
 class BaseTask(Task):
     dataset_tier = luigi.Parameter(default='nanoAOD')

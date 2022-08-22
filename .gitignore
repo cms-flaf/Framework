@@ -13,4 +13,5 @@ Studies/HHBTag/Utils.py
 Studies/Visual
 /command_base.sh
 /documentation_2017.html
-Common/SaveHisto.py
+/Common/SaveHisto.py
+/soft

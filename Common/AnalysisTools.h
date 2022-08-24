@@ -7,11 +7,11 @@
 using LorentzVectorXYZ = ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double>>;
 using LorentzVectorM = ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>;
 using LorentzVectorE = ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiE4D<double>>;
-using RVecI = ROOT::RVecI;
+using RVecI = ROOT::VecOps::RVec<int>;
 using RVecS = ROOT::VecOps::RVec<size_t>;
 using RVecUC = ROOT::VecOps::RVec<UChar_t>;
-using RVecF = ROOT::RVecF;
-using RVecB = ROOT::RVecB;
+using RVecF = ROOT::VecOps::RVec<float>;
+using RVecB = ROOT::VecOps::RVec<bool>;
 using RVecVecI = ROOT::VecOps::RVec<RVecI>;
 using RVecLV = ROOT::VecOps::RVec<LorentzVectorM>;
 
@@ -19,7 +19,7 @@ enum class Leg : int {
   e = 1,
   mu = 2,
   tau = 3,
-  jet = 4, 
+  jet = 4,
 };
 enum class Period : int {
   Run2016 = 1,
@@ -36,7 +36,7 @@ enum class SampleType : int {
   VBFToBulkGraviton = 4
 };
 
- 
+
 
 enum class Channel : int {
   eTau = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::tau),
@@ -138,4 +138,3 @@ RVecB RemoveOverlaps(const RVecLV& obj_p4, const RVecB& pre_sel, const std::vect
   }
   return result;
 }
- 

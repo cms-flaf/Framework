@@ -1,0 +1,8 @@
+column_filters:
+  - drop ^.*$
+  - keep ^LHE_.*$
+  - keep genWeight
+
+processing_module:
+  file: skimNano.py
+  function: skim_failed_baseline

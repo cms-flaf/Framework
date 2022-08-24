@@ -29,7 +29,8 @@ action() {
     # conda activate bbtt
 
     export SCRAM_ARCH=el8_amd64_gcc10
-    CMSSW_VER=CMSSW_12_4_7
+    #CMSSW_VER=CMSSW_12_4_7
+    CMSSW_VER=CMSSW_12_4_X_2022-08-23-1100
     if ! [ -f soft/$CMSSW_VER/.installed ]; then
         run_cmd mkdir -p soft
         run_cmd cd soft

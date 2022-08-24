@@ -1,106 +1,112 @@
-common:
-    exclude_columns:
-        - Jet_btagDeepCvB
-        - Jet_btagDeepCvL
-        - Jet_qgl
-        - Jet_neEmEF
-        - Jet_neHEF
-        - Jet_chFPV0EF
-        - Jet_chFPV1EF
-        - Jet_chFPV2EF
-        - Jet_chFPV3EF
-        - Jet_chHEF
-        - Jet_hfsigmaEtaEta
-        - Jet_hfsigmaPhiPhi
-        - Jet_chEmEF
-        - Jet_muEF
-        - Jet_hfcentralEtaStripSize
-        - Jet_hfadjacentEtaStripsSize
-        - Jet_nMuons
-        - Jet_muonIdx1
-        - Jet_muonIdx2
-        - Jet_nElectrons
-        - Jet_electronIdx1
-        - Jet_electronIdx2
-        - Electron_miniPFRelIso_all
-        - Electron_miniPFRelIso_chg
-        - Electron_eInvMinusPInv
-        - Electron_deltaEtaSC
-        - Electron_ip3d
-        - Electron_sip3d
-        - Electron_mvaTTH
-        - Electron_sieie
-        - Electron_scEtOverPt
-        - Electron_jetRelIso
-        - Electron_r9
-        - Electron_jetPtRelv2
-        - Electron_vidNestedWPBitmap
-        - Electron_energyErr
-        - Electron_hoe
-        - Electron_vidNestedWPBitmapHEEP
-        - Electron_dzErr
-        - Electron_dxyErr
-        - Electron_dr03EcalRecHitSumEt
-        - Electron_dr03HcalDepth1TowerSumEt
-        - Electron_jetNDauCharged
-        - Electron_dr03TkSumPt
-        - Electron_dr03TkSumPtHEEP
-        - Electron_tightCharge
-        - Electron_isPFcand
-        - Electron_lostHits
-        - Electron_cutBased_HEEP
-        - Electron_seedGain
-        - Electron_photonIdx
-        - ^Electron_mvaFall17V1.*$
-        - Muon_miniPFRelIso_all
-        - Muon_miniPFRelIso_chg
-        - Muon_dxybs
-        - Muon_ip3d
-        - Muon_sip3d
-        - Muon_mvaTTH
-        - Muon_segmentComp
-        - Muon_jetRelIso
-        - Muon_jetPtRelv2
-        - Muon_tkRelIso
-        - Muon_dzErr
-        - Muon_dxyErr
-        - Muon_nTrackerLayers
-        - Muon_nStations
-        - Muon_jetNDauCharged
-        - Muon_fsrPhotonIdx
-        - Tau_idAntiEle
-        - Tau_idAntiEle2018
-        - Tau_idAntiEleDeadECal
-        - Tau_idMVAnewDM2017v2
-        - Tau_idMVAoldDM
-        - Tau_idMVAoldDM2017v1
-        - Tau_idMVAoldDM2017v2
-        - Tau_idMVAoldDMdR032017v2
-        - Tau_leadTkDeltaEta
-        - Tau_leadTkDeltaPhi
-        - Tau_leadTkPtOverTauPt
-        - Tau_photonsOutsideSignalCone
-        - Tau_puCorr
-        - Tau_rawAntiEle
-        - Tau_rawAntiEle2018
-        - Tau_rawAntiEleCat
-        - Tau_rawAntiEleCat2018
-        - Tau_chargedIso
-        - Tau_neutralIso
-        - Tau_rawMVAnewDM2017v2
-        - Tau_rawMVAoldDM
-        - Tau_rawMVAoldDM2017v1
-        - Tau_rawMVAoldDM2017v2
-        - Tau_rawMVAoldDMdR032017v2
-        - ^(n|)SV(_.*|)$
-        - ^(n|)Photon(_.*|)$
-        - ^(n|)LowPtElectron(_.*|)$
-        - ^(n|)SoftActivityJet(.*|)$
-        - ^(n|)IsoTrack(_.*|)$
-        - ^HTXS_.*$
-        - ^(n|)FsrPhoton(_.*|)$
-        - ^(n|)GenDressedLepton(_.*|)$
-        - ^(n|)GenIsolatedPhoton(_.*|)$
-signal:
-    sampleTypes:
-        - GluGluToRadion
+column_filters:
+  - drop ^.*_cleanmask$
+  - drop ^Jet_btagDeep.*$
+  - drop Jet_btagCSVV2
+  - drop Jet_qgl
+  - drop Jet_neEmEF
+  - drop Jet_neHEF
+  - drop Jet_chFPV0EF
+  - drop Jet_chHEF
+  - drop Jet_hfsigmaEtaEta
+  - drop Jet_hfsigmaPhiPhi
+  - drop Jet_chEmEF
+  - drop Jet_muEF
+  - drop Jet_hfcentralEtaStripSize
+  - drop Jet_hfadjacentEtaStripsSize
+  - drop Jet_nMuons
+  - drop Jet_muonIdx1
+  - drop Jet_muonIdx2
+  - drop Jet_nElectrons
+  - drop Jet_electronIdx1
+  - drop Jet_electronIdx2
+  - drop Electron_miniPFRelIso_all
+  - drop Electron_miniPFRelIso_chg
+  - drop Electron_eInvMinusPInv
+  - drop Electron_deltaEtaSC
+  - drop Electron_ip3d
+  - drop Electron_sip3d
+  - drop Electron_mvaTTH
+  - drop Electron_sieie
+  - drop Electron_scEtOverPt
+  - drop Electron_jetRelIso
+  - drop Electron_r9
+  - drop Electron_jetPtRelv2
+  - drop Electron_vidNestedWPBitmap
+  - drop Electron_energyErr
+  - drop Electron_hoe
+  - drop Electron_vidNestedWPBitmapHEEP
+  - drop Electron_dzErr
+  - drop Electron_dxyErr
+  - drop Electron_dr03EcalRecHitSumEt
+  - drop Electron_dr03HcalDepth1TowerSumEt
+  - drop Electron_jetNDauCharged
+  - drop Electron_dr03TkSumPt
+  - drop Electron_dr03TkSumPtHEEP
+  - drop Electron_tightCharge
+  - drop Electron_isPFcand
+  - drop Electron_lostHits
+  - drop Electron_cutBased_HEEP
+  - drop Electron_seedGain
+  - drop Electron_photonIdx
+  - drop Electron_fsrPhotonIdx
+  - drop Muon_miniPFRelIso_all
+  - drop Muon_miniPFRelIso_chg
+  - drop Muon_dxybs
+  - drop Muon_ip3d
+  - drop Muon_sip3d
+  - drop Muon_mvaTTH
+  - drop Muon_segmentComp
+  - drop Muon_jetRelIso
+  - drop Muon_jetPtRelv2
+  - drop Muon_tkRelIso
+  - drop Muon_dzErr
+  - drop Muon_dxyErr
+  - drop Muon_nTrackerLayers
+  - drop Muon_nStations
+  - drop Muon_jetNDauCharged
+  - drop Muon_fsrPhotonIdx
+  - drop Tau_idDecayModeOldDMs
+  - drop Tau_idAntiEleDeadECal
+  - drop ^Tau_leadTk.*$
+  - drop Tau_photonsOutsideSignalCone
+  - drop Tau_puCorr
+  - drop Tau_chargedIso
+  - drop Tau_neutralIso
+  - drop boostedTau_rawMVAoldDMdR032017v2
+  - drop boostedTau_rawAntiEle2018
+  - drop boostedTau_rawMVAnewDM2017v2
+  - drop boostedTau_rawMVAoldDM2017v2
+  - drop ^boostedTau_leadTk.*$
+  - drop boostedTau_puCorr
+  - drop boostedTau_chargedIso
+  - drop boostedTau_neutralIso
+  - drop boostedTau_rawIso
+  - drop boostedTau_rawIsodR03
+  - drop boostedTau_photonsOutsideSignalCone
+  - drop boostedTau_rawAntiEleCat2018
+  - drop ^(n|)SV(_.*|)$
+  - drop ^(n|)OtherPV(_.*|)$
+  - drop ^(n|)Photon(_.*|)$
+  - drop ^(n|)LowPtElectron(_.*|)$
+  - drop ^(n|)SoftActivityJet(.*|)$
+  - drop ^(n|)IsoTrack(_.*|)$
+  - drop ^HTXS_.*$
+  - drop ^(n|)FsrPhoton(_.*|)$
+  - drop ^(n|)GenDressedLepton(_.*|)$
+  - drop ^(n|)GenIsolatedPhoton(_.*|)$
+  - drop ^(n|)GenProton(_.*|)$
+  - drop ^L1_.*$
+  - drop ^HLT_.*$
+  - keep ^HLT_.*Tau.*$
+  - keep ^HLT_PFMET.*$
+  - keep ^HLT_Iso(|Tk)Mu.*$
+  - keep ^HLT_Mu[0-9]+$
+  - keep ^HLT_Ele.*$
+  - drop ^HLT_Ele.*CaloId.*$
+  - drop ^.*_idx$
+  - drop ^.*_p4$
+  - drop ^.*_B[01](T|)$
+
+processing_module:
+  file: skimNano.py
+  function: skim_baseline

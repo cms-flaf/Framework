@@ -1,5 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
+from PhysicsTools.NanoAOD.common_cff import Var
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 from RecoBTag.ONNXRuntime.pfParticleNetAK4_cff import _pfParticleNetAK4JetTagsAll
 from PhysicsTools.NanoAOD.custom_jme_cff import AddParticleNetAK4Scores
@@ -43,4 +44,8 @@ def customise(process):
   process = nanoAOD_addDeepInfoAK4CHS(process, False, False, True)
   process = AddParticleNetAK4Scores(process, 'jetTable')
 
+  process.boostedTauTable.variables.dxy = Var("leadChargedHadrCand().dxy()", float,
+    doc="d_{xy} of lead track with respect to PV, in cm (with sign)", precision=10)
+  process.boostedTauTable.variables.dz = Var("leadChargedHadrCand().dz()", float,
+    doc="d_{z} of lead track with respect to PV, in cm (with sign)", precision=14)
   return process

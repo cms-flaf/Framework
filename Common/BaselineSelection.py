@@ -125,7 +125,7 @@ def ApplyRecoBaseline0(df, apply_filter=True):
     """)
 
     df = df.Define("boostedTau_B0", f"""
-        boostedTau_pt > 40 && abs(boostedTau_eta) < 2.3 && /*abs(boostedTau_dz) < 0.2 &&*/ boostedTau_decayMode != 5
+        boostedTau_pt > 40 && abs(boostedTau_eta) < 2.3 && abs(boostedTau_dz) < 0.2 && boostedTau_decayMode != 5
         && boostedTau_decayMode != 6 && boostedTau_idMVAnewDM2017v2 >= {WorkingPointsBoostedTauVSjet.VVLoose}
     """)
 

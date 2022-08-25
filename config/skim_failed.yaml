@@ -5,4 +5,4 @@ column_filters:
 
 processing_module:
   file: skimNano.py
-  function: skim_failed_baseline
+  function: skim_failed_B0B1

@@ -95,6 +95,8 @@ column_filters:
   - drop ^(n|)GenDressedLepton(_.*|)$
   - drop ^(n|)GenIsolatedPhoton(_.*|)$
   - drop ^(n|)GenProton(_.*|)$
+  - drop ^(n|)Proton(_.*|)$
+  - drop ^(n|)PPSLocalTrack(_.*|)$
   - drop ^L1_.*$
   - drop ^HLT_.*$
   - keep ^HLT_.*Tau.*$
@@ -109,4 +111,4 @@ column_filters:
 
 processing_module:
   file: skimNano.py
-  function: skim_baseline
+  function: skim_B0B1

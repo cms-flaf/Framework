@@ -109,6 +109,15 @@ column_filters:
   - drop ^.*_p4$
   - drop ^.*_B[01](T|)$
 
+column_filters_for_failed:
+  - drop ^.*$
+  - keep ^LHE_.*$
+  - keep genWeight
+
 processing_module:
-  file: skimNano.py
+  file: NanoProd/skimNano.py
   function: skim_B0B1
+
+processing_module_for_failed:
+  file: NanoProd/skimNano.py
+  function: skim_failed_B0B1

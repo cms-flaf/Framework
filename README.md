@@ -33,6 +33,7 @@ source env.sh
 
 1. Try that the code works locally (take one of the miniAOD files as an input). E.g.
    ```sh
+   cp NanoProd/skimNano.py .
    python3 RunKit/nanoProdWrapper.py customise=Framework/NanoProd/customiseNano.customise skimCfg=config/skim.yaml maxEvents=100 sampleType=mc storeFailed=True era=Run2_2018 inputFiles=file:/eos/cms/store/group/phys_tau/kandroso/miniAOD_UL18/TTToSemiLeptonic.root
    ./RunKit/nanoProdCrabJob.sh
    ```
@@ -45,6 +46,10 @@ source env.sh
    ```
    - Use `crab/Run2_2018/*.yaml` to submit all the tasks
    - For more information about available command line arguments run `python3 RunKit/crabOverseer.py --help`
+   - For consecutive runs, if there are no modifications in the configs, it is enough to run `crabOverseer` without any arguments:
+     ```sh
+     python3 RunKit/crabOverseer.py
+     ```
 
 ## How to run nanoAOD->nanoAOD skims production
 ```sh

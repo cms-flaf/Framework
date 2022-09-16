@@ -29,9 +29,11 @@ def create_crab_configs(samples_cfg, output_dir):
     store_failed = sample_type != 'data'
     config = {
       'config': {
-        'sampleType': mc_data,
-        'era': era,
-        'storeFailed': store_failed,
+        'params': {
+          'sampleType': mc_data,
+          'era': era,
+          'storeFailed': store_failed,
+        }
       }
     }
     data = { }

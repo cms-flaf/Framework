@@ -33,14 +33,22 @@ Production should be run on the server that have the crab stageout area mounted 
    - finalOutput
    - renewKerberosTicket
 
-1. Try that the code works locally (take one of the miniAOD files as an input). E.g.
+1. Test that the code works locally (take one of the miniAOD files as an input). E.g.
    ```sh
-   cp NanoProd/skimNano.py .
    python3 RunKit/nanoProdWrapper.py customise=Framework/NanoProd/customiseNano.customise skimCfg=config/skim.yaml maxEvents=100 sampleType=mc storeFailed=True era=Run2_2018 inputFiles=file:/eos/cms/store/group/phys_tau/kandroso/miniAOD_UL18/TTToSemiLeptonic.root
    ./RunKit/nanoProdCrabJob.sh
    ```
    - check that output file `nano.root` is created correctly
 
+1. Test a dryrun crab submission
+   ```sh
+   python3 RunKit/crabOverseer.py --work-area crab_test --cfg config/overseer_cfg.yaml --no-loop config/crab_test.yaml
+   ```
+   - NB. Crab estimates of processing time will not be accurate, ignore them.
+   - After the test, remove `crab_test` directory:
+     ```sh
+     rm -r crab_test
+     ```
 1. Submit tasks using `RunKit/crabOverseer.py` and monitor the process.
    It is recommended to run `crabOverseer` in screen.
    ```sh

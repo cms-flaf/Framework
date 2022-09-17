@@ -127,9 +127,9 @@ column_filters_for_failed:
   - keep ^Pileup_(nPU|nTrueInt)$
 
 processing_module:
-  file: skimNano.py
+  file: NanoProd/skimNano.py
   function: skim_B0B1_MET
 
 processing_module_for_failed:
-  file: skimNano.py
+  file: NanoProd/skimNano.py
   function: skim_failed_B0B1_MET

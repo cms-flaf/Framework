@@ -10,8 +10,9 @@ def Initialize():
     global initialized
     if not initialized:
         import os
-        header_path_Gen = f"{os.environ['ANALYSIS_PATH']}/Common/BaselineGenSelection.h"
-        header_path_Reco = f"{os.environ['ANALYSIS_PATH']}/Common/BaselineRecoSelection.h"
+        headers_dir = os.path.dirname(os.path.abspath(__file__))
+        header_path_Gen = os.path.join(headers_dir, "BaselineGenSelection.h")
+        header_path_Reco = os.path.join(headers_dir, "BaselineRecoSelection.h")
         ROOT.gInterpreter.Declare(f'#include "{header_path_Gen}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Reco}"')
         initialized = True

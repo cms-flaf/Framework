@@ -1,4 +1,9 @@
-import Common.BaselineSelection as Baseline
+
+import os
+if os.path.exists(os.path.join(os.path.dirname(__file__), "BaselineSelection.py")):
+  import BaselineSelection as Baseline
+else:
+  import Common.BaselineSelection as Baseline
 
 def _def_met_cuts(met_thr, met_collections):
   cut = ' || '.join([ f'{v}_pt > {met_thr}' for v in met_collections ])

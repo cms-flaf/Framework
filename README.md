@@ -12,9 +12,11 @@ source env.sh
 ```
 ## How to run miniAOD->nanoAOD skims production
 
+Production should be run on the server that have the crab stageout area mounted to the file system.
+
 1. Load environment on CentOS8 machine
    ```sh
-   source env.sh
+   source $PWD/env.sh
    source /cvmfs/cms.cern.ch/common/crab-setup.sh
    voms-proxy-init -voms cms -rfc -valid 192:00
    ```

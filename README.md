@@ -26,6 +26,11 @@ Production should be run on the server that have the crab stageout area mounted 
    python3 NanoProd/createCrabConfigs.py --samples config/samples_2018.yaml --output crab/Run2_2018
    ```
 
+1. Check that all datasets are present and valid:
+   ```sh
+   cat crab/Run2_2018/all_samples.txt| xargs python3 RunKit/checkDatasetExistance.py
+   ```
+
 1. Modify output and other site-specific settings in `config/overseer_cfg.yaml`. In particular:
    - site
    - crabOutput
@@ -49,6 +54,13 @@ Production should be run on the server that have the crab stageout area mounted 
      ```sh
      rm -r crab_test
      ```
+
+1. Test that post-processing task is known to law:
+   ```sh
+   law index
+   law run CrabNanoProdTaskPostProcess --help
+   ```
+
 1. Submit tasks using `RunKit/crabOverseer.py` and monitor the process.
    It is recommended to run `crabOverseer` in screen.
    ```sh

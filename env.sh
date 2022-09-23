@@ -25,6 +25,7 @@ action() {
     export ANALYSIS_BIG_DATA_PATH="$CENTRAL_STORAGE/tmp/$(whoami)/data"
     export PATH=$PATH:$HOME/.local/bin:$ANALYSIS_PATH/scripts
 
+    run_cmd mkdir -p "$ANALYSIS_DATA_PATH"
     # source /cvmfs/sft.cern.ch/lcg/views/setupViews.sh LCG_101 x86_64-centos7-gcc8-opt
     # conda activate bbtt
 

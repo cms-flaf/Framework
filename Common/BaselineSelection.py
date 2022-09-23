@@ -99,6 +99,10 @@ def ApplyGenBaseline3(df):
     return df.Filter("GenJet_idx[GenJet_B2].size()==2", "Resolved topology")
 
 
+def DefineMETCuts(met_thr, met_collections):
+  cut = ' || '.join([ f'{v}_pt > {met_thr}' for v in met_collections ])
+  return f"( {cut} )"
+
 def ApplyRecoBaseline0(df, apply_filter=True):
     for obj in [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau" ]:
         df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())") \
@@ -143,17 +147,20 @@ def ApplyRecoBaseline0(df, apply_filter=True):
     df = df.Define("Tau_B0T", f"""
         Tau_B0 && (
                       Tau_idDeepTau2017v2p1VSjet >= {WorkingPointsTauVSjet.Medium}
-                   || Tau_idDeepTau2018v2p5VSjet >= {WorkingPointsTauVSjet.Medium} )
+                   || Tau_idDeepTau2018v2p5VSjet >= {WorkingPointsTauVSjet.Loose} )
     """)
 
     df = df.Define("boostedTau_B0T", f"""
         boostedTau_B0 && boostedTau_idMVAnewDM2017v2 >= {WorkingPointsBoostedTauVSjet.Medium}
     """)
 
+    met_cuts = DefineMETCuts(80, ["MET", "DeepMETResolutionTune", "DeepMETResponseTune", "PuppiMET" ])
+
     ch_filters = []
     for leg1_idx in range(len(leg_names)):
         for leg2_idx in range(max(1, leg1_idx), len(leg_names)):
             leg1, leg2 = leg_names[leg1_idx], leg_names[leg2_idx]
+            if leg1 == 'Tau' and leg2 == 'boostedTau': continue
             ch_filter = f"{leg1}{leg2}_B0"
             ch_filters.append(ch_filter)
             if leg1 == leg2:
@@ -164,6 +171,11 @@ def ApplyRecoBaseline0(df, apply_filter=True):
                     || ({leg1}_idx[{leg1}_B0T].size() > 0 && {leg2}_idx[{leg2}_B0].size() > 0)
                 """
             df = df.Define(ch_filter, ch_filter_def)
+        ch_filter = f"{leg1}MET_B0"
+        ch_filters.append(ch_filter)
+        ch_filter_def = f"{leg1}_idx[{leg1}_B0T].size() > 0 && {met_cuts}"
+        df = df.Define(ch_filter, ch_filter_def)
+
     filter_expr = " || ".join(ch_filters)
     if apply_filter:
         return df.Filter(filter_expr, "Reco leptons requirements")

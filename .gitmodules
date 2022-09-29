@@ -1,3 +1,6 @@
 [submodule "RunKit"]
 	path = RunKit
 	url = git@github.com:kandrosov/RunKit.git
+[submodule "HHbtag"]
+	path = HHbtag
+	url = git@github.com:hh-italian-group/HHbtag.git

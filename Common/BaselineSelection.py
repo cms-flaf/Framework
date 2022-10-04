@@ -3,7 +3,7 @@ import os
 from scipy import stats
 import numpy as np
 import enum
-import RunKit.includelibs as IncludeLibs
+import RunKit.includeCMSSWlibs as IncludeLibs
 
 initialized = False
 

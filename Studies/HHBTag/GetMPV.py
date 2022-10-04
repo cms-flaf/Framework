@@ -17,7 +17,7 @@ def GetMPV(inFile):
     df = Baseline.DefineGenObjects(df, 125.)   
     df = df.Define("GenJet_B1","GenJet_pt > 20 && abs(GenJet_eta) < 2.5 && GenJet_b_PF")   
     #df = df.Define("GenJet_B1","GenJet_pt > 50 && abs(GenJet_eta) < 2.5 && GenJet_b_PF")   
-    df = Baseline.ApplyGenBaseline0(df)  
+    df = Baseline.PassGenAcceptance(df)  
     x_max = FindMPV(df)
     return x_max
 

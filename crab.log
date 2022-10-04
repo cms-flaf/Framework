@@ -1,0 +1,5 @@
+DEBUG 2022-09-25 08:02:22.748 UTC: 	 CRAB Client version: v3.220823
+DEBUG 2022-09-25 08:02:22.748 UTC: 	 Running on: Linux lxplus8s17.cern.ch 4.18.0-408.el8.x86_64 #1 SMP Mon Jul 18 17:42:52 UTC 2022 x86_64 x86_64 x86_64 GNU/Linux - CentOS Stream 8
+DEBUG 2022-09-25 08:02:22.748 UTC: 	 Executing command: 'submit'
+DEBUG 2022-09-25 08:02:22.749 UTC: 	 Found CRAB cache file /afs/cern.ch/user/v/vdamante/.crab3
+DEBUG 2022-09-25 08:02:22.749 UTC: 	 Will use CRAB Analysis plugin (i.e. will run an analysis job type).

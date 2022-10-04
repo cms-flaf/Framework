@@ -3,6 +3,7 @@ import os
 from scipy import stats
 import numpy as np
 import enum
+import RunKit.includelibs as IncludeLibs
 
 initialized = False
 
@@ -13,8 +14,12 @@ def Initialize():
         headers_dir = os.path.dirname(os.path.abspath(__file__))
         header_path_Gen = os.path.join(headers_dir, "BaselineGenSelection.h")
         header_path_Reco = os.path.join(headers_dir, "BaselineRecoSelection.h")
+        header_path_HHbTag = os.path.join(headers_dir, "HHbTagScores.h")
         ROOT.gInterpreter.Declare(f'#include "{header_path_Gen}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Reco}"')
+        IncludeLibs.includeLibTool("tensorflow")  
+        ROOT.gInterpreter.Declare(f'#include "{header_path_HHbTag}"')
+        ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 1)')  
         initialized = True
 
 leg_names = [ "Electron", "Muon", "Tau", "boostedTau" ]
@@ -82,20 +87,20 @@ def DefineGenObjects(df, Hbb_AK4mass_mpv):
     df = df.Define("genHbb_isBoosted", "GenPart_pt[genHbbIdx]>550")
     return df
 
-def ApplyGenBaseline0(df):
+def PassGenAcceptance(df):
     return df.Filter("PassGenAcceptance(genHttCand)", "GenHttCand Acceptance")
 
-def ApplyGenBaseline1(df):
+def GenJetSelection(df):
     df = df.Define("GenJet_B1","GenJet_pt > 20 && abs(GenJet_eta) < 2.5 && GenJet_Hbb")
     df = df.Define("GenJetAK8_B1","GenJetAK8_pt > 170 && abs(GenJetAK8_eta) < 2.5 && GenJetAK8_Hbb")
     return df.Filter("GenJet_idx[GenJet_B1].size()==2 || (GenJetAK8_idx[GenJetAK8_B1].size()==1 && genHbb_isBoosted)", "(One)Two b-parton (Fat)jets at least")
 
-def ApplyGenBaseline2(df):
+def GenJetHttOverlapRemoval(df):
     for var in ["GenJet", "GenJetAK8"]:
         df = df.Define(f"{var}_B2", f"RemoveOverlaps({var}_p4, {var}_B1,{{{{genHttCand.leg_p4[0], genHttCand.leg_p4[1]}},}}, 2, 0.5)" )
     return df.Filter("GenJet_idx[GenJet_B2].size()==2 || (GenJetAK8_idx[GenJetAK8_B2].size()==1 && genHbb_isBoosted)", "No overlap between genJets and genHttCands")
 
-def ApplyGenBaseline3(df):
+def RequestOnlyResolvedGenJets(df):
     return df.Filter("GenJet_idx[GenJet_B2].size()==2", "Resolved topology")
 
 
@@ -103,7 +108,7 @@ def DefineMETCuts(met_thr, met_collections):
   cut = ' || '.join([ f'{v}_pt > {met_thr}' for v in met_collections ])
   return f"( {cut} )"
 
-def ApplyRecoBaseline0(df, apply_filter=True):
+def RecoLeptonsSelection(df, apply_filter=True):
     for obj in [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau" ]:
         df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())") \
                .Define(f"{obj}_p4", f"GetP4({obj}_pt, {obj}_eta, {obj}_phi, {obj}_mass, {obj}_idx)")
@@ -183,7 +188,7 @@ def ApplyRecoBaseline0(df, apply_filter=True):
         return df, filter_expr
 
 
-def ApplyRecoBaseline1(df, apply_filter=True):
+def RecoJetAcceptance(df, apply_filter=True):
     df = df.Define("Jet_B1", f"Jet_pt>15 && abs(Jet_eta) < 2.5 && ( Jet_jetId & 2 )")
     df = df.Define("FatJet_B1", "FatJet_msoftdrop > 30 && abs(FatJet_eta) < 2.5")
 
@@ -198,7 +203,7 @@ def ApplyRecoBaseline1(df, apply_filter=True):
         return df, filter_expr
 
 
-def ApplyRecoBaseline2(df):
+def RecoHttCandidateSelection(df):
     df = df.Define("Electron_iso", "Electron_pfRelIso03_all") \
            .Define("Muon_iso", "Muon_pfRelIso04_all") \
            .Define("Tau_iso", "-Tau_rawDeepTau2017v2p1VSjet")
@@ -274,18 +279,22 @@ def ApplyRecoBaseline2(df):
 
 
 
-def ApplyRecoBaseline3(df):
+def RecoJetSelection(df):
     df = df.Define("Jet_B3T", "RemoveOverlaps(Jet_p4, Jet_B1T,{{httCand.leg_p4[0], httCand.leg_p4[1]},}, 2, 0.5)")
     df = df.Define("FatJet_B3T", "RemoveOverlaps(FatJet_p4, FatJet_B1T,{{httCand.leg_p4[0], httCand.leg_p4[1]},}, 2, 0.5)")
     return df.Filter("Jet_idx[Jet_B3T].size()>=2 || FatJet_idx[FatJet_B3T].size()>=1", "Reco Baseline 3")
 
 
-def ApplyRecoBaseline4(df):
+def RequestOnlyResolvedRecoJets(df):
     return df.Filter("Jet_idx[Jet_B3T].size()>=2", "Reco Baseline 4")
 
 
-def ApplyGenRecoJetMatching(df):
+def GenRecoJetMatching(df):
     df = df.Define("Jet_genJetIdx_matched", "GenRecoJetMatching(event,Jet_idx, GenJet_idx, Jet_B3T, GenJet_B2, GenJet_p4, Jet_p4 , 0.3)")
     df = df.Define("Jet_genMatched", "Jet_genJetIdx_matched>=0")
     return df.Filter("Jet_genJetIdx_matched[Jet_genMatched].size()>=2", "Two different gen-reco jet matches at least")
 
+def DefineHbbCand(df):
+    df = df.Define("hhBTagScores", "GetHHBtagScore(Jet_p4,Jet_btagDeepFlavB, MET_pt,  MET_phi, httCand, period, event)") 
+    df = df.Define("HbbCandidate", "GetHbbCandidate(hhBTagScores, Jet_B3T, Jet_p4, Jet_idx)")
+    return df

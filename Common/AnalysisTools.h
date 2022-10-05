@@ -28,26 +28,6 @@ enum class Period : int {
   Run2018 = 4,
 
 };
-/*
-inline int PeriodToHHbTagInput (Period period)
-{
-  const int HHbTagPeriod=-1;
-  switch(period){
-    case Period::Run2016:
-      HHbTagPeriod=2016;
-      break;
-    case Period::Run2016APV:
-      HHbTagPeriod=2016;
-      break;
-    case Period::Run2017:
-      HHbTagPeriod=2017;
-      break;
-    case Period::Run2018:
-      HHbTagPeriod=2018;
-      break;
-  } 
-  return HHbTagPeriod;
-}*/
 
 enum class SampleType : int {
   GluGluToRadion = 1,
@@ -80,24 +60,7 @@ inline std::pair<Leg, Leg> ChannelToLegs(Channel channel)
   return std::make_pair(leg1, leg2);
 }
 
-inline int ChannelToHHbTagInput (Channel channel)
-{
-  int HHbTagChannel=-1;
-  switch(channel){
-    default:
-      break;
-    case Channel::eTau:
-      HHbTagChannel=0;
-      break;
-    case Channel::muTau:
-      HHbTagChannel=1;
-      break;
-    case Channel::tauTau:
-      HHbTagChannel=2;
-      break;
-  } 
-  return HHbTagChannel;
-}
+
 
 template<typename T>
 T DeltaPhi(T phi1, T phi2) {

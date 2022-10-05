@@ -1,7 +1,37 @@
 #include "../HHbtag/interface/HH_BTag.h"
 #include "AnalysisTools.h"
 #include "HHCore.h"
- 
+
+
+inline int PeriodToHHbTagInput (Period period)
+{
+    std::map<Channel, int> periodHHBtag;
+    periodHHBtag.insert(std::make_pair(Period::Run2016, 2016));
+    periodHHBtag.insert(std::make_pair(Period::Run2016APV,2016));
+    periodHHBtag.insert(std::make_pair(Period::Run2017,2017));
+    periodHHBtag.insert(std::make_pair(Period::Run2018, 2018)); 
+    if (periodHHBtag.find(channel) == periodHHBtag.end()) {
+        throw analysis::exception("Period corrispondence not found");
+    }
+    return periodHHBtag.at(period);
+  
+}
+inline int ChannelToHHbTagInput (Channel channel)
+{
+    std::map<Channel, int> channelHHBtag;
+    channelHHBtag.insert(std::make_pair(Channel::eE, -1));
+    channelHHBtag.insert(std::make_pair(Channel::eMu, -1));
+    channelHHBtag.insert(std::make_pair(Channel::muMu, -1));
+    channelHHBtag.insert(std::make_pair(Channel::eTau, 0));
+    channelHHBtag.insert(std::make_pair(Channel::muTau, 1));
+    channelHHBtag.insert(std::make_pair(Channel::tauTau, 2)); 
+    if (channelHHBtag.find(channel) == channelHHBtag.end()) {
+        throw analysis::exception("Channel corrispondence not found");
+    }
+    return channelHHBtag.at(channel);
+  
+}
+
 struct HHBtagWrapper{
     static void Initialize(const std::string& path, int version)
     {

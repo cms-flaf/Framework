@@ -7,7 +7,7 @@ import RunKit.includeCMSSWlibs as IncludeLibs
 
 initialized = False
 
-def Initialize():
+def Initialize(loadTF=False, loadHHBtag=False):
     global initialized
     if not initialized:
         import os
@@ -17,9 +17,11 @@ def Initialize():
         header_path_HHbTag = os.path.join(headers_dir, "HHbTagScores.h")
         ROOT.gInterpreter.Declare(f'#include "{header_path_Gen}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Reco}"')
-        IncludeLibs.includeLibTool("tensorflow")  
-        ROOT.gInterpreter.Declare(f'#include "{header_path_HHbTag}"')
-        ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 1)')  
+        if(loadTF):
+            IncludeLibs.includeLibTool("tensorflow")  
+        if(loadHHBtag):
+            ROOT.gInterpreter.Declare(f'#include "{header_path_HHbTag}"')
+            ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 1)')  
         initialized = True
 
 leg_names = [ "Electron", "Muon", "Tau", "boostedTau" ]
@@ -295,6 +297,6 @@ def GenRecoJetMatching(df):
     return df.Filter("Jet_genJetIdx_matched[Jet_genMatched].size()>=2", "Two different gen-reco jet matches at least")
 
 def DefineHbbCand(df):
-    df = df.Define("hhBTagScores", "GetHHBtagScore(Jet_p4,Jet_btagDeepFlavB, MET_pt,  MET_phi, httCand, period, event)") 
+    df = df.Define("hhBTagScores", "GetHHBtagScore(Jet_B3T, Jet_idx, Jet_p4,Jet_btagDeepFlavB, MET_pt,  MET_phi, httCand, period, event)") 
     df = df.Define("HbbCandidate", "GetHbbCandidate(hhBTagScores, Jet_B3T, Jet_p4, Jet_idx)")
     return df

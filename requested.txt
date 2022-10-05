@@ -9,5 +9,5 @@ pytables
 pyyaml
 root
 rsync
-seaborn 
+seaborn
 uproot

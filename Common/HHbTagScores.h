@@ -1,16 +1,16 @@
 #include "../HHbtag/interface/HH_BTag.h"
 #include "AnalysisTools.h"
 #include "HHCore.h"
-
+#include <map>
 
 inline int PeriodToHHbTagInput (Period period)
 {
-    std::map<Channel, int> periodHHBtag;
+    std::map<Period, int> periodHHBtag;
     periodHHBtag.insert(std::make_pair(Period::Run2016, 2016));
     periodHHBtag.insert(std::make_pair(Period::Run2016APV,2016));
     periodHHBtag.insert(std::make_pair(Period::Run2017,2017));
     periodHHBtag.insert(std::make_pair(Period::Run2018, 2018)); 
-    if (periodHHBtag.find(channel) == periodHHBtag.end()) {
+    if (periodHHBtag.find(period) == periodHHBtag.end()) {
         throw analysis::exception("Period corrispondence not found");
     }
     return periodHHBtag.at(period);

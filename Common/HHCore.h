@@ -23,6 +23,23 @@ struct HTTCand {
   }
 };
 
+struct HbbCand {
+  static constexpr size_t n_legs = 2; 
+  std::array<int, n_legs> leg_index;
+  std::array<LorentzVectorM, n_legs> leg_p4;
+  std::array<float, n_legs> leg_HHbTag;
+  /*
+  bool operator==(const HbbCand& other) const
+  {
+    for(size_t idx = 0; idx < n_legs; ++idx) {
+      if(leg_type[idx] != other.leg_type[idx] || leg_index[idx] != other.leg_index[idx])
+        return false;
+    }
+    return true;
+  }*/
+};
+
+
 std::ostream& operator<<(std::ostream& os, const HTTCand& cand)
 {
   for(size_t n = 0; n < HTTCand::n_legs; ++n) {

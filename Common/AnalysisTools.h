@@ -60,8 +60,6 @@ inline std::pair<Leg, Leg> ChannelToLegs(Channel channel)
   return std::make_pair(leg1, leg2);
 }
 
-
-
 template<typename T>
 T DeltaPhi(T phi1, T phi2) {
   return ROOT::Math::VectorUtil::Phi_mpi_pi(phi2 - phi1);

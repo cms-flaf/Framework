@@ -4,6 +4,14 @@ import Common.BaselineSelection as Baseline
 import Common.Utilities as Utilities
 import Common.ReportTools as ReportTools
 
+def AddVariablesToDf(df, var_list, idx, part_name, part_number, new_vars):
+    for var in var_list:
+        partName = "b"
+        df = df.Define(f"{partName}{part_number}_{var}", f"{part_name}_{var}[{idx}]")
+        new_vars.append(f"{partName}{part_number}_{var}")
+    return df 
+
+
 def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions):
     Baseline.Initialize(True, True)
     df = ROOT.RDataFrame("Events", inFile)
@@ -12,43 +20,69 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions):
     df = df.Define("period", f"static_cast<int>(Period::Run{period})") 
     df = df.Define("X_mass", f"static_cast<int>({X_mass})")
 
-
+    
     df = Baseline.RecoLeptonsSelection(df)
     df = Baseline.RecoJetAcceptance(df)
     df = Baseline.RecoHttCandidateSelection(df)
     df = Baseline.RecoJetSelection(df) 
-    df = Baseline.DefineHbbCand(df) 
-    # define taus observables
-    df = df.Define("Tau1_pt", "httCand.leg_p4[0].Pt()")
-    df = df.Define("Tau1_eta", "httCand.leg_p4[0].Eta()")
-    df = df.Define("Tau1_phi", "httCand.leg_p4[0].Phi()")
-    df = df.Define("Tau1_mass", "httCand.leg_p4[0].M()")
-    df = df.Define("Tau2_pt", "httCand.leg_p4[1].Pt()")
-    df = df.Define("Tau2_eta", "httCand.leg_p4[1].Eta()")
-    df = df.Define("Tau2_phi", "httCand.leg_p4[1].Phi()")
-    df = df.Define("Tau2_mass", "httCand.leg_p4[1].M()") 
-    # define bjets observables 
-    df = df.Define("b1_pt", "HbbCandidate.leg_p4[0].Pt()")
-    df = df.Define("b1_eta", "HbbCandidate.leg_p4[0].Eta()")
-    df = df.Define("b1_phi", "HbbCandidate.leg_p4[0].Phi()")
-    df = df.Define("b1_mass", "HbbCandidate.leg_p4[0].M()")
-    df = df.Define("b1_HHBtagScore", "HbbCandidate.leg_p4[0].M()")
-    df = df.Define("b2_pt", "HbbCandidate.leg_p4[1].Pt()")
-    df = df.Define("b2_eta", "HbbCandidate.leg_p4[1].Eta()")
-    df = df.Define("b2_phi", "HbbCandidate.leg_p4[1].Phi()")
-    df = df.Define("b2_mass", "HbbCandidate.leg_p4[1].M()") 
-    df = df.Define("b2_HHBtagScore", "HbbCandidate.leg_p4[1].M()")  
+    df = Baseline.DefineHbbCand(df)  
+    df = df.Define("channelId","ChannelToHHbTagInput(httCand.channel())")
+    df = df.Define("is_data", "1")
+    df = df.Define("is_TuneCP5", "0")
+    df = df.Define("weight", "1") 
+    df = df.Define("lumi", "luminosityBlock")
+    df = df.Define("evt", "event")
+    deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",\
+                "rawDeepTau2017v2p1VSjet", "rawDeepTau2018v2p5VSe", "rawDeepTau2018v2p5VSmu",\
+                "rawDeepTau2018v2p5VSjet"] 
+    colToSave = ["event","lumi","run","sample", "period", "X_mass","channelId", "is_data","is_TuneCP5",\
+                "MET_pt", "MET_phi","PuppiMET_pt", "PuppiMET_phi",\
+                "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi"] 
+ 
+   
+    for leg_idx in [0,1]:
+        df = df.Define(f"tau{leg_idx+1}_pt", f"httCand.leg_p4[{leg_idx}].Pt()")
+        colToSave.append(f"tau{leg_idx+1}_pt")
+        df = df.Define(f"tau{leg_idx+1}_eta", f"httCand.leg_p4[{leg_idx}].Eta()")
+        colToSave.append(f"tau{leg_idx+1}_eta")
+        df = df.Define(f"tau{leg_idx+1}_phi", f"httCand.leg_p4[{leg_idx}].Phi()")
+        colToSave.append(f"tau{leg_idx+1}_phi")
+        df = df.Define(f"tau{leg_idx+1}_mass", f"httCand.leg_p4[{leg_idx}].M()")
+        colToSave.append(f"tau{leg_idx+1}_mass")
+        df = df.Define(f"tau{leg_idx+1}_charge", f"httCand.leg_charge[{leg_idx}]")
+        colToSave.append(f"tau{leg_idx+1}_charge")
+        for deepTauScore in deepTauScores:
+            df = df.Define(f"tau{leg_idx+1}_{deepTauScore}", f"deepTauScore(Tau_{deepTauScore},\
+            httCand.leg_type[{leg_idx}],httCand.leg_index[{leg_idx}])")
+            colToSave.append(f"tau{leg_idx+1}_{deepTauScore}")
+        df = df.Define(f"b{leg_idx+1}_pt", f"HbbCandidate.leg_p4[{leg_idx}].Pt()")
+        colToSave.append(f"b{leg_idx+1}_pt")
+        df = df.Define(f"b{leg_idx+1}_eta", f"HbbCandidate.leg_p4[{leg_idx}].Eta()")
+        colToSave.append(f"b{leg_idx+1}_eta")
+        df = df.Define(f"b{leg_idx+1}_phi", f"HbbCandidate.leg_p4[{leg_idx}].Phi()")
+        colToSave.append(f"b{leg_idx+1}_phi")
+        df = df.Define(f"b{leg_idx+1}_mass", f"HbbCandidate.leg_p4[{leg_idx}].M()")
+        colToSave.append(f"b{leg_idx+1}_mass")
+        df = df.Define(f"b{leg_idx+1}_HHBtagScore", f"HbbCandidate.leg_HHbTagScore[{leg_idx}]")
+        colToSave.append(f"b{leg_idx+1}_HHBtagScore")
+        
+    df= df.Define("MET_cov00", "MET_covXX")
+    colToSave.append("MET_cov00")
+    df= df.Define("MET_cov01", "MET_covXY")
+    colToSave.append("MET_cov01")
+    df= df.Define("MET_cov11", "MET_covYY")
+    colToSave.append("MET_cov11")
+    df= df.Define("npv", "PV_npvs")
+    colToSave.append("npv")
+    df = df.Define("lhe_HT", "LHE_HT")
+    colToSave.append("lhe_HT")
+
+         
     report = df.Report()
     histReport=ReportTools.SaveReport(report.GetValue()) 
 
-    colToSave = ["event","luminosityBlock","sample", "period", "X_mass",\
-                "firstTau_pt", "firstTau_eta", "firstTau_phi", "firstTau_mass",\
-                "secondTau_pt", "secondTau_eta", "secondTau_phi", "secondTau_mass",\
-                "firstBjet_pt", "firstBjet_eta", "firstBjet_phi", "firstBjet_mass","firstBjet_HHBtagScore",\
-                "secondBjet_pt", "secondBjet_eta", "secondBjet_phi", "secondBjet_mass","secondBjet_HHBtagScore",\
-                "MET_pt", "MET_phi", "PuppiMET_pt", "PuppiMET_phi",\
-                "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi"] 
-
+    
+    
     varToSave = Utilities.ListToVector(colToSave)  
     df.Snapshot("Event", outFile, varToSave, snapshotOptions) 
     outputRootFile= ROOT.TFile(outFile, "UPDATE")

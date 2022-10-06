@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import yaml
-from collections import OrderedDict
 
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True

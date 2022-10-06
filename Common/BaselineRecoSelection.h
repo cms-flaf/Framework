@@ -102,10 +102,6 @@ RVecI GenRecoJetMatching(int event,const RVecI& Jet_idx, const RVecI& GenJet_idx
 }
 
 
-
-
-
-
 HbbCand GetHbbCandidate(const RVecF& HHbTagScores, const RVecB& JetSel,  const RVecLV& Jet_p4, const RVecI& Jet_idx)
 {
   RVecI JetIdxOrdered = ReorderObjects(HHbTagScores, Jet_idx);
@@ -117,7 +113,6 @@ HbbCand GetHbbCandidate(const RVecF& HHbTagScores, const RVecB& JetSel,  const R
     if(!JetSel[jet_idx]) continue;
     HbbCandidate.leg_index[leg_idx] =  jet_idx;
     HbbCandidate.leg_p4[leg_idx] = Jet_p4.at(jet_idx);
-    HbbCandidate.leg_HHbTagScore[leg_idx] = HHbTagScores.at(jet_idx);
     leg_idx++;
     if(leg_idx == HbbCandidate.n_legs) break;
   } 

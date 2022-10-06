@@ -38,13 +38,13 @@ enum class SampleType : int {
 
 
 
-enum class Channel : int {
+enum class Channel : int { 
   eTau = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::tau),
   muTau = static_cast<int>(Leg::mu) * 10 + static_cast<int>(Leg::tau),
   tauTau = static_cast<int>(Leg::tau) * 10 + static_cast<int>(Leg::tau),
   eMu = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::mu),
   eE = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::e),
-  muMu = static_cast<int>(Leg::mu) * 10 + static_cast<int>(Leg::mu)
+  muMu = static_cast<int>(Leg::mu) * 10 + static_cast<int>(Leg::mu),
 };
 
 inline Channel LegsToChannel(Leg leg1, Leg leg2)

@@ -12,7 +12,7 @@ def AddVariablesToDf(df, var_list, idx, part_name, part_number, new_vars):
     return df 
 
 
-def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions):
+def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isData=0):
     Baseline.Initialize(True, True)
     df = ROOT.RDataFrame("Events", inFile)
 
@@ -26,55 +26,79 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions):
     df = Baseline.RecoHttCandidateSelection(df)
     df = Baseline.RecoJetSelection(df) 
     df = Baseline.DefineHbbCand(df)  
-    df = df.Define("channelId","ChannelToHHbTagInput(httCand.channel())")
-    df = df.Define("is_data", "1")
-    df = df.Define("is_TuneCP5", "0")
-    df = df.Define("weight", "1") 
+    df = df.Define("channelId","static_cast<int>(httCand.channel())")
+    df = df.Define("is_data", f"{isData}") 
     df = df.Define("lumi", "luminosityBlock")
     df = df.Define("evt", "event")
     deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",\
                 "rawDeepTau2017v2p1VSjet", "rawDeepTau2018v2p5VSe", "rawDeepTau2018v2p5VSmu",\
-                "rawDeepTau2018v2p5VSjet"] 
-    colToSave = ["event","lumi","run","sample", "period", "X_mass","channelId", "is_data","is_TuneCP5",\
+                "rawDeepTau2018v2p5VSjet", "decayMode"] 
+    JetObservables = ["hadronFlavour","partonFlavour"]
+    colToSave = ["event","lumi","run","sample", "period", "X_mass","channelId", "is_data",\
                 "MET_pt", "MET_phi","PuppiMET_pt", "PuppiMET_phi",\
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi"] 
  
    
     for leg_idx in [0,1]:
         df = df.Define(f"tau{leg_idx+1}_pt", f"httCand.leg_p4[{leg_idx}].Pt()")
-        colToSave.append(f"tau{leg_idx+1}_pt")
         df = df.Define(f"tau{leg_idx+1}_eta", f"httCand.leg_p4[{leg_idx}].Eta()")
-        colToSave.append(f"tau{leg_idx+1}_eta")
         df = df.Define(f"tau{leg_idx+1}_phi", f"httCand.leg_p4[{leg_idx}].Phi()")
-        colToSave.append(f"tau{leg_idx+1}_phi")
         df = df.Define(f"tau{leg_idx+1}_mass", f"httCand.leg_p4[{leg_idx}].M()")
-        colToSave.append(f"tau{leg_idx+1}_mass")
         df = df.Define(f"tau{leg_idx+1}_charge", f"httCand.leg_charge[{leg_idx}]")
+        colToSave.append(f"tau{leg_idx+1}_pt")
+        colToSave.append(f"tau{leg_idx+1}_eta")
+        colToSave.append(f"tau{leg_idx+1}_phi")
+        colToSave.append(f"tau{leg_idx+1}_mass")
         colToSave.append(f"tau{leg_idx+1}_charge")
+        
+        df = df.Define(f"tau{leg_idx+1}_iso", f"RVecF iso;\
+                                    if(httCand.leg_type[{leg_idx}]==Leg::tau)\
+                                        iso.push_back(Tau_iso.at(httCand.leg_index[{leg_idx}]));\
+                                    else if(httCand.leg_type[{leg_idx}]==Leg::mu)\
+                                        iso.push_back(Muon_iso.at(httCand.leg_index[{leg_idx}]));\
+                                    else if(httCand.leg_type[{leg_idx}]==Leg::e)\
+                                        iso.push_back(Electron_iso.at(httCand.leg_index[{leg_idx}]));\
+                                    return iso;")
+        colToSave.append(f"tau{leg_idx+1}_iso")
+        
         for deepTauScore in deepTauScores:
-            df = df.Define(f"tau{leg_idx+1}_{deepTauScore}", f"deepTauScore(Tau_{deepTauScore},\
-            httCand.leg_type[{leg_idx}],httCand.leg_index[{leg_idx}])")
+            df = df.Define(f"tau{leg_idx+1}_{deepTauScore}", f"RVecF deepTauScore ;\
+                                    if(httCand.leg_type[{leg_idx}]!=Leg::tau)\
+                                        deepTauScore.push_back(-1);\
+                                    else\
+                                        deepTauScore.push_back(Tau_{deepTauScore}.at(httCand.leg_index[{leg_idx}]));\
+                                    return deepTauScore;") 
             colToSave.append(f"tau{leg_idx+1}_{deepTauScore}")
+        
         df = df.Define(f"b{leg_idx+1}_pt", f"HbbCandidate.leg_p4[{leg_idx}].Pt()")
-        colToSave.append(f"b{leg_idx+1}_pt")
         df = df.Define(f"b{leg_idx+1}_eta", f"HbbCandidate.leg_p4[{leg_idx}].Eta()")
-        colToSave.append(f"b{leg_idx+1}_eta")
         df = df.Define(f"b{leg_idx+1}_phi", f"HbbCandidate.leg_p4[{leg_idx}].Phi()")
-        colToSave.append(f"b{leg_idx+1}_phi")
         df = df.Define(f"b{leg_idx+1}_mass", f"HbbCandidate.leg_p4[{leg_idx}].M()")
+        colToSave.append(f"b{leg_idx+1}_pt")
+        colToSave.append(f"b{leg_idx+1}_eta")
+        colToSave.append(f"b{leg_idx+1}_phi")
         colToSave.append(f"b{leg_idx+1}_mass")
-        df = df.Define(f"b{leg_idx+1}_HHBtagScore", f"HbbCandidate.leg_HHbTagScore[{leg_idx}]")
-        colToSave.append(f"b{leg_idx+1}_HHBtagScore")
+        for jetVar in JetObservables:
+            df = df.Define(f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")
+            colToSave.append(f"b{leg_idx+1}_{jetVar}")
+        df = df.Define(f"b{leg_idx+1}_HHbtag", f"Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}])")
+        df = df.Define(f"b{leg_idx+1}_DeepFlavour", f"Jet_btagDeepFlavB.at(HbbCandidate.leg_index[{leg_idx}])")
+        df = df.Define(f"b{leg_idx+1}_DeepFlavour_CvsB", f"Jet_btagDeepFlavCvB.at(HbbCandidate.leg_index[{leg_idx}])")
+        df = df.Define(f"b{leg_idx+1}_DeepFlavour_CvsL", f"Jet_btagDeepFlavCvL.at(HbbCandidate.leg_index[{leg_idx}])")
+        colToSave.append(f"b{leg_idx+1}_HHbtag")
+        colToSave.append(f"b{leg_idx+1}_DeepFlavour")
+        colToSave.append(f"b{leg_idx+1}_DeepFlavour_CvsL")
+        colToSave.append(f"b{leg_idx+1}_DeepFlavour_CvsB")
         
     df= df.Define("MET_cov00", "MET_covXX")
-    colToSave.append("MET_cov00")
     df= df.Define("MET_cov01", "MET_covXY")
-    colToSave.append("MET_cov01")
     df= df.Define("MET_cov11", "MET_covYY")
-    colToSave.append("MET_cov11")
     df= df.Define("npv", "PV_npvs")
-    colToSave.append("npv")
     df = df.Define("lhe_HT", "LHE_HT")
+    colToSave.append("MET_cov00")
+    colToSave.append("MET_cov01")
+    colToSave.append("MET_cov11")
+    colToSave.append("npv")
     colToSave.append("lhe_HT")
 
          

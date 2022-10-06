@@ -111,6 +111,8 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
 
 
 } 
+
+
 RVecF deepTauScore(const RVecF& score, Leg leg_type, int leg_idx){
         RVecF deepTau_score;
         if(leg_type!=Leg::tau){

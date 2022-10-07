@@ -34,6 +34,7 @@ def check_good_files(input_files):
         try:
             df = ROOT.RDataFrame("Events", file)
             histo = df.Histo1D("event")
+            histo = histo.GetValue()
             output_files.append(file)
         except:
             bad_files.append(file)

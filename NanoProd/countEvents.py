@@ -27,6 +27,22 @@ def locate_files(folder, dataset_name=None):
                     outputfiles.append(os.path.join(root, file))
     return outputfiles
 
+def check_good_files(input_files):
+    output_files = []
+    bad_files = []
+    for file in input_files:
+        try:
+            df = ROOT.RDataFrame("Events", file)
+            histo = df.Histo1D("event")
+            output_files.append(file)
+        except:
+            bad_files.append(file)
+    if len(bad_files) > 0:
+        print("Corrupted files:")
+        for file in bad_files:
+            print("  - %s" % file)
+    return output_files
+
 def check_files(int_folder, final_folder, sample_file):
     with open(sample_file) as f:
         samples = yaml.load(f, yaml.Loader)
@@ -36,7 +52,10 @@ def check_files(int_folder, final_folder, sample_file):
         miniaod_d = samples[dataset_name]['miniAOD'].split("/")[1]
         int_files = locate_files(os.path.join(int_folder, miniaod_d), dataset_name)
         final_files = locate_files(os.path.join(final_folder, dataset_name))
-        
+
+        int_files = check_good_files(int_files)
+        final_files = check_good_files(final_files)
+
         df1 = ROOT.RDataFrame("Events", tuple(int_files))
         df2 = ROOT.RDataFrame("Events", tuple(final_files))
 

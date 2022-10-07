@@ -45,6 +45,10 @@ def check_good_files(input_files):
     return output_files
 
 def check_files(int_folder, final_folder, sample_file):
+    print("\n{:<50} | {:>11} | {:>12} | {:>10} | {:>11} | {:>11} | {:>22}".format(
+            "dataset", "crab unique", "final unique", "crab count", "final count",
+            "dif uniques", "dif final count-unique"))
+    print("-" * (53 + 14 + 15 + 13 + 14 + 14 + 22))
     with open(sample_file) as f:
         samples = yaml.load(f, yaml.Loader)
 
@@ -60,25 +64,19 @@ def check_files(int_folder, final_folder, sample_file):
         df1 = ROOT.RDataFrame("Events", tuple(int_files))
         df2 = ROOT.RDataFrame("Events", tuple(final_files))
 
-        sum_count = df2.Count()
-        sampletype = getattr(samples[dataset_name], "sampleType", "None") 
+        sum_count = df1.Count()
+        sum_count2 = df2.Count()
 
-        if sampletype != "data":
-            columns1 = df1.AsNumpy(['event'])
-            columns2 = df2.AsNumpy(['event'])
-            sum1 = len(np.unique(columns1['event']))
-            sum2 = len(np.unique(columns2['event']))
-        else:
-            columns1 = df1.AsNumpy(columns=['event', 'run', 'luminosityBlock'])
-            columns1 = np.stack((columns1['event'], columns1['run'], columns1['luminosityBlock']), axis=-1)
-            columns2 = df2.AsNumpy(columns=['event', 'run', 'luminosityBlock'])
-            columns2 = np.stack((columns2['event'], columns2['run'], columns2['luminosityBlock']), axis=-1)
-            sum1 = len(np.unique(columns1, axis=0))
-            sum2 = len(np.unique(columns2, axis=0))
+        columns1 = df1.AsNumpy(columns=['event', 'run', 'luminosityBlock'])
+        columns1 = np.stack((columns1['event'], columns1['run'], columns1['luminosityBlock']), axis=-1)
+        columns2 = df2.AsNumpy(columns=['event', 'run', 'luminosityBlock'])
+        columns2 = np.stack((columns2['event'], columns2['run'], columns2['luminosityBlock']), axis=-1)
+        sum1 = len(np.unique(columns1, axis=0))
+        sum2 = len(np.unique(columns2, axis=0))
 
-        print("{:>50} {:>10} {:>10} {:>10} {:>5} {:>5}".format(
-            dataset_name, sum1, sum2, sum_count.GetValue(),
-            sum1 - sum2, sum2 - sum_count.GetValue()))
+        print("{:<50} | {:>11} | {:>12} | {:>10} | {:>11} | {:>11} | {:>22}".format(
+            dataset_name, sum1, sum2, sum_count.GetValue(), sum_count2.GetValue(),
+            sum1 - sum2, sum2 - sum_count2.GetValue()))
 
 
 if __name__ == "__main__":

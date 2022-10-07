@@ -44,7 +44,6 @@ def check_good_files(input_files):
             print("  - %s" % file)
     return output_files
 
-
 def check_files(int_folder, final_folder, sample_file):
     print("\n{:<50} | {:>11} | {:>12} | {:>10} | {:>11} | {:>11} | {:>22}".format(
             "dataset", "crab unique", "final unique", "crab count", "final count",
@@ -90,8 +89,8 @@ def check_files(int_folder, final_folder, sample_file):
 if __name__ == "__main__":
 
     if len(sys.argv) != 4:
--        print("Usage: python countEvents.py int_folder final_folder sample_file")
--        sys.exit(1)
+-       print("Usage: python countEvents.py int_folder final_folder sample_file")
+-       sys.exit(1)
 
     int_folder = sys.argv[1]
     final_folder = sys.argv[2]

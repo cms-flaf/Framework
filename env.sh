@@ -49,8 +49,10 @@ action() {
         run_cmd cd $CMSSW_VER/src
         run_cmd eval `scramv1 runtime -sh`
         run_cmd mkdir -p Framework/NanoProd/
-        run_cmd ln -s "$this_dir/NanoProd" Framework/NanoProd/python
-        run_cmd scram b -j8
+        run_cmd ln -s "$this_dir/NanoProd" Framework/NanoProd/python  
+        run_cmd mkdir -p HHTools
+        run_cmd ln -s "$this_dir/HHbtag" HHTools/HHbtag
+        run_cmd scram b -j8 
         run_cmd cd "$this_dir"
         run_cmd mkdir -p "$this_dir/soft/CentOS$os_version/bin"
         run_cmd ln -s $(which python3) "$this_dir/soft/CentOS$os_version/bin/python"

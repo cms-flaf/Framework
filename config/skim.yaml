@@ -127,8 +127,8 @@ column_filters_for_failed:
 
 processing_module:
   file: NanoProd/skimNano.py
-  function: skim_B0
+  function: skim_RecoLeptons
 
 processing_module_for_failed:
   file: NanoProd/skimNano.py
-  function: skim_failed_B0
+  function: skim_failed_RecoLeptons

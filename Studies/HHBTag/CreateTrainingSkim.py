@@ -21,25 +21,24 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv, snapshotOptions):
     df = Baseline.DefineGenObjects(df, mpv)
 
     df = df.Define("n_GenJet", "GenJet_idx.size()")
-    df = Baseline.ApplyGenBaseline0(df)
-    df = Baseline.ApplyGenBaseline1(df)
-    df = Baseline.ApplyGenBaseline2(df)
+    df = Baseline.PassGenAcceptance(df)
+    df = Baseline.GenJetSelection(df)
+    df = Baseline.GenJetHttOverlapRemoval(df)
+    df = Baseline.RequestOnlyResolvedGenJets(df)
 
-
-    df = Baseline.ApplyGenBaseline3(df)
-    df = Baseline.ApplyRecoBaseline0(df)
-    df = Baseline.ApplyRecoBaseline1(df)
-    df = Baseline.ApplyRecoBaseline2(df)
-    df = Baseline.ApplyRecoBaseline3(df)
+    df = Baseline.RecoLeptonsSelection(df)
+    df = Baseline.RecoJetAcceptance(df)
+    df = Baseline.RecoHttCandidateSelection(df)
+    df = Baseline.RecoJetSelection(df)
 
     df = df.Define('genChannel', 'genHttCand.channel()')
     df = df.Define('recoChannel', 'httCand.channel()')
 
     df = df.Filter("genChannel == recoChannel", "SameGenRecoChannels")
     df = df.Filter("GenRecoMatching(genHttCand, httCand, 0.2)", "SameGenRecoHTT")
-    df = Baseline.ApplyRecoBaseline4(df)
+    df = Baseline.RequestOnlyResolvedRecoJets(df)
 
-    df = Baseline.ApplyGenRecoJetMatching(df)
+    df = Baseline.GenRecoJetMatching(df)
     df = df.Define("sample", f"static_cast<int>(SampleType::{sample})")
     df = df.Define("period", f"static_cast<int>(Period::Run{period})")
     df = df.Define("X_mass", f"static_cast<int>({X_mass})")

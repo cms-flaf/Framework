@@ -100,3 +100,27 @@ RVecI GenRecoJetMatching(int event,const RVecI& Jet_idx, const RVecI& GenJet_idx
   }
   return recoJetMatched;
 }
+
+
+
+
+
+
+HbbCand GetHbbCandidate(const RVecF& HHbTagScores, const RVecB& JetSel,  const RVecLV& Jet_p4, const RVecI& Jet_idx)
+{
+  RVecI JetIdxOrdered = ReorderObjects(HHbTagScores, Jet_idx);
+  HbbCand HbbCandidate; 
+  
+  int leg_idx = 0;
+  for(int i=0; i<JetIdxOrdered.size(); i++){
+    auto jet_idx = JetIdxOrdered[i];  
+    if(!JetSel[jet_idx]) continue;
+    HbbCandidate.leg_index[leg_idx] =  jet_idx;
+    HbbCandidate.leg_p4[leg_idx] = Jet_p4.at(jet_idx);
+    HbbCandidate.leg_HHbTag[leg_idx] = HHbTagScores.at(jet_idx);
+    leg_idx++;
+    if(leg_idx == HbbCandidate.n_legs) break;
+  } 
+  
+  return HbbCandidate;
+}

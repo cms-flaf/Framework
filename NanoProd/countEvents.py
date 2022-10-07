@@ -66,31 +66,24 @@ def check_files(int_folder, final_folder, sample_file):
 
         sum_count = df1.Count()
         sum_count2 = df2.Count()
-        sampletype = getattr(samples[dataset_name], "sampleType", "None") 
 
-        if sampletype != "data":
-            columns1 = df1.AsNumpy(['event'])
-            columns2 = df2.AsNumpy(['event'])
-            sum1 = len(np.unique(columns1['event']))
-            sum2 = len(np.unique(columns2['event']))
-        else:
-            columns1 = df1.AsNumpy(columns=['event', 'run', 'luminosityBlock'])
-            columns1 = np.stack((columns1['event'], columns1['run'], columns1['luminosityBlock']), axis=-1)
-            columns2 = df2.AsNumpy(columns=['event', 'run', 'luminosityBlock'])
-            columns2 = np.stack((columns2['event'], columns2['run'], columns2['luminosityBlock']), axis=-1)
-            sum1 = len(np.unique(columns1, axis=0))
-            sum2 = len(np.unique(columns2, axis=0))
+        columns1 = df1.AsNumpy(columns=['event', 'run', 'luminosityBlock'])
+        columns1 = np.stack((columns1['event'], columns1['run'], columns1['luminosityBlock']), axis=-1)
+        columns2 = df2.AsNumpy(columns=['event', 'run', 'luminosityBlock'])
+        columns2 = np.stack((columns2['event'], columns2['run'], columns2['luminosityBlock']), axis=-1)
+        sum1 = len(np.unique(columns1, axis=0))
+        sum2 = len(np.unique(columns2, axis=0))
 
         print("{:<50} | {:>11} | {:>12} | {:>10} | {:>11} | {:>11} | {:>22}".format(
             dataset_name, sum1, sum2, sum_count.GetValue(), sum_count2.GetValue(),
-            sum1 - sum2, sum2 - sum_count.GetValue()))
+            sum1 - sum2, sum2 - sum_count2.GetValue()))
 
 
 if __name__ == "__main__":
 
     if len(sys.argv) != 4:
--       print("Usage: python countEvents.py int_folder final_folder sample_file")
--       sys.exit(1)
+        print("Usage: python countEvents.py int_folder final_folder sample_file")
+        sys.exit(1)
 
     int_folder = sys.argv[1]
     final_folder = sys.argv[2]

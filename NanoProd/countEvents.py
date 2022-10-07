@@ -34,9 +34,9 @@ def check_files(int_folder, final_folder, sample_file):
     dataset_names = os.listdir(final_folder)
     for dataset_name in dataset_names:
         miniaod_d = samples[dataset_name]['miniAOD'].split("/")[1]
-        int_files = locate_files(os.path.join(int_folder + miniaod_d), dataset_name)
-        final_files = locate_files(os.path.join(final_folder + dataset_name))
-
+        int_files = locate_files(os.path.join(int_folder, miniaod_d), dataset_name)
+        final_files = locate_files(os.path.join(final_folder, dataset_name))
+        
         df1 = ROOT.RDataFrame("Events", tuple(int_files))
         df2 = ROOT.RDataFrame("Events", tuple(final_files))
 

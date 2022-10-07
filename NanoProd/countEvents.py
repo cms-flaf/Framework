@@ -83,7 +83,9 @@ def check_files(int_folder, final_folder, sample_file):
 
 if __name__ == "__main__":
 
-    assert len(sys.argv) == 4
+    if len(sys.argv) != 4:
+        print("Usage: python countEvents.py int_folder final_folder sample_file")
+        sys.exit(1)
 
     int_folder = sys.argv[1]
     final_folder = sys.argv[2]

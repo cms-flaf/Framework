@@ -300,4 +300,3 @@ def DefineHbbCand(df):
     df = df.Define("Jet_HHBtagScore", "GetHHBtagScore(Jet_B3T, Jet_idx, Jet_p4,Jet_btagDeepFlavB, MET_pt,  MET_phi, httCand, period, event)") 
     df = df.Define("HbbCandidate", "GetHbbCandidate(Jet_HHBtagScore, Jet_B3T, Jet_p4, Jet_idx)")
     return df
-

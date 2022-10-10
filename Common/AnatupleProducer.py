@@ -100,8 +100,8 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
         df = DefineAndAppend(df,f"b{leg_idx+1}_DeepFlavour_CvsB", f"Jet_btagDeepFlavCvB.at(HbbCandidate.leg_index[{leg_idx}])", colToSave)
         df = DefineAndAppend(df,f"b{leg_idx+1}_DeepFlavour_CvsL", f"Jet_btagDeepFlavCvL.at(HbbCandidate.leg_index[{leg_idx}])", colToSave)
         
-    df.Display({"tau1_genMatch", "tau1_recoMatchIdx", "tau1_recoMatchObj"}).Print()
-    df.Display({"tau2_genMatch", "tau2_recoMatchIdx", "tau2_recoMatchObj"}).Print()
+    #df.Display({"tau1_genMatch", "tau1_recoMatchIdx", "tau1_recoMatchObj"}).Print()
+    #df.Display({"tau2_genMatch", "tau2_recoMatchIdx", "tau2_recoMatchObj"}).Print()
     df= DefineAndAppend(df, "MET_cov00", "MET_covXX", colToSave)
     df= DefineAndAppend(df, "MET_cov01", "MET_covXY", colToSave)
     df= DefineAndAppend(df, "MET_cov11", "MET_covYY", colToSave)

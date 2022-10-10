@@ -279,7 +279,19 @@ def RecoHttCandidateSelection(df):
     cand_list_str = ', '.join([ '&' + c for c in cand_columns])
     return df.Define('httCand', f'GetBestHTTCandidate({{ {cand_list_str} }})')
 
-
+def ThirdLeptonVeto(df):
+    df = df.Define("signalElectron_idx","if(httCand.channel==Channel::eTau) return httCand.leg_index[0]; return -100;")\
+            .Define("ElectronVeto_idx", "Electron_idx[Electron_idx!=signalElectron_idx \
+                                        && Electron_pt >10 && abs(Electron_eta) < 2.5 && abs(Electron_dz) < 0.2 \
+                                        && abs(Electron_dxy) < 0.045 && ( Electron_mvaFall17V2Iso_WP90 == true || \
+                                        ( Electron_mvaFall17V2noIso_WP90 == true && Electron_pfRelIso03_all<0.3 ))]")\
+            .Filter("ElectronVeto_idx.size()==0")
+    df = df.Define("signalMuon_idx","if(httCand.channel==Channel::muTau) return httCand.leg_index[0]; else return -100;")\
+            .Define("MuonVeto_idx", "Muon_idx[Muon_idx!=signalMuon_idx &&  Muon_pt >10 && \
+                                    abs(Muon_eta) < 2.4 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045 \
+                                    && ( Muon_mediumId == true ||  Muon_tightId == true ) && Muon_pfRelIso04_all<0.3  ]")\
+            .Filter("MuonVeto_idx.size()==0")
+    return df
 
 def RecoJetSelection(df):
     df = df.Define("Jet_B3T", "RemoveOverlaps(Jet_p4, Jet_B1T,{{httCand.leg_p4[0], httCand.leg_p4[1]},}, 2, 0.5)")

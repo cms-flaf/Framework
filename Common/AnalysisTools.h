@@ -37,8 +37,16 @@ enum class SampleType : int {
 };
 
 
+enum class GenLeptonMatch : int { 
+  Electron = 1, 
+  Muon = 2, 
+  TauElectron = 3,  
+  TauMuon = 4, 
+  Tau = 5, 
+  NoMatch = 6 
+};
 
-enum class Channel : int { 
+enum class Channel : int {
   eTau = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::tau),
   muTau = static_cast<int>(Leg::mu) * 10 + static_cast<int>(Leg::tau),
   tauTau = static_cast<int>(Leg::tau) * 10 + static_cast<int>(Leg::tau),

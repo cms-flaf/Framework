@@ -3,7 +3,7 @@ import os
 from scipy import stats
 import numpy as np
 import enum
-import RunKit.includeCMSSWlibs as IncludeLibs
+
 
 initialized = False
 
@@ -19,6 +19,7 @@ def Initialize(loadTF=False, loadHHBtag=False):
         ROOT.gInterpreter.Declare(f'#include "{header_path_Reco}"')
         if(loadTF):
             IncludeLibs.includeLibTool("tensorflow")  
+            import RunKit.includeCMSSWlibs as IncludeLibs
         if(loadHHBtag):
             ROOT.gInterpreter.Declare(f'#include "{header_path_HHbTag}"')
             ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 1)')  

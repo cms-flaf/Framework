@@ -18,8 +18,8 @@ def Initialize(loadTF=False, loadHHBtag=False):
         ROOT.gInterpreter.Declare(f'#include "{header_path_Gen}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Reco}"')
         if(loadTF):
-            IncludeLibs.includeLibTool("tensorflow")  
             import RunKit.includeCMSSWlibs as IncludeLibs
+            IncludeLibs.includeLibTool("tensorflow")  
         if(loadHHBtag):
             ROOT.gInterpreter.Declare(f'#include "{header_path_HHbTag}"')
             ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 1)')  

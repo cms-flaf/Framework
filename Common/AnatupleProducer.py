@@ -12,7 +12,8 @@ def DefineAndAppend(df, varToDefine, varToCall, colToSave):
 def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isData=0):
     Baseline.Initialize(True, True)
     df = ROOT.RDataFrame("Events", inFile)
-
+    #df = df.Filter("event==252131")
+    df = df.Range(100)
     df = df.Define("sample", f"static_cast<int>(SampleType::{sample})")
     df = df.Define("period", f"static_cast<int>(Period::Run{period})") 
     df = df.Define("X_mass", f"static_cast<int>({X_mass})")
@@ -52,7 +53,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
                 "MET_pt", "MET_phi","PuppiMET_pt", "PuppiMET_phi",\
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi"] 
  
-   
+    
     for leg_idx in [0,1]:
         df = DefineAndAppend(df, f"tau{leg_idx+1}_pt", f"httCand.leg_p4[{leg_idx}].Pt()", colToSave)
         df = DefineAndAppend(df, f"tau{leg_idx+1}_eta", f"httCand.leg_p4[{leg_idx}].Eta()", colToSave)
@@ -64,7 +65,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
                           GenPart_pt, GenPart_eta, GenPart_phi,\
                           GenPart_mass, GenPart_statusFlags)")
         df = DefineAndAppend(df,f"tau{leg_idx+1}_genMatch", f"static_cast<int>(tau{leg_idx+1}_genMatch_class);" , colToSave)
-        df = df.Define(f"tau{leg_idx+1}_recoMatch_pair", f"RecoTauMatching(httCand.leg_p4[{leg_idx}], Jet_p4,Electron_p4, Muon_p4 )")
+        df = df.Define(f"tau{leg_idx+1}_recoMatch_pair", f"RecoTauMatching(httCand.leg_p4[{leg_idx}], Jet_p4)")
         df = DefineAndAppend(df,f"tau{leg_idx+1}_recoMatchIdx", f"static_cast<int>(tau{leg_idx+1}_recoMatch_pair.first);" , colToSave)
         df = DefineAndAppend(df,f"tau{leg_idx+1}_recoMatchObj", f"static_cast<int>(tau{leg_idx+1}_recoMatch_pair.second);" , colToSave)
 
@@ -98,9 +99,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
         df = DefineAndAppend(df,f"b{leg_idx+1}_DeepFlavour", f"Jet_btagDeepFlavB.at(HbbCandidate.leg_index[{leg_idx}])", colToSave)
         df = DefineAndAppend(df,f"b{leg_idx+1}_DeepFlavour_CvsB", f"Jet_btagDeepFlavCvB.at(HbbCandidate.leg_index[{leg_idx}])", colToSave)
         df = DefineAndAppend(df,f"b{leg_idx+1}_DeepFlavour_CvsL", f"Jet_btagDeepFlavCvL.at(HbbCandidate.leg_index[{leg_idx}])", colToSave)
-        
-    #df.Display({"tau1_genMatch", "tau1_recoMatchIdx", "tau1_recoMatchObj"}).Print()
-    #df.Display({"tau2_genMatch", "tau2_recoMatchIdx", "tau2_recoMatchObj"}).Print()
+        df = df.Define(f"b{leg_idx+1}_recoMatch_pair", f"RecoTauMatching(HbbCandidate.leg_p4[{leg_idx}], Jet_p4)")
     
     df =DefineAndAppend(df, "matched_jets_pt", "RVecF matchedJetsPt; \
                                         if(tau1_recoMatch_pair.second == Leg::jet && tau1_recoMatch_pair.first>=0)\
@@ -161,11 +160,52 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
                                         if(matchedJetsidx.empty()){matchedJetsidx.push_back(-1);}\
                                         return matchedJetsidx;", \
                                         colToSave)
-    df.Filter("tau1_recoMatchObj == 4 || tau2_recoMatchObj == 4 ").Display({"matched_jets_hadronFlavour", "matched_jets_partonFlavour", "matched_jets_idx"}).Print()
+
+    ############################################################################################################
+
+    df =DefineAndAppend(df, "matched_b_jets_partonFlavour", "RVecI matchedJetspartonFlavour; \
+                                        if(b1_recoMatch_pair.second == Leg::jet && b1_recoMatch_pair.first>=0)\
+                                            { matchedJetspartonFlavour.push_back(Jet_partonFlavour.at(b1_recoMatch_pair.first));}\
+                                        if(b2_recoMatch_pair.second == Leg::jet && b2_recoMatch_pair.first>=0)\
+                                            { matchedJetspartonFlavour.push_back(Jet_partonFlavour.at(b2_recoMatch_pair.first));} \
+                                        if(matchedJetspartonFlavour.empty()){matchedJetspartonFlavour.push_back(-1);}\
+                                        return matchedJetspartonFlavour;", \
+                                        colToSave)
+    
+    df =DefineAndAppend(df, "matched_b_jets_hadronFlavour", "RVecI matchedJetshadronFlavour; \
+                                        if(b1_recoMatch_pair.second == Leg::jet && b1_recoMatch_pair.first>=0)\
+                                            { matchedJetshadronFlavour.push_back(Jet_hadronFlavour.at(b1_recoMatch_pair.first));}\
+                                        if(b2_recoMatch_pair.second == Leg::jet && b2_recoMatch_pair.first>=0)\
+                                            { matchedJetshadronFlavour.push_back(Jet_hadronFlavour.at(b2_recoMatch_pair.first));} \
+                                        if(matchedJetshadronFlavour.empty()){matchedJetshadronFlavour.push_back(-1);}\
+                                        return matchedJetshadronFlavour;", \
+                                        colToSave)
+    
+    df =DefineAndAppend(df, "matched_b_jets_idx", "RVecI matchedJetsidx; \
+                                        if(b1_recoMatch_pair.second == Leg::jet && b1_recoMatch_pair.first>=0)\
+                                            { matchedJetsidx.push_back(Jet_idx.at(b1_recoMatch_pair.first));}\
+                                        if(b2_recoMatch_pair.second == Leg::jet && b2_recoMatch_pair.first>=0)\
+                                            { matchedJetsidx.push_back(Jet_idx.at(b2_recoMatch_pair.first));} \
+                                        if(matchedJetsidx.empty()){matchedJetsidx.push_back(-1);}\
+                                        return matchedJetsidx;", \
+                                        colToSave)
+    
+    #df.Display({"event","matched_jets_hadronFlavour","matched_jets_partonFlavour", "matched_jets_idx"}).Print()
+    #df.Define("Jet_size", "Jet_hadronFlavour.size()").Display({"Jet_hadronFlavour","Jet_partonFlavour","Jet_idx","Jet_size"}, 100).Print() 
+    #df.Display({"Jet_hadronFlavour","Jet_partonFlavour"}, 100).Print()  
+    #df.Display({"matched_jets_pt","matched_jets_eta", "matched_jets_phi", "matched_jets_m"}).Print() 
+    #df.Display({"channelId"}).Print()
+    #df.Display({"tau1_genMatch", "tau1_recoMatchIdx", "tau1_recoMatchObj"}).Print()
+    #df.Display({"event","matched_jets_hadronFlavour","matched_jets_partonFlavour", "matched_jets_idx"}).Print()
+    #df.Display({"event","matched_b_jets_hadronFlavour","matched_b_jets_partonFlavour", "matched_b_jets_idx"}).Print()
+    #df.Display({"tau2_genMatch", "tau2_recoMatchIdx", "tau2_recoMatchObj"}).Print()
+    '''
+    df.Filter("tau1_recoMatchObj == 4 || tau2_recoMatchObj == 4 ").Display({"event","matched_jets_hadronFlavour","matched_jets_partonFlavour", "matched_jets_idx"}).Print()
     df.Filter("tau1_recoMatchObj == 4 || tau2_recoMatchObj == 4 ").Display({"matched_jets_pt","matched_jets_eta", "matched_jets_phi", "matched_jets_m"}).Print() 
     
     df.Filter("tau1_recoMatchObj == 4 || tau2_recoMatchObj == 4 ").Display({"tau1_genMatch", "tau1_recoMatchIdx", "tau1_recoMatchObj"}).Print()
     df.Filter("tau1_recoMatchObj == 4 || tau2_recoMatchObj == 4 ").Display({"tau2_genMatch", "tau2_recoMatchIdx", "tau2_recoMatchObj"}).Print()
+    '''
     df= DefineAndAppend(df, "MET_cov00", "MET_covXX", colToSave)
     df= DefineAndAppend(df, "MET_cov01", "MET_covXY", colToSave)
     df= DefineAndAppend(df, "MET_cov11", "MET_covYY", colToSave)
@@ -178,7 +218,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
 
     
     
-    varToSave = Utilities.ListToVector(colToSave)  
+    varToSave = Utilities.ListToVector(colToSave)   
     df.Snapshot("Event", outFile, varToSave, snapshotOptions) 
     outputRootFile= ROOT.TFile(outFile, "UPDATE")
     outputRootFile.WriteTObject(histReport, "Report", "Overwrite")

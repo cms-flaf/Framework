@@ -152,22 +152,24 @@ GenLeptonMatch GenRecoLepMatching(const LorentzVectorM& tau_p4,
   return GenLeptonMatch::NoMatch;
 }
 
-std::pair<int, Leg> RecoTauMatching(const LorentzVectorM& tau_p4, const RVecLV& Jet_p4,const RVecLV& Electron_p4, const RVecLV& Muon_p4 ){
-   const float deltaR_thr= 0.5;
+//std::pair<int, Leg> RecoTauMatching(const LorentzVectorM& tau_p4, const RVecLV& Jet_p4,const RVecLV& Electron_p4, const RVecLV& Muon_p4 ){
+std::pair<int, Leg> RecoTauMatching(const LorentzVectorM& tau_p4, const RVecLV& Jet_p4){
+   const float deltaR_thr= 0.3;
   float deltaR_min = 100;
   
   int current_idx = -1;
   Leg current_leg = Leg::jet;
 
   for(int jetIdx =0; jetIdx<Jet_p4.size(); jetIdx++){  
-    auto dR_tauJet= ROOT::Math::VectorUtil::DeltaR(tau_p4, Jet_p4.at(jetIdx));
+    auto dR_tauJet= ROOT::Math::VectorUtil::DeltaR(tau_p4, Jet_p4.at(jetIdx)); 
     if ( dR_tauJet > deltaR_thr ){continue;}
     if ( dR_tauJet > deltaR_min ) {continue;}
     else { 
       deltaR_min = dR_tauJet ; 
       current_idx = jetIdx;
     }
-  }
+  } 
+  /*
   for(int muonIdx =0; muonIdx<Muon_p4.size(); muonIdx++){  
     auto dR_tauMu= ROOT::Math::VectorUtil::DeltaR(tau_p4, Muon_p4.at(muonIdx));
     if ( dR_tauMu > deltaR_thr ){continue;}
@@ -187,7 +189,7 @@ std::pair<int, Leg> RecoTauMatching(const LorentzVectorM& tau_p4, const RVecLV& 
       current_idx = electronIdx;
       current_leg = Leg::e;
     }
-  }
+  }*/
   return std::make_pair(current_idx, current_leg);
   
 }

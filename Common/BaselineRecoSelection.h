@@ -109,7 +109,7 @@ GenLeptonMatch GenRecoLepMatching(const LorentzVectorM& tau_p4,
       return GenLeptonMatch::Muon;
     }
     if(std::abs(GenPart_pdgId.at(genIdx))==15) { // tau --> need to check what are doughters isDirectPromptTauDecayProduct
-        if(genLep_p4.Pt()<15){
+        if(genLep_p4.Pt()<8){
           continue;
         }
         int nElectron =0 ;
@@ -136,10 +136,10 @@ GenLeptonMatch GenRecoLepMatching(const LorentzVectorM& tau_p4,
           }
         }
         if(nChHad>=1 || nNeutHad>=1){
-          return GenLeptonMatch::Tau;
-        }
-        if(genLep_p4.Pt()<8){
+          if(genLep_p4.Pt()<15){
           continue;
+        }
+          return GenLeptonMatch::Tau;
         }
         if(nNeutrinos==2 && nElectron==1){
           return GenLeptonMatch::TauElectron;
@@ -152,8 +152,8 @@ GenLeptonMatch GenRecoLepMatching(const LorentzVectorM& tau_p4,
   return GenLeptonMatch::NoMatch;
 }
 
-//std::pair<int, Leg> RecoTauMatching(const LorentzVectorM& tau_p4, const RVecLV& Jet_p4,const RVecLV& Electron_p4, const RVecLV& Muon_p4 ){
-std::pair<int, Leg> RecoTauMatching(const LorentzVectorM& tau_p4, const RVecLV& Jet_p4){
+
+int RecoTauMatching(const LorentzVectorM& tau_p4, const RVecLV& Jet_p4){
    const float deltaR_thr= 0.3;
   float deltaR_min = 100;
   
@@ -169,28 +169,7 @@ std::pair<int, Leg> RecoTauMatching(const LorentzVectorM& tau_p4, const RVecLV& 
       current_idx = jetIdx;
     }
   } 
-  /*
-  for(int muonIdx =0; muonIdx<Muon_p4.size(); muonIdx++){  
-    auto dR_tauMu= ROOT::Math::VectorUtil::DeltaR(tau_p4, Muon_p4.at(muonIdx));
-    if ( dR_tauMu > deltaR_thr ){continue;}
-    if ( dR_tauMu > deltaR_min ) {continue;}
-    else { 
-      deltaR_min = dR_tauMu ; 
-      current_idx = muonIdx;
-      current_leg = Leg::mu;
-    }
-  }
-  for(int electronIdx =0; electronIdx<Electron_p4.size(); electronIdx++){  
-    auto dR_tauEle= ROOT::Math::VectorUtil::DeltaR(tau_p4, Electron_p4.at(electronIdx));
-    if ( dR_tauEle > deltaR_thr ){continue;}
-    if ( dR_tauEle > deltaR_min ) {continue;}
-    else { 
-      deltaR_min = dR_tauEle ; 
-      current_idx = electronIdx;
-      current_leg = Leg::e;
-    }
-  }*/
-  return std::make_pair(current_idx, current_leg);
+  return current_idx;
   
 }
 

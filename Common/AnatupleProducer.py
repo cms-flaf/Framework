@@ -11,30 +11,13 @@ def DefineAndAppend(df, varToDefine, varToCall, colToSave):
 
 def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isData=0):
     Baseline.Initialize(True, True)
-    df = ROOT.RDataFrame("Events", inFile)
-    #df = df.Filter("event==252131")
+    df = ROOT.RDataFrame("Events", inFile) 
     df = df.Range(100)
     df = df.Define("sample", f"static_cast<int>(SampleType::{sample})")
     df = df.Define("period", f"static_cast<int>(Period::Run{period})") 
     df = df.Define("X_mass", f"static_cast<int>({X_mass})")
     
     df = df.Define("GenPart_daughters", "GetDaughters(GenPart_genPartIdxMother)")
-    '''
-    df = df.Filter("event==76003").Define("printEvent", "int prova= 0; for(int i=0; i<GenPart_pdgId.size(); i++) { \
-    const GenStatusFlags status(GenPart_statusFlags.at(i));\
-    if(GenPart_daughters.at(i).size()<1 || !status.isLastCopy()) continue;\
-    if(std::abs(GenPart_pdgId.at(i))!=15) continue;\
-    std::cout << \" pdgID = \" << GenPart_pdgId[i] <<\"\t Mother pdgID = \" <<GenPart_pdgId[GenPart_genPartIdxMother[i]] << std::endl;\
-    std::cout << \" doughter pdgID = \" ;\
-    for(int j=0; j<GenPart_daughters[i].size(); j++) {\
-    std::cout << GenPart_pdgId[GenPart_daughters[i][j]] <<  \" \t \";\
-    }\
-    std::cout<<std::endl;\
-    std::cout<<std::endl;\
-    } return prova; ")
-
-    df.Filter("event==76003").Display({"printEvent"}).Print()
-    '''
     df = Baseline.RecoLeptonsSelection(df)
     df = Baseline.RecoJetAcceptance(df)
     df = Baseline.RecoHttCandidateSelection(df)
@@ -65,12 +48,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
                           GenPart_pt, GenPart_eta, GenPart_phi,\
                           GenPart_mass, GenPart_statusFlags)")
         df = DefineAndAppend(df,f"tau{leg_idx+1}_genMatch", f"static_cast<int>(tau{leg_idx+1}_genMatch_class);" , colToSave)
-        df = df.Define(f"tau{leg_idx+1}_recoMatch_pair", f"RecoTauMatching(httCand.leg_p4[{leg_idx}], Jet_p4)")
-        df = DefineAndAppend(df,f"tau{leg_idx+1}_recoMatchIdx", f"static_cast<int>(tau{leg_idx+1}_recoMatch_pair.first);" , colToSave)
-        df = DefineAndAppend(df,f"tau{leg_idx+1}_recoMatchObj", f"static_cast<int>(tau{leg_idx+1}_recoMatch_pair.second);" , colToSave)
-
-        
-        
+        df = df.Define(f"tau{leg_idx+1}_recoJetMatchIdx", f"RecoTauMatching(httCand.leg_p4[{leg_idx}], Jet_p4)")
         df = DefineAndAppend(df, f"tau{leg_idx+1}_iso", f"Float_t iso;\
                                     if(httCand.leg_type[{leg_idx}]==Leg::tau)\
                                         iso=(Tau_iso.at(httCand.leg_index[{leg_idx}]));\
@@ -79,7 +57,6 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
                                     else if(httCand.leg_type[{leg_idx}]==Leg::e)\
                                         iso=(Electron_iso.at(httCand.leg_index[{leg_idx}]));\
                                     return iso;", colToSave)
-        
         for deepTauScore in deepTauScores:
             df = DefineAndAppend(df, f"tau{leg_idx+1}_{deepTauScore}", f"Float_t deepTauScore ;\
                                     if(httCand.leg_type[{leg_idx}]!=Leg::tau)\
@@ -87,8 +64,6 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
                                     else\
                                         deepTauScore=(Tau_{deepTauScore}.at(httCand.leg_index[{leg_idx}]));\
                                     return deepTauScore;", colToSave) 
-            
-        
         df = DefineAndAppend(df,f"b{leg_idx+1}_pt", f"HbbCandidate.leg_p4[{leg_idx}].Pt()",colToSave)
         df = DefineAndAppend(df,f"b{leg_idx+1}_eta", f"HbbCandidate.leg_p4[{leg_idx}].Eta()",colToSave)
         df = DefineAndAppend(df,f"b{leg_idx+1}_phi", f"HbbCandidate.leg_p4[{leg_idx}].Phi()",colToSave)
@@ -99,97 +74,68 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
         df = DefineAndAppend(df,f"b{leg_idx+1}_DeepFlavour", f"Jet_btagDeepFlavB.at(HbbCandidate.leg_index[{leg_idx}])", colToSave)
         df = DefineAndAppend(df,f"b{leg_idx+1}_DeepFlavour_CvsB", f"Jet_btagDeepFlavCvB.at(HbbCandidate.leg_index[{leg_idx}])", colToSave)
         df = DefineAndAppend(df,f"b{leg_idx+1}_DeepFlavour_CvsL", f"Jet_btagDeepFlavCvL.at(HbbCandidate.leg_index[{leg_idx}])", colToSave)
-        df = df.Define(f"b{leg_idx+1}_recoMatch_pair", f"RecoTauMatching(HbbCandidate.leg_p4[{leg_idx}], Jet_p4)")
+        
     
     df =DefineAndAppend(df, "matched_jets_pt", "RVecF matchedJetsPt; \
-                                        if(tau1_recoMatch_pair.second == Leg::jet && tau1_recoMatch_pair.first>=0)\
-                                            { matchedJetsPt.push_back(Jet_p4.at(tau1_recoMatch_pair.first).Pt());}\
-                                        if(tau2_recoMatch_pair.second == Leg::jet && tau2_recoMatch_pair.first>=0)\
-                                            { matchedJetsPt.push_back(Jet_p4.at(tau2_recoMatch_pair.first).Pt());} \
+                                        if(tau1_recoJetMatchIdx>=0)\
+                                            { matchedJetsPt.push_back(Jet_p4.at(tau1_recoJetMatchIdx).Pt());}\
+                                        if(tau2_recoJetMatchIdx>=0)\
+                                            { matchedJetsPt.push_back(Jet_p4.at(tau2_recoJetMatchIdx).Pt());} \
                                         if(matchedJetsPt.empty()){matchedJetsPt.push_back(-10000.); }\
                                         return matchedJetsPt;",\
                                         colToSave)
     df =DefineAndAppend(df, "matched_jets_eta", "RVecF matchedJetsEta; \
-                                        if(tau1_recoMatch_pair.second == Leg::jet && tau1_recoMatch_pair.first>=0)\
-                                            { matchedJetsEta.push_back(Jet_p4.at(tau1_recoMatch_pair.first).Eta());}\
-                                        if(tau2_recoMatch_pair.second == Leg::jet && tau2_recoMatch_pair.first>=0)\
-                                            { matchedJetsEta.push_back(Jet_p4.at(tau2_recoMatch_pair.first).Eta());} \
+                                        if(tau1_recoJetMatchIdx>=0)\
+                                            { matchedJetsEta.push_back(Jet_p4.at(tau1_recoJetMatchIdx).Eta());}\
+                                        if(tau2_recoJetMatchIdx>=0)\
+                                            { matchedJetsEta.push_back(Jet_p4.at(tau2_recoJetMatchIdx).Eta());} \
                                         if(matchedJetsEta.empty()){matchedJetsEta.push_back(-10000.); }\
                                         return matchedJetsEta;",\
                                         colToSave)
     df =DefineAndAppend(df, "matched_jets_phi", "RVecF matchedJetsPhi; \
-                                        if(tau1_recoMatch_pair.second == Leg::jet && tau1_recoMatch_pair.first>=0)\
-                                            { matchedJetsPhi.push_back(Jet_p4.at(tau1_recoMatch_pair.first).Phi());}\
-                                        if(tau2_recoMatch_pair.second == Leg::jet && tau2_recoMatch_pair.first>=0)\
-                                            { matchedJetsPhi.push_back(Jet_p4.at(tau2_recoMatch_pair.first).Phi());} \
+                                        if(tau1_recoJetMatchIdx>=0)\
+                                            { matchedJetsPhi.push_back(Jet_p4.at(tau1_recoJetMatchIdx).Phi());}\
+                                        if(tau2_recoJetMatchIdx>=0)\
+                                            { matchedJetsPhi.push_back(Jet_p4.at(tau2_recoJetMatchIdx).Phi());} \
                                         if(matchedJetsPhi.empty()){matchedJetsPhi.push_back(-10000.); }\
                                         return matchedJetsPhi;",\
                                         colToSave)
     df =DefineAndAppend(df, "matched_jets_m", "RVecF matchedJetsM; \
-                                        if(tau1_recoMatch_pair.second == Leg::jet && tau1_recoMatch_pair.first>=0)\
-                                            { matchedJetsM.push_back(Jet_p4.at(tau1_recoMatch_pair.first).M());}\
-                                        if(tau2_recoMatch_pair.second == Leg::jet && tau2_recoMatch_pair.first>=0)\
-                                            { matchedJetsM.push_back(Jet_p4.at(tau2_recoMatch_pair.first).M());} \
+                                        if(tau1_recoJetMatchIdx>=0)\
+                                            { matchedJetsM.push_back(Jet_p4.at(tau1_recoJetMatchIdx).M());}\
+                                        if(tau2_recoJetMatchIdx>=0)\
+                                            { matchedJetsM.push_back(Jet_p4.at(tau2_recoJetMatchIdx).M());} \
                                         if(matchedJetsM.empty()){matchedJetsM.push_back(-10000.); }\
                                         return matchedJetsM;",\
                                         colToSave)
     
     df =DefineAndAppend(df, "matched_jets_partonFlavour", "RVecI matchedJetspartonFlavour; \
-                                        if(tau1_recoMatch_pair.second == Leg::jet && tau1_recoMatch_pair.first>=0)\
-                                            { matchedJetspartonFlavour.push_back(Jet_partonFlavour.at(tau1_recoMatch_pair.first));}\
-                                        if(tau2_recoMatch_pair.second == Leg::jet && tau2_recoMatch_pair.first>=0)\
-                                            { matchedJetspartonFlavour.push_back(Jet_partonFlavour.at(tau2_recoMatch_pair.first));} \
+                                        if(tau1_recoJetMatchIdx>=0)\
+                                            { matchedJetspartonFlavour.push_back(Jet_partonFlavour.at(tau1_recoJetMatchIdx));}\
+                                        if(tau2_recoJetMatchIdx>=0)\
+                                            { matchedJetspartonFlavour.push_back(Jet_partonFlavour.at(tau2_recoJetMatchIdx));} \
                                         if(matchedJetspartonFlavour.empty()){matchedJetspartonFlavour.push_back(-1);}\
                                         return matchedJetspartonFlavour;", \
                                         colToSave)
     
     df =DefineAndAppend(df, "matched_jets_hadronFlavour", "RVecI matchedJetshadronFlavour; \
-                                        if(tau1_recoMatch_pair.second == Leg::jet && tau1_recoMatch_pair.first>=0)\
-                                            { matchedJetshadronFlavour.push_back(Jet_hadronFlavour.at(tau1_recoMatch_pair.first));}\
-                                        if(tau2_recoMatch_pair.second == Leg::jet && tau2_recoMatch_pair.first>=0)\
-                                            { matchedJetshadronFlavour.push_back(Jet_hadronFlavour.at(tau2_recoMatch_pair.first));} \
+                                        if(tau1_recoJetMatchIdx>=0)\
+                                            { matchedJetshadronFlavour.push_back(Jet_hadronFlavour.at(tau1_recoJetMatchIdx));}\
+                                        if(tau2_recoJetMatchIdx>=0)\
+                                            { matchedJetshadronFlavour.push_back(Jet_hadronFlavour.at(tau2_recoJetMatchIdx));} \
                                         if(matchedJetshadronFlavour.empty()){matchedJetshadronFlavour.push_back(-1);}\
                                         return matchedJetshadronFlavour;", \
                                         colToSave)
     
     df =DefineAndAppend(df, "matched_jets_idx", "RVecI matchedJetsidx; \
-                                        if(tau1_recoMatch_pair.second == Leg::jet && tau1_recoMatch_pair.first>=0)\
-                                            { matchedJetsidx.push_back(Jet_idx.at(tau1_recoMatch_pair.first));}\
-                                        if(tau2_recoMatch_pair.second == Leg::jet && tau2_recoMatch_pair.first>=0)\
-                                            { matchedJetsidx.push_back(Jet_idx.at(tau2_recoMatch_pair.first));} \
+                                        if(tau1_recoJetMatchIdx>=0)\
+                                            { matchedJetsidx.push_back(Jet_idx.at(tau1_recoJetMatchIdx));}\
+                                        if(tau2_recoJetMatchIdx>=0)\
+                                            { matchedJetsidx.push_back(Jet_idx.at(tau2_recoJetMatchIdx));} \
                                         if(matchedJetsidx.empty()){matchedJetsidx.push_back(-1);}\
                                         return matchedJetsidx;", \
                                         colToSave)
 
-    ############################################################################################################
-
-    df =DefineAndAppend(df, "matched_b_jets_partonFlavour", "RVecI matchedJetspartonFlavour; \
-                                        if(b1_recoMatch_pair.second == Leg::jet && b1_recoMatch_pair.first>=0)\
-                                            { matchedJetspartonFlavour.push_back(Jet_partonFlavour.at(b1_recoMatch_pair.first));}\
-                                        if(b2_recoMatch_pair.second == Leg::jet && b2_recoMatch_pair.first>=0)\
-                                            { matchedJetspartonFlavour.push_back(Jet_partonFlavour.at(b2_recoMatch_pair.first));} \
-                                        if(matchedJetspartonFlavour.empty()){matchedJetspartonFlavour.push_back(-1);}\
-                                        return matchedJetspartonFlavour;", \
-                                        colToSave)
-    
-    df =DefineAndAppend(df, "matched_b_jets_hadronFlavour", "RVecI matchedJetshadronFlavour; \
-                                        if(b1_recoMatch_pair.second == Leg::jet && b1_recoMatch_pair.first>=0)\
-                                            { matchedJetshadronFlavour.push_back(Jet_hadronFlavour.at(b1_recoMatch_pair.first));}\
-                                        if(b2_recoMatch_pair.second == Leg::jet && b2_recoMatch_pair.first>=0)\
-                                            { matchedJetshadronFlavour.push_back(Jet_hadronFlavour.at(b2_recoMatch_pair.first));} \
-                                        if(matchedJetshadronFlavour.empty()){matchedJetshadronFlavour.push_back(-1);}\
-                                        return matchedJetshadronFlavour;", \
-                                        colToSave)
-    
-    df =DefineAndAppend(df, "matched_b_jets_idx", "RVecI matchedJetsidx; \
-                                        if(b1_recoMatch_pair.second == Leg::jet && b1_recoMatch_pair.first>=0)\
-                                            { matchedJetsidx.push_back(Jet_idx.at(b1_recoMatch_pair.first));}\
-                                        if(b2_recoMatch_pair.second == Leg::jet && b2_recoMatch_pair.first>=0)\
-                                            { matchedJetsidx.push_back(Jet_idx.at(b2_recoMatch_pair.first));} \
-                                        if(matchedJetsidx.empty()){matchedJetsidx.push_back(-1);}\
-                                        return matchedJetsidx;", \
-                                        colToSave)
-    
     #df.Display({"event","matched_jets_hadronFlavour","matched_jets_partonFlavour", "matched_jets_idx"}).Print()
     #df.Define("Jet_size", "Jet_hadronFlavour.size()").Display({"Jet_hadronFlavour","Jet_partonFlavour","Jet_idx","Jet_size"}, 100).Print() 
     #df.Display({"Jet_hadronFlavour","Jet_partonFlavour"}, 100).Print()  

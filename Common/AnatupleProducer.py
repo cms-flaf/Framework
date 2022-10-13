@@ -136,22 +136,6 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
                                         return matchedJetsidx;", \
                                         colToSave)
 
-    #df.Display({"event","matched_jets_hadronFlavour","matched_jets_partonFlavour", "matched_jets_idx"}).Print()
-    #df.Define("Jet_size", "Jet_hadronFlavour.size()").Display({"Jet_hadronFlavour","Jet_partonFlavour","Jet_idx","Jet_size"}, 100).Print() 
-    #df.Display({"Jet_hadronFlavour","Jet_partonFlavour"}, 100).Print()  
-    #df.Display({"matched_jets_pt","matched_jets_eta", "matched_jets_phi", "matched_jets_m"}).Print() 
-    #df.Display({"channelId"}).Print()
-    #df.Display({"tau1_genMatch", "tau1_recoMatchIdx", "tau1_recoMatchObj"}).Print()
-    #df.Display({"event","matched_jets_hadronFlavour","matched_jets_partonFlavour", "matched_jets_idx"}).Print()
-    #df.Display({"event","matched_b_jets_hadronFlavour","matched_b_jets_partonFlavour", "matched_b_jets_idx"}).Print()
-    #df.Display({"tau2_genMatch", "tau2_recoMatchIdx", "tau2_recoMatchObj"}).Print()
-    '''
-    df.Filter("tau1_recoMatchObj == 4 || tau2_recoMatchObj == 4 ").Display({"event","matched_jets_hadronFlavour","matched_jets_partonFlavour", "matched_jets_idx"}).Print()
-    df.Filter("tau1_recoMatchObj == 4 || tau2_recoMatchObj == 4 ").Display({"matched_jets_pt","matched_jets_eta", "matched_jets_phi", "matched_jets_m"}).Print() 
-    
-    df.Filter("tau1_recoMatchObj == 4 || tau2_recoMatchObj == 4 ").Display({"tau1_genMatch", "tau1_recoMatchIdx", "tau1_recoMatchObj"}).Print()
-    df.Filter("tau1_recoMatchObj == 4 || tau2_recoMatchObj == 4 ").Display({"tau2_genMatch", "tau2_recoMatchIdx", "tau2_recoMatchObj"}).Print()
-    '''
     df= DefineAndAppend(df, "MET_cov00", "MET_covXX", colToSave)
     df= DefineAndAppend(df, "MET_cov01", "MET_covXY", colToSave)
     df= DefineAndAppend(df, "MET_cov11", "MET_covYY", colToSave)

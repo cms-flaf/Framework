@@ -31,11 +31,6 @@ filesToTransfer:
 #localCrabOutput: /eos/home-k/kandroso/bbtt-prod
 #finalOutput: /eos/home-p/kandroso/bbtt/nanoV10
 
-site: T2_CH_CERN
-crabOutput: /store/group/phys_tau/vdamante/bbtt-prod/ 
-localCrabOutput: /eos/cms/store/group/phys_tau/vdamante/bbtt-prod/ 
-finalOutput: /eos/cms/store/group/phys_tau/vdamante/bbtt/ 
-
 maxMemory: 2500
 numCores: 1
 inputDBS: global

@@ -278,18 +278,26 @@ def RecoHttCandidateSelection(df):
     cand_list_str = ', '.join([ '&' + c for c in cand_columns])
     return df.Define('httCand', f'GetBestHTTCandidate({{ {cand_list_str} }})')
 
-def ThirdLeptonVeto(df):
-    df = df.Define("signalElectron_idx","if(httCand.channel==Channel::eTau) return httCand.leg_index[0]; return -100;")\
-            .Define("ElectronVeto_idx", "Electron_idx[Electron_idx!=signalElectron_idx \
-                                        && Electron_pt >10 && abs(Electron_eta) < 2.5 && abs(Electron_dz) < 0.2 \
-                                        && abs(Electron_dxy) < 0.045 && ( Electron_mvaFall17V2Iso_WP90 == true || \
-                                        ( Electron_mvaFall17V2noIso_WP90 == true && Electron_pfRelIso03_all<0.3 ))]")\
-            .Filter("ElectronVeto_idx.size()==0")
-    df = df.Define("signalMuon_idx","if(httCand.channel==Channel::muTau) return httCand.leg_index[0]; else return -100;")\
-            .Define("MuonVeto_idx", "Muon_idx[Muon_idx!=signalMuon_idx &&  Muon_pt >10 && \
-                                    abs(Muon_eta) < 2.4 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045 \
-                                    && ( Muon_mediumId == true ||  Muon_tightId == true ) && Muon_pfRelIso04_all<0.3  ]")\
-            .Filter("MuonVeto_idx.size()==0")
+def ThirdLeptonVeto(df):    
+    df = df.Define("HasElectronLeg", """RVecB HasElectronLeg(Electron_idx.size()); 
+                                for (int ele_idx =0; ele_idx<Electron_idx.size(); ele_idx++){
+                                    HasElectronLeg[ele_idx]= !(httCand.isLeg(ele_idx, Leg::e));
+                                }
+                                return HasElectronLeg;""")
+    df = df.Define("HasMuonLeg", """RVecB HasMuonLeg(Muon_idx.size()); 
+                                for (int mu_idx =0; mu_idx<Muon_idx.size(); mu_idx++){
+                                    HasMuonLeg[mu_idx]= !(httCand.isLeg(mu_idx, Leg::e));
+                                }
+                                return HasMuonLeg;""")
+    df = df.Define("ElectronVeto_idx", """Electron_idx[HasElectronLeg
+                                    && Electron_pt >10 && abs(Electron_eta) < 2.5 && abs(Electron_dz) < 0.2 
+                                    && abs(Electron_dxy) < 0.045 && ( Electron_mvaIso_WP90 == true || 
+                                    ( Electron_mvaNoIso_WP90 == true && Electron_pfRelIso03_all<0.3 ))]""")\
+    .Filter("ElectronVeto_idx.size()==0")\
+    .Define("MuonVeto_idx", """Muon_idx[HasMuonLeg &&  Muon_pt >10 && 
+                            abs(Muon_eta) < 2.4 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045 
+                            && ( Muon_mediumId == true ||  Muon_tightId == true ) && Muon_pfRelIso04_all<0.3  ]""")\
+    .Filter("MuonVeto_idx.size()==0")
     return df
 
 def RecoJetSelection(df):

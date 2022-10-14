@@ -79,11 +79,10 @@ bool GenRecoMatching(const HTTCand& genHttCand, const HTTCand& recoHttCand, doub
 GenLeptonMatch GenRecoLepMatching(const LorentzVectorM& tau_p4,
                           const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters,
                           const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi,
-                          const RVecF& GenPart_mass, const RVecI& GenPart_statusFlags)
+                          const RVecF& GenPart_mass, const RVecI& GenPart_statusFlags,const float deltaR_thr= 0.2)
 { 
    
-  const float deltaR_thr= 0.2;
-  float deltaR_min = 100;
+  float deltaR_min = deltaR_thr;
   
   for(int genIdx =0; genIdx<GenPart_pt.size(); genIdx++){
     const GenStatusFlags status(GenPart_statusFlags.at(genIdx));
@@ -153,17 +152,14 @@ GenLeptonMatch GenRecoLepMatching(const LorentzVectorM& tau_p4,
 }
 
 
-int RecoTauMatching(const LorentzVectorM& tau_p4, const RVecLV& Jet_p4){
-   const float deltaR_thr= 0.3;
-  float deltaR_min = 100;
+int RecoTauMatching(const LorentzVectorM& tau_p4, const RVecLV& Jet_p4,const float deltaR_thr= 0.3){
+  double deltaR_min = deltaR_thr;
   
-  int current_idx = -1;
-  Leg current_leg = Leg::jet;
+  int current_idx = -1; 
 
   for(int jetIdx =0; jetIdx<Jet_p4.size(); jetIdx++){  
     auto dR_tauJet= ROOT::Math::VectorUtil::DeltaR(tau_p4, Jet_p4.at(jetIdx)); 
-    if ( dR_tauJet > deltaR_thr ){continue;}
-    if ( dR_tauJet > deltaR_min ) {continue;}
+    if ( dR_tauJet >= deltaR_min ) {continue;}
     else { 
       deltaR_min = dR_tauJet ; 
       current_idx = jetIdx;

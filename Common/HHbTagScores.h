@@ -5,11 +5,12 @@
 
 inline int PeriodToHHbTagInput (Period period)
 {
-    std::map<Period, int> periodHHBtag;
-    periodHHBtag.insert(std::make_pair(Period::Run2016, 2016));
-    periodHHBtag.insert(std::make_pair(Period::Run2016APV,2016));
-    periodHHBtag.insert(std::make_pair(Period::Run2017,2017));
-    periodHHBtag.insert(std::make_pair(Period::Run2018, 2018)); 
+    static const std::map<Period, int> periodHHBtag{
+        std::make_pair(Period::Run2016, 2016),
+        std::make_pair(Period::Run2016APV,2016),
+        std::make_pair(Period::Run2017,2017),
+        std::make_pair(Period::Run2018, 2018)
+    };
     if (periodHHBtag.find(period) == periodHHBtag.end()) {
         throw analysis::exception("Period corrispondence not found");
     }
@@ -18,13 +19,14 @@ inline int PeriodToHHbTagInput (Period period)
 }
 inline int ChannelToHHbTagInput (Channel channel)
 {
-    std::map<Channel, int> channelHHBtag;
-    channelHHBtag.insert(std::make_pair(Channel::eE, -1));
-    channelHHBtag.insert(std::make_pair(Channel::eMu, -1));
-    channelHHBtag.insert(std::make_pair(Channel::muMu, -1));
-    channelHHBtag.insert(std::make_pair(Channel::eTau, 0));
-    channelHHBtag.insert(std::make_pair(Channel::muTau, 1));
-    channelHHBtag.insert(std::make_pair(Channel::tauTau, 2)); 
+    static const std::map<Channel, int> channelHHBtag{
+        std::make_pair(Channel::eE, -1),
+        std::make_pair(Channel::eMu, -1),
+        std::make_pair(Channel::muMu, -1),
+        std::make_pair(Channel::eTau, 0),
+        std::make_pair(Channel::muTau, 1),
+        std::make_pair(Channel::tauTau, 2)
+    };
     if (channelHHBtag.find(channel) == channelHHBtag.end()) {
         throw analysis::exception("Channel corrispondence not found");
     }

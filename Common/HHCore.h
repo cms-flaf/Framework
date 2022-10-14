@@ -21,6 +21,14 @@ struct HTTCand {
     }
     return true;
   }
+  bool isLeg(const int &other_idx, Leg leg ) {
+    for(size_t idx = 0; idx < n_legs; ++idx){ 
+      if(leg_type[idx] == leg && leg_index[idx]==other_idx){
+        return true;
+      }
+    }
+    return false;
+  }
 };
 
 struct HbbCand {

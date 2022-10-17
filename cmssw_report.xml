@@ -1,4 +1,3 @@
-<FrameworkJobReport>
 <FrameworkError ExitStatus="8006" Type="Fatal Exception" >
 <![CDATA[
 An exception of category 'ProductNotFound' occurred while

@@ -21,7 +21,7 @@ struct HTTCand {
     }
     return true;
   }
-  bool isLeg(int obj_index, Leg leg) const { 
+  bool isLegS(int obj_index, Leg leg) const { 
     for(size_t idx = 0; idx < n_legs; ++idx){ 
       if(leg_type[idx] == leg && leg_index[idx]==obj_index){
         return true;
@@ -30,10 +30,10 @@ struct HTTCand {
     return false;
   }
 
-  RVecB isLegV(const RVecI &obj_vec, Leg leg) const {
+  RVecB isLeg(const RVecI &obj_vec, Leg leg) const {
     RVecB isLeg_vector(obj_vec.size(), false);
     for(size_t obj_idx=0; obj_idx<obj_vec.size(); obj_idx++){
-      isLeg_vector[obj_idx] = isLeg(obj_vec[obj_idx], leg);
+      isLeg_vector[obj_idx] = isLegS(obj_vec[obj_idx], leg);
     }
     return isLeg_vector;
   }

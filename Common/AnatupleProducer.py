@@ -6,10 +6,11 @@ import Common.ReportTools as ReportTools
 
 
 
-def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isData=0, range=100):
+def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isData=0, range=None):
     Baseline.Initialize(True, True)
     df = ROOT.RDataFrame("Events", inFile) 
-    df = df.Range(range)
+    if range is not None:
+        df = df.Range(range)
     df = df.Define("sample", f"static_cast<int>(SampleType::{sample})")
     df = df.Define("period", f"static_cast<int>(Period::Run{period})") 
     df = df.Define("X_mass", f"static_cast<int>({X_mass})")
@@ -33,7 +34,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
     JetObservables = ["hadronFlavour","partonFlavour", "particleNetAK4_B", "particleNetAK4_CvsB",\
                     "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",\
                     "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"] 
-    colToSave = ["event","lumi","run","sample", "period", "X_mass","channelId", "is_data",\
+    colToSave = ["event","luminosityBlock","run","sample", "period", "X_mass","channelId", "is_data",\
                 "MET_pt", "MET_phi","PuppiMET_pt", "PuppiMET_phi",\
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
                 "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs","LHE_HT"] 

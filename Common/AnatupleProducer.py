@@ -6,9 +6,9 @@ import Common.ReportTools as ReportTools
 
 
 
-def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isData=0, range=None):
+def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,range, isData=0,):
     Baseline.Initialize(True, True)
-    df = ROOT.RDataFrame("Events", inFile)  
+    df = ROOT.RDataFrame("Events", inFile)
     if range is not None:
         df = df.Range(range)
     df = df.Define("sample", f"static_cast<int>(SampleType::{sample})")
@@ -105,6 +105,7 @@ if __name__ == "__main__":
     parser.add_argument('--sample', type=str)
     parser.add_argument('--compressionLevel', type=int, default=9)
     parser.add_argument('--compressionAlgo', type=str, default="LZMA")
+    parser.add_argument('--range', type=int, default=None)
     '''
     parser.add_argument('--particleFile', type=str,
                         default=f"{os.environ['ANALYSIS_PATH']}/config/pdg_name_type_charge.txt")'''
@@ -119,4 +120,4 @@ if __name__ == "__main__":
     snapshotOptions.fOverwriteIfExists=True
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo) 
     snapshotOptions.fCompressionLevel = args.compressionLevel 
-    createAnatuple(args.inFile, args.outFile, args.period, args.sample, args.mass, snapshotOptions) 
+    createAnatuple(args.inFile, args.outFile, args.period, args.sample, args.mass, snapshotOptions, args.range) 

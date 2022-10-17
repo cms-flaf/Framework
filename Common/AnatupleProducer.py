@@ -8,7 +8,7 @@ import Common.ReportTools as ReportTools
 
 def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isData=0, range=None):
     Baseline.Initialize(True, True)
-    df = ROOT.RDataFrame("Events", inFile) 
+    df = ROOT.RDataFrame("Events", inFile)  
     if range is not None:
         df = df.Range(range)
     df = df.Define("sample", f"static_cast<int>(SampleType::{sample})")
@@ -25,17 +25,17 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
     
     df = df.Define("channelId","static_cast<int>(httCand.channel())")
     df = df.Define("is_data", f"{isData}")   
-    deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",\
-                "rawDeepTau2017v2p1VSjet", "rawDeepTau2018v2p5VSe", "rawDeepTau2018v2p5VSmu",\
-                "rawDeepTau2018v2p5VSjet",\
-                "idDeepTau2017v2p1VSe", "idDeepTau2017v2p1VSjet", "idDeepTau2017v2p1VSmu",\
-                "idDeepTau2018v2p5VSe","idDeepTau2018v2p5VSjet","idDeepTau2018v2p5VSmu",\
+    deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
+                "rawDeepTau2017v2p1VSjet", "rawDeepTau2018v2p5VSe", "rawDeepTau2018v2p5VSmu",
+                "rawDeepTau2018v2p5VSjet",
+                "idDeepTau2017v2p1VSe", "idDeepTau2017v2p1VSjet", "idDeepTau2017v2p1VSmu",
+                "idDeepTau2018v2p5VSe","idDeepTau2018v2p5VSjet","idDeepTau2018v2p5VSmu",
                 "decayMode"] 
-    JetObservables = ["hadronFlavour","partonFlavour", "particleNetAK4_B", "particleNetAK4_CvsB",\
-                    "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",\
+    JetObservables = ["hadronFlavour","partonFlavour", "particleNetAK4_B", "particleNetAK4_CvsB",
+                    "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",
                     "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"] 
-    colToSave = ["event","luminosityBlock","run","sample", "period", "X_mass","channelId", "is_data",\
-                "MET_pt", "MET_phi","PuppiMET_pt", "PuppiMET_phi",\
+    colToSave = ["event","luminosityBlock","run","sample", "period", "X_mass","channelId", "is_data",
+                "MET_pt", "MET_phi","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
                 "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs","LHE_HT"] 
  
@@ -85,7 +85,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
     
     
     varToSave = Utilities.ListToVector(colToSave)   
-    df.Snapshot("Event", outFile, varToSave, snapshotOptions) 
+    df.Snapshot("Events", outFile, varToSave, snapshotOptions) 
     outputRootFile= ROOT.TFile(outFile, "UPDATE")
     outputRootFile.WriteTObject(histReport, "Report", "Overwrite")
     outputRootFile.Close()

@@ -69,7 +69,7 @@ inline std::pair<Leg, Leg> ChannelToLegs(Channel channel)
 }
 
 template<typename T>
-T DeltaPhi(T phi1, T phi2) {
+T DeltaPhi(T phi1, T phi2){
   return ROOT::Math::VectorUtil::Phi_mpi_pi(phi2 - phi1);
 }
 template<typename T>
@@ -78,7 +78,7 @@ T DeltaEta(T eta1, T eta2){
 }
 
 template<typename T>
-T DeltaR(T eta1, T phi1, T eta2, T phi2) {
+T DeltaR(T eta1, T phi1, T eta2, T phi2){
   T dphi = DeltaPhi(phi1, phi2);
   T deta = DeltaEta(eta1, eta2);
   return std::hypot(dphi, deta);
@@ -149,17 +149,13 @@ RVecB RemoveOverlaps(const RVecLV& obj_p4, const RVecB& pre_sel, const std::vect
 
 int FindMatching(const LorentzVectorM& target_p4, const RVecLV& ref_p4,const float deltaR_thr){
   double deltaR_min = deltaR_thr;
-  
   int current_idx = -1; 
-
-  for(int refIdx =0; refIdx<ref_p4.size(); refIdx++){  
-    auto dR_targetRef= ROOT::Math::VectorUtil::DeltaR(target_p4, ref_p4.at(refIdx)); 
-    if ( dR_targetRef >= deltaR_min ) {continue;}
-    else { 
-      deltaR_min = dR_targetRef ; 
+  for(int refIdx =0; refIdx<ref_p4.size(); refIdx++){
+    auto dR_targetRef= ROOT::Math::VectorUtil::DeltaR(target_p4, ref_p4.at(refIdx));
+    if ( dR_targetRef < deltaR_min ) {
+      deltaR_min = dR_targetRef ;
       current_idx = refIdx;
     }
   } 
   return current_idx;
-  
 }

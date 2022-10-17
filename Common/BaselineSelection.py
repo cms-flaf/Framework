@@ -283,12 +283,12 @@ def ThirdLeptonVeto(df):
     df = df.Define("Electron_vetoSel",
                    """Electron_pt > 10 && abs(Electron_eta) < 2.5 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
                       && ( Electron_mvaIso_WP90 == true || ( Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all<0.3) )
-                     && (httCand.isLegV(Electron_idx, Leg::e)== false)""")
+                     && (httCand.isLeg(Electron_idx, Leg::e)== false)""")
     df = df.Filter("Electron_pt[Electron_vetoSel].size() == 0", "No extra electrons")
     df = df.Define("Muon_vetoSel",
                    """Muon_pt > 10 && abs(Muon_eta) < 2.5 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045
                       && ( Muon_mediumId || Muon_tightId ) && Muon_pfRelIso04_all<0.3
-                      && (httCand.isLegV(Muon_idx, Leg::mu) == false)""")
+                      && (httCand.isLeg(Muon_idx, Leg::mu) == false)""")
     df = df.Filter("Muon_pt[Muon_vetoSel].size() == 0", "No extra muons")
     return df
 

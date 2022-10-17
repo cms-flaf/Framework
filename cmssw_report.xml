@@ -348,4 +348,3 @@ add "SkipEvent = cms.untracked.vstring('ProductNotFound')" to the "options" PSet
     <Metric Name="Timing-tstoragefile-stat-totalMsecs" Value="1.64072"/>
   </PerformanceSummary>
 </PerformanceReport>
-</FrameworkJobReport>

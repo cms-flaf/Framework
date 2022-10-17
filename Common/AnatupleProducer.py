@@ -23,9 +23,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
     df = Baseline.DefineHbbCand(df)  
     
     df = df.Define("channelId","static_cast<int>(httCand.channel())")
-    df = df.Define("is_data", f"{isData}") 
-    df = df.Define("lumi", "luminosityBlock")
-    df = df.Define("evt", "event")
+    df = df.Define("is_data", f"{isData}")   
     deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",\
                 "rawDeepTau2017v2p1VSjet", "rawDeepTau2018v2p5VSe", "rawDeepTau2018v2p5VSmu",\
                 "rawDeepTau2018v2p5VSjet",\
@@ -33,7 +31,8 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
                 "idDeepTau2018v2p5VSe","idDeepTau2018v2p5VSjet","idDeepTau2018v2p5VSmu",\
                 "decayMode"] 
     JetObservables = ["hadronFlavour","partonFlavour", "particleNetAK4_B", "particleNetAK4_CvsB",\
-                    "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc"] 
+                    "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",\
+                    "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"] 
     colToSave = ["event","lumi","run","sample", "period", "X_mass","channelId", "is_data",\
                 "MET_pt", "MET_phi","PuppiMET_pt", "PuppiMET_phi",\
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
@@ -55,20 +54,20 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
         df = DefineAndAppend(df, f"tau{leg_idx+1}_iso", f"httCand.leg_rawIso.at({leg_idx})")
         for deepTauScore in deepTauScores:
             df = DefineAndAppend(df, f"tau{leg_idx+1}_{deepTauScore}",
-                                     f"httCand.leg_type[{leg_idx}] == Leg::tau ? Tau_{deepTauScore}.at(httCand.leg_index[{leg_idx}]) : -1.f;")
+                                     f"httCand.leg_type[{leg_idx}] == Leg::tau ? Tau_{deepTauScore}.at(httCand.leg_index[{leg_idx}]) : -1;")
 
         df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_pt",
-                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Pt() : -1.f;") 
+                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Pt() : -1;") 
         df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_eta",
-                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Eta() : -1.f;") 
+                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Eta() : -1;") 
         df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_phi",
-                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Phi() : -1.f;")
+                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Phi() : -1;")
         df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_mass",
-                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).M() : -1.f;")
+                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).M() : -1;")
         df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_partonFlavour",
-                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_partonFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1.f;")
+                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_partonFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1;")
         df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_hadronFlavour",
-                                f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_hadronFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1.f;")
+                                f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_hadronFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1;")
         
         df = DefineAndAppend(df,f"b{leg_idx+1}_pt", f"HbbCandidate.leg_p4[{leg_idx}].Pt()")
         df = DefineAndAppend(df,f"b{leg_idx+1}_eta", f"HbbCandidate.leg_p4[{leg_idx}].Eta()")
@@ -77,10 +76,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions, isD
         for jetVar in JetObservables:
             df = DefineAndAppend(df,f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")
         df = DefineAndAppend(df,f"b{leg_idx+1}_HHbtag", f"Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}])")
-        df = DefineAndAppend(df,f"b{leg_idx+1}_btagDeepFlavB", f"Jet_btagDeepFlavB.at(HbbCandidate.leg_index[{leg_idx}])")
-        df = DefineAndAppend(df,f"b{leg_idx+1}_btagDeepFlavCvB", f"Jet_btagDeepFlavCvB.at(HbbCandidate.leg_index[{leg_idx}])")
-        df = DefineAndAppend(df,f"b{leg_idx+1}_btagDeepFlavCvL", f"Jet_btagDeepFlavCvL.at(HbbCandidate.leg_index[{leg_idx}])")
-
+       
          
     report = df.Report()
     histReport=ReportTools.SaveReport(report.GetValue()) 

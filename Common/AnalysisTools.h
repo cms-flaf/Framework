@@ -152,12 +152,12 @@ int FindMatching(const LorentzVectorM& target_p4, const RVecLV& ref_p4,const flo
   
   int current_idx = -1; 
 
-  for(int jetIdx =0; jetIdx<ref_p4.size(); jetIdx++){  
-    auto dR_tauJet= ROOT::Math::VectorUtil::DeltaR(target_p4, ref_p4.at(jetIdx)); 
-    if ( dR_tauJet >= deltaR_min ) {continue;}
+  for(int refIdx =0; refIdx<ref_p4.size(); refIdx++){  
+    auto dR_targetRef= ROOT::Math::VectorUtil::DeltaR(target_p4, ref_p4.at(refIdx)); 
+    if ( dR_targetRef >= deltaR_min ) {continue;}
     else { 
-      deltaR_min = dR_tauJet ; 
-      current_idx = jetIdx;
+      deltaR_min = dR_targetRef ; 
+      current_idx = refIdx;
     }
   } 
   return current_idx;

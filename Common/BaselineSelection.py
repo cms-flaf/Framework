@@ -2,7 +2,8 @@ import ROOT
 import os
 from scipy import stats
 import numpy as np
-import enum 
+import enum  
+
 initialized = False
 
 def Initialize(loadTF=False, loadHHBtag=False):

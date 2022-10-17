@@ -23,8 +23,7 @@ Studies/Visual
 /.crabOverseer
 /crab.log
 /FrameworkJobReport.xml
-/filesEntries_SingleMuon_2018A_recovery_1.txt
-/.gitignore
+/filesEntries_SingleMuon_2018A_recovery_1.txt 
 /filesEntries.txt
 /filesEntries_SingleMuon2018A.txt
 /cmssw_report.xml

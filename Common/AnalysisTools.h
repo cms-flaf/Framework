@@ -52,7 +52,7 @@ enum class Channel : int {
   tauTau = static_cast<int>(Leg::tau) * 10 + static_cast<int>(Leg::tau),
   eMu = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::mu),
   eE = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::e),
-  muMu = static_cast<int>(Leg::mu) * 10 + static_cast<int>(Leg::mu)
+  muMu = static_cast<int>(Leg::mu) * 10 + static_cast<int>(Leg::mu) 
 };
 
 inline Channel LegsToChannel(Leg leg1, Leg leg2)
@@ -145,4 +145,21 @@ RVecB RemoveOverlaps(const RVecLV& obj_p4, const RVecB& pre_sel, const std::vect
     result[obj_idx] = pre_sel[obj_idx] && hasMinNumberOfNonOverlaps(obj_p4.at(obj_idx));
   }
   return result;
+}
+
+int FindMatching(const LorentzVectorM& target_p4, const RVecLV& ref_p4,const float deltaR_thr){
+  double deltaR_min = deltaR_thr;
+  
+  int current_idx = -1; 
+
+  for(int jetIdx =0; jetIdx<ref_p4.size(); jetIdx++){  
+    auto dR_tauJet= ROOT::Math::VectorUtil::DeltaR(target_p4, ref_p4.at(jetIdx)); 
+    if ( dR_tauJet >= deltaR_min ) {continue;}
+    else { 
+      deltaR_min = dR_tauJet ; 
+      current_idx = jetIdx;
+    }
+  } 
+  return current_idx;
+  
 }

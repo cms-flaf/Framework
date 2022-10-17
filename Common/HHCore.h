@@ -21,13 +21,25 @@ struct HTTCand {
     }
     return true;
   }
-  bool isLeg(const int &other_idx, Leg leg ) {
+  bool isLeg(int obj_index, Leg leg) { 
     for(size_t idx = 0; idx < n_legs; ++idx){ 
-      if(leg_type[idx] == leg && leg_index[idx]==other_idx){
+      if(leg_type[idx] == leg && leg_index[idx]==obj_index){
         return true;
       }
     }
     return false;
+  }
+  
+  RVecB isLegV(const RVecI &obj_vec, Leg leg){
+    RVecB isLeg_vector(obj_vec.size(), false);
+    for(size_t obj_idx=0; obj_idx<obj_vec.size(); obj_idx++){
+      for(size_t leg_idx = 0; leg_idx < n_legs; ++leg_idx){ 
+        if(leg_type[leg_idx] == leg && leg_index[leg_idx]==obj_idx){
+          isLeg_vector[obj_idx]= true;
+        }
+      }
+    }
+    return isLeg_vector;
   }
 };
 

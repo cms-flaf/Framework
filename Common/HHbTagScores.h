@@ -1,34 +1,37 @@
 #include "../HHbtag/interface/HH_BTag.h"
 #include "AnalysisTools.h"
 #include "HHCore.h"
-
+#include <map>
 
 inline int PeriodToHHbTagInput (Period period)
 {
-    std::map<Channel, int> periodHHBtag;
-    periodHHBtag.insert(std::make_pair(Period::Run2016, 2016));
-    periodHHBtag.insert(std::make_pair(Period::Run2016APV,2016));
-    periodHHBtag.insert(std::make_pair(Period::Run2017,2017));
-    periodHHBtag.insert(std::make_pair(Period::Run2018, 2018)); 
-    if (periodHHBtag.find(channel) == periodHHBtag.end()) {
+    static const std::map<Period, int> periodHHBtag{
+        { Period::Run2016, 2016 },
+        { Period::Run2016APV, 2016 },
+        { Period::Run2017, 2017 },
+        { Period::Run2018, 2018 }, 
+    };
+    auto iter = periodHHBtag.find(period);
+    if (iter == periodHHBtag.end()) {
         throw analysis::exception("Period corrispondence not found");
     }
-    return periodHHBtag.at(period);
-  
+    return iter->second;
 }
 inline int ChannelToHHbTagInput (Channel channel)
 {
-    std::map<Channel, int> channelHHBtag;
-    channelHHBtag.insert(std::make_pair(Channel::eE, -1));
-    channelHHBtag.insert(std::make_pair(Channel::eMu, -1));
-    channelHHBtag.insert(std::make_pair(Channel::muMu, -1));
-    channelHHBtag.insert(std::make_pair(Channel::eTau, 0));
-    channelHHBtag.insert(std::make_pair(Channel::muTau, 1));
-    channelHHBtag.insert(std::make_pair(Channel::tauTau, 2)); 
-    if (channelHHBtag.find(channel) == channelHHBtag.end()) {
+    static const std::map<Channel, int> channelHHBtag{
+        { Channel::eE, -1 },
+        { Channel::eMu, -1 },
+        { Channel::muMu, -1 },
+        { Channel::eTau, 0 },
+        { Channel::muTau, 1 },
+        { Channel::tauTau, 2 },
+    };
+    auto iter = channelHHBtag.find(channel);
+    if (iter == channelHHBtag.end()){
         throw analysis::exception("Channel corrispondence not found");
     }
-    return channelHHBtag.at(channel);
+    return iter->second;
   
 }
 
@@ -110,4 +113,4 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
     return all_scores;
 
 
-}
+} 

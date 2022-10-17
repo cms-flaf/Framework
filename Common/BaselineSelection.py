@@ -2,8 +2,7 @@ import ROOT
 import os
 from scipy import stats
 import numpy as np
-import enum
-
+import enum  
 
 initialized = False
 
@@ -19,7 +18,7 @@ def Initialize(loadTF=False, loadHHBtag=False):
         ROOT.gInterpreter.Declare(f'#include "{header_path_Reco}"')
         if(loadTF):
             import RunKit.includeCMSSWlibs as IncludeLibs
-            IncludeLibs.includeLibTool("tensorflow")  
+            IncludeLibs.includeLibTool("tensorflow")
         if(loadHHBtag):
             ROOT.gInterpreter.Declare(f'#include "{header_path_HHbTag}"')
             ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 1)')  
@@ -280,7 +279,18 @@ def RecoHttCandidateSelection(df):
     cand_list_str = ', '.join([ '&' + c for c in cand_columns])
     return df.Define('httCand', f'GetBestHTTCandidate({{ {cand_list_str} }})')
 
-
+def ThirdLeptonVeto(df):     
+    df = df.Define("Electron_vetoSel",
+                   """Electron_pt > 10 && abs(Electron_eta) < 2.5 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
+                      && ( Electron_mvaIso_WP90 == true || ( Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all<0.3) )
+                     && (httCand.isLeg(Electron_idx, Leg::e)== false)""")
+    df = df.Filter("Electron_pt[Electron_vetoSel].size() == 0", "No extra electrons")
+    df = df.Define("Muon_vetoSel",
+                   """Muon_pt > 10 && abs(Muon_eta) < 2.5 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045
+                      && ( Muon_mediumId || Muon_tightId ) && Muon_pfRelIso04_all<0.3
+                      && (httCand.isLeg(Muon_idx, Leg::mu) == false)""")
+    df = df.Filter("Muon_pt[Muon_vetoSel].size() == 0", "No extra muons")
+    return df
 
 def RecoJetSelection(df):
     df = df.Define("Jet_B3T", "RemoveOverlaps(Jet_p4, Jet_B1T,{{httCand.leg_p4[0], httCand.leg_p4[1]},}, 2, 0.5)")
@@ -298,6 +308,6 @@ def GenRecoJetMatching(df):
     return df.Filter("Jet_genJetIdx_matched[Jet_genMatched].size()>=2", "Two different gen-reco jet matches at least")
 
 def DefineHbbCand(df):
-    df = df.Define("hhBTagScores", "GetHHBtagScore(Jet_B3T, Jet_idx, Jet_p4,Jet_btagDeepFlavB, MET_pt,  MET_phi, httCand, period, event)") 
-    df = df.Define("HbbCandidate", "GetHbbCandidate(hhBTagScores, Jet_B3T, Jet_p4, Jet_idx)")
+    df = df.Define("Jet_HHBtagScore", "GetHHBtagScore(Jet_B3T, Jet_idx, Jet_p4,Jet_btagDeepFlavB, MET_pt,  MET_phi, httCand, period, event)") 
+    df = df.Define("HbbCandidate", "GetHbbCandidate(Jet_HHBtagScore, Jet_B3T, Jet_p4, Jet_idx)")
     return df

@@ -11,9 +11,11 @@ def Initialize(loadTF=False, loadHHBtag=False):
     if not initialized:
         import os
         headers_dir = os.path.dirname(os.path.abspath(__file__))
+        header_path_GenLepton = os.path.join(headers_dir, "GenLepton.h")
         header_path_Gen = os.path.join(headers_dir, "BaselineGenSelection.h")
         header_path_Reco = os.path.join(headers_dir, "BaselineRecoSelection.h")
         header_path_HHbTag = os.path.join(headers_dir, "HHbTagScores.h")
+        ROOT.gInterpreter.Declare(f'#include "{header_path_GenLepton}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Gen}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Reco}"')
         if(loadTF):

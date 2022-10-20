@@ -22,7 +22,12 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     df = Baseline.RecoJetSelection(df) 
     df = Baseline.ThirdLeptonVeto(df)
     df = Baseline.DefineHbbCand(df)  
+    print(df.Count().GetValue()) 
     
+    if isData==0:
+        df = df.Define("genLeptons","""reco_tau::gen_truth::GenLepton::fromNanoAOD(GenPart_pt, GenPart_eta,
+                                            GenPart_phi, GenPart_mass, GenPart_genPartIdxMother, GenPart_pdgId,
+                                            GenPart_statusFlags)""")
     df = df.Define("channelId","static_cast<int>(httCand.channel())")
     df = df.Define("is_data", f"{isData}")   
     deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
@@ -45,12 +50,27 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
         return df 
 
     for leg_idx in [0,1]:
-        df = DefineAndAppend(df, f"tau{leg_idx+1}_pt", f"httCand.leg_p4[{leg_idx}].Pt()")
-        df = DefineAndAppend(df, f"tau{leg_idx+1}_eta", f"httCand.leg_p4[{leg_idx}].Eta()")
-        df = DefineAndAppend(df,f"tau{leg_idx+1}_phi", f"httCand.leg_p4[{leg_idx}].Phi()")
-        df = DefineAndAppend(df,f"tau{leg_idx+1}_mass", f"httCand.leg_p4[{leg_idx}].M()")
-        df = DefineAndAppend(df,f"tau{leg_idx+1}_charge", f"httCand.leg_charge[{leg_idx}]") 
-        
+        df = DefineAndAppend(df, f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
+        df = DefineAndAppend(df, f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
+        df = DefineAndAppend(df,f"tau{leg_idx+1}_phi", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Phi())")
+        df = DefineAndAppend(df,f"tau{leg_idx+1}_mass", f"static_cast<float>(httCand.leg_p4[{leg_idx}].M())")
+        df = DefineAndAppend(df,f"tau{leg_idx+1}_charge", f"httCand.leg_charge[{leg_idx}]")
+        '''
+        if isData==0:
+            df = df.Define(f"tau{leg_idx+1}_genMatchIdx", f"MatchGenLepton(httCand.leg_p4[{leg_idx}], genLeptons, 0.2)")
+            df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_kind", f"""tau{leg_idx+1}_genMatchIdx>=0 ? static_cast<int>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).kind()) : 
+                                                        static_cast<int>(GenLeptonMatch::NoMatch);""")
+            df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_vis_pt", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().Pt()) : 
+                                                        -1.;""")
+            df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_vis_eta", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().Eta()) : 
+                                                        -1.;""")
+            df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_vis_phi", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().Phi()) : 
+                                                        -1.;""")
+            df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_vis_mass", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().M()) : 
+                                                        -1.;""")
+            df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_nChHad", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).nChargedHadrons() : 0;""")
+            df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_nNeutHad", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).nNeutralHadrons() : 0;""")
+        '''
         df = df.Define(f"tau{leg_idx+1}_recoJetMatchIdx", f"FindMatching(httCand.leg_p4[{leg_idx}], Jet_p4, 0.3)")
         df = DefineAndAppend(df, f"tau{leg_idx+1}_iso", f"httCand.leg_rawIso.at({leg_idx})")
         for deepTauScore in deepTauScores:
@@ -70,15 +90,17 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
         df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_hadronFlavour",
                                 f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_hadronFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1;")
         
+        '''
         df = DefineAndAppend(df,f"b{leg_idx+1}_pt", f"HbbCandidate.leg_p4[{leg_idx}].Pt()")
         df = DefineAndAppend(df,f"b{leg_idx+1}_eta", f"HbbCandidate.leg_p4[{leg_idx}].Eta()")
         df = DefineAndAppend(df,f"b{leg_idx+1}_phi", f"HbbCandidate.leg_p4[{leg_idx}].Phi()")
         df = DefineAndAppend(df,f"b{leg_idx+1}_mass", f"HbbCandidate.leg_p4[{leg_idx}].M()")
+
         for jetVar in JetObservables:
             df = DefineAndAppend(df,f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")
         df = DefineAndAppend(df,f"b{leg_idx+1}_HHbtag", f"Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}])")
        
-         
+         '''
     report = df.Report()
     histReport=ReportTools.SaveReport(report.GetValue()) 
 

@@ -108,8 +108,8 @@ HbbCand GetHbbCandidate(const RVecF& HHbTagScores, const RVecB& JetSel,  const R
   HbbCand HbbCandidate; 
   
   int leg_idx = 0;
-  for(int i=0; i<JetIdxOrdered.size(); i++){
-    auto jet_idx = JetIdxOrdered[i];  
+  for(int i=0; i<Jet_idx.size(); i++){
+    int jet_idx = JetIdxOrdered[i];  
     if(!JetSel[jet_idx]) continue;
     HbbCandidate.leg_index[leg_idx] =  jet_idx;
     HbbCandidate.leg_p4[leg_idx] = Jet_p4.at(jet_idx);

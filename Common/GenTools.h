@@ -12,7 +12,7 @@ struct ParticleInfo {
   int charge;
   std::string name;
   std::string type;
-  int mass{-1};
+  float mass{-1.};
 };
 
 class ParticleDB {

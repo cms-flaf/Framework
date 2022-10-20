@@ -4,3 +4,6 @@
 [submodule "HHbtag"]
 	path = HHbtag
 	url = git@github.com:hh-italian-group/HHbtag.git
+[submodule "Corrections"]
+	path = Corrections
+	url = git@github.com:cms-hh-bbtautau/Corrections.git

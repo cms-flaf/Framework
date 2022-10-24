@@ -20,5 +20,5 @@ Studies/Visual
 /*.root
 /nano_NANO.py
 /crab
-/.crabOverseer
+/.crabOverseer*
 /crab.log

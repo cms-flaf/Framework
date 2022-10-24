@@ -30,9 +30,11 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
         df = df.Define("GenPart_daughters", "GetDaughters(GenPart_genPartIdxMother)")
         df = df.Define("genLeptons","""reco_tau::gen_truth::GenLepton::fromNanoAOD(GenPart_pt, GenPart_eta,
                                             GenPart_phi, GenPart_mass, GenPart_genPartIdxMother, GenPart_pdgId,
-                                            GenPart_statusFlags)""")
+                                            GenPart_statusFlags, event)""")
+        
         for lep in ["Electron", "Muon", "Tau"]:
-            df = DefineAndAppend(df,f"{lep}_genMatchIdx",f"MatchGenLepton({lep}_p4, genLeptons, 0.2)")
+            df = DefineAndAppend(df,f"{lep}_genMatchIdx",f"MatchGenLepton({lep}_p4, genLeptons, 0.2); ")
+            #print(df.Filter(f"{lep}_genMatchIdx[0]==-1").Count().GetValue())
     '''
     df = Baseline.RecoJetAcceptance(df)
     df = Baseline.RecoHttCandidateSelection(df)

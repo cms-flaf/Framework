@@ -24,7 +24,13 @@ public:
     enum class PdgId {
         electron = 11, electron_neutrino = 12, muon = 13, muon_neutrino = 14, tau = 15, tau_neutrino = 16,
         photon = 22, pi0 = 111, pi = 211, K0_L = 130, K0_S = 310, K0 = 311, K = 321,
+        gluon = 21, down = 1, up = 2, strange = 3, charm = 4, bottom = 5, top = 6, 
     };
+
+    static const std::set<PdgId>& gluonQuarks() {
+        static const std::set<PdgId> s = { PdgId::gluon, PdgId::down, PdgId::up, PdgId::strange, PdgId::charm, PdgId::bottom, PdgId::top };
+        return s;
+    }
 
     static const std::set<PdgId>& ChargedLeptons() {
         static const std::set<PdgId> s = { PdgId::electron, PdgId::muon, PdgId::tau };
@@ -90,6 +96,7 @@ public:
     int pdgId{0};
     int charge{0}; 
     bool isFirstCopy{false}, isLastCopy{false};
+    bool hasMissingDaughters{false};
     LorentzVectorM p4;
     Point3D vertex;
     std::set<const GenParticle*> mothers;
@@ -144,25 +151,30 @@ public:
                                             const FloatVector& GenPart_mass,
                                             const IntVector& GenPart_genPartIdxMother,
                                             const IntVector& GenPart_pdgId,
-                                            const IntVector& GenPart_statusFlags){
-        std::vector<GenLepton> genLeptons;
-        std::set<size_t> processed_particles;
-        for(size_t genPart_idx=0; genPart_idx<GenPart_pt.size(); ++genPart_idx ){
-            if(processed_particles.count(genPart_idx)) continue;
-            GenStatusFlags particle_statusFlags(GenPart_statusFlags.at(genPart_idx)); 
-            if(!(particle_statusFlags.isPrompt() && particle_statusFlags.isFirstCopy())) continue;
-            const int abs_pdg = std::abs(GenPart_pdgId.at(genPart_idx));
-            if(!GenParticle::ChargedLeptons().count(static_cast<GenParticle::PdgId>(abs_pdg)))
-                continue;
-            GenLepton lepton;
-            FillImplNano<IntVector, FloatVector> fillImplNano(lepton, processed_particles,GenPart_pt,GenPart_eta, GenPart_phi, GenPart_mass,
-            GenPart_genPartIdxMother, GenPart_pdgId, GenPart_statusFlags);
-            fillImplNano.FillAll(genPart_idx);
-            lepton.initialize();
-            genLeptons.push_back(lepton);
+                                            const IntVector& GenPart_statusFlags,
+                                            int event=0){
+        try {
+            std::vector<GenLepton> genLeptons;
+            std::set<size_t> processed_particles;
+            for(size_t genPart_idx=0; genPart_idx<GenPart_pt.size(); ++genPart_idx ){
+                if(processed_particles.count(genPart_idx)) continue;
+                GenStatusFlags particle_statusFlags(GenPart_statusFlags.at(genPart_idx)); 
+                if(!(particle_statusFlags.isPrompt() && particle_statusFlags.isFirstCopy())) continue;
+                const int abs_pdg = std::abs(GenPart_pdgId.at(genPart_idx));
+                if(!GenParticle::ChargedLeptons().count(static_cast<GenParticle::PdgId>(abs_pdg)))
+                    continue;
+                GenLepton lepton;
+                FillImplNano<IntVector, FloatVector> fillImplNano(lepton, processed_particles,GenPart_pt,GenPart_eta, GenPart_phi, GenPart_mass,
+                GenPart_genPartIdxMother, GenPart_pdgId, GenPart_statusFlags);
+                fillImplNano.FillAll(genPart_idx);
+                lepton.initialize();
+                genLeptons.push_back(lepton);
+            }
+            return genLeptons; 
+        } catch(std::runtime_error& e) {
+            std::cerr << "Event id = " << event << std::endl;
+            throw;
         }
-        
-        return genLeptons; 
     }
     template<typename IntVector, typename LongVector, typename FloatVector>
     static GenLepton fromRootTuple(int lastMotherIndex,
@@ -452,13 +464,20 @@ private:
                 relations_[mother_index].insert(p_index);
 
             lepton_.particles_->push_back(output_p);
+            lepton_.particles_->push_back(output_p);
+            GenParticle& output_ref = lepton_.particles_->back();
 
             if(fill_recursively) {
                 processedParticles_.insert(part_idx);
 
-                for(size_t daughter_idx = part_idx+1; daughter_idx<GenPart_pt_.size();daughter_idx++){
-                    if(GenPart_genPartIdxMother_[daughter_idx]==part_idx){
-                        FillDaughters(daughter_idx, p_index, true);
+                for(size_t daughter_idx = part_idx+1; daughter_idx<GenPart_pt_.size();daughter_idx++) {
+                    if(GenPart_genPartIdxMother_[daughter_idx]==part_idx) {
+                        const int daughter_pdg = std::abs(GenPart_pdgId_[daughter_idx]);
+                        if(GenParticle::gluonQuarks().count(static_cast<GenParticle::PdgId>(daughter_pdg))) {
+                            output_ref.hasMissingDaughters = true;
+                        } else {
+                            FillDaughters(daughter_idx, p_index, true);
+                        }
                     }
                 }
             }

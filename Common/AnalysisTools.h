@@ -159,3 +159,9 @@ int FindMatching(const LorentzVectorM& target_p4, const RVecLV& ref_p4,const flo
   } 
   return current_idx;
 }
+
+template<typename V>
+ ROOT::VecOps::RVec<V> defineEmptyVector(int size, V numberToFill){
+  ROOT::VecOps::RVec<V> vec(size, numberToFill); 
+  return vec;
+}

@@ -5,8 +5,10 @@
 ROOT::VecOps::RVec<HTTCand> GetHTTCandidates(Channel channel, double dR_thr,
                                              const RVecB& leg1_sel, const RVecLV& leg1_p4,
                                              const RVecF& leg1_rawIso, const RVecI& leg1_charge,
+                                             const RVecI& leg1_genMatchIdx,
                                              const RVecB& leg2_sel, const RVecLV& leg2_p4,
-                                             const RVecF& leg2_rawIso, const RVecI& leg2_charge)
+                                             const RVecF& leg2_rawIso, const RVecI& leg2_charge,
+                                             const RVecI& leg2_genMatchIdx)
 {
   const double dR2_thr = std::pow(dR_thr, 2);
   ROOT::VecOps::RVec<HTTCand> httCands;
@@ -28,6 +30,8 @@ ROOT::VecOps::RVec<HTTCand> GetHTTCandidates(Channel channel, double dR_thr,
         cand.leg_charge[1] = leg2_charge.at(leg2_idx);
         cand.leg_rawIso[0] = leg1_rawIso.at(leg1_idx);
         cand.leg_rawIso[1] = leg2_rawIso.at(leg2_idx);
+        cand.leg_genMatchIdx[0] = leg1_genMatchIdx.at(leg1_idx);
+        cand.leg_genMatchIdx[1] = leg2_genMatchIdx.at(leg2_idx);
         httCands.push_back(cand);
       }
     }

@@ -6,12 +6,13 @@ import Common.ReportTools as ReportTools
 
 
 
-def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,range, isData):
+def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,range, isData, evtIds):
     Baseline.Initialize(True, True)
     df = ROOT.RDataFrame("Events", inFile)
     if range is not None:
         df = df.Range(range)
-
+    if len(evtIds) > 0:
+        df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
     colToSave = ["event","luminosityBlock","run",
                 "MET_pt", "MET_phi","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
@@ -24,6 +25,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     df = DefineAndAppend(df,"sample", f"static_cast<int>(SampleType::{sample})")
     df = DefineAndAppend(df,"period", f"static_cast<int>(Period::Run{period})") 
     df = DefineAndAppend(df,"X_mass", f"static_cast<int>({X_mass})")
+    df = DefineAndAppend(df,"is_data", f"{isData}")   
 
     df = Baseline.RecoLeptonsSelection(df)
     if isData==0:
@@ -31,11 +33,8 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
         df = df.Define("genLeptons","""reco_tau::gen_truth::GenLepton::fromNanoAOD(GenPart_pt, GenPart_eta,
                                             GenPart_phi, GenPart_mass, GenPart_genPartIdxMother, GenPart_pdgId,
                                             GenPart_statusFlags, event)""")
-        
         for lep in ["Electron", "Muon", "Tau"]:
-            df = DefineAndAppend(df,f"{lep}_genMatchIdx",f"MatchGenLepton({lep}_p4, genLeptons, 0.2); ")
-            #print(df.Filter(f"{lep}_genMatchIdx[0]==-1").Count().GetValue())
-    '''
+            df = DefineAndAppend(df,f"{lep}_genMatchIdx",f"is_data? MatchGenLepton({lep}_p4, genLeptons, 0.2) : defineEmptyVector({lep}_p4.size(), static_cast<int>(-1))")
     df = Baseline.RecoJetAcceptance(df)
     df = Baseline.RecoHttCandidateSelection(df)
     df = Baseline.RecoJetSelection(df) 
@@ -43,7 +42,6 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     df = Baseline.ThirdLeptonVeto(df)
     df = Baseline.DefineHbbCand(df)
     df = DefineAndAppend(df,"channelId","static_cast<int>(httCand.channel())")
-    df = DefineAndAppend(df,"is_data", f"{isData}")   
     deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
                 "rawDeepTau2017v2p1VSjet", "rawDeepTau2018v2p5VSe", "rawDeepTau2018v2p5VSmu",
                 "rawDeepTau2018v2p5VSjet",
@@ -55,20 +53,22 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
                     "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"] 
    
     
-
+    df = DefineAndAppend(df,f"Tau_p4_size", f"Tau_p4.size()")
     for leg_idx in [0,1]:
         df = DefineAndAppend(df, f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
         df = DefineAndAppend(df, f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
         df = DefineAndAppend(df,f"tau{leg_idx+1}_phi", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Phi())")
         df = DefineAndAppend(df,f"tau{leg_idx+1}_mass", f"static_cast<float>(httCand.leg_p4[{leg_idx}].M())")
         df = DefineAndAppend(df,f"tau{leg_idx+1}_charge", f"httCand.leg_charge[{leg_idx}]")
+        df = DefineAndAppend(df,f"tau{leg_idx+1}_idx", f"httCand.leg_index[{leg_idx}]")
+        df = DefineAndAppend(df,f"tau{leg_idx+1}_genMatchIdx", f"httCand.leg_genMatchIdx[{leg_idx}]") 
         df = df.Define(f"tau{leg_idx+1}_recoJetMatchIdx", f"FindMatching(httCand.leg_p4[{leg_idx}], Jet_p4, 0.3)")
         df = DefineAndAppend(df, f"tau{leg_idx+1}_iso", f"httCand.leg_rawIso.at({leg_idx})")
         for deepTauScore in deepTauScores:
             df = DefineAndAppend(df, f"tau{leg_idx+1}_{deepTauScore}",
                                      f"httCand.leg_type[{leg_idx}] == Leg::tau ? Tau_{deepTauScore}.at(httCand.leg_index[{leg_idx}]) : -1;")
+        
         if isData==0:
-            df = df.Define(f"tau{leg_idx+1}_genMatchIdx", f"Tau_genMatchIdx.at(httCand.leg_index[{leg_idx}])")
             df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_kind", f"""tau{leg_idx+1}_genMatchIdx>=0 ? static_cast<int>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).kind()) : 
                                                     static_cast<int>(GenLeptonMatch::NoMatch);""")
             df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_vis_pt", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().Pt()) : 
@@ -105,7 +105,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
         for jetVar in JetObservables:
             df = DefineAndAppend(df,f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")
         df = DefineAndAppend(df,f"b{leg_idx+1}_HHbtag", f"Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}])")
-    '''
+
     report = df.Report()
     histReport=ReportTools.SaveReport(report.GetValue()) 
 
@@ -133,6 +133,7 @@ if __name__ == "__main__":
     parser.add_argument('--compressionLevel', type=int, default=9)
     parser.add_argument('--compressionAlgo', type=str, default="LZMA")
     parser.add_argument('--range', type=int, default=None)
+    parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--isData', type=int, default=0)
 
     '''
@@ -149,4 +150,4 @@ if __name__ == "__main__":
     snapshotOptions.fOverwriteIfExists=True
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo) 
     snapshotOptions.fCompressionLevel = args.compressionLevel 
-    createAnatuple(args.inFile, args.outFile, args.period, args.sample, args.mass, snapshotOptions, args.range, args.isData) 
+    createAnatuple(args.inFile, args.outFile, args.period, args.sample, args.mass, snapshotOptions, args.range, args.isData, args.evtIds) 

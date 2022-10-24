@@ -23,8 +23,9 @@ class GenParticle {
 public:
     enum class PdgId {
         electron = 11, electron_neutrino = 12, muon = 13, muon_neutrino = 14, tau = 15, tau_neutrino = 16,
-        photon = 22, pi0 = 111, pi = 211, K0_L = 130, K0_S = 310, K0 = 311, K = 321,
-        gluon = 21, down = 1, up = 2, strange = 3, charm = 4, bottom = 5, top = 6, 
+        pi0 = 111, pi = 211, K0_L = 130, K0_S = 310, K0 = 311, K = 321,
+        down = 1, up = 2, strange = 3, charm = 4, bottom = 5, top = 6, 
+        gluon = 21, photon = 22, Z = 23, W = 24, h0 = 25
     };
 
     static const std::set<PdgId>& gluonQuarks() {
@@ -64,6 +65,9 @@ public:
             {PdgId::pi0, 0.1349768},
             {PdgId::K, 0.493677},
             {PdgId::K0, 0.497611},
+            {PdgId::h0, 0.12510},
+            {PdgId::Z, 0.0911876},
+            {PdgId::W, 0.080379},
         };
         auto iter=pdgId_Masses.find(pdgId);
         if(iter==pdgId_Masses.end()) return nanoAODmass;
@@ -85,6 +89,9 @@ public:
             {PdgId::K0, 0},
             {PdgId::K0_S, 0},
             {PdgId::K0_L, 0},
+            {PdgId::h0, 0},
+            {PdgId::Z, 0},
+            {PdgId::W, 1},
         };
         auto iter=pdgId_charges.find(pdgCode());
         if(iter==pdgId_charges.end()) return std::numeric_limits<int>::max();
@@ -420,11 +427,12 @@ private:
                 FillDaughters(GenPart_genPartIdxMother_.at(partIdx), NoneIndex, false);
                 last_mother_index = 0;
             }
-
+            //std::cout<<"partIdx = " << partIdx << "\t last_mother_index = "<< last_mother_index << std::endl;
             FillDaughters(partIdx, last_mother_index, true);
 
             if(last_mother_index != NoneIndex) {
                 lepton_.firstCopy_ = &lepton_.particles_->at(last_mother_index + 1);
+                //std::cout << "first copy = "<< *lepton_.firstCopy_ << " part size " << lepton_.particles_->size() << std::endl;
                 for(size_t mother_index = 0; mother_index <= last_mother_index; ++mother_index) {
                     lepton_.particles_->at(last_mother_index + 1).mothers.insert(&lepton_.particles_->at(mother_index));
                     lepton_.particles_->at(mother_index).daughters.insert(lepton_.firstCopy_);
@@ -463,7 +471,6 @@ private:
             if(mother_index != NoneIndex)
                 relations_[mother_index].insert(p_index);
 
-            lepton_.particles_->push_back(output_p);
             lepton_.particles_->push_back(output_p);
             GenParticle& output_ref = lepton_.particles_->back();
 
@@ -562,8 +569,10 @@ private:
             return Kind::PromptElectron;
         if(pdg == GenParticle::PdgId::muon)
             return Kind::PromptMuon;
-        if(pdg != GenParticle::PdgId::tau)
+        if(pdg != GenParticle::PdgId::tau){
+            std::cout << "pdg code = "<<static_cast<int>(pdg) << std::endl;
             ThrowError("unknown lepton type");
+        }
         if(nChargedHadrons_ == 0 && nNeutralHadrons_ != 0)
             ThrowError("invalid hadron counts");
         if(nChargedHadrons_ != 0)

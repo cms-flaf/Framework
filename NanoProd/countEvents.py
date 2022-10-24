@@ -11,19 +11,18 @@ import sys
 def locate_files(folder, dataset_name=None):
     outputfiles = []
     for root, dirs, files in os.walk(folder):
-        for file in files:
-            if not dataset_name:
+        if not dataset_name:
+            for file in files:
                 outputfiles.append(os.path.join(root, file))
-            else:
-                subroot = root[len(folder):]
-                if subroot.startswith("/"):
-                    subroot = subroot[1:]
-                if dataset_name not in subroot:
-                    continue
-                subroot = subroot.split("/")[0][len("crab_") + len(dataset_name):].split("_")
-                if len(subroot) == 1:
-                    outputfiles.append(os.path.join(root, file))
-                elif subroot[1] == "recovery":
+        else:
+            subroot = root[len(folder):]
+            if subroot.startswith("/"):
+                subroot = subroot[1:]
+            if dataset_name not in subroot:
+                continue
+            subroot = subroot.split("/")[0][len("crab_") + len(dataset_name):].split("_")
+            if len(subroot) == 1 or subroot[1] == "recovery":
+                for file in files:
                     outputfiles.append(os.path.join(root, file))
     return outputfiles
 
@@ -76,7 +75,7 @@ def check_files(int_folder, final_folder, sample_file):
 
         print("{:<50} | {:>11} | {:>12} | {:>10} | {:>11} | {:>11} | {:>22}".format(
             dataset_name, sum1, sum2, sum_count.GetValue(), sum_count2.GetValue(),
-            sum1 - sum2, sum2 - sum_count2.GetValue()))
+            sum1 - sum2, sum_count2.GetValue() - sum2))
 
 
 if __name__ == "__main__":

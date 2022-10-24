@@ -77,6 +77,8 @@ public:
             {PdgId::pi0, 0},
             {PdgId::K, +1},
             {PdgId::K0, 0},
+            {PdgId::K0_S, 0},
+            {PdgId::K0_L, 0},
         };
         auto iter=pdgId_charges.find(pdgCode());
         if(iter==pdgId_charges.end()) return std::numeric_limits<int>::max();

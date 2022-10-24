@@ -116,21 +116,3 @@ public:
  private:
      std::bitset<15> flags;
 };
-
-/*
-for file in files:
-    df = ROOT.RDataFrame('Events', file)
-    df = df.Filter("PassEventSelection(run, lumiBlock, event)")
-    file_path, file_name = os.path.split(file)
-    file_out = os.path.join(out_dir, file_name)
-    df.Snapshot(...)
-    add other trees
-
-bool PassEventSelection(int run, int lumi, int event)
-{
-    static std::set<EventId> events;
-    EventId id(run, lumi, event);
-    if(events.count(id)) return false;
-    events.insert(id);
-    return true;
-}*/

@@ -159,3 +159,38 @@ int FindMatching(const LorentzVectorM& target_p4, const RVecLV& ref_p4,const flo
   } 
   return current_idx;
 }
+
+namespace v_ops{
+
+RVecF pt(const RVecLV& p4){
+    RVecF pt; 
+    for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+      pt.push_back(p4.at(p4_idx).pt());
+    }
+    return pt;
+}
+
+RVecF eta(const RVecLV& p4){
+    RVecF eta; 
+    for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+      eta.push_back(p4.at(p4_idx).eta());
+    }
+    return eta;
+}
+
+RVecF phi(const RVecLV& p4){
+    RVecF phi; 
+    for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+      phi.push_back(p4.at(p4_idx).phi());
+    }
+    return phi;
+}
+
+RVecF m(const RVecLV& p4){
+    RVecF m; 
+    for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+      m.push_back(p4.at(p4_idx).M());
+    }
+    return m;
+}
+}

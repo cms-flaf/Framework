@@ -16,6 +16,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     df = df.Define("X_mass", f"static_cast<int>({X_mass})")
     
     df = df.Define("GenPart_daughters", "GetDaughters(GenPart_genPartIdxMother)")
+    df = Baseline.RecoP4(df)
     df = Baseline.RecoLeptonsSelection(df)
     df = Baseline.RecoJetAcceptance(df)
     df = Baseline.RecoHttCandidateSelection(df)

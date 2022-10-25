@@ -6,7 +6,7 @@ import Common.ReportTools as ReportTools
 
 
 
-def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,range, isData, evtIds):
+def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,range, isData, evtIds, isHH):
     Baseline.Initialize(True, True)
     df = ROOT.RDataFrame("Events", inFile)
     if range is not None:
@@ -16,7 +16,8 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     colToSave = ["event","luminosityBlock","run",
                 "MET_pt", "MET_phi","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
-                "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs","LHE_HT"] 
+                "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs","LHE_HT",
+                "Electron_genMatchIdx", "Muon_genMatchIdx","Tau_genMatchIdx" ] 
  
     def DefineAndAppend(df, varToDefine, varToCall):
         df = df.Define(f"{varToDefine}", f"{varToCall}")
@@ -25,16 +26,10 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     df = DefineAndAppend(df,"sample", f"static_cast<int>(SampleType::{sample})")
     df = DefineAndAppend(df,"period", f"static_cast<int>(Period::Run{period})") 
     df = DefineAndAppend(df,"X_mass", f"static_cast<int>({X_mass})")
-    df = DefineAndAppend(df,"is_data", f"{isData}")   
-
+    is_data = 'true' if isData else 'false'
+    df = DefineAndAppend(df,"is_data", f"{is_data}")
     df = Baseline.RecoLeptonsSelection(df)
-    if isData==0:
-        df = df.Define("GenPart_daughters", "GetDaughters(GenPart_genPartIdxMother)")
-        df = df.Define("genLeptons","""reco_tau::gen_truth::GenLepton::fromNanoAOD(GenPart_pt, GenPart_eta,
-                                            GenPart_phi, GenPart_mass, GenPart_genPartIdxMother, GenPart_pdgId,
-                                            GenPart_statusFlags, event)""")
-        for lep in ["Electron", "Muon", "Tau"]:
-            df = DefineAndAppend(df,f"{lep}_genMatchIdx",f"is_data? MatchGenLepton({lep}_p4, genLeptons, 0.2) : defineEmptyVector({lep}_p4.size(), static_cast<int>(-1))")
+    df = Baseline.DefineGenObjects(df, isData=isData, isHH=isHH)
     df = Baseline.RecoJetAcceptance(df)
     df = Baseline.RecoHttCandidateSelection(df)
     df = Baseline.RecoJetSelection(df) 
@@ -68,7 +63,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
             df = DefineAndAppend(df, f"tau{leg_idx+1}_{deepTauScore}",
                                      f"httCand.leg_type[{leg_idx}] == Leg::tau ? Tau_{deepTauScore}.at(httCand.leg_index[{leg_idx}]) : -1;")
         
-        if isData==0:
+        if not isData:
             df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_kind", f"""tau{leg_idx+1}_genMatchIdx>=0 ? static_cast<int>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).kind()) : 
                                                     static_cast<int>(GenLeptonMatch::NoMatch);""")
             df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_vis_pt", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().Pt()) : 
@@ -134,7 +129,7 @@ if __name__ == "__main__":
     parser.add_argument('--compressionAlgo', type=str, default="LZMA")
     parser.add_argument('--range', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
-    parser.add_argument('--isData', type=int, default=0)
+    parser.add_argument('--isData', type=bool, default=False)
 
     '''
     parser.add_argument('--particleFile', type=str,
@@ -144,10 +139,12 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])     
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
     #ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");")
-    
+    isHH=False
+    if args.mass>0: 
+        isHH = True
      
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo) 
     snapshotOptions.fCompressionLevel = args.compressionLevel 
-    createAnatuple(args.inFile, args.outFile, args.period, args.sample, args.mass, snapshotOptions, args.range, args.isData, args.evtIds) 
+    createAnatuple(args.inFile, args.outFile, args.period, args.sample, args.mass, snapshotOptions, args.range, args.isData, args.evtIds, isHH) 

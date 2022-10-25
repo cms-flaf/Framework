@@ -75,8 +75,19 @@ class WorkingPointsBoostedTauVSjet:
    VVTight = 7
 
 
-def DefineGenObjects(df, Hbb_AK4mass_mpv):
-    df = df.Define("GenPart_daughters", "GetDaughters(GenPart_genPartIdxMother)")
+def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125.):
+    if isData:
+        df = df.Define("genLeptons", "std::vector<reco_tau::gen_truth::GenLepton>()")
+    else:
+        df = df.Define("GenPart_daughters", "GetDaughters(GenPart_genPartIdxMother)")
+        df = df.Define("genLeptons","""reco_tau::gen_truth::GenLepton::fromNanoAOD(GenPart_pt, GenPart_eta,
+                                        GenPart_phi, GenPart_mass, GenPart_genPartIdxMother, GenPart_pdgId,
+                                        GenPart_statusFlags, event)""")
+    
+    for lep in ["Electron", "Muon", "Tau"]:
+        df = df.Define(f"{lep}_genMatchIdx",  f"MatchGenLepton({lep}_p4, genLeptons, 0.2)")
+    if isData:
+        return df
     df = df.Define("genHttCand", """GetGenHTTCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
                                                        GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass)""")
     df = df.Define("genHbbIdx", """GetGenHBBIndex(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags)""")

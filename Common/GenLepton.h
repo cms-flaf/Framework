@@ -427,12 +427,10 @@ private:
                 FillDaughters(GenPart_genPartIdxMother_.at(partIdx), NoneIndex, false);
                 last_mother_index = 0;
             }
-            //std::cout<<"partIdx = " << partIdx << "\t last_mother_index = "<< last_mother_index << std::endl;
             FillDaughters(partIdx, last_mother_index, true);
 
             if(last_mother_index != NoneIndex) {
                 lepton_.firstCopy_ = &lepton_.particles_->at(last_mother_index + 1);
-                //std::cout << "first copy = "<< *lepton_.firstCopy_ << " part size " << lepton_.particles_->size() << std::endl;
                 for(size_t mother_index = 0; mother_index <= last_mother_index; ++mother_index) {
                     lepton_.particles_->at(last_mother_index + 1).mothers.insert(&lepton_.particles_->at(mother_index));
                     lepton_.particles_->at(mother_index).daughters.insert(lepton_.firstCopy_);
@@ -569,10 +567,8 @@ private:
             return Kind::PromptElectron;
         if(pdg == GenParticle::PdgId::muon)
             return Kind::PromptMuon;
-        if(pdg != GenParticle::PdgId::tau){
-            std::cout << "pdg code = "<<static_cast<int>(pdg) << std::endl;
-            ThrowError("unknown lepton type");
-        }
+        if(pdg != GenParticle::PdgId::tau)
+            std::cerr << "pdg code = "<<static_cast<int>(pdg) << std::endl;
         if(nChargedHadrons_ == 0 && nNeutralHadrons_ != 0)
             ThrowError("invalid hadron counts");
         if(nChargedHadrons_ != 0)

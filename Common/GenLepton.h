@@ -65,9 +65,6 @@ public:
             {PdgId::pi0, 0.1349768},
             {PdgId::K, 0.493677},
             {PdgId::K0, 0.497611},
-            {PdgId::h0, 0.12510},
-            {PdgId::Z, 0.0911876},
-            {PdgId::W, 0.080379},
         };
         auto iter=pdgId_Masses.find(pdgId);
         if(iter==pdgId_Masses.end()) return nanoAODmass;

@@ -145,6 +145,7 @@ if __name__ == "__main__":
      
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
+    snapshotOptions.fMode="UPDATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo) 
     snapshotOptions.fCompressionLevel = args.compressionLevel 
     createAnatuple(args.inFile, args.outFile, args.period, args.sample, args.mass, snapshotOptions, args.range, args.isData, args.evtIds, isHH) 

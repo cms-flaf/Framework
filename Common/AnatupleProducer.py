@@ -27,7 +27,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     df = DefineAndAppend(df,"period", f"static_cast<int>(Period::Run{period})") 
     df = DefineAndAppend(df,"X_mass", f"static_cast<int>({X_mass})")
     is_data = 'true' if isData else 'false'
-    df = DefineAndAppend(df,"is_data", f"{is_data}")
+    df = DefineAndAppend(df,"is_data", is_data)
     df = Baseline.RecoLeptonsSelection(df)
     df = Baseline.DefineGenObjects(df, isData=isData, isHH=isHH)
     df = Baseline.RecoJetAcceptance(df)
@@ -55,8 +55,8 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
         df = DefineAndAppend(df,f"tau{leg_idx+1}_phi", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Phi())")
         df = DefineAndAppend(df,f"tau{leg_idx+1}_mass", f"static_cast<float>(httCand.leg_p4[{leg_idx}].M())")
         df = DefineAndAppend(df,f"tau{leg_idx+1}_charge", f"httCand.leg_charge[{leg_idx}]")
-        df = DefineAndAppend(df,f"tau{leg_idx+1}_idx", f"httCand.leg_index[{leg_idx}]")
-        df = DefineAndAppend(df,f"tau{leg_idx+1}_genMatchIdx", f"httCand.leg_genMatchIdx[{leg_idx}]") 
+        df = df.Define(f"tau{leg_idx+1}_idx", f"httCand.leg_index[{leg_idx}]")
+        df = df.Define(f"tau{leg_idx+1}_genMatchIdx", f"httCand.leg_genMatchIdx[{leg_idx}]") 
         df = df.Define(f"tau{leg_idx+1}_recoJetMatchIdx", f"FindMatching(httCand.leg_p4[{leg_idx}], Jet_p4, 0.3)")
         df = DefineAndAppend(df, f"tau{leg_idx+1}_iso", f"httCand.leg_rawIso.at({leg_idx})")
         for deepTauScore in deepTauScores:

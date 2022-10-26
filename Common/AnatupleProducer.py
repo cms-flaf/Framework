@@ -108,8 +108,8 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     
     varToSave = Utilities.ListToVector(colToSave)   
     df.Snapshot("Events", outFile, varToSave, snapshotOptions) 
-    outputRootFile= ROOT.TFile(outFile, "RECREATE")
-    outputRootFile.WriteTObject(histReport, "Report", "Overwrite")
+    outputRootFile= ROOT.TFile(outFile, "UPDATE")
+    outputRootFile.WriteTObject(histReport, "Report")
     outputRootFile.Close()
     
     
@@ -145,7 +145,7 @@ if __name__ == "__main__":
      
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
-    snapshotOptions.fMode="UPDATE"
+    snapshotOptions.fMode="RECREATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo) 
     snapshotOptions.fCompressionLevel = args.compressionLevel 
     createAnatuple(args.inFile, args.outFile, args.period, args.sample, args.mass, snapshotOptions, args.range, args.isData, args.evtIds, isHH) 

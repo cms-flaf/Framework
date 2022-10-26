@@ -11,9 +11,11 @@ def Initialize(loadTF=False, loadHHBtag=False):
     if not initialized:
         import os
         headers_dir = os.path.dirname(os.path.abspath(__file__))
+        header_path_GenLepton = os.path.join(headers_dir, "GenLepton.h")
         header_path_Gen = os.path.join(headers_dir, "BaselineGenSelection.h")
         header_path_Reco = os.path.join(headers_dir, "BaselineRecoSelection.h")
         header_path_HHbTag = os.path.join(headers_dir, "HHbTagScores.h")
+        ROOT.gInterpreter.Declare(f'#include "{header_path_GenLepton}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Gen}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Reco}"')
         if(loadTF):
@@ -73,11 +75,24 @@ class WorkingPointsBoostedTauVSjet:
    VVTight = 7
 
 
-def DefineGenObjects(df, Hbb_AK4mass_mpv):
-    df = df.Define("GenPart_daughters", "GetDaughters(GenPart_genPartIdxMother)")
-    df = df.Define("genHttCand", """GetGenHTTCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
+def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125.):
+    if isData:
+        df = df.Define("genLeptons", "std::vector<reco_tau::gen_truth::GenLepton>()")
+    else:
+        df = df.Define("GenPart_daughters", "GetDaughters(GenPart_genPartIdxMother)")
+        df = df.Define("genLeptons","""reco_tau::gen_truth::GenLepton::fromNanoAOD(GenPart_pt, GenPart_eta,
+                                        GenPart_phi, GenPart_mass, GenPart_genPartIdxMother, GenPart_pdgId,
+                                        GenPart_statusFlags, event)""")
+    
+    for lep in ["Electron", "Muon", "Tau"]:
+        df = df.Define(f"{lep}_genMatchIdx",  f"MatchGenLepton({lep}_p4, genLeptons, 0.2)")
+    if isData:
+        return df
+
+    if isHH:
+        df = df.Define("genHttCand", """GetGenHTTCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
                                                        GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass)""")
-    df = df.Define("genHbbIdx", """GetGenHBBIndex(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags)""")
+        df = df.Define("genHbbIdx", """GetGenHBBIndex(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags)""")
     for var in ["GenJet", "GenJetAK8"]:
         df = df.Define(f"{var}_idx", f"CreateIndexes({var}_pt.size())")
         df = df.Define(f"{var}_p4", f"GetP4({var}_pt,{var}_eta,{var}_phi,{var}_mass, {var}_idx)")
@@ -281,8 +296,8 @@ def RecoHttCandidateSelection(df):
         leg1, leg2 = channelLegs[ch]
         cand_column = f"httCands_{ch}"
         df = df.Define(cand_column, f"""
-            GetHTTCandidates(Channel::{ch}, 0.4, {leg1}_B2_{ch}_1, {leg1}_p4, {leg1}_iso, {leg1}_charge,
-                                                 {leg2}_B2_{ch}_2, {leg2}_p4, {leg2}_iso, {leg2}_charge)
+            GetHTTCandidates(Channel::{ch}, 0.4, {leg1}_B2_{ch}_1, {leg1}_p4, {leg1}_iso, {leg1}_charge, {leg1}_genMatchIdx,
+                                                 {leg2}_B2_{ch}_2, {leg2}_p4, {leg2}_iso, {leg2}_charge, {leg2}_genMatchIdx)
         """)
         cand_columns.append(cand_column)
     cand_filters = [ f'{c}.size() > 0' for c in cand_columns ]
@@ -319,6 +334,6 @@ def GenRecoJetMatching(df):
     return df.Filter("Jet_genJetIdx_matched[Jet_genMatched].size()>=2", "Two different gen-reco jet matches at least")
 
 def DefineHbbCand(df):
-    df = df.Define("Jet_HHBtagScore", "GetHHBtagScore(Jet_B3T, Jet_idx, Jet_p4,Jet_btagDeepFlavB, MET_p4.pt(),  MET_p4.phi(), httCand, period, event)") 
+    df = df.Define("Jet_HHBtagScore", "GetHHBtagScore(Jet_B3T, Jet_idx, Jet_p4,Jet_btagDeepFlavB, MET_pt,  MET_phi, httCand, period, event)")
     df = df.Define("HbbCandidate", "GetHbbCandidate(Jet_HHBtagScore, Jet_B3T, Jet_p4, Jet_idx)")
     return df

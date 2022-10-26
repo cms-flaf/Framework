@@ -10,7 +10,8 @@ struct HTTCand {
   std::array<LorentzVectorM, n_legs> leg_p4;
   std::array<int, n_legs> leg_charge; 
   std::array<float, n_legs> leg_rawIso;
-
+  std::array<int, n_legs> leg_genMatchIdx;
+  
   Channel channel() const { return LegsToChannel(leg_type[0], leg_type[1]); }
 
   bool operator==(const HTTCand& other) const

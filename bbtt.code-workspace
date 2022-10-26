@@ -93,6 +93,7 @@
 			"memory_resource": "cpp",
 			"stop_token": "cpp",
 			"cinttypes": "cpp"
-		}
+		},
+		"git.ignoreLimitWarning": true
 	}
 }

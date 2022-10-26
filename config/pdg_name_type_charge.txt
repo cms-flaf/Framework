@@ -234,7 +234,7 @@
 413,D*+,meson,1
 3000221,pi'_tc0,meson,0
 4000013,mu*-,lepton,-1
-13,mu-,lepton,-1,1.0565837
+13,mu-,lepton,-1,0.10565837
 525,B*_2+,meson,1
 2000013,~mu_R-,lepton,-1
 -435,D*_2s-,meson,-1
@@ -491,7 +491,7 @@
 -2000013,~mu_R+,lepton,1
 115,a_20,meson,0
 -525,B*_2-,meson,-1
--13,mu+,lepton,1,1.0565837
+-13,mu+,lepton,1,0.10565837
 -4000013,mu*bar+,lepton,1
 -413,D*-,meson,-1
 1000035,~chi_40,baryon,0

@@ -4,6 +4,7 @@
 #include "exception.h"
 #include "TextIO.h"
 #include "GenStatusFlags.h"
+#include "GenLepton.h"
 
 
 struct ParticleInfo {
@@ -11,7 +12,7 @@ struct ParticleInfo {
   int charge;
   std::string name;
   std::string type;
-  int mass{-1};
+  float mass{-1.};
 };
 
 class ParticleDB {
@@ -257,4 +258,28 @@ int PrintDecayChain(ULong64_t evt, const RVecI& GenPart_pdgId, const RVecI& GenP
                               GenPart_eta, GenPart_phi, GenPart_mass, GenPart_status, "", GenPart_daughters, out_file);
   }
   return 0;
-} 
+}
+
+
+int MatchGenLepton(const LorentzVectorM& obj_p4, const std::vector<reco_tau::gen_truth::GenLepton>& genLeptons, float dR_thr)
+{ 
+  int best_idx=-1;
+  float dR_min = dR_thr;
+  for (int genLep_idx = 0; genLep_idx<genLeptons.size();genLep_idx++ ){
+    auto dR_objGenLep = ROOT::Math::VectorUtil::DeltaR(obj_p4, genLeptons.at(genLep_idx).visibleP4());
+    if(dR_objGenLep<dR_min){
+      dR_objGenLep = dR_min ; 
+      best_idx= genLep_idx; 
+    }
+  }
+  return best_idx; 
+}
+
+RVecI MatchGenLepton(const RVecLV& obj_p4, const std::vector<reco_tau::gen_truth::GenLepton>& genLeptons, float dR_thr)
+{ 
+  RVecI best_indices(obj_p4.size(), -1);
+  for(int obj_idx = 0; obj_idx<obj_p4.size();obj_idx++){
+    best_indices[obj_idx] = MatchGenLepton(obj_p4.at(obj_idx),genLeptons, dR_thr); 
+  }
+  return best_indices; 
+}

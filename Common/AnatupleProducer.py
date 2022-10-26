@@ -109,7 +109,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     varToSave = Utilities.ListToVector(colToSave)   
     df.Snapshot("Events", outFile, varToSave, snapshotOptions) 
     outputRootFile= ROOT.TFile(outFile, "UPDATE")
-    outputRootFile.WriteTObject(histReport, "Report")
+    outputRootFile.WriteTObject(histReport, "Report", "Overwrite")
     outputRootFile.Close()
     
     

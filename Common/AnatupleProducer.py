@@ -30,6 +30,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     df = DefineAndAppend(df,"is_data", is_data)
     
     df = Baseline.RecoP4(df)
+    df = DefineAndAppend(df, f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.3)")
     df = Baseline.DefineGenObjects(df, isData=isData, isHH=isHH)
     df = Baseline.RecoLeptonsSelection(df)
     df = Baseline.RecoJetAcceptance(df)
@@ -51,6 +52,8 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
    
     
     df = DefineAndAppend(df,f"Tau_p4_size", f"Tau_p4.size()")
+    
+    
     for leg_idx in [0,1]:
         df = DefineAndAppend(df, f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
         df = DefineAndAppend(df, f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
@@ -67,7 +70,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
         
         if not isData:
             df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_kind", f"""tau{leg_idx+1}_genMatchIdx>=0 ? static_cast<int>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).kind()) : 
-                                                    static_cast<int>(GenLeptonMatch::NoMatch);""")
+                                              static_cast<int>(GenLeptonMatch::NoMatch);""")
             df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_vis_pt", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().Pt()) : 
                                                     -1.;""")
             df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_vis_eta", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().Eta()) : 
@@ -112,7 +115,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     df.Snapshot("Events", outFile, varToSave, snapshotOptions) 
     outputRootFile= ROOT.TFile(outFile, "UPDATE")
     outputRootFile.WriteTObject(histReport, "Report", "Overwrite")
-    outputRootFile.Close()
+    outputRootFile.Close() 
     
     
     

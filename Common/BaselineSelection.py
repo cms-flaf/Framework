@@ -120,19 +120,32 @@ def GenJetHttOverlapRemoval(df):
 def RequestOnlyResolvedGenJets(df):
     return df.Filter("GenJet_idx[GenJet_B2].size()==2", "Resolved topology")
 
+syst_dict = {
+    "TauES" : ["Tau", "MET"],
+}
 
-def RecoP4(df, syst=None):
-    for obj in [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau" ]:
-        syst_name = ''
-        if syst!=None and obj in syst:
-            syst_name = syst[obj] 
-        df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())") \
-               .Define(f"{obj}_p4", f"GetP4({obj}_pt{syst_name}, {obj}_eta{syst_name}, {obj}_phi{syst_name}, {obj}_mass{syst_name}, {obj}_idx)")
-    for met_obj in ["MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"]:
-        syst_name = ''
-        if syst!=None and met_obj in syst:
-            syst_name = syst[met_obj] 
-        df = df.Define(f"{met_obj}_p4", f"LorentzVectorM {met_obj}_p4({met_obj}_pt{syst_name}, 0., {met_obj}_phi{syst_name}, 0.); return {met_obj}_p4;")
+def RecoP4(df, syst=None, central_prefix=None):
+    syst_name = syst if syst != None else ''
+    for obj in [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau","MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"]:
+        if "MET" not in obj:
+            df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())")
+        if syst_name == '':  
+            if "MET" in obj:
+                df = df.Define(f"{obj}_p4", f"LorentzVectorM {obj}_p4({obj}_pt{syst_name}, 0., {obj}_phi{syst_name}, 0.); return {obj}_p4;")
+                continue 
+            else:
+                df = df.Define(f"{obj}_p4", f"GetP4({obj}_pt, {obj}_eta, {obj}_phi, {obj}_mass, {obj}_idx)")
+            continue
+        for variation in ["_up", "_down", ""]: 
+            if obj not in syst_dict[syst_name]: # get central value with unc names
+                if "MET" in obj:
+                    df = df.Define(f"{obj}_p4_{syst_name}{variation}", f"LorentzVectorM {obj}_p4({obj}_pt{syst_name}, 0., {obj}_phi{syst_name}, 0.); return {obj}_p4;")
+                    continue
+            else:
+                if "MET" in obj:
+                    df = df.Define(f"{obj}_p4_{syst_name}{variation}", f"LorentzVectorM {obj}_p4({obj}_pt{syst_name}{variation}, 0., {obj}_phi{syst_name}{variation}, 0.); return {obj}_p4;")
+                continue
+            df = df.Define(f"{obj}_p4_{syst_name}{variation}", f"GetP4({obj}_pt_{syst_name}{variation}, {obj}_eta_{syst_name}{variation}, {obj}_phi_{syst_name}{variation}, {obj}_mass_{syst_name}{variation}, {obj}_idx)")
     return df
 
 def DefineMETCuts(met_thr, met_collections):

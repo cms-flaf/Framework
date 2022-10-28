@@ -160,6 +160,23 @@ int FindMatching(const LorentzVectorM& target_p4, const RVecLV& ref_p4,const flo
   return current_idx;
 }
 
+RVecI FindMatching(const RVecLV& target_p4, const RVecLV& ref_p4,const float deltaR_thr){
+  RVecI targetIndices(target_p4.size(), -1); 
+  RVecI refIndicesTaken; 
+  for(int targetIdx =0; targetIdx<target_p4.size(); targetIdx++){
+    int refIdxFound = FindMatching(target_p4[targetIdx], ref_p4, deltaR_thr);
+    if(std::find(refIndicesTaken.begin(), refIndicesTaken.end(), refIdxFound)!=refIndicesTaken.end()){
+      continue;
+    }
+    targetIndices[targetIdx] = refIdxFound;
+    if(refIdxFound!=-1){
+      refIndicesTaken.push_back(refIdxFound);
+    }
+  } 
+  return targetIndices;
+}
+
+
 namespace v_ops{
 
 RVecF pt(const RVecLV& p4){

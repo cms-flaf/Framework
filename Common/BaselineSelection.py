@@ -120,46 +120,59 @@ def GenJetHttOverlapRemoval(df):
 def RequestOnlyResolvedGenJets(df):
     return df.Filter("GenJet_idx[GenJet_B2].size()==2", "Resolved topology")
 
-syst_dict = {
-    "TauES" : ["Tau", "MET"],
-}
 
-def RecoP4(df, syst=None, central_prefix=None):
-    syst_name = syst if syst != None else ''
-    for obj in [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau","MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"]:
-        if "MET" not in obj:
-            df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())")
-        if syst_name == '':  
-            if "MET" in obj:
-                df = df.Define(f"{obj}_p4", f"LorentzVectorM {obj}_p4({obj}_pt{syst_name}, 0., {obj}_phi{syst_name}, 0.); return {obj}_p4;")
+def SelectRecoP4(df, syst_name=''):
+    obj_list = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau","MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"]
+    for obj in obj_list:
+        if f"{obj}_p4" not in df.GetColumnNames():
+            df = df.Define(f"{obj}_p4", f"{obj}_p4{syst_name}") 
+    return df
+  
+
+def CreateRecoP4(df, syst_dict=None):
+    syst = syst_dict if syst_dict != None else ''
+    syst_list = []
+    obj_list = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau","MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"] 
+    if syst == '': 
+        for obj in obj_list:
+            if "MET" in obj: 
+                df = df.Define(f"{obj}_p4", f"LorentzVectorM {obj}_p4({obj}_pt, 0., {obj}_phi, 0.); return {obj}_p4;")
                 continue 
             else:
-                df = df.Define(f"{obj}_p4", f"GetP4({obj}_pt, {obj}_eta, {obj}_phi, {obj}_mass, {obj}_idx)")
-            continue
-        for variation in ["_up", "_down", ""]: 
-            if obj not in syst_dict[syst_name]: # get central value with unc names
-                if "MET" in obj:
-                    df = df.Define(f"{obj}_p4_{syst_name}{variation}", f"LorentzVectorM {obj}_p4({obj}_pt{syst_name}, 0., {obj}_phi{syst_name}, 0.); return {obj}_p4;")
-                    continue
-            else:
-                if "MET" in obj:
-                    df = df.Define(f"{obj}_p4_{syst_name}{variation}", f"LorentzVectorM {obj}_p4({obj}_pt{syst_name}{variation}, 0., {obj}_phi{syst_name}{variation}, 0.); return {obj}_p4;")
-                continue
-            df = df.Define(f"{obj}_p4_{syst_name}{variation}", f"GetP4({obj}_pt_{syst_name}{variation}, {obj}_eta_{syst_name}{variation}, {obj}_phi_{syst_name}{variation}, {obj}_mass_{syst_name}{variation}, {obj}_idx)")
-    return df
+                if(f"{obj}_idx" not in df.GetColumnNames()):
+                    df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())") 
+                df = df.Define(f"{obj}_p4", f"GetP4({obj}_pt, {obj}_eta, {obj}_phi, {obj}_mass, {obj}_idx)") 
+    else: 
+        for syst_name in syst.keys():
+            for variation in ["_up", "_down", ""]:
+                syst_list.append(f"{syst_name}{variation}")
+                for obj in obj_list:
+                    if "MET" in obj:
+                        for var in ["pt", "phi"]: # this line will be removed because it's only for test
+                            if(f"{obj}_{var}_{syst_name}{variation}" not in df.GetColumnNames()): # this line will be removed because it's only for test
+                                df = df.Define(f"{obj}_{var}_{syst_name}{variation}", f"return {obj}_{var};") # this line will be removed because it's only for test
+                        df = df.Define(f"{obj}_p4_{syst_name}{variation}", f"LorentzVectorM {obj}_p4({obj}_pt_{syst_name}{variation}, 0., {obj}_phi_{syst_name}{variation}, 0.); return {obj}_p4;") 
+                    else:
+                        if(f"{obj}_idx" not in df.GetColumnNames()):
+                            df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())")
+                        for var in ["pt", "eta", "phi", "mass"]: # this line will be removed because it's only for test
+                            if(f"{obj}_{var}_{syst_name}{variation}" not in df.GetColumnNames()): # this line will be removed because it's only for test
+                                df = df.Define(f"{obj}_{var}_{syst_name}{variation}", f"RVecF {var}({obj}_{var}.size(),0.); return {var};") # this line will be removed because it's only for test
+                        df = df.Define(f"{obj}_p4_{syst_name}{variation}", f"GetP4({obj}_pt_{syst_name}{variation}, {obj}_eta_{syst_name}{variation}, {obj}_phi_{syst_name}{variation}, {obj}_mass_{syst_name}{variation}, {obj}_idx)") 
+    return df,syst_list
 
 def DefineMETCuts(met_thr, met_collections):
-  cut = ' || '.join([f'{v}_p4.pt() > {met_thr}' for v in met_collections ])
+  cut = ' || '.join([f'{v}_pt > {met_thr}' for v in met_collections ])
   return f"( {cut} )"
 
     
 def RecoLeptonsSelection(df, apply_filter=True):
-    df = df.Define("Electron_B0", """
+    df = df.Define("Electron_B0", f"""
         v_ops::pt(Electron_p4) > 18 && abs(v_ops::eta(Electron_p4)) < 2.3 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
         && (Electron_mvaIso_WP90 || (Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all < 0.5))
     """)
 
-    df = df.Define("Muon_B0", """
+    df = df.Define("Muon_B0", f"""
         v_ops::pt(Muon_p4) > 18 && abs(v_ops::eta(Muon_p4)) < 2.3 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045
         && ( ((Muon_tightId || Muon_mediumId) && Muon_pfRelIso04_all < 0.5) || (Muon_highPtId && Muon_tkRelIso < 0.5) )
     """)
@@ -200,28 +213,28 @@ def RecoLeptonsSelection(df, apply_filter=True):
         boostedTau_B0 && boostedTau_idMVAnewDM2017v2 >= {WorkingPointsBoostedTauVSjet.Medium}
     """)
 
-    met_cuts = DefineMETCuts(80, ["MET", "DeepMETResolutionTune", "DeepMETResponseTune", "PuppiMET" ])
-
+    met_cuts = DefineMETCuts(80, ["MET", "DeepMETResolutionTune", "DeepMETResponseTune", "PuppiMET"]) 
+    
     ch_filters = []
     for leg1_idx in range(len(leg_names)):
         for leg2_idx in range(max(1, leg1_idx), len(leg_names)):
-            leg1, leg2 = leg_names[leg1_idx], leg_names[leg2_idx]
+            leg1, leg2 = leg_names[leg1_idx], leg_names[leg2_idx] 
             if leg1 == 'Tau' and leg2 == 'boostedTau': continue
-            ch_filter = f"{leg1}{leg2}_B0"
+            ch_filter = f"{leg1}{leg2}_B0" 
             ch_filters.append(ch_filter)
             if leg1 == leg2:
-                ch_filter_def = f"{leg1}_idx[{leg1}_B0].size() > 1 && {leg1}_idx[{leg1}_B0T].size() > 0"
+                ch_filter_def = f"{leg1}_idx[{leg1}_B0].size() > 1 && {leg1}_idx[{leg1}_B0T].size() > 0" 
             else:
                 ch_filter_def = f"""
                     ({leg1}_idx[{leg1}_B0].size() > 0 && {leg2}_idx[{leg2}_B0T].size() > 0)
                     || ({leg1}_idx[{leg1}_B0T].size() > 0 && {leg2}_idx[{leg2}_B0].size() > 0)
                 """
-            df = df.Define(ch_filter, ch_filter_def)
+            df = df.Define(ch_filter, ch_filter_def) 
         ch_filter = f"{leg1}MET_B0"
         ch_filters.append(ch_filter)
         ch_filter_def = f"{leg1}_idx[{leg1}_B0T].size() > 0 && {met_cuts}"
-        df = df.Define(ch_filter, ch_filter_def)
-
+        ch_filter_def
+        df = df.Define(ch_filter, ch_filter_def) 
     filter_expr = " || ".join(ch_filters)
     if apply_filter:
         return df.Filter(filter_expr, "Reco leptons requirements")
@@ -249,14 +262,14 @@ def RecoHttCandidateSelection(df):
            .Define("Muon_iso", "Muon_pfRelIso04_all") \
            .Define("Tau_iso", "-Tau_rawDeepTau2017v2p1VSjet")
 
-    df = df.Define("Electron_B2_eTau_1", "Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaIso_WP80")
+    df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaIso_WP80")
     df = df.Define("Tau_B2_eTau_2", f"""
         Tau_B0 && v_ops::pt(Tau_p4) > 20
         && (Tau_idDeepTau2017v2p1VSe & {WorkingPointsTauVSe.VLoose})
         && (Tau_idDeepTau2017v2p1VSmu & {WorkingPointsTauVSmu.Tight})
     """)
 
-    df = df.Define("Muon_B2_muTau_1", """
+    df = df.Define("Muon_B2_muTau_1", f"""
         Muon_B0 && v_ops::pt(Muon_p4) > 20 && (   (Muon_tightId && Muon_pfRelIso04_all < 0.15)
                                     || (Muon_highPtId && Muon_tkRelIso < 0.15) )
     """)
@@ -279,28 +292,28 @@ def RecoHttCandidateSelection(df):
         && (Tau_idDeepTau2017v2p1VSmu & {WorkingPointsTauVSmu.VLoose})
     """)
 
-    df = df.Define("Muon_B2_muMu_1", """
+    df = df.Define("Muon_B2_muMu_1", f"""
         Muon_B0 && v_ops::pt(Muon_p4) > 20 && (   (Muon_tightId && Muon_pfRelIso04_all < 0.15)
                                     || (Muon_highPtId && Muon_tkRelIso < 0.15) )
     """)
-    df = df.Define("Muon_B2_muMu_2", """
+    df = df.Define("Muon_B2_muMu_2", f"""
         Muon_B0 && v_ops::pt(Muon_p4) > 20 && (   (Muon_tightId && Muon_pfRelIso04_all < 0.3)
                                     || (Muon_highPtId && Muon_tkRelIso < 0.3) )
     """)
 
-    df = df.Define("Electron_B2_eMu_1", """
+    df = df.Define("Electron_B2_eMu_1", f"""
         Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3
     """)
-    df = df.Define("Muon_B2_eMu_2", """
+    df = df.Define("Muon_B2_eMu_2", f"""
         Muon_B0 && v_ops::pt(Muon_p4) > 20 && (   (Muon_tightId && Muon_pfRelIso04_all < 0.15)
                                     || (Muon_highPtId && Muon_tkRelIso < 0.15) )
     """)
 
-    df = df.Define("Electron_B2_eE_1", """
+    df = df.Define("Electron_B2_eE_1", f"""
         Electron_B0 && v_ops::pt(Electron_p4) > 20
         && (Electron_mvaIso_WP80 || Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.15)
     """)
-    df = df.Define("Electron_B2_eE_2", """
+    df = df.Define("Electron_B2_eE_2", f"""
         Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3
     """)
 
@@ -320,12 +333,12 @@ def RecoHttCandidateSelection(df):
 
 def ThirdLeptonVeto(df):     
     df = df.Define("Electron_vetoSel",
-                   """v_ops::pt(Electron_p4) > 10 && abs(v_ops::eta(Electron_p4)) < 2.5 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
+                   f"""v_ops::pt(Electron_p4) > 10 && abs(v_ops::eta(Electron_p4)) < 2.5 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
                       && ( Electron_mvaIso_WP90 == true || ( Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all<0.3) )
                      && (httCand.isLeg(Electron_idx, Leg::e)== false)""")
     df = df.Filter("Electron_idx[Electron_vetoSel].size() == 0", "No extra electrons")
     df = df.Define("Muon_vetoSel",
-                   """v_ops::pt(Muon_p4) > 10 && abs(v_ops::eta(Muon_p4)) < 2.5 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045
+                   f"""v_ops::pt(Muon_p4) > 10 && abs(v_ops::eta(Muon_p4)) < 2.5 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045
                       && ( Muon_mediumId || Muon_tightId ) && Muon_pfRelIso04_all<0.3
                       && (httCand.isLeg(Muon_idx, Leg::mu) == false)""")
     df = df.Filter("Muon_idx[Muon_vetoSel].size() == 0", "No extra muons")

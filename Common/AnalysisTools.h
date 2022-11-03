@@ -161,53 +161,46 @@ int FindMatching(const LorentzVectorM& target_p4, const RVecLV& ref_p4,const flo
 }
 
 RVecI FindMatching(const RVecLV& target_p4, const RVecLV& ref_p4,const float deltaR_thr){
-  RVecI targetIndices(target_p4.size(), -1); 
-  RVecI refIndicesTaken; 
+  RVecI targetIndices(target_p4.size(), -1);  
   for(int targetIdx =0; targetIdx<target_p4.size(); targetIdx++){
-    int refIdxFound = FindMatching(target_p4[targetIdx], ref_p4, deltaR_thr);
-    if(std::find(refIndicesTaken.begin(), refIndicesTaken.end(), refIdxFound)!=refIndicesTaken.end()){
-      continue;
-    }
-    targetIndices[targetIdx] = refIdxFound;
-    if(refIdxFound!=-1){
-      refIndicesTaken.push_back(refIdxFound);
-    }
+    int refIdxFound = FindMatching(target_p4[targetIdx], ref_p4, deltaR_thr); 
+    targetIndices[targetIdx] = refIdxFound; 
   } 
   return targetIndices;
 }
 
 
 namespace v_ops{
-
-RVecF pt(const RVecLV& p4){
-    RVecF pt; 
-    for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
-      pt.push_back(p4.at(p4_idx).pt());
-    }
-    return pt;
-}
-
-RVecF eta(const RVecLV& p4){
-    RVecF eta; 
-    for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
-      eta.push_back(p4.at(p4_idx).eta());
-    }
-    return eta;
-}
-
-RVecF phi(const RVecLV& p4){
-    RVecF phi; 
-    for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
-      phi.push_back(p4.at(p4_idx).phi());
-    }
-    return phi;
-}
-
-RVecF m(const RVecLV& p4){
-    RVecF m; 
-    for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
-      m.push_back(p4.at(p4_idx).M());
-    }
-    return m;
-}
+  template<typename LV>
+  RVecF pt(const LV& p4){
+      RVecF pt(p4.size()); 
+      for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+        pt[p4_idx] = p4.at(p4_idx).pt();
+      }
+      return pt;
+  }
+  template<typename LV>
+  RVecF eta(const LV& p4){
+      RVecF eta(p4.size()); 
+      for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+        eta[p4_idx] = p4.at(p4_idx).eta();
+      }
+      return eta;
+  }
+  template<typename LV>
+  RVecF phi(const LV& p4){
+      RVecF phi(p4.size()); 
+      for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+        phi[p4_idx] = p4.at(p4_idx).phi();
+      }
+      return phi;
+  }
+  template<typename LV>
+  RVecF m(const LV& p4){
+      RVecF m(p4.size()); 
+      for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+        m[p4_idx] = p4.at(p4_idx).M();
+      }
+      return m;
+  }
 }

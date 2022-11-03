@@ -4,34 +4,31 @@ import Common.BaselineSelection as Baseline
 import Common.Utilities as Utilities
 import Common.ReportTools as ReportTools
 
+deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
+            "rawDeepTau2017v2p1VSjet", "rawDeepTau2018v2p5VSe", "rawDeepTau2018v2p5VSmu",
+            "rawDeepTau2018v2p5VSjet",
+            "idDeepTau2017v2p1VSe", "idDeepTau2017v2p1VSjet", "idDeepTau2017v2p1VSmu",
+            "idDeepTau2018v2p5VSe","idDeepTau2018v2p5VSjet","idDeepTau2018v2p5VSmu",
+            "decayMode"] 
+JetObservables = ["hadronFlavour","partonFlavour", "particleNetAK4_B", "particleNetAK4_CvsB",
+                "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",
+                "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"] 
 
-
-def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,range, isData, evtIds, isHH):
-    Baseline.Initialize(True, True)
-    df = ROOT.RDataFrame("Events", inFile)
-    if range is not None:
-        df = df.Range(range)
-    if len(evtIds) > 0:
-        df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
-    colToSave = ["event","luminosityBlock","run",
+obj_list = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau","MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"]
+colToSave = ["event","luminosityBlock","run",
                 "MET_pt", "MET_phi","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
                 "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs","LHE_HT",
                 "Electron_genMatchIdx", "Muon_genMatchIdx","Tau_genMatchIdx" ] 
- 
-    def DefineAndAppend(df, varToDefine, varToCall):
-        df = df.Define(f"{varToDefine}", f"{varToCall}")
-        colToSave.append(varToDefine)
-        return df 
-    df = DefineAndAppend(df,"sample", f"static_cast<int>(SampleType::{sample})")
-    df = DefineAndAppend(df,"period", f"static_cast<int>(Period::Run{period})") 
-    df = DefineAndAppend(df,"X_mass", f"static_cast<int>({X_mass})")
-    is_data = 'true' if isData else 'false'
-    df = DefineAndAppend(df,"is_data", is_data)
-    
-    df = Baseline.RecoP4(df)
-    df = DefineAndAppend(df, f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.3)")
-    df = Baseline.DefineGenObjects(df, isData=isData, isHH=isHH)
+
+def DefineAndAppend(df, varToDefine, varToCall):
+    df = df.Define(f"{varToDefine}", f"{varToCall}")
+    colToSave.append(varToDefine)
+    return df 
+
+def addAllVariables(df,syst_name, isData, isHH):
+    df = Baseline.SelectRecoP4(df, syst_name)
+    df = Baseline.DefineGenObjects(df, isData=isData, isHH=isHH) 
     df = Baseline.RecoLeptonsSelection(df)
     df = Baseline.RecoJetAcceptance(df)
     df = Baseline.RecoHttCandidateSelection(df)
@@ -39,21 +36,10 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     df = Baseline.RequestOnlyResolvedRecoJets(df)
     df = Baseline.ThirdLeptonVeto(df)
     df = Baseline.DefineHbbCand(df)
+    df = DefineAndAppend(df, f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
+    df = DefineAndAppend(df, f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
+    df = DefineAndAppend(df, f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
     df = DefineAndAppend(df,"channelId","static_cast<int>(httCand.channel())")
-    deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
-                "rawDeepTau2017v2p1VSjet", "rawDeepTau2018v2p5VSe", "rawDeepTau2018v2p5VSmu",
-                "rawDeepTau2018v2p5VSjet",
-                "idDeepTau2017v2p1VSe", "idDeepTau2017v2p1VSjet", "idDeepTau2017v2p1VSmu",
-                "idDeepTau2018v2p5VSe","idDeepTau2018v2p5VSjet","idDeepTau2018v2p5VSmu",
-                "decayMode"] 
-    JetObservables = ["hadronFlavour","partonFlavour", "particleNetAK4_B", "particleNetAK4_CvsB",
-                    "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",
-                    "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"] 
-   
-    
-    df = DefineAndAppend(df,f"Tau_p4_size", f"Tau_p4.size()")
-    
-    
     for leg_idx in [0,1]:
         df = DefineAndAppend(df, f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
         df = DefineAndAppend(df, f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
@@ -105,20 +91,44 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
         for jetVar in JetObservables:
             df = DefineAndAppend(df,f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")
         df = DefineAndAppend(df,f"b{leg_idx+1}_HHbtag", f"Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}])")
+    return df
+    
 
-    report = df.Report()
-    histReport=ReportTools.SaveReport(report.GetValue()) 
+def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,range, isData, evtIds, isHH):
+    Baseline.Initialize(True, True)
+    df = ROOT.RDataFrame("Events", inFile)
+    if range is not None:
+        df = df.Range(range)
+    if len(evtIds) > 0:
+        df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
+    df = DefineAndAppend(df,"sample", f"static_cast<int>(SampleType::{sample})")
+    df = DefineAndAppend(df,"period", f"static_cast<int>(Period::Run{period})") 
+    df = DefineAndAppend(df,"X_mass", f"static_cast<int>({X_mass})")
+    is_data = 'true' if isData else 'false'
+    df = DefineAndAppend(df,"is_data", is_data)
+    syst_dict = {
+        "TauES" : ["Tau", "MET"],
+    }
+    df, syst_list = Baseline.CreateRecoP4(df, syst_dict)
+    df_central,syst_listCentral = Baseline.CreateRecoP4(df, '') 
 
-    
-    
-    varToSave = Utilities.ListToVector(colToSave)   
-    df.Snapshot("Events", outFile, varToSave, snapshotOptions) 
-    outputRootFile= ROOT.TFile(outFile, "UPDATE")
-    outputRootFile.WriteTObject(histReport, "Report", "Overwrite")
-    outputRootFile.Close() 
-    
-    
-    
+    syst_list.append("Central") 
+    dataframes = {}
+    histReports = {}
+    for syst in syst_list:
+        syst_name = f"_{syst}" if syst!='Central' else ''
+        dataframes[syst] = df if syst!="Central" else df_central
+        df_syst = dataframes[syst] 
+        df_syst = addAllVariables(df_syst, syst_name, isData, isHH) 
+        report_syst = df_syst.Report()
+        histReport_syst = ReportTools.SaveReport(report_syst.GetValue(), reoprtName=f"Report{syst_name}") 
+        histReports[syst] = histReport_syst
+        varToSave = Utilities.ListToVector(colToSave)
+        df_syst.Snapshot(f"Events{syst_name}", outFile, varToSave, snapshotOptions) 
+        outputRootFile= ROOT.TFile(outFile, "UPDATE")
+        outputRootFile.WriteTObject(histReport_syst, f"Report{syst_name}", "Overwrite")
+        outputRootFile.Close() 
+    print(dataframes)
 
 if __name__ == "__main__":
     import argparse
@@ -132,25 +142,21 @@ if __name__ == "__main__":
     parser.add_argument('--sample', type=str)
     parser.add_argument('--compressionLevel', type=int, default=9)
     parser.add_argument('--compressionAlgo', type=str, default="LZMA")
-    parser.add_argument('--range', type=int, default=None)
+    parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--isData', type=bool, default=False)
 
-    '''
-    parser.add_argument('--particleFile', type=str,
-                        default=f"{os.environ['ANALYSIS_PATH']}/config/pdg_name_type_charge.txt")'''
     args = parser.parse_args() 
     
-    ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])     
-    ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
-    #ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");")
+    ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
+    ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"') 
     isHH=False
     if args.mass>0: 
         isHH = True
      
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
-    snapshotOptions.fMode="RECREATE"
+    snapshotOptions.fMode="UPDATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo) 
     snapshotOptions.fCompressionLevel = args.compressionLevel 
-    createAnatuple(args.inFile, args.outFile, args.period, args.sample, args.mass, snapshotOptions, args.range, args.isData, args.evtIds, isHH) 
+    createAnatuple(args.inFile, args.outFile, args.period, args.sample, args.mass, snapshotOptions, args.nEvents, args.isData, args.evtIds, isHH) 

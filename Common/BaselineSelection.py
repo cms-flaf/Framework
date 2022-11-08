@@ -6,6 +6,8 @@ import enum
 
 initialized = False
 
+ana_reco_object_collections = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau","MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"]
+
 def Initialize(loadTF=False, loadHHBtag=False):
     global initialized
     if not initialized:
@@ -121,45 +123,44 @@ def RequestOnlyResolvedGenJets(df):
     return df.Filter("GenJet_idx[GenJet_B2].size()==2", "Resolved topology")
 
 
-def SelectRecoP4(df, syst_name=''):
-    obj_list = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau","MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"]
-    for obj in obj_list:
+def SelectRecoP4(df,syst_name):
+    for obj in ana_reco_object_collections:
+        syst = syst_name if f"{obj}_p4{syst_name}" in df.GetColumnNames() else '_Central'
         if f"{obj}_p4" not in df.GetColumnNames():
-            df = df.Define(f"{obj}_p4", f"{obj}_p4{syst_name}") 
+            df = df.Define(f"{obj}_p4", f"{obj}_p4{syst}") 
     return df
   
 
-def CreateRecoP4(df, syst_dict=None):
-    syst = syst_dict if syst_dict != None else ''
-    syst_list = []
-    obj_list = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau","MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"] 
-    if syst == '': 
-        for obj in obj_list:
-            if "MET" in obj: 
-                df = df.Define(f"{obj}_p4", f"LorentzVectorM {obj}_p4({obj}_pt, 0., {obj}_phi, 0.); return {obj}_p4;")
-                continue 
-            else:
-                if(f"{obj}_idx" not in df.GetColumnNames()):
-                    df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())") 
-                df = df.Define(f"{obj}_p4", f"GetP4({obj}_pt, {obj}_eta, {obj}_phi, {obj}_mass, {obj}_idx)") 
-    else: 
-        for syst_name in syst.keys():
-            for variation in ["_up", "_down", ""]:
-                syst_list.append(f"{syst_name}{variation}")
-                for obj in obj_list:
-                    if "MET" in obj:
-                        for var in ["pt", "phi"]: # this line will be removed because it's only for test
-                            if(f"{obj}_{var}_{syst_name}{variation}" not in df.GetColumnNames()): # this line will be removed because it's only for test
-                                df = df.Define(f"{obj}_{var}_{syst_name}{variation}", f"return {obj}_{var};") # this line will be removed because it's only for test
-                        df = df.Define(f"{obj}_p4_{syst_name}{variation}", f"LorentzVectorM {obj}_p4({obj}_pt_{syst_name}{variation}, 0., {obj}_phi_{syst_name}{variation}, 0.); return {obj}_p4;") 
-                    else:
-                        if(f"{obj}_idx" not in df.GetColumnNames()):
-                            df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())")
-                        for var in ["pt", "eta", "phi", "mass"]: # this line will be removed because it's only for test
-                            if(f"{obj}_{var}_{syst_name}{variation}" not in df.GetColumnNames()): # this line will be removed because it's only for test
-                                df = df.Define(f"{obj}_{var}_{syst_name}{variation}", f"RVecF {var}({obj}_{var}.size(),0.); return {var};") # this line will be removed because it's only for test
-                        df = df.Define(f"{obj}_p4_{syst_name}{variation}", f"GetP4({obj}_pt_{syst_name}{variation}, {obj}_eta_{syst_name}{variation}, {obj}_phi_{syst_name}{variation}, {obj}_mass_{syst_name}{variation}, {obj}_idx)") 
-    return df,syst_list
+def CreateRecoP4(df, syst_dict=None, central_name='Central'):
+  syst_variations = {}
+  if syst_dict is None:
+    ref_name = ''
+  else:
+    ref_name = f'_{central_name}'    
+    for syst_name,syst_objs in syst_dict.items():
+      for variation in [ 'Up', 'Down' ]:
+        syst_variations[f'_{syst_name}{variation}'] = syst_objs
+  syst_variations[ref_name] = ana_reco_object_collections
+  for obj in ana_reco_object_collections:
+    if "MET" not in obj:
+        df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())")
+  for full_syst_name,syst_objs in syst_variations.items():
+    for obj in ana_reco_object_collections:
+        syst = full_syst_name if obj in syst_objs else ref_name
+        if "MET" in obj:
+            for var in ["pt", "phi"]:
+                if(f"{obj}_{var}{syst}" not in df.GetColumnNames()): # just for test
+                    df = df.Define(f"{obj}_{var}{syst}", f"{obj}_{var}") # just for test
+            if(f"{obj}_p4{syst}" not in df.GetColumnNames()):
+                df = df.Define(f"{obj}_p4{syst}", f"LorentzVectorM({obj}_pt{syst}, 0., {obj}_phi{syst}, 0.)")
+        else:
+            for var in ["pt", "eta", "phi", "mass"]:
+                if(f"{obj}_{var}{syst}" not in df.GetColumnNames()): # just for test
+                    df = df.Define(f"{obj}_{var}{syst}", f"{obj}_{var}") # just for test
+            if(f"{obj}_p4{syst}" not in df.GetColumnNames()):
+                df = df.Define(f"{obj}_p4{syst}",
+                               f"GetP4({obj}_pt{syst}, {obj}_eta{syst}, {obj}_phi{syst}, {obj}_mass{syst}, {obj}_idx)")
+  return df, list(syst_variations.keys())
 
 def DefineMETCuts(met_thr, met_collections):
   cut = ' || '.join([f'{v}_pt > {met_thr}' for v in met_collections ])
@@ -233,7 +234,6 @@ def RecoLeptonsSelection(df, apply_filter=True):
         ch_filter = f"{leg1}MET_B0"
         ch_filters.append(ch_filter)
         ch_filter_def = f"{leg1}_idx[{leg1}_B0T].size() > 0 && {met_cuts}"
-        ch_filter_def
         df = df.Define(ch_filter, ch_filter_def) 
     filter_expr = " || ".join(ch_filters)
     if apply_filter:

@@ -14,7 +14,6 @@ JetObservables = ["hadronFlavour","partonFlavour", "particleNetAK4_B", "particle
                 "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",
                 "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"] 
 
-obj_list = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau","MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"]
 colToSave = ["event","luminosityBlock","run",
                 "MET_pt", "MET_phi","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
@@ -27,7 +26,7 @@ def DefineAndAppend(df, varToDefine, varToCall):
     return df 
 
 def addAllVariables(df,syst_name, isData, isHH):
-    df = Baseline.SelectRecoP4(df, syst_name)
+    df = Baseline.SelectRecoP4(df,syst_name)
     df = Baseline.DefineGenObjects(df, isData=isData, isHH=isHH) 
     df = Baseline.RecoLeptonsSelection(df)
     df = Baseline.RecoJetAcceptance(df)
@@ -110,15 +109,11 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
         "TauES" : ["Tau", "MET"],
     }
     df, syst_list = Baseline.CreateRecoP4(df, syst_dict)
-    df_central,syst_listCentral = Baseline.CreateRecoP4(df, '') 
 
-    syst_list.append("Central") 
-    dataframes = {}
     histReports = {}
     for syst in syst_list:
-        syst_name = f"_{syst}" if syst!='Central' else ''
-        dataframes[syst] = df if syst!="Central" else df_central
-        df_syst = dataframes[syst] 
+        syst_name = f"{syst}"
+        df_syst = df
         df_syst = addAllVariables(df_syst, syst_name, isData, isHH) 
         report_syst = df_syst.Report()
         histReport_syst = ReportTools.SaveReport(report_syst.GetValue(), reoprtName=f"Report{syst_name}") 
@@ -128,7 +123,8 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
         outputRootFile= ROOT.TFile(outFile, "UPDATE")
         outputRootFile.WriteTObject(histReport_syst, f"Report{syst_name}", "Overwrite")
         outputRootFile.Close() 
-    print(dataframes)
+
+
 
 if __name__ == "__main__":
     import argparse

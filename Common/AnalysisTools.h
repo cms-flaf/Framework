@@ -196,10 +196,10 @@ namespace v_ops{
       return phi;
   }
   template<typename LV>
-  RVecF m(const LV& p4){
+  RVecF mass(const LV& p4){
       RVecF m(p4.size()); 
       for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
-        m[p4_idx] = p4.at(p4_idx).M();
+        m[p4_idx] = p4.at(p4_idx).mass();
       }
       return m;
   }

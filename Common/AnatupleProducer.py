@@ -26,6 +26,7 @@ def DefineAndAppend(df, varToDefine, varToCall):
     return df 
 
 def addAllVariables(df,syst_name, isData, isHH):
+    print(syst_name)
     df = Baseline.SelectRecoP4(df,syst_name)
     df = Baseline.DefineGenObjects(df, isData=isData, isHH=isHH) 
     df = Baseline.RecoLeptonsSelection(df)
@@ -100,7 +101,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
         df = df.Range(range)
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
-    df = DefineAndAppend(df,"sample", f"static_cast<int>(SampleType::{sample})")
+    df = DefineAndAppend(df,"sample_type", f"static_cast<int>(SampleType::{sample})")
     df = DefineAndAppend(df,"period", f"static_cast<int>(Period::Run{period})") 
     df = DefineAndAppend(df,"X_mass", f"static_cast<int>({X_mass})")
     is_data = 'true' if isData else 'false'
@@ -108,20 +109,26 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     syst_dict = {
         "TauES" : ["Tau", "MET"],
     }
+    syst_names = {"_Central":Baseline.ana_reco_object_collections, "_TauESUp":["Tau", "MET"], "_TauESDown":["Tau", "MET"]}
+    for syst_name,obj_list in syst_names.items():
+        for var in ["pt", "eta", "phi", "mass"]:
+            for obj in obj_list:
+                if "MET" in obj and var in ["eta", "mass"]: continue
+                df = df.Define(f"{obj}_{var}{syst_name}", f"{obj}_{var}")
+
     df, syst_list = Baseline.CreateRecoP4(df, syst_dict)
 
     histReports = {}
     for syst in syst_list:
-        syst_name = f"{syst}"
         df_syst = df
-        df_syst = addAllVariables(df_syst, syst_name, isData, isHH) 
+        df_syst = addAllVariables(df_syst, syst, isData, isHH) 
         report_syst = df_syst.Report()
-        histReport_syst = ReportTools.SaveReport(report_syst.GetValue(), reoprtName=f"Report{syst_name}") 
+        histReport_syst = ReportTools.SaveReport(report_syst.GetValue(), reoprtName=f"Report{syst}") 
         histReports[syst] = histReport_syst
         varToSave = Utilities.ListToVector(colToSave)
-        df_syst.Snapshot(f"Events{syst_name}", outFile, varToSave, snapshotOptions) 
+        df_syst.Snapshot(f"Events{syst}", outFile, varToSave, snapshotOptions) 
         outputRootFile= ROOT.TFile(outFile, "UPDATE")
-        outputRootFile.WriteTObject(histReport_syst, f"Report{syst_name}", "Overwrite")
+        outputRootFile.WriteTObject(histReport_syst, f"Report{syst}", "Overwrite")
         outputRootFile.Close() 
 
 
@@ -134,25 +141,27 @@ if __name__ == "__main__":
     parser.add_argument('--period', type=str)
     parser.add_argument('--inFile', type=str)
     parser.add_argument('--outFile', type=str)
-    parser.add_argument('--mass', type=int) 
-    parser.add_argument('--sample', type=str)
+    parser.add_argument('--mass', type=int, default=-1) 
+    parser.add_argument('--sample_type', type=str)
     parser.add_argument('--compressionLevel', type=int, default=9)
     parser.add_argument('--compressionAlgo', type=str, default="LZMA")
     parser.add_argument('--nEvents', type=int, default=None)
-    parser.add_argument('--evtIds', type=str, default='')
-    parser.add_argument('--isData', type=bool, default=False)
+    parser.add_argument('--evtIds', type=str, default='') 
 
     args = parser.parse_args() 
     
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"') 
     isHH=False
-    if args.mass>0: 
+    isData = False 
+    if args.mass>0 and args.sample_type in ["GluGluToRadionToHHTo2B2Tau", "GluGluToBulkGravitonToHHTo2B2Tau", "VBFToRadionToHHTo2B2Tau", "VBFToBulkGravitonToHHTo2B2Tau"]:
         isHH = True
+    if args.sample_type in ["Tau", "SingleMuon", "JetHT", "EGamma", "MET"]: 
+        isData = True
      
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
     snapshotOptions.fMode="UPDATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo) 
     snapshotOptions.fCompressionLevel = args.compressionLevel 
-    createAnatuple(args.inFile, args.outFile, args.period, args.sample, args.mass, snapshotOptions, args.nEvents, args.isData, args.evtIds, isHH) 
+    createAnatuple(args.inFile, args.outFile, args.period, args.sample_type, args.mass, snapshotOptions, args.nEvents, isData, args.evtIds, isHH) 

@@ -125,9 +125,7 @@ def RequestOnlyResolvedGenJets(df):
 
 def SelectRecoP4(df,syst_name):
     for obj in ana_reco_object_collections:
-        syst = syst_name if f"{obj}_p4{syst_name}" in df.GetColumnNames() else '_Central'
-        if f"{obj}_p4" not in df.GetColumnNames():
-            df = df.Define(f"{obj}_p4", f"{obj}_p4{syst}") 
+        df = df.Define(f"{obj}_p4", f"{obj}_p4{syst_name}") 
     return df
   
 
@@ -146,20 +144,13 @@ def CreateRecoP4(df, syst_dict=None, central_name='Central'):
         df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())")
   for full_syst_name,syst_objs in syst_variations.items():
     for obj in ana_reco_object_collections:
+        print(obj, full_syst_name)
         syst = full_syst_name if obj in syst_objs else ref_name
-        if "MET" in obj:
-            for var in ["pt", "phi"]:
-                if(f"{obj}_{var}{syst}" not in df.GetColumnNames()): # just for test
-                    df = df.Define(f"{obj}_{var}{syst}", f"{obj}_{var}") # just for test
-            if(f"{obj}_p4{syst}" not in df.GetColumnNames()):
-                df = df.Define(f"{obj}_p4{syst}", f"LorentzVectorM({obj}_pt{syst}, 0., {obj}_phi{syst}, 0.)")
-        else:
-            for var in ["pt", "eta", "phi", "mass"]:
-                if(f"{obj}_{var}{syst}" not in df.GetColumnNames()): # just for test
-                    df = df.Define(f"{obj}_{var}{syst}", f"{obj}_{var}") # just for test
-            if(f"{obj}_p4{syst}" not in df.GetColumnNames()):
-                df = df.Define(f"{obj}_p4{syst}",
-                               f"GetP4({obj}_pt{syst}, {obj}_eta{syst}, {obj}_phi{syst}, {obj}_mass{syst}, {obj}_idx)")
+        if "MET" in obj: 
+            df = df.Define(f"{obj}_p4{full_syst_name}", f"LorentzVectorM({obj}_pt{syst}, 0., {obj}_phi{syst}, 0.)")
+        else: 
+            df = df.Define(f"{obj}_p4{full_syst_name}",
+                        f"GetP4({obj}_pt{syst}, {obj}_eta{syst}, {obj}_phi{syst}, {obj}_mass{syst}, {obj}_idx)")
   return df, list(syst_variations.keys())
 
 def DefineMETCuts(met_thr, met_collections):

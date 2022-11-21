@@ -143,8 +143,7 @@ def CreateRecoP4(df, syst_dict=None, central_name='Central'):
     if "MET" not in obj:
         df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())")
   for full_syst_name,syst_objs in syst_variations.items():
-    for obj in ana_reco_object_collections:
-        print(obj, full_syst_name)
+    for obj in ana_reco_object_collections: 
         syst = full_syst_name if obj in syst_objs else ref_name
         if "MET" in obj: 
             df = df.Define(f"{obj}_p4{full_syst_name}", f"LorentzVectorM({obj}_pt{syst}, 0., {obj}_phi{syst}, 0.)")

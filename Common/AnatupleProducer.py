@@ -26,7 +26,6 @@ def DefineAndAppend(df, varToDefine, varToCall):
     return df 
 
 def addAllVariables(df,syst_name, isData, isHH):
-    print(syst_name)
     df = Baseline.SelectRecoP4(df,syst_name)
     df = Baseline.DefineGenObjects(df, isData=isData, isHH=isHH) 
     df = Baseline.RecoLeptonsSelection(df)
@@ -156,7 +155,7 @@ if __name__ == "__main__":
     isData = False 
     if args.mass>0 and args.sample_type in ["GluGluToRadion", "GluGluToBulkGraviton", "VBFToRadion", "VBFToBulkGraviton"]:
         isHH = True
-    if args.sample_type=='data': 
+    if args.sample_type =='data': 
         isData = True
     if (os.path.exists(args.outFile)):
         os.remove(args.outFile)

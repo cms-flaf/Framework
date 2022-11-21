@@ -154,11 +154,12 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"') 
     isHH=False
     isData = False 
-    if args.mass>0 and args.sample_type in ["GluGluToRadionToHHTo2B2Tau", "GluGluToBulkGravitonToHHTo2B2Tau", "VBFToRadionToHHTo2B2Tau", "VBFToBulkGravitonToHHTo2B2Tau"]:
+    if args.mass>0 and args.sample_type in ["GluGluToRadion", "GluGluToBulkGraviton", "VBFToRadion", "VBFToBulkGraviton"]:
         isHH = True
-    if args.sample_type in ["Tau", "SingleMuon", "JetHT", "EGamma", "MET"]: 
+    if args.sample_type=='data': 
         isData = True
-     
+    if (os.path.exists(args.outFile)):
+        os.remove(args.outFile)
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
     snapshotOptions.fMode="UPDATE"

@@ -46,16 +46,15 @@ enum class SampleType : int {
   H = 14,
   ttH = 15,
   TTV = 16, 
-  TTVV = 17,
-  HHnonRes = 18,
-  data = 19,
-  TTT = 20,
-  TTTT = 21,
-  TTTV = 22,
-  TTVV = 23,
-  TTVH = 24,
-  TTJ = 25,
-  QCD = 26
+  HHnonRes = 17,
+  data = 18,
+  TTT = 19,
+  TTTT = 20,
+  TTTV = 21,
+  TTVV = 22,
+  TTVH = 23,
+  TTJ = 24,
+  QCD = 25
 };
 
 

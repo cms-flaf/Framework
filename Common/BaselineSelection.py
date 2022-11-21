@@ -95,6 +95,7 @@ def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125.):
         df = df.Define("genHttCand", """GetGenHTTCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
                                                        GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass)""")
         df = df.Define("genHbbIdx", """GetGenHBBIndex(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags)""")
+        df = df.Define("genHbb_isBoosted", "GenPart_pt[genHbbIdx]>550")
     for var in ["GenJet", "GenJetAK8"]:
         df = df.Define(f"{var}_idx", f"CreateIndexes({var}_pt.size())")
         df = df.Define(f"{var}_p4", f"GetP4({var}_pt,{var}_eta,{var}_phi,{var}_mass, {var}_idx)")
@@ -103,7 +104,7 @@ def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125.):
     df = df.Define("GenJetAK8_b_PF", "abs(GenJetAK8_partonFlavour)==5")
     df = df.Define("GenJet_Hbb",f"FindTwoJetsClosestToMPV({Hbb_AK4mass_mpv}, GenJet_p4, GenJet_b_PF)")
     df = df.Define("GenJetAK8_Hbb", "FindGenJetAK8(GenJetAK8_mass, GenJetAK8_b_PF)")
-    df = df.Define("genHbb_isBoosted", "GenPart_pt[genHbbIdx]>550")
+    
     return df
 
 def PassGenAcceptance(df):

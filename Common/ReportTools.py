@@ -1,7 +1,7 @@
 import ROOT
-def SaveReport(report,printOut=False):
+def SaveReport(report, reoprtName="Report",printOut=False):
     cuts = [c for c in report] 
-    hist = ROOT.TH1D("Report","Report", len(cuts)+1, 0, len(cuts)+1)
+    hist = ROOT.TH1D(reoprtName,reoprtName, len(cuts)+1, 0, len(cuts)+1)
     hist.GetXaxis().SetBinLabel(1, "Initial")
     hist.SetBinContent(1, cuts[0].GetAll())
     for c_id, cut in enumerate(cuts):       

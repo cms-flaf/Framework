@@ -33,7 +33,28 @@ enum class SampleType : int {
   GluGluToRadion = 1,
   GluGluToBulkGraviton = 2,
   VBFToRadion = 3,
-  VBFToBulkGraviton = 4
+  VBFToBulkGraviton = 4,
+  DY = 5, 
+  ZQQ = 6, 
+  EWK = 7,
+  TT = 8,
+  ST = 9,
+  W = 10,
+  VV = 11,
+  VVV = 12,
+  VH = 13,
+  H = 14,
+  ttH = 15,
+  TTV = 16, 
+  HHnonRes = 17,
+  data = 18,
+  TTT = 19,
+  TTTT = 20,
+  TTTV = 21,
+  TTVV = 22,
+  TTVH = 23,
+  TTJ = 24,
+  QCD = 25
 };
 
 
@@ -158,4 +179,49 @@ int FindMatching(const LorentzVectorM& target_p4, const RVecLV& ref_p4,const flo
     }
   } 
   return current_idx;
+}
+
+RVecI FindMatching(const RVecLV& target_p4, const RVecLV& ref_p4,const float deltaR_thr){
+  RVecI targetIndices(target_p4.size(), -1);  
+  for(int targetIdx =0; targetIdx<target_p4.size(); targetIdx++){
+    int refIdxFound = FindMatching(target_p4[targetIdx], ref_p4, deltaR_thr); 
+    targetIndices[targetIdx] = refIdxFound; 
+  } 
+  return targetIndices;
+}
+
+
+namespace v_ops{
+  template<typename LV>
+  RVecF pt(const LV& p4){
+      RVecF pt(p4.size()); 
+      for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+        pt[p4_idx] = p4.at(p4_idx).pt();
+      }
+      return pt;
+  }
+  template<typename LV>
+  RVecF eta(const LV& p4){
+      RVecF eta(p4.size()); 
+      for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+        eta[p4_idx] = p4.at(p4_idx).eta();
+      }
+      return eta;
+  }
+  template<typename LV>
+  RVecF phi(const LV& p4){
+      RVecF phi(p4.size()); 
+      for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+        phi[p4_idx] = p4.at(p4_idx).phi();
+      }
+      return phi;
+  }
+  template<typename LV>
+  RVecF mass(const LV& p4){
+      RVecF m(p4.size()); 
+      for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+        m[p4_idx] = p4.at(p4_idx).mass();
+      }
+      return m;
+  }
 }

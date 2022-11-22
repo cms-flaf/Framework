@@ -10,9 +10,10 @@ deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
             "idDeepTau2017v2p1VSe", "idDeepTau2017v2p1VSjet", "idDeepTau2017v2p1VSmu",
             "idDeepTau2018v2p5VSe","idDeepTau2018v2p5VSjet","idDeepTau2018v2p5VSmu",
             "decayMode"] 
-JetObservables = ["hadronFlavour","partonFlavour", "particleNetAK4_B", "particleNetAK4_CvsB",
+JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",
                 "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"] 
+JetObservablesMC = ["hadronFlavour","partonFlavour"] 
 
 colToSave = ["event","luminosityBlock","run",
                 "MET_pt", "MET_phi","PuppiMET_pt", "PuppiMET_phi",
@@ -39,6 +40,10 @@ def addAllVariables(df,syst_name, isData, isHH):
     df = DefineAndAppend(df, f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
     df = DefineAndAppend(df, f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
     df = DefineAndAppend(df,"channelId","static_cast<int>(httCand.channel())")
+    jet_obs = JetObservables
+    if not isData:
+        jet_obs.extend(JetObservablesMC)
+        colToSave.append("LHE_HT")
     for leg_idx in [0,1]:
         df = DefineAndAppend(df, f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
         df = DefineAndAppend(df, f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
@@ -71,8 +76,9 @@ def addAllVariables(df,syst_name, isData, isHH):
                                         f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_partonFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1;")
             df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_hadronFlavour",
                                     f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_hadronFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1;")
-            colToSave.append("LHE_HT")
             
+            
+
 
         df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_pt",
                                     f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Pt() : -1;") 
@@ -89,7 +95,7 @@ def addAllVariables(df,syst_name, isData, isHH):
         df = DefineAndAppend(df,f"b{leg_idx+1}_phi", f"HbbCandidate.leg_p4[{leg_idx}].Phi()")
         df = DefineAndAppend(df,f"b{leg_idx+1}_mass", f"HbbCandidate.leg_p4[{leg_idx}].M()")
         
-        for jetVar in JetObservables:
+        for jetVar in jet_obs:
             if(jetVar not in df.GetColumnNames()): continue
             df = DefineAndAppend(df,f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")
         df = DefineAndAppend(df,f"b{leg_idx+1}_HHbtag", f"Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}])")
@@ -156,7 +162,7 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"') 
     isHH=False
     isData = False 
-    if args.mass>0 and args.sample_type in ["GluGluToRadion", "GluGluToBulkGraviton", "VBFToRadion", "VBFToBulkGraviton"]:
+    if args.mass>0 and args.sample_type in ["GluGluToRadion", "GluGluToBulkGraviton", "VBFToRadion", "VBFToBulkGraviton", "HHnonRes"]:
         isHH = True
     if args.sample_type =='data': 
         isData = True

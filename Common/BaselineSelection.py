@@ -291,6 +291,7 @@ def RecoHttCandidateSelection(df):
         Muon_B0 && v_ops::pt(Muon_p4) > 20 && (   (Muon_tightId && Muon_pfRelIso04_all < 0.3)
                                     || (Muon_highPtId && Muon_tkRelIso < 0.3) )
     """)
+    #df.Define("Mu_pt", "v_ops::pt(Muon_p4)").Define("Mu_sel_pt", "Mu_pt[Muon_B2_muMu_2]").Display("Mu_sel_pt").Print()
 
     df = df.Define("Electron_B2_eMu_1", f"""
         Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3
@@ -313,14 +314,14 @@ def RecoHttCandidateSelection(df):
         leg1, leg2 = channelLegs[ch]
         cand_column = f"httCands_{ch}"
         df = df.Define(cand_column, f"""
-            GetHTTCandidates(Channel::{ch}, 0.4, {leg1}_B2_{ch}_1, {leg1}_p4, {leg1}_iso, {leg1}_charge, {leg1}_genMatchIdx,
+            GetHTTCandidates(Channel::{ch}, 0.5, {leg1}_B2_{ch}_1, {leg1}_p4, {leg1}_iso, {leg1}_charge, {leg1}_genMatchIdx,
                                                  {leg2}_B2_{ch}_2, {leg2}_p4, {leg2}_iso, {leg2}_charge, {leg2}_genMatchIdx)
         """)
-        cand_columns.append(cand_column)
+        cand_columns.append(cand_column) 
     cand_filters = [ f'{c}.size() > 0' for c in cand_columns ]
     df = df.Filter(" || ".join(cand_filters), "Reco Baseline 2")
     cand_list_str = ', '.join([ '&' + c for c in cand_columns])
-    return df.Define('httCand', f'GetBestHTTCandidate({{ {cand_list_str} }})')
+    return df.Define('httCand', f'GetBestHTTCandidate({{ {cand_list_str} }}, event)')
 
 def ThirdLeptonVeto(df):     
     df = df.Define("Electron_vetoSel",

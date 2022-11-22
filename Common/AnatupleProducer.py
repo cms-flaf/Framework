@@ -17,7 +17,7 @@ JetObservables = ["hadronFlavour","partonFlavour", "particleNetAK4_B", "particle
 colToSave = ["event","luminosityBlock","run",
                 "MET_pt", "MET_phi","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
-                "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs","LHE_HT",
+                "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs",
                 "Electron_genMatchIdx", "Muon_genMatchIdx","Tau_genMatchIdx" ] 
 
 def DefineAndAppend(df, varToDefine, varToCall):
@@ -67,6 +67,12 @@ def addAllVariables(df,syst_name, isData, isHH):
             df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_nChHad", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).nChargedHadrons() : 0;""")
             df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_nNeutHad", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).nNeutralHadrons() : 0;""")
             df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_charge", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).charge() : -10;""")
+            df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_partonFlavour",
+                                        f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_partonFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1;")
+            df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_hadronFlavour",
+                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_hadronFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1;")
+            colToSave.append("LHE_HT")
+            
 
         df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_pt",
                                     f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Pt() : -1;") 
@@ -76,10 +82,6 @@ def addAllVariables(df,syst_name, isData, isHH):
                                     f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Phi() : -1;")
         df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_mass",
                                     f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).M() : -1;")
-        df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_partonFlavour",
-                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_partonFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1;")
-        df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_hadronFlavour",
-                                f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_hadronFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1;")
         
         
         df = DefineAndAppend(df,f"b{leg_idx+1}_pt", f"HbbCandidate.leg_p4[{leg_idx}].Pt()")
@@ -88,6 +90,7 @@ def addAllVariables(df,syst_name, isData, isHH):
         df = DefineAndAppend(df,f"b{leg_idx+1}_mass", f"HbbCandidate.leg_p4[{leg_idx}].M()")
         
         for jetVar in JetObservables:
+            if(jetVar not in df.GetColumnNames()): continue
             df = DefineAndAppend(df,f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")
         df = DefineAndAppend(df,f"b{leg_idx+1}_HHbtag", f"Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}])")
     return df
@@ -157,7 +160,7 @@ if __name__ == "__main__":
         isHH = True
     if args.sample_type =='data': 
         isData = True
-    if (os.path.exists(args.outFile)):
+    if os.path.exists(args.outFile):
         os.remove(args.outFile)
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True

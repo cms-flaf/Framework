@@ -13,10 +13,10 @@ ROOT::VecOps::RVec<HTTCand> GetHTTCandidates(Channel channel, double dR_thr,
   const double dR2_thr = std::pow(dR_thr, 2);
   ROOT::VecOps::RVec<HTTCand> httCands;
   const auto [leg1_type, leg2_type] = ChannelToLegs(channel);
-  for(size_t leg1_idx = 0; leg1_idx < leg1_sel.size(); ++leg1_idx) {
+  for(size_t leg1_idx = 0; leg1_idx < leg1_sel.size(); ++leg1_idx) { 
     if(!leg1_sel[leg1_idx]) continue;
     for(size_t leg2_idx = 0; leg2_idx < leg2_sel.size(); ++leg2_idx) {
-      if(!(leg2_sel[leg1_idx] && (leg1_type != leg2_type || leg1_idx != leg2_idx))) continue;
+      if(!(leg2_sel[leg2_idx] && (leg1_type != leg2_type || leg1_idx != leg2_idx))) continue; 
       const double dR2 = ROOT::Math::VectorUtil::DeltaR2(leg1_p4.at(leg1_idx), leg2_p4.at(leg2_idx));
       if(dR2 > dR2_thr) {
         HTTCand cand;
@@ -40,7 +40,7 @@ ROOT::VecOps::RVec<HTTCand> GetHTTCandidates(Channel channel, double dR_thr,
   return httCands;
 }
 
-HTTCand GetBestHTTCandidate(const std::vector<const ROOT::VecOps::RVec<HTTCand>*> httCands)
+HTTCand GetBestHTTCandidate(const std::vector<const ROOT::VecOps::RVec<HTTCand>*> httCands, int event)
 {
   const auto& comparitor = [&](const HTTCand& cand1, const HTTCand& cand2) -> bool {
     if(cand1 == cand2) return false;
@@ -52,7 +52,8 @@ HTTCand GetBestHTTCandidate(const std::vector<const ROOT::VecOps::RVec<HTTCand>*
       if(cand1.leg_rawIso[idx] != cand2.leg_rawIso[idx]) return cand1.leg_rawIso[idx] < cand2.leg_rawIso[idx];
       if(cand1.leg_p4[idx].pt() != cand2.leg_p4[idx].pt()) return cand1.leg_p4[idx].pt() > cand2.leg_p4[idx].pt();
     }
-    throw analysis::exception("ERROR: criteria for best tau pair selection is not found.");
+    throw analysis::exception("ERROR: criteria for best tau pair selection is not found in channel %1% and event %2% and pts %3%, %4%" )
+    % static_cast<int>(cand1.channel()) % event % cand1.leg_p4[0].pt() % cand2.leg_p4[1].pt();
   };
 
   for(auto cands : httCands) {
@@ -60,7 +61,7 @@ HTTCand GetBestHTTCandidate(const std::vector<const ROOT::VecOps::RVec<HTTCand>*
       return *std::min_element(cands->begin(), cands->end(), comparitor);
   }
 
-  throw analysis::exception("ERROR: no siutable HTT candidate");
+  throw analysis::exception("ERROR: no siutable HTT candidate ");
 }
 
 bool GenRecoMatching(const HTTCand& genHttCand, const HTTCand& recoHttCand, double dR_thr)

@@ -2,7 +2,7 @@ import ROOT
 import os
 from scipy import stats
 import numpy as np
-import enum  
+import enum
 
 initialized = False
 
@@ -25,7 +25,7 @@ def Initialize(loadTF=False, loadHHBtag=False):
             IncludeLibs.includeLibTool("tensorflow")
         if(loadHHBtag):
             ROOT.gInterpreter.Declare(f'#include "{header_path_HHbTag}"')
-            ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 1)')  
+            ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 1)')
         initialized = True
 
 leg_names = [ "Electron", "Muon", "Tau", "boostedTau" ]
@@ -85,7 +85,7 @@ def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125.):
         df = df.Define("genLeptons","""reco_tau::gen_truth::GenLepton::fromNanoAOD(GenPart_pt, GenPart_eta,
                                         GenPart_phi, GenPart_mass, GenPart_genPartIdxMother, GenPart_pdgId,
                                         GenPart_statusFlags, event)""")
-    
+
     for lep in ["Electron", "Muon", "Tau"]:
         df = df.Define(f"{lep}_genMatchIdx",  f"MatchGenLepton({lep}_p4, genLeptons, 0.2)")
     if isData:
@@ -104,7 +104,7 @@ def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125.):
     df = df.Define("GenJetAK8_b_PF", "abs(GenJetAK8_partonFlavour)==5")
     df = df.Define("GenJet_Hbb",f"FindTwoJetsClosestToMPV({Hbb_AK4mass_mpv}, GenJet_p4, GenJet_b_PF)")
     df = df.Define("GenJetAK8_Hbb", "FindGenJetAK8(GenJetAK8_mass, GenJetAK8_b_PF)")
-    
+
     return df
 
 def PassGenAcceptance(df):
@@ -126,16 +126,16 @@ def RequestOnlyResolvedGenJets(df):
 
 def SelectRecoP4(df,syst_name):
     for obj in ana_reco_object_collections:
-        df = df.Define(f"{obj}_p4", f"{obj}_p4{syst_name}") 
+        df = df.Define(f"{obj}_p4", f"{obj}_p4{syst_name}")
     return df
-  
+
 
 def CreateRecoP4(df, syst_dict=None, central_name='Central'):
   syst_variations = {}
   if syst_dict is None:
     ref_name = ''
   else:
-    ref_name = f'_{central_name}'    
+    ref_name = f'_{central_name}'
     for syst_name,syst_objs in syst_dict.items():
       for variation in [ 'Up', 'Down' ]:
         syst_variations[f'_{syst_name}{variation}'] = syst_objs
@@ -145,11 +145,11 @@ def CreateRecoP4(df, syst_dict=None, central_name='Central'):
     if "MET" not in obj:
         df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())")
   for full_syst_name,syst_objs in syst_variations.items():
-    for obj in ana_reco_object_collections: 
+    for obj in ana_reco_object_collections:
         syst = full_syst_name if obj in syst_objs else ref_name
-        if "MET" in obj: 
+        if "MET" in obj:
             df = df.Define(f"{obj}_p4{full_syst_name}", f"LorentzVectorM({obj}_pt{syst}, 0., {obj}_phi{syst}, 0.)")
-        else: 
+        else:
             df = df.Define(f"{obj}_p4{full_syst_name}",
                         f"GetP4({obj}_pt{syst}, {obj}_eta{syst}, {obj}_phi{syst}, {obj}_mass{syst}, {obj}_idx)")
   return df, list(syst_variations.keys())
@@ -158,7 +158,7 @@ def DefineMETCuts(met_thr, met_collections):
   cut = ' || '.join([f'{v}_pt > {met_thr}' for v in met_collections ])
   return f"( {cut} )"
 
-    
+
 def RecoLeptonsSelection(df, apply_filter=True):
     df = df.Define("Electron_B0", f"""
         v_ops::pt(Electron_p4) > 18 && abs(v_ops::eta(Electron_p4)) < 2.3 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
@@ -206,27 +206,27 @@ def RecoLeptonsSelection(df, apply_filter=True):
         boostedTau_B0 && boostedTau_idMVAnewDM2017v2 >= {WorkingPointsBoostedTauVSjet.Medium}
     """)
 
-    met_cuts = DefineMETCuts(80, ["MET", "DeepMETResolutionTune", "DeepMETResponseTune", "PuppiMET"]) 
-    
+    met_cuts = DefineMETCuts(80, ["MET", "DeepMETResolutionTune", "DeepMETResponseTune", "PuppiMET"])
+
     ch_filters = []
     for leg1_idx in range(len(leg_names)):
         for leg2_idx in range(max(1, leg1_idx), len(leg_names)):
-            leg1, leg2 = leg_names[leg1_idx], leg_names[leg2_idx] 
+            leg1, leg2 = leg_names[leg1_idx], leg_names[leg2_idx]
             if leg1 == 'Tau' and leg2 == 'boostedTau': continue
-            ch_filter = f"{leg1}{leg2}_B0" 
+            ch_filter = f"{leg1}{leg2}_B0"
             ch_filters.append(ch_filter)
             if leg1 == leg2:
-                ch_filter_def = f"{leg1}_idx[{leg1}_B0].size() > 1 && {leg1}_idx[{leg1}_B0T].size() > 0" 
+                ch_filter_def = f"{leg1}_idx[{leg1}_B0].size() > 1 && {leg1}_idx[{leg1}_B0T].size() > 0"
             else:
                 ch_filter_def = f"""
                     ({leg1}_idx[{leg1}_B0].size() > 0 && {leg2}_idx[{leg2}_B0T].size() > 0)
                     || ({leg1}_idx[{leg1}_B0T].size() > 0 && {leg2}_idx[{leg2}_B0].size() > 0)
                 """
-            df = df.Define(ch_filter, ch_filter_def) 
+            df = df.Define(ch_filter, ch_filter_def)
         ch_filter = f"{leg1}MET_B0"
         ch_filters.append(ch_filter)
         ch_filter_def = f"{leg1}_idx[{leg1}_B0T].size() > 0 && {met_cuts}"
-        df = df.Define(ch_filter, ch_filter_def) 
+        df = df.Define(ch_filter, ch_filter_def)
     filter_expr = " || ".join(ch_filters)
     if apply_filter:
         return df.Filter(filter_expr, "Reco leptons requirements")
@@ -318,13 +318,13 @@ def RecoHttCandidateSelection(df):
             GetHTTCandidates(Channel::{ch}, 0.5, {leg1}_B2_{ch}_1, {leg1}_p4, {leg1}_iso, {leg1}_charge, {leg1}_genMatchIdx,
                                                  {leg2}_B2_{ch}_2, {leg2}_p4, {leg2}_iso, {leg2}_charge, {leg2}_genMatchIdx)
         """)
-        cand_columns.append(cand_column) 
+        cand_columns.append(cand_column)
     cand_filters = [ f'{c}.size() > 0' for c in cand_columns ]
     df = df.Filter(" || ".join(cand_filters), "Reco Baseline 2")
     cand_list_str = ', '.join([ '&' + c for c in cand_columns])
     return df.Define('httCand', f'GetBestHTTCandidate({{ {cand_list_str} }}, event)')
 
-def ThirdLeptonVeto(df):     
+def ThirdLeptonVeto(df):
     df = df.Define("Electron_vetoSel",
                    f"""v_ops::pt(Electron_p4) > 10 && abs(v_ops::eta(Electron_p4)) < 2.5 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
                       && ( Electron_mvaIso_WP90 == true || ( Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all<0.3) )

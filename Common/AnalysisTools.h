@@ -34,8 +34,8 @@ enum class SampleType : int {
   GluGluToBulkGraviton = 2,
   VBFToRadion = 3,
   VBFToBulkGraviton = 4,
-  DY = 5, 
-  ZQQ = 6, 
+  DY = 5,
+  ZQQ = 6,
   EWK = 7,
   TT = 8,
   ST = 9,
@@ -45,7 +45,7 @@ enum class SampleType : int {
   VH = 13,
   H = 14,
   ttH = 15,
-  TTV = 16, 
+  TTV = 16,
   HHnonRes = 17,
   data = 18,
   TTT = 19,
@@ -58,13 +58,13 @@ enum class SampleType : int {
 };
 
 
-enum class GenLeptonMatch : int { 
-  Electron = 1, 
-  Muon = 2, 
-  TauElectron = 3,  
-  TauMuon = 4, 
-  Tau = 5, 
-  NoMatch = 6 
+enum class GenLeptonMatch : int {
+  Electron = 1,
+  Muon = 2,
+  TauElectron = 3,
+  TauMuon = 4,
+  Tau = 5,
+  NoMatch = 6
 };
 
 enum class Channel : int {
@@ -73,7 +73,7 @@ enum class Channel : int {
   tauTau = static_cast<int>(Leg::tau) * 10 + static_cast<int>(Leg::tau),
   eMu = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::mu),
   eE = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::e),
-  muMu = static_cast<int>(Leg::mu) * 10 + static_cast<int>(Leg::mu) 
+  muMu = static_cast<int>(Leg::mu) * 10 + static_cast<int>(Leg::mu)
 };
 
 inline Channel LegsToChannel(Leg leg1, Leg leg2)
@@ -170,23 +170,23 @@ RVecB RemoveOverlaps(const RVecLV& obj_p4, const RVecB& pre_sel, const std::vect
 
 int FindMatching(const LorentzVectorM& target_p4, const RVecLV& ref_p4,const float deltaR_thr){
   double deltaR_min = deltaR_thr;
-  int current_idx = -1; 
+  int current_idx = -1;
   for(int refIdx =0; refIdx<ref_p4.size(); refIdx++){
     auto dR_targetRef= ROOT::Math::VectorUtil::DeltaR(target_p4, ref_p4.at(refIdx));
     if ( dR_targetRef < deltaR_min ) {
       deltaR_min = dR_targetRef ;
       current_idx = refIdx;
     }
-  } 
+  }
   return current_idx;
 }
 
 RVecI FindMatching(const RVecLV& target_p4, const RVecLV& ref_p4,const float deltaR_thr){
-  RVecI targetIndices(target_p4.size(), -1);  
+  RVecI targetIndices(target_p4.size(), -1);
   for(int targetIdx =0; targetIdx<target_p4.size(); targetIdx++){
-    int refIdxFound = FindMatching(target_p4[targetIdx], ref_p4, deltaR_thr); 
-    targetIndices[targetIdx] = refIdxFound; 
-  } 
+    int refIdxFound = FindMatching(target_p4[targetIdx], ref_p4, deltaR_thr);
+    targetIndices[targetIdx] = refIdxFound;
+  }
   return targetIndices;
 }
 
@@ -194,7 +194,7 @@ RVecI FindMatching(const RVecLV& target_p4, const RVecLV& ref_p4,const float del
 namespace v_ops{
   template<typename LV>
   RVecF pt(const LV& p4){
-      RVecF pt(p4.size()); 
+      RVecF pt(p4.size());
       for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
         pt[p4_idx] = p4.at(p4_idx).pt();
       }
@@ -202,7 +202,7 @@ namespace v_ops{
   }
   template<typename LV>
   RVecF eta(const LV& p4){
-      RVecF eta(p4.size()); 
+      RVecF eta(p4.size());
       for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
         eta[p4_idx] = p4.at(p4_idx).eta();
       }
@@ -210,7 +210,7 @@ namespace v_ops{
   }
   template<typename LV>
   RVecF phi(const LV& p4){
-      RVecF phi(p4.size()); 
+      RVecF phi(p4.size());
       for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
         phi[p4_idx] = p4.at(p4_idx).phi();
       }
@@ -218,7 +218,7 @@ namespace v_ops{
   }
   template<typename LV>
   RVecF mass(const LV& p4){
-      RVecF m(p4.size()); 
+      RVecF m(p4.size());
       for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
         m[p4_idx] = p4.at(p4_idx).mass();
       }

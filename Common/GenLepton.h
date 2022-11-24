@@ -24,7 +24,7 @@ public:
     enum class PdgId {
         electron = 11, electron_neutrino = 12, muon = 13, muon_neutrino = 14, tau = 15, tau_neutrino = 16,
         pi0 = 111, pi = 211, K0_L = 130, K0_S = 310, K0 = 311, K = 321,
-        down = 1, up = 2, strange = 3, charm = 4, bottom = 5, top = 6, 
+        down = 1, up = 2, strange = 3, charm = 4, bottom = 5, top = 6,
         gluon = 21, photon = 22, Z = 23, W = 24, h0 = 25
     };
 
@@ -53,7 +53,7 @@ public:
         return s;
     }
     static double GetMass(PdgId pdgId, double nanoAODmass) {
-        static const std::map<PdgId, double> pdgId_Masses { 
+        static const std::map<PdgId, double> pdgId_Masses {
             {PdgId::electron,0.0005109989461},
             {PdgId::electron_neutrino,0.},
             {PdgId::muon,0.1056583745},
@@ -68,11 +68,11 @@ public:
         };
         auto iter=pdgId_Masses.find(pdgId);
         if(iter==pdgId_Masses.end()) return nanoAODmass;
-        return iter->second; 
+        return iter->second;
     }
 
     int getCharge() const {
-        static const std::map<PdgId, int> pdgId_charges { 
+        static const std::map<PdgId, int> pdgId_charges {
             {PdgId::electron, -1},
             {PdgId::electron_neutrino, 0},
             {PdgId::muon, -1},
@@ -95,10 +95,10 @@ public:
         int charge = iter->second;
         if(pdgId < 0)
             charge *= -1;
-        return charge; 
+        return charge;
     }
     int pdgId{0};
-    int charge{0}; 
+    int charge{0};
     bool isFirstCopy{false}, isLastCopy{false};
     bool hasMissingDaughters{false};
     LorentzVectorM p4;
@@ -109,7 +109,7 @@ public:
     PdgId pdgCode() const { return static_cast<PdgId>(std::abs(pdgId)); }
 
 
-}; 
+};
 
 inline std::ostream& operator<<(std::ostream& os, const GenParticle& p)
 {
@@ -162,7 +162,7 @@ public:
             std::set<size_t> processed_particles;
             for(size_t genPart_idx=0; genPart_idx<GenPart_pt.size(); ++genPart_idx ){
                 if(processed_particles.count(genPart_idx)) continue;
-                GenStatusFlags particle_statusFlags(GenPart_statusFlags.at(genPart_idx)); 
+                GenStatusFlags particle_statusFlags(GenPart_statusFlags.at(genPart_idx));
                 if(!(particle_statusFlags.isPrompt() && particle_statusFlags.isFirstCopy())) continue;
                 const int abs_pdg = std::abs(GenPart_pdgId.at(genPart_idx));
                 if(!GenParticle::ChargedLeptons().count(static_cast<GenParticle::PdgId>(abs_pdg)))
@@ -174,7 +174,7 @@ public:
                 lepton.initialize();
                 genLeptons.push_back(lepton);
             }
-            return genLeptons; 
+            return genLeptons;
         } catch(std::runtime_error& e) {
             std::cerr << "Event id = " << event << std::endl;
             throw;
@@ -401,7 +401,7 @@ private:
         const IntVector& GenPart_pdgId_;
         const IntVector& GenPart_statusFlags_;
 
-        FillImplNano(GenLepton& lepton, std::set<size_t>& processedParticles, 
+        FillImplNano(GenLepton& lepton, std::set<size_t>& processedParticles,
             const FloatVector& GenPart_pt ,
             const FloatVector& GenPart_eta,
             const FloatVector& GenPart_phi,
@@ -410,8 +410,8 @@ private:
             const IntVector& GenPart_pdgId,
             const IntVector& GenPart_statusFlags) :
             lepton_(lepton), processedParticles_(processedParticles),
-            GenPart_pt_(GenPart_pt), GenPart_eta_(GenPart_eta), GenPart_phi_(GenPart_phi), 
-            GenPart_mass_(GenPart_mass), GenPart_genPartIdxMother_(GenPart_genPartIdxMother), 
+            GenPart_pt_(GenPart_pt), GenPart_eta_(GenPart_eta), GenPart_phi_(GenPart_phi),
+            GenPart_mass_(GenPart_mass), GenPart_genPartIdxMother_(GenPart_genPartIdxMother),
             GenPart_pdgId_(GenPart_pdgId), GenPart_statusFlags_(GenPart_statusFlags)
         {
         }
@@ -459,7 +459,7 @@ private:
             output_p.isFirstCopy = output_pStatusFlags.isFirstCopy();
             output_p.isLastCopy = output_pStatusFlags.isLastCopy();
             double output_pMass=GenParticle::GetMass(output_p.pdgCode(), GenPart_mass_.at(part_idx));
-            output_p.p4 = LorentzVectorM(GenPart_pt_.at(part_idx),GenPart_eta_.at(part_idx),GenPart_phi_.at(part_idx),output_pMass); 
+            output_p.p4 = LorentzVectorM(GenPart_pt_.at(part_idx),GenPart_eta_.at(part_idx),GenPart_phi_.at(part_idx),output_pMass);
             output_p.vertex = Point3D(0.,0.,0.);
 
             size_t p_index = lepton_.particles_->size();

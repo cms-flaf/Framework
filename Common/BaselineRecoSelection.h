@@ -16,7 +16,7 @@ ROOT::VecOps::RVec<HTTCand> GetHTTCandidates(Channel channel, double dR_thr,
   for(size_t leg1_idx = 0; leg1_idx < leg1_sel.size(); ++leg1_idx) {
     if(!leg1_sel[leg1_idx]) continue;
     for(size_t leg2_idx = 0; leg2_idx < leg2_sel.size(); ++leg2_idx) {
-      if(!(leg2_sel[leg2_idx] && (leg1_type != leg2_type || leg1_idx != leg2_idx))) continue; 
+      if(!(leg2_sel[leg2_idx] && (leg1_type != leg2_type || leg1_idx != leg2_idx))) continue;
       const double dR2 = ROOT::Math::VectorUtil::DeltaR2(leg1_p4.at(leg1_idx), leg2_p4.at(leg2_idx));
       if(dR2 > dR2_thr) {
         HTTCand cand;
@@ -80,7 +80,7 @@ bool GenRecoMatching(const HTTCand& genHttCand, const HTTCand& recoHttCand, doub
   }
   return (matching[0] && matching[3]) || (matching[1] && matching[2]);
 }
- 
+
 
 RVecI GenRecoJetMatching(int event,const RVecI& Jet_idx, const RVecI& GenJet_idx,  const RVecB& Jet_sel, const RVecB& GenJet_sel,   const RVecLV& GenJet_p4, const RVecLV& Jet_p4 , float DeltaR_thr)
 {
@@ -89,7 +89,7 @@ RVecI GenRecoJetMatching(int event,const RVecI& Jet_idx, const RVecI& GenJet_idx
   for(size_t gen_idx = 0; gen_idx < GenJet_p4.size(); ++gen_idx) {
     if(GenJet_sel[gen_idx]!=1) continue;
     size_t best_jet_idx = Jet_p4.size();
-    float deltaR_min = std::numeric_limits<float>::infinity(); 
+    float deltaR_min = std::numeric_limits<float>::infinity();
     for(size_t reco_idx = 0; reco_idx < Jet_p4.size(); ++reco_idx) {
       if(Jet_sel[reco_idx]!=1 || taken_jets.count(reco_idx)) continue;
       auto deltaR = ROOT::Math::VectorUtil::DeltaR(Jet_p4[reco_idx], GenJet_p4[gen_idx]);
@@ -110,28 +110,28 @@ RVecI GenRecoJetMatching(int event,const RVecI& Jet_idx, const RVecI& GenJet_idx
 HbbCand GetHbbCandidate(const RVecF& HHbTagScores, const RVecB& JetSel,  const RVecLV& Jet_p4, const RVecI& Jet_idx)
 {
   RVecI JetIdxOrdered = ReorderObjects(HHbTagScores, Jet_idx);
-  HbbCand HbbCandidate; 
-  
+  HbbCand HbbCandidate;
+
   int leg_idx = 0;
   for(int i=0; i<Jet_idx.size(); i++){
-    int jet_idx = JetIdxOrdered[i];  
+    int jet_idx = JetIdxOrdered[i];
     if(!JetSel[jet_idx]) continue;
     HbbCandidate.leg_index[leg_idx] =  jet_idx;
     HbbCandidate.leg_p4[leg_idx] = Jet_p4.at(jet_idx);
     leg_idx++;
     if(leg_idx == HbbCandidate.n_legs) break;
-  } 
-  
+  }
+
   return HbbCandidate;
 }
 
-RVecB FindMatching(const RVecB& pre_sel_offline, const RVecB& pre_sel_online, const RVecF& TrigObj_eta, 
+RVecB FindMatching(const RVecB& pre_sel_offline, const RVecB& pre_sel_online, const RVecF& TrigObj_eta,
     const RVecF& TrigObj_phi, const RVecF& offlineObj_eta, const RVecF& offlineObj_phi, const float dR_thr)
     {
         RVecB findMatching(pre_sel_offline.size(), false);
         for(size_t online_idx = 0 ; online_idx < pre_sel_online.size() ; online_idx ++ ){
             if(pre_sel_online[online_idx]==0) continue;
-            float dR_min = dR_thr; 
+            float dR_min = dR_thr;
             for(size_t offline_idx = 0 ; offline_idx < pre_sel_offline.size() ; offline_idx ++ ){
                 if(pre_sel_offline[offline_idx]==0) continue;
                 auto dR_current = DeltaR( TrigObj_eta[online_idx], TrigObj_phi[online_idx],  offlineObj_eta[offline_idx], offlineObj_phi[offline_idx]);
@@ -143,7 +143,7 @@ RVecB FindMatching(const RVecB& pre_sel_offline, const RVecB& pre_sel_online, co
         }
         return findMatching;
     }
-  
+
 
   bool HasHttMatching(const HTTCand& httCand, const std::vector<std::pair<Leg, RVecB>> legVector ){
     RVecI already_considered_indices;

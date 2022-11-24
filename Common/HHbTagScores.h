@@ -9,7 +9,7 @@ inline int PeriodToHHbTagInput (Period period)
         { Period::Run2016, 2016 },
         { Period::Run2016APV, 2016 },
         { Period::Run2017, 2017 },
-        { Period::Run2018, 2018 }, 
+        { Period::Run2018, 2018 },
     };
     auto iter = periodHHBtag.find(period);
     if (iter == periodHHBtag.end()) {
@@ -32,7 +32,7 @@ inline int ChannelToHHbTagInput (Channel channel)
         throw analysis::exception("Channel corrispondence not found");
     }
     return iter->second;
-  
+
 }
 
 struct HHBtagWrapper{
@@ -60,9 +60,9 @@ struct HHBtagWrapper{
         return hh_btag;
     }
 };
- 
 
-RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& jet_p4,const RVecF& Jet_deepFlavour, const float& met_pt, const float& met_phi, 
+
+RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& jet_p4,const RVecF& Jet_deepFlavour, const float& met_pt, const float& met_phi,
                             const HTTCand& HTT_Cand, const int& period, int event){
     const ULong64_t parity = event % 2;
     int channelId = ChannelToHHbTagInput(HTT_Cand.channel());
@@ -73,17 +73,17 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
     std::vector<float> rel_jet_M_pt;
     std::vector<float> rel_jet_E_pt;
     std::vector<float> jet_htt_deta;
-    std::vector<float> jet_htt_dphi; 
-    std::vector<int> goodJet_idx; 
+    std::vector<float> jet_htt_dphi;
+    std::vector<int> goodJet_idx;
 
-    LorentzVectorM hTT_p4 =HTT_Cand.leg_p4[0]+HTT_Cand.leg_p4[1];  
+    LorentzVectorM hTT_p4 =HTT_Cand.leg_p4[0]+HTT_Cand.leg_p4[1];
     float htt_pt=hTT_p4.Pt();
     float htt_eta=hTT_p4.Eta();
     float htt_met_dphi = DeltaPhi(static_cast<float>(hTT_p4.Phi()),static_cast<float>(met_phi));
     float htt_scalar_pt= HTT_Cand.leg_p4[0].Pt()+HTT_Cand.leg_p4[1].Pt();
     float rel_met_pt_htt_pt=met_pt/htt_scalar_pt;
-    
-    // select good jets only 
+
+    // select good jets only
 
     for (size_t jet_idx=0; jet_idx<jet_p4.size(); jet_idx++){
         if(!Jet_sel[jet_idx]) continue;
@@ -95,9 +95,9 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
         rel_jet_E_pt.push_back(jet_p4.at(jet_idx).E()/jet_p4.at(jet_idx).Pt());
         jet_htt_deta.push_back(DeltaEta(static_cast<float>(hTT_p4.Eta()),static_cast<float>(jet_p4.at(jet_idx).Eta())));
         jet_htt_dphi.push_back(DeltaPhi(static_cast<float>(hTT_p4.Phi()),static_cast<float>(jet_p4.at(jet_idx).Phi())));
-    }  
+    }
 
-    
+
     RVecF goodJet_scores = HHBtagWrapper::Get().GetScore(jet_pt, jet_eta,
                                              rel_jet_M_pt, rel_jet_E_pt,
                                              jet_htt_deta, jet_deepFlavour,
@@ -105,12 +105,12 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
                                              channelId, htt_pt,
                                              htt_eta, htt_met_dphi,
                                              rel_met_pt_htt_pt,
-                                             htt_scalar_pt, parity); 
-    
+                                             htt_scalar_pt, parity);
+
      for(size_t jet_idx=0; jet_idx<jet_pt.size(); jet_idx++){
         all_scores[goodJet_idx[jet_idx]] = goodJet_scores[jet_idx] ;
     }
     return all_scores;
 
 
-} 
+}

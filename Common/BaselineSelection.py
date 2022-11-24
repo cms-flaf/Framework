@@ -141,6 +141,7 @@ def CreateRecoP4(df, syst_dict=None, central_name='Central'):
         syst_variations[f'_{syst_name}{variation}'] = syst_objs
   syst_variations[ref_name] = ana_reco_object_collections
   for obj in ana_reco_object_collections:
+    #print(obj)
     if "MET" not in obj:
         df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())")
   for full_syst_name,syst_objs in syst_variations.items():
@@ -256,8 +257,8 @@ def RecoHttCandidateSelection(df):
     df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaIso_WP80")
     df = df.Define("Tau_B2_eTau_2", f"""
         Tau_B0 && v_ops::pt(Tau_p4) > 20
-        && (Tau_idDeepTau2017v2p1VSe & {WorkingPointsTauVSe.VLoose})
-        && (Tau_idDeepTau2017v2p1VSmu & {WorkingPointsTauVSmu.Tight})
+        && (Tau_idDeepTau2017v2p1VSe >= {WorkingPointsTauVSe.VLoose})
+        && (Tau_idDeepTau2017v2p1VSmu >= {WorkingPointsTauVSmu.Tight})
     """)
 
     df = df.Define("Muon_B2_muTau_1", f"""
@@ -266,21 +267,21 @@ def RecoHttCandidateSelection(df):
     """)
     df = df.Define("Tau_B2_muTau_2", f"""
         Tau_B0 && v_ops::pt(Tau_p4) > 20
-        && (Tau_idDeepTau2017v2p1VSe & {WorkingPointsTauVSe.VLoose})
-        && (Tau_idDeepTau2017v2p1VSmu & {WorkingPointsTauVSmu.Tight})
+        && (Tau_idDeepTau2017v2p1VSe >= {WorkingPointsTauVSe.VLoose})
+        && (Tau_idDeepTau2017v2p1VSmu >= {WorkingPointsTauVSmu.Tight})
     """)
 
     df = df.Define("Tau_B2_tauTau_1", f"""
         Tau_B0 && v_ops::pt(Tau_p4) > 20
-        && (Tau_idDeepTau2017v2p1VSe & {WorkingPointsTauVSe.VVLoose})
-        && (Tau_idDeepTau2017v2p1VSmu & {WorkingPointsTauVSmu.VLoose})
-        && (Tau_idDeepTau2017v2p1VSjet & {WorkingPointsTauVSjet.Medium})
+        && (Tau_idDeepTau2017v2p1VSe >= {WorkingPointsTauVSe.VVLoose})
+        && (Tau_idDeepTau2017v2p1VSmu >= {WorkingPointsTauVSmu.VLoose})
+        && (Tau_idDeepTau2017v2p1VSjet >= {WorkingPointsTauVSjet.Medium})
     """)
 
     df = df.Define("Tau_B2_tauTau_2", f"""
         Tau_B0 && v_ops::pt(Tau_p4) > 20
-        && (Tau_idDeepTau2017v2p1VSe & {WorkingPointsTauVSe.VVLoose})
-        && (Tau_idDeepTau2017v2p1VSmu & {WorkingPointsTauVSmu.VLoose})
+        && (Tau_idDeepTau2017v2p1VSe >= {WorkingPointsTauVSe.VVLoose})
+        && (Tau_idDeepTau2017v2p1VSmu >= {WorkingPointsTauVSmu.VLoose})
     """)
 
     df = df.Define("Muon_B2_muMu_1", f"""

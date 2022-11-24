@@ -5,10 +5,11 @@
 #include "TextIO.h"
 #include "HHCore.h"
 
-HTTCand GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
-                           const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
-                           const RVecF& GenPart_pt, const RVecF& GenPart_eta,
-                           const RVecF& GenPart_phi, const RVecF& GenPart_mass)
+std::shared_ptr<HTTCand> GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
+                                            const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
+                                            const RVecF& GenPart_pt, const RVecF& GenPart_eta,
+                                            const RVecF& GenPart_phi, const RVecF& GenPart_mass,
+                                            bool throw_error_if_not_found)
 {
   try {
     std::set<int> htt_indices;
@@ -18,7 +19,7 @@ HTTCand GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
         const auto& daughters = GenPart_daughters.at(n);
         int n_tau_daughters = std::count_if(daughters.begin(), daughters.end(), [&](int idx) {
         return std::abs(GenPart_pdgId.at(idx)) == PdG::tau();
-        }); 
+        });
         if(n_tau_daughters == 0) continue;
         if(n_tau_daughters != 2)
         throw analysis::exception("Invalid H->tautau decay. n_tau_daughters = %1%, higgs_idx = %2%")
@@ -74,11 +75,13 @@ HTTCand GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
                                                 GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
     }
 
-    return htt_cand;
+    return std::make_shared<HTTCand>(htt_cand);
   } catch(analysis::exception& e) {
-    throw analysis::exception("GetGenHTTCandidate (event=%1%): %2%") % evt % e.message();
+    if(throw_error_if_not_found)
+      throw analysis::exception("GetGenHTTCandidate (event=%1%): %2%") % evt % e.message();
+    return std::make_shared<HTTCand>();
   }
-} 
+}
 
 int GetGenHBBIndex(int evt, const RVecI& GenPart_pdgId,
                            const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags)
@@ -91,7 +94,7 @@ int GetGenHBBIndex(int evt, const RVecI& GenPart_pdgId,
         const auto& daughters = GenPart_daughters.at(n);
         int n_b_daughters = std::count_if(daughters.begin(), daughters.end(), [&](int idx) {
         return std::abs(GenPart_pdgId.at(idx)) == PdG::b();
-        }); 
+        });
         if(n_b_daughters == 0) continue;
         if(n_b_daughters != 2)
         throw analysis::exception("Invalid H->bb decay. n_b_daughters = %1%, higgs_idx = %2%")
@@ -108,7 +111,7 @@ int GetGenHBBIndex(int evt, const RVecI& GenPart_pdgId,
   catch(analysis::exception& e) {
       throw analysis::exception("GetGenHBBCandidate (event=%1%): %2%") % evt % e.message();
     }
-} 
+}
 
 
 
@@ -142,11 +145,11 @@ RVecB FindTwoJetsClosestToMPV(float mpv, const RVecLV& GenJet_p4, const RVecB& p
   if(i_min >= 0 && j_min>=0) {
     result[i_min] = true;
     result[j_min] = true;
-  } 
+  }
   return result;
 }
 RVecB FindGenJetAK8(const RVecF& GenJetAK8_mass, const RVecB& pre_sel){
-  
+
   int i_max = -1;
   float max_mass = -1.;
   for(int i = 0; i < GenJetAK8_mass.size(); i++) {
@@ -154,12 +157,12 @@ RVecB FindGenJetAK8(const RVecF& GenJetAK8_mass, const RVecB& pre_sel){
     if(GenJetAK8_mass[i]>max_mass){
       i_max=i;
       max_mass = GenJetAK8_mass[i];
-    }   
+    }
   }
   RVecB result(pre_sel.size(), false);
   if(i_max >= 0 ) {
-    result[i_max] = true; 
-  } 
+    result[i_max] = true;
+  }
   return result;
 }
- 
+

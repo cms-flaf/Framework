@@ -94,7 +94,7 @@ inline Leg PdGToLeg(int pdg)
     static const std::map<int, Leg> pdg_to_leg = {
       { PdG::e(), Leg::e },
       { PdG::mu(), Leg::mu },
-      { PdG::tau(), Leg::tau }, 
+      { PdG::tau(), Leg::tau },
     };
     const auto iter = pdg_to_leg.find(std::abs(pdg));
     if(iter == pdg_to_leg.end())
@@ -157,8 +157,8 @@ ROOT::VecOps::RVec<RVecI> GetDaughters(const RVecI& GenPart_genPartIdxMother ){
   for (int part_idx =0; part_idx<GenPart_genPartIdxMother.size(); part_idx++){
     if(GenPart_genPartIdxMother[part_idx]>=0){
       daughters.at(GenPart_genPartIdxMother[part_idx]).push_back(part_idx);
-    } 
-  } 
+    }
+  }
   return daughters;
 }
 RVecI GetMothers(const int &part_idx, const RVecI& GenPart_genPartIdxMother ){
@@ -262,24 +262,40 @@ int PrintDecayChain(ULong64_t evt, const RVecI& GenPart_pdgId, const RVecI& GenP
 
 
 int MatchGenLepton(const LorentzVectorM& obj_p4, const std::vector<reco_tau::gen_truth::GenLepton>& genLeptons, float dR_thr)
-{ 
+{
   int best_idx=-1;
   float dR_min = dR_thr;
   for (int genLep_idx = 0; genLep_idx<genLeptons.size();genLep_idx++ ){
     auto dR_objGenLep = ROOT::Math::VectorUtil::DeltaR(obj_p4, genLeptons.at(genLep_idx).visibleP4());
     if(dR_objGenLep<dR_min){
-      dR_objGenLep = dR_min ; 
-      best_idx= genLep_idx; 
+      dR_objGenLep = dR_min ;
+      best_idx= genLep_idx;
     }
   }
-  return best_idx; 
+  return best_idx;
 }
 
 RVecI MatchGenLepton(const RVecLV& obj_p4, const std::vector<reco_tau::gen_truth::GenLepton>& genLeptons, float dR_thr)
-{ 
+{
   RVecI best_indices(obj_p4.size(), -1);
   for(int obj_idx = 0; obj_idx<obj_p4.size();obj_idx++){
-    best_indices[obj_idx] = MatchGenLepton(obj_p4.at(obj_idx),genLeptons, dR_thr); 
+    best_indices[obj_idx] = MatchGenLepton(obj_p4.at(obj_idx),genLeptons, dR_thr);
   }
-  return best_indices; 
+  return best_indices;
+}
+
+RVecI GetGenLeptonMatch(const RVecI& obj_genMatchIdx, const std::vector<reco_tau::gen_truth::GenLepton>& genLeptons)
+{
+  using Kind = reco_tau::gen_truth::GenLepton::Kind;
+  RVecI kind(obj_genMatchIdx.size(), static_cast<int>(GenLeptonMatch::NoMatch));
+  for(size_t obj_idx = 0; obj_idx < obj_genMatchIdx.size(); ++obj_idx){
+    const int lep_idx = obj_genMatchIdx.at(obj_idx);
+    if(lep_idx >= 0) {
+      const auto& genLep = genLeptons.at(lep_idx);
+      const double pt_thr = genLep.kind() == Kind::TauDecayedToHadrons ? 15 : 8;
+      if(genLep.visibleP4().pt() > pt_thr)
+        kind[obj_idx] = static_cast<int>(genLep.kind());
+    }
+  }
+  return kind;
 }

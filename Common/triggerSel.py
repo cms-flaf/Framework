@@ -64,7 +64,7 @@ def ApplyTriggers(df, yaml_dict= None, isData = False):
         df = df.Define(f"""hasHttCandCorrespondance_{path}""", f"""HasHttMatching({legVector} )""")
         total_or_paths.append(f"""({or_paths} &&  hasHttCandCorrespondance_{path})""")
     total_or_string = ' || '.join(or_path for or_path in total_or_paths)
-    df = df.Filter(total_or_string)
+    df = df.Define(f"HLT_{path}", f"{total_or_string}")
 
     return df
 

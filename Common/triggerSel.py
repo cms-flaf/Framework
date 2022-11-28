@@ -15,6 +15,7 @@ def applyTriggers(df, yaml_dict= None, isData = False):
     all_or_strings = []
     total_or_paths = []
     dict_legtypes = {"Electron":"Leg::e", "Muon":"Leg::mu", "Tau":"Leg::tau"}
+    #print(f"inizialmente c'erano {df.Count().GetValue()} eventi")
     if yaml_dict is None:
         return df
     for path in yaml_dict:
@@ -44,6 +45,8 @@ def applyTriggers(df, yaml_dict= None, isData = False):
                     if(leg_dict_offline['type']!='MET'):
                         var_name_offline = f"""{leg_dict_offline['type']}_idx[{var_name_offline}].size()>=0"""
                     total_or_paths.append(f"""({channel_or_string} && {or_paths} &&  {var_name_offline})""")
+                    df_path = df.Filter(f"""({channel_or_string} && {or_paths} &&  {var_name_offline})""")
+                    #print(f"""filtrando il singolo path {path} ci sono {df_path.Count().GetValue()} eventi""")
                     continue
             # require that isLeg
             df = df.Define(f"isHttLeg_{var_name_offline}", f"""httCand.isLeg({var_name_offline},{dict_legtypes[type_name_offline]})""")
@@ -71,8 +74,13 @@ def applyTriggers(df, yaml_dict= None, isData = False):
         # find solution
         df = df.Define(f"""hasHttCandCorrespondance_{path}""", f"""HasHttMatching(httCand, {legVector} )""")
         total_or_paths.append(f"""({or_paths} &&  hasHttCandCorrespondance_{path})""")
-        #df.Display({f"hasHttCandCorrespondance_{path}"}).Print()
-        print(df.Filter(f"hasHttCandCorrespondance_{path}").Count().GetValue())
+        df_path = df.Filter(f"({or_paths} && hasHttCandCorrespondance_{path})")
+        #print(f"""filtrando il singolo path {path} ci sono {df_path.Count().GetValue()} eventi""")
+
+    total_or_string = ' || '.join(or_path for or_path in total_or_paths)
+    df = df.Filter(total_or_string)
+    #print(f"con il totale or \n {total_or_string} \n ci sono {df.Count().GetValue()} eventi")
+
     return df
 
 

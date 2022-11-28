@@ -143,24 +143,17 @@ std::vector<std::set<int>> FindMatchingOnlineIndices(const RVecB& pre_sel_offlin
     }
 
 
-  bool HasHttMatching(const HTTCand& httCand, const std::vector<std::pair<Leg, std::vector<std::set<int>>>> legVector ){
-    RVecI already_considered_indices;
 
+  bool HasHttMatching(const std::vector<std::vector<std::set<int>>> legVector ){
     RVecB hasHttMatchingVector(legVector.size(), false);
 
-    // iterate over HttCandidates and check that the index has not already been considered
-    for(size_t legHtt_idx = 0; legHtt_idx < HTTCand::n_legs; legHtt_idx++){
-      if(std::find(already_considered_indices.begin(), already_considered_indices.end(), legHtt_idx)!=already_considered_indices.end()) continue;
-      size_t obj_idx = httCand.leg_index[legHtt_idx];
-      // iterate over the legVector (which will have size 1 or 2)
-      for(size_t leg_idx=0; leg_idx<legVector.size(); leg_idx++){
-        auto leg = legVector[leg_idx];
-        // check that the type is the correct leg type
-        if(httCand.leg_type[legHtt_idx] != legVector[leg_idx].first) continue;
-        if(leg.second[obj_idx].size()!=1) continue;
-        already_considered_indices.push_back(legHtt_idx);
+    // iterate over the legVector (which will have size 1 or 2)
+    for(size_t leg_idx=0; leg_idx<legVector.size(); leg_idx++){
+      auto leg = legVector[leg_idx];
+      // iterate over the object in the legVector
+      for(size_t obj_idx=0;obj_idx<leg.size();obj_idx++){
+        if(leg[obj_idx].size()!=1) continue;
         hasHttMatchingVector[leg_idx]=true;
-
       }
     }
     bool hasHttMatching = true;

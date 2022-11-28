@@ -1,29 +1,20 @@
 import ROOT
-import Common.Utilities as Utilities
 import Common.BaselineSelection as Baseline
 syst_names = {"_Central":Baseline.ana_reco_object_collections, "_TauESUp":["Tau", "MET"], "_TauESDown":["Tau", "MET"]}
 
 
-def applyTriggers(df, yaml_dict= None, isData = False):
-    Baseline.Initialize(False, False)
-    df, syst_list = Baseline.CreateRecoP4(df, None)
-    df = Baseline.DefineGenObjects(df, isData, isHH=True) #for the moment, testing on MC HH events
-    df = Baseline.RecoLeptonsSelection(df)
-    df = Baseline.RecoJetAcceptance(df)
-    df = Baseline.RecoHttCandidateSelection(df)
+def ApplyTriggers(df, yaml_dict= None, isData = False):
     total_objects_matched = []
     all_or_strings = []
     total_or_paths = []
     dict_legtypes = {"Electron":"Leg::e", "Muon":"Leg::mu", "Tau":"Leg::tau"}
-    #print(f"inizialmente c'erano {df.Count().GetValue()} eventi")
     if yaml_dict is None:
         return df
     for path in yaml_dict:
         path_dict = yaml_dict[path]
-        channel_or_string = '( '
-        channel_or_string += ' || '.join(f"httCand.channel() == Channel::{ch} " for ch in path_dict['channels'])
-        channel_or_string += ' )'
-
+        #channel_or_string = '( '
+        #channel_or_string += ' || '.join(f"httCand.channel() == Channel::{ch} " for ch in path_dict['channels'])
+        #channel_or_string += ' )'
         or_paths = '( '
         if('path' in path_dict):
             or_paths += " || ".join(path for path in path_dict['path'] )
@@ -44,23 +35,21 @@ def applyTriggers(df, yaml_dict= None, isData = False):
             if leg_tuple['doMatching'] == False:
                     if(leg_dict_offline['type']!='MET'):
                         var_name_offline = f"""{leg_dict_offline['type']}_idx[{var_name_offline}].size()>=0"""
-                    total_or_paths.append(f"""({channel_or_string} && {or_paths} &&  {var_name_offline})""")
-                    df_path = df.Filter(f"""({channel_or_string} && {or_paths} &&  {var_name_offline})""")
-                    #print(f"""filtrando il singolo path {path} ci sono {df_path.Count().GetValue()} eventi""")
+                    total_or_paths.append(f"""({or_paths} &&  {var_name_offline})""")
                     continue
             # require that isLeg
-            df = df.Define(f"isHttLeg_{var_name_offline}", f"""httCand.isLeg({var_name_offline},{dict_legtypes[type_name_offline]})""")
-            df = df.Define(f"isHttLegAndPassOfflineSel_{var_name_offline}", f"{var_name_offline} && isHttLeg_{var_name_offline}")
+            df = df.Define(f"{type_name_offline}_{var_name_offline}_sel", f"""httCand.isLeg({type_name_offline}_idx, {dict_legtypes[type_name_offline]}) && ({var_name_offline})""")
+            df = df.Define(f"isHttLegAndPassOfflineSel_{var_name_offline}_{type_name_offline}", f"{var_name_offline} && {type_name_offline}_{var_name_offline}_sel")
             leg_dict_online= leg_tuple["online_obj"]
             var_name_online =  f"""{leg_dict_offline["type"]}_onlineCut_{k}_{path}"""
             df = df.Define(f"""{var_name_online}""",f"""{leg_dict_online["cut"]}""")
             matching_var = f"""{leg_dict_offline["type"]}_Matching_{k}_{path}"""
             # find matching online <-> offline
-            df = df.Define(f"{matching_var}", f"""FindMatchingOnlineIndices(isHttLegAndPassOfflineSel_{var_name_offline}, {var_name_online},
+            df = df.Define(f"{matching_var}", f"""FindMatchingOnlineIndices(isHttLegAndPassOfflineSel_{var_name_offline}_{type_name_offline}, {var_name_online},
                                            TrigObj_eta, TrigObj_phi, {leg_dict_offline["type"]}_eta,{leg_dict_offline["type"]}_phi, 0.4 )""")
 
-            total_objects_matched.append([f"""{dict_legtypes[leg_dict_offline["type"]]}""", matching_var])
-        if(f"""({channel_or_string} && {or_paths} &&  {var_name_offline})""" in total_or_paths):
+            total_objects_matched.append([matching_var])
+        if(f"""({or_paths} &&  {var_name_offline})""" in total_or_paths):
             continue
 
         legVector = '{ '
@@ -72,14 +61,10 @@ def applyTriggers(df, yaml_dict= None, isData = False):
             legVector += ' , '
         legVector += ' }'
         # find solution
-        df = df.Define(f"""hasHttCandCorrespondance_{path}""", f"""HasHttMatching(httCand, {legVector} )""")
+        df = df.Define(f"""hasHttCandCorrespondance_{path}""", f"""HasHttMatching({legVector} )""")
         total_or_paths.append(f"""({or_paths} &&  hasHttCandCorrespondance_{path})""")
-        df_path = df.Filter(f"({or_paths} && hasHttCandCorrespondance_{path})")
-        #print(f"""filtrando il singolo path {path} ci sono {df_path.Count().GetValue()} eventi""")
-
     total_or_string = ' || '.join(or_path for or_path in total_or_paths)
     df = df.Filter(total_or_string)
-    #print(f"con il totale or \n {total_or_string} \n ci sono {df.Count().GetValue()} eventi")
 
     return df
 
@@ -103,7 +88,6 @@ if __name__ == "__main__":
     yaml_dict = None
     with open(f"{args.yamlFile}", "r") as stream:
         try:
-            #print(yaml.safe_load(stream))
             yaml_dict= yaml.safe_load(stream)
         except yaml.YAMLError as exc:
             print(exc)
@@ -111,4 +95,11 @@ if __name__ == "__main__":
         df = df.Range(args.nEvents)
     if len(args.evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {args.evtIds} }}; return evts.count(event) > 0;")
-    df = applyTriggers(df, yaml_dict, args.isData)
+
+    Baseline.Initialize(False, False)
+    df, syst_list = Baseline.CreateRecoP4(df, None)
+    df = Baseline.DefineGenObjects(df, args.isData, isHH=True) #for the moment, testing on MC HH events
+    df = Baseline.RecoLeptonsSelection(df)
+    df = Baseline.RecoJetAcceptance(df)
+    df = Baseline.RecoHttCandidateSelection(df)
+    df = ApplyTriggers(df, yaml_dict, args.isData)

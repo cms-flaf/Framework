@@ -1,8 +1,8 @@
 import ROOT
-import numpy as np
 import Common.BaselineSelection as Baseline
 import Common.Utilities as Utilities
 import Common.ReportTools as ReportTools
+import Common.triggerSel as Triggers
 
 deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
             "rawDeepTau2017v2p1VSjet", "rawDeepTau2018v2p5VSe", "rawDeepTau2018v2p5VSmu",
@@ -32,6 +32,7 @@ def addAllVariables(df,syst_name, isData, isHH):
     df = Baseline.RecoLeptonsSelection(df)
     df = Baseline.RecoJetAcceptance(df)
     df = Baseline.RecoHttCandidateSelection(df)
+    df = Triggers.ApplyTriggers(df, yaml_dict, isData)
     df = Baseline.RecoJetSelection(df)
     df = Baseline.RequestOnlyResolvedRecoJets(df)
     df = Baseline.ThirdLeptonVeto(df)
@@ -102,7 +103,7 @@ def addAllVariables(df,syst_name, isData, isHH):
     return df
 
 
-def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,range, isData, evtIds, isHH):
+def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,range, isData, evtIds, isHH, yaml_dict):
     Baseline.Initialize(True, True)
     df = ROOT.RDataFrame("Events", inFile)
     if range is not None:
@@ -144,7 +145,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
 if __name__ == "__main__":
     import argparse
     import os
-
+    import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument('--period', type=str)
     parser.add_argument('--inFile', type=str)
@@ -155,6 +156,7 @@ if __name__ == "__main__":
     parser.add_argument('--compressionAlgo', type=str, default="LZMA")
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
+    parser.add_argument('--yamlFile', type=str)
 
     args = parser.parse_args()
 
@@ -173,4 +175,10 @@ if __name__ == "__main__":
     snapshotOptions.fMode="UPDATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
-    createAnatuple(args.inFile, args.outFile, args.period, args.sample_type, args.mass, snapshotOptions, args.nEvents, isData, args.evtIds, isHH)
+    yaml_dict = None
+    with open(f"{args.yamlFile}", "r") as stream:
+        try:
+            yaml_dict= yaml.safe_load(stream)
+        except yaml.YAMLError as exc:
+            print(exc)
+    createAnatuple(args.inFile, args.outFile, args.period, args.sample_type, args.mass, snapshotOptions, args.nEvents, isData, args.evtIds, isHH, yaml_dict)

@@ -22,11 +22,10 @@ enum class Leg : int {
   jet = 4,
 };
 enum class Period : int {
-  Run2016 = 1,
-  Run2016APV = 2,
-  Run2017 = 3,
-  Run2018 = 4,
-
+  Run2_2016_HIPM = 1,
+  Run2_2016 = 2,
+  Run2_2017 = 3,
+  Run2_2018 = 4,
 };
 
 enum class SampleType : int {
@@ -53,8 +52,9 @@ enum class SampleType : int {
   TTTV = 21,
   TTVV = 22,
   TTVH = 23,
-  TTJ = 24,
-  QCD = 25
+  TTHH = 24,
+  TTJ = 25,
+  QCD = 26,
 };
 
 

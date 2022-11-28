@@ -6,7 +6,7 @@ import enum
 
 initialized = False
 
-ana_reco_object_collections = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau","MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"]
+ana_reco_object_collections = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau", "MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"]
 
 def Initialize(loadTF=False, loadHHBtag=False):
     global initialized
@@ -77,23 +77,24 @@ class WorkingPointsBoostedTauVSjet:
    VVTight = 7
 
 
-def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125.):
+def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125., p4_suffix='nano'):
     if isData:
         df = df.Define("genLeptons", "std::vector<reco_tau::gen_truth::GenLepton>()")
     else:
         df = df.Define("GenPart_daughters", "GetDaughters(GenPart_genPartIdxMother)")
-        df = df.Define("genLeptons","""reco_tau::gen_truth::GenLepton::fromNanoAOD(GenPart_pt, GenPart_eta,
+        df = df.Define("genLeptons", """reco_tau::gen_truth::GenLepton::fromNanoAOD(GenPart_pt, GenPart_eta,
                                         GenPart_phi, GenPart_mass, GenPart_genPartIdxMother, GenPart_pdgId,
                                         GenPart_statusFlags, event)""")
 
     for lep in ["Electron", "Muon", "Tau"]:
-        df = df.Define(f"{lep}_genMatchIdx",  f"MatchGenLepton({lep}_p4, genLeptons, 0.2)")
+        df = df.Define(f"{lep}_genMatchIdx",  f"MatchGenLepton({lep}_p4_{p4_suffix}, genLeptons, 0.2)")
+        df = df.Define(f"{lep}_genMatch",  f"GetGenLeptonMatch({lep}_genMatchIdx, genLeptons)")
     if isData:
         return df
 
     if isHH:
         df = df.Define("genHttCand", """GetGenHTTCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
-                                                       GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass)""")
+                                                       GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, false)""")
         df = df.Define("genHbbIdx", """GetGenHBBIndex(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags)""")
         df = df.Define("genHbb_isBoosted", "GenPart_pt[genHbbIdx]>550")
     for var in ["GenJet", "GenJetAK8"]:
@@ -108,7 +109,8 @@ def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125.):
     return df
 
 def PassGenAcceptance(df):
-    return df.Filter("PassGenAcceptance(genHttCand)", "GenHttCand Acceptance")
+    df = df.Filter("genHttCand", "GenHttCand present")
+    return df.Filter("PassGenAcceptance(*genHttCand)", "GenHttCand Acceptance")
 
 def GenJetSelection(df):
     df = df.Define("GenJet_B1","GenJet_pt > 20 && abs(GenJet_eta) < 2.5 && GenJet_Hbb")
@@ -117,42 +119,26 @@ def GenJetSelection(df):
 
 def GenJetHttOverlapRemoval(df):
     for var in ["GenJet", "GenJetAK8"]:
-        df = df.Define(f"{var}_B2", f"RemoveOverlaps({var}_p4, {var}_B1,{{{{genHttCand.leg_p4[0], genHttCand.leg_p4[1]}},}}, 2, 0.5)" )
+        df = df.Define(f"{var}_B2", f"RemoveOverlaps({var}_p4, {var}_B1,{{{{genHttCand->leg_p4[0], genHttCand->leg_p4[1]}},}}, 2, 0.5)" )
     return df.Filter("GenJet_idx[GenJet_B2].size()==2 || (GenJetAK8_idx[GenJetAK8_B2].size()==1 && genHbb_isBoosted)", "No overlap between genJets and genHttCands")
 
 def RequestOnlyResolvedGenJets(df):
     return df.Filter("GenJet_idx[GenJet_B2].size()==2", "Resolved topology")
 
 
-def SelectRecoP4(df,syst_name):
+def SelectRecoP4(df, syst_name='nano'):
     for obj in ana_reco_object_collections:
-        df = df.Define(f"{obj}_p4", f"{obj}_p4{syst_name}")
+        df = df.Define(f"{obj}_p4", f"{obj}_p4_{syst_name}")
     return df
 
-
-def CreateRecoP4(df, syst_dict=None, central_name='Central'):
-  syst_variations = {}
-  if syst_dict is None:
-    ref_name = ''
-  else:
-    ref_name = f'_{central_name}'
-    for syst_name,syst_objs in syst_dict.items():
-      for variation in [ 'Up', 'Down' ]:
-        syst_variations[f'_{syst_name}{variation}'] = syst_objs
-  syst_variations[ref_name] = ana_reco_object_collections
-  for obj in ana_reco_object_collections:
-    #print(obj)
-    if "MET" not in obj:
-        df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())")
-  for full_syst_name,syst_objs in syst_variations.items():
+def CreateRecoP4(df, suffix='nano'):
     for obj in ana_reco_object_collections:
-        syst = full_syst_name if obj in syst_objs else ref_name
         if "MET" in obj:
-            df = df.Define(f"{obj}_p4{full_syst_name}", f"LorentzVectorM({obj}_pt{syst}, 0., {obj}_phi{syst}, 0.)")
+            df = df.Define(f"{obj}_p4_{suffix}", f"LorentzVectorM({obj}_pt, 0., {obj}_phi, 0.)")
         else:
-            df = df.Define(f"{obj}_p4{full_syst_name}",
-                        f"GetP4({obj}_pt{syst}, {obj}_eta{syst}, {obj}_phi{syst}, {obj}_mass{syst}, {obj}_idx)")
-  return df, list(syst_variations.keys())
+            df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())")
+            df = df.Define(f"{obj}_p4_{suffix}", f"GetP4({obj}_pt, {obj}_eta, {obj}_phi, {obj}_mass, {obj}_idx)")
+    return df
 
 def DefineMETCuts(met_thr, met_collections):
   cut = ' || '.join([f'{v}_pt > {met_thr}' for v in met_collections ])

@@ -5,10 +5,11 @@
 #include "TextIO.h"
 #include "HHCore.h"
 
-HTTCand GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
-                           const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
-                           const RVecF& GenPart_pt, const RVecF& GenPart_eta,
-                           const RVecF& GenPart_phi, const RVecF& GenPart_mass)
+std::shared_ptr<HTTCand> GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
+                                            const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
+                                            const RVecF& GenPart_pt, const RVecF& GenPart_eta,
+                                            const RVecF& GenPart_phi, const RVecF& GenPart_mass,
+                                            bool throw_error_if_not_found)
 {
   try {
     std::set<int> htt_indices;
@@ -74,9 +75,11 @@ HTTCand GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
                                                 GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
     }
 
-    return htt_cand;
+    return std::make_shared<HTTCand>(htt_cand);
   } catch(analysis::exception& e) {
-    throw analysis::exception("GetGenHTTCandidate (event=%1%): %2%") % evt % e.message();
+    if(throw_error_if_not_found)
+      throw analysis::exception("GetGenHTTCandidate (event=%1%): %2%") % evt % e.message();
+    return std::make_shared<HTTCand>();
   }
 }
 

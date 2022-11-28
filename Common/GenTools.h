@@ -283,3 +283,19 @@ RVecI MatchGenLepton(const RVecLV& obj_p4, const std::vector<reco_tau::gen_truth
   }
   return best_indices;
 }
+
+RVecI GetGenLeptonMatch(const RVecI& obj_genMatchIdx, const std::vector<reco_tau::gen_truth::GenLepton>& genLeptons)
+{
+  using Kind = reco_tau::gen_truth::GenLepton::Kind;
+  RVecI kind(obj_genMatchIdx.size(), static_cast<int>(GenLeptonMatch::NoMatch));
+  for(size_t obj_idx = 0; obj_idx < obj_genMatchIdx.size(); ++obj_idx){
+    const int lep_idx = obj_genMatchIdx.at(obj_idx);
+    if(lep_idx >= 0) {
+      const auto& genLep = genLeptons.at(lep_idx);
+      const double pt_thr = genLep.kind() == Kind::TauDecayedToHadrons ? 15 : 8;
+      if(genLep.visibleP4().pt() > pt_thr)
+        kind[obj_idx] = static_cast<int>(genLep.kind());
+    }
+  }
+  return kind;
+}

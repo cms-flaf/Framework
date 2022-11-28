@@ -6,10 +6,10 @@
 inline int PeriodToHHbTagInput (Period period)
 {
     static const std::map<Period, int> periodHHBtag{
-        { Period::Run2016, 2016 },
-        { Period::Run2016APV, 2016 },
-        { Period::Run2017, 2017 },
-        { Period::Run2018, 2018 },
+        { Period::Run2_2016_HIPM, 2016 },
+        { Period::Run2_2016, 2016 },
+        { Period::Run2_2017, 2017 },
+        { Period::Run2_2018, 2018 },
     };
     auto iter = periodHHBtag.find(period);
     if (iter == periodHHBtag.end()) {

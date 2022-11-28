@@ -1,8 +1,10 @@
 import ROOT
+import numpy as np
 import Common.BaselineSelection as Baseline
 import Common.Utilities as Utilities
 import Common.ReportTools as ReportTools
 import Common.triggerSel as Triggers
+import Corrections.Corrections as Corrections
 
 deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
             "rawDeepTau2017v2p1VSjet", "rawDeepTau2018v2p5VSe", "rawDeepTau2018v2p5VSmu",
@@ -26,9 +28,8 @@ def DefineAndAppend(df, varToDefine, varToCall):
     colToSave.append(varToDefine)
     return df
 
-def addAllVariables(df,syst_name, isData, isHH):
-    df = Baseline.SelectRecoP4(df,syst_name)
-    df = Baseline.DefineGenObjects(df, isData=isData, isHH=isHH)
+def addAllVariables(df, syst_name, isData):
+    df = Baseline.SelectRecoP4(df, syst_name)
     df = Baseline.RecoLeptonsSelection(df)
     df = Baseline.RecoJetAcceptance(df)
     df = Baseline.RecoHttCandidateSelection(df)
@@ -103,44 +104,40 @@ def addAllVariables(df,syst_name, isData, isHH):
     return df
 
 
-def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,range, isData, evtIds, isHH, yaml_dict):
+def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,range, isData, evtIds, isHH, yaml_dict,
+                   store_noncentral):
     Baseline.Initialize(True, True)
+    if not isData:
+        Corrections.Initialize(period=period)
     df = ROOT.RDataFrame("Events", inFile)
     if range is not None:
         df = df.Range(range)
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
     df = DefineAndAppend(df,"sample_type", f"static_cast<int>(SampleType::{sample})")
-    df = DefineAndAppend(df,"period", f"static_cast<int>(Period::Run{period})")
+    df = DefineAndAppend(df,"period", f"static_cast<int>(Period::{period})")
     df = DefineAndAppend(df,"X_mass", f"static_cast<int>({X_mass})")
     is_data = 'true' if isData else 'false'
     df = DefineAndAppend(df,"is_data", is_data)
-    syst_dict = {
-        "TauES" : ["Tau", "MET"],
-    }
-    syst_names = {"_Central":Baseline.ana_reco_object_collections, "_TauESUp":["Tau", "MET"], "_TauESDown":["Tau", "MET"]}
-    for syst_name,obj_list in syst_names.items():
-        for var in ["pt", "eta", "phi", "mass"]:
-            for obj in obj_list:
-                if "MET" in obj and var in ["eta", "mass"]: continue
-                df = df.Define(f"{obj}_{var}{syst_name}", f"{obj}_{var}")
 
-    df, syst_list = Baseline.CreateRecoP4(df, syst_dict)
+    df = Baseline.CreateRecoP4(df)
+    df = Baseline.DefineGenObjects(df, isData=isData, isHH=isHH)
+    if isData:
+        syst_dict = { 'nano' : 'Central' }
+    else:
+        df, syst_dict = Corrections.applyScaleUncertainties(df)
 
-    histReports = {}
-    for syst in syst_list:
-        df_syst = df
-        df_syst = addAllVariables(df_syst, syst, isData, isHH)
-        report_syst = df_syst.Report()
-        histReport_syst = ReportTools.SaveReport(report_syst.GetValue(), reoprtName=f"Report{syst}")
-        histReports[syst] = histReport_syst
+    for syst_name, source_name in syst_dict.items():
+        suffix = '' if syst_name in [ 'Central', 'nano' ] else f'_{syst_name}'
+        if len(suffix) and not store_noncentral: continue
+        df_syst = addAllVariables(df, syst_name, isData)
+        report = df_syst.Report()
+        histReport = ReportTools.SaveReport(report.GetValue(), reoprtName=f"Report{suffix}")
         varToSave = Utilities.ListToVector(colToSave)
-        df_syst.Snapshot(f"Events{syst}", outFile, varToSave, snapshotOptions)
+        df_syst.Snapshot(f"Events{suffix}", outFile, varToSave, snapshotOptions)
         outputRootFile= ROOT.TFile(outFile, "UPDATE")
-        outputRootFile.WriteTObject(histReport_syst, f"Report{syst}", "Overwrite")
+        outputRootFile.WriteTObject(histReport, f"Report{suffix}", "Overwrite")
         outputRootFile.Close()
-
-
 
 if __name__ == "__main__":
     import argparse
@@ -156,7 +153,7 @@ if __name__ == "__main__":
     parser.add_argument('--compressionAlgo', type=str, default="LZMA")
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
-    parser.add_argument('--yamlFile', type=str)
+    parser.add_argument('--store-noncentral', action="store_true", help="Store ES variations.")
 
     args = parser.parse_args()
 
@@ -164,7 +161,8 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
     isHH=False
     isData = False
-    if args.mass>0 and args.sample_type in ["GluGluToRadion", "GluGluToBulkGraviton", "VBFToRadion", "VBFToBulkGraviton", "HHnonRes"]:
+    hh_samples = [ "GluGluToRadion", "GluGluToBulkGraviton", "VBFToRadion", "VBFToBulkGraviton", "HHnonRes", "TTHH" ]
+    if args.mass>0 and args.sample_type in hh_samples:
         isHH = True
     if args.sample_type =='data':
         isData = True
@@ -175,10 +173,5 @@ if __name__ == "__main__":
     snapshotOptions.fMode="UPDATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
-    yaml_dict = None
-    with open(f"{args.yamlFile}", "r") as stream:
-        try:
-            yaml_dict= yaml.safe_load(stream)
-        except yaml.YAMLError as exc:
-            print(exc)
-    createAnatuple(args.inFile, args.outFile, args.period, args.sample_type, args.mass, snapshotOptions, args.nEvents, isData, args.evtIds, isHH, yaml_dict)
+    createAnatuple(args.inFile, args.outFile, args.period, args.sample_type, args.mass, snapshotOptions, args.nEvents,
+                   isData, args.evtIds, isHH, args.store_noncentral)

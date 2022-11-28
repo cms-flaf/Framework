@@ -23,7 +23,7 @@ struct HTTCand {
     return true;
   }
   bool isLeg(int obj_index, Leg leg) const {
-    for(size_t idx = 0; idx < n_legs; ++idx){
+    for(size_t idx = 0; idx < n_legs; idx++){
       if(leg_type[idx] == leg && leg_index[idx]==obj_index){
         return true;
       }

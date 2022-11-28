@@ -1,78 +1,49 @@
-tauTau:
-  diTau:
-    path_data:
-      - HLT_DoubleTightChargedIsoPFTau35_Trk1_TightID_eta2p1_Reg
-      - HLT_DoubleMediumChargedIsoPFTau40_Trk1_TightID_eta2p1_Reg
-      - HLT_DoubleTightChargedIsoPFTau40_Trk1_eta2p1_Reg
-      - HLT_DoubleMediumChargedIsoPFTauHPS35_Trk1_eta2p1_Reg
-    path_MC:
-      - HLT_DoubleMediumChargedIsoPFTauHPS35_Trk1_eta2p1_Reg
-    legs:
-      1:
-        offline_obj:
-          type: Tau
-          cut: v_ops::pt(Tau_p4) > 40 && abs(v_ops::eta(Tau_p4)) < 2.1
-        online_obj:
-          cut: TrigObj_id == 15 && (TrigObj_filterBits&64)!=0
-        doMatching: True
-      2:
-        offline_obj:
-          type: Tau
-          cut: v_ops::pt(Tau_p4) > 40 && abs(v_ops::eta(Tau_p4)) < 2.1
-        online_obj:
-          cut: TrigObj_id == 15 && (TrigObj_filterBits&64)!=0
-        doMatching: True
-  MET:
-    path_data:
+diTau:
+  channels:
+    - tauTau
+  path_data:
+    - HLT_DoubleTightChargedIsoPFTau35_Trk1_TightID_eta2p1_Reg
+    - HLT_DoubleMediumChargedIsoPFTau40_Trk1_TightID_eta2p1_Reg
+    - HLT_DoubleTightChargedIsoPFTau40_Trk1_eta2p1_Reg
+    - HLT_DoubleMediumChargedIsoPFTauHPS35_Trk1_eta2p1_Reg
+  path_MC:
+    - HLT_DoubleMediumChargedIsoPFTauHPS35_Trk1_eta2p1_Reg
+  legs:
+    - offline_obj:
+        type: Tau
+        cut: v_ops::pt(Tau_p4) > 40 && abs(v_ops::eta(Tau_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id == 15 && (TrigObj_filterBits&64)!=0
+      doMatching: True
+    - offline_obj:
+        type: Tau
+        cut: v_ops::pt(Tau_p4) > 40 && abs(v_ops::eta(Tau_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id == 15 && (TrigObj_filterBits&64)!=0
+      doMatching: True
+MET:
+    channels:
+      - tauTau
+      - muTau
+      - eTau
+    path:
       - HLT_PFMETNoMu120_PFMHTNoMu120_IDTight
-    path_MC:
-      - HLT_PFMETNoMu120_PFMHTNoMu120_IDTight
     legs:
-      1:
-        offline_obj:
+      - offline_obj:
           type: MET
-          cut: MET_pt > 120 
+          cut: MET_pt > 120
         doMatching: False
-  singleTau: 
-    path_data:
-     - HLT_MediumChargedIsoPFTau180HighPtRelaxedIso_Trk50_eta2p1
-    path_MC:
-     - HLT_MediumChargedIsoPFTau180HighPtRelaxedIso_Trk50_eta2p1
+singleTau:
+    channels:
+      - tauTau
+      - muTau
+      - eTau
+    path:
+      - HLT_MediumChargedIsoPFTau180HighPtRelaxedIso_Trk50_eta2p1
     legs:
-      1:
-        offline_obj:
+      - offline_obj:
           type: Tau
           cut: v_ops::pt(Tau_p4) > 180 && abs(v_ops::eta(Tau_p4)) < 2.1
         online_obj:
           cut: TrigObj_id == 15 && (TrigObj_filterBits&1024)!=0
-        doMatching: False 
-
-muTau:
-  singleTau: 
-    path_data:
-     - HLT_MediumChargedIsoPFTau180HighPtRelaxedIso_Trk50_eta2p1
-    path_MC:
-     - HLT_MediumChargedIsoPFTau180HighPtRelaxedIso_Trk50_eta2p1
-    legs:
-      1:
-        offline_obj:
-          type: Tau
-          cut: v_ops::pt(Tau_p4) > 190 && abs(v_ops::eta(Tau_p4)) < 2.1
-        online_obj:
-          cut: TrigObj_id == 15 && (TrigObj_filterBits&1024)!=0
-        doMatching: True 
-
-eTau:
-  singleTau: 
-    path_data:
-     - HLT_MediumChargedIsoPFTau180HighPtRelaxedIso_Trk50_eta2p1
-    path_MC:
-     - HLT_MediumChargedIsoPFTau180HighPtRelaxedIso_Trk50_eta2p1
-    legs:
-      1:
-        offline_obj:
-          type: Tau
-          cut: v_ops::pt(Tau_p4) > 190 && abs(v_ops::eta(Tau_p4)) < 2.1
-        online_obj:
-          cut: TrigObj_id == 15 && (TrigObj_filterBits&1024)!=0
-        doMatching: True 
+        doMatching: True

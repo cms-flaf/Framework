@@ -5,6 +5,8 @@
 		}
 	],
 	"settings": {
+		"editor.tabSize": 4,
+		"files.trimTrailingWhitespace": true,
 		"files.associations": {
 			"__bit_reference": "cpp",
 			"__hash_table": "cpp",

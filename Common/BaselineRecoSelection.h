@@ -125,19 +125,17 @@ HbbCand GetHbbCandidate(const RVecF& HHbTagScores, const RVecB& JetSel,  const R
   return HbbCandidate;
 }
 
-RVecB FindMatching(const RVecB& pre_sel_offline, const RVecB& pre_sel_online, const RVecF& TrigObj_eta,
+std::vector<std::set<int>> FindMatchingOnlineIndices(const RVecB& pre_sel_offline, const RVecB& pre_sel_online, const RVecF& TrigObj_eta,
     const RVecF& TrigObj_phi, const RVecF& offlineObj_eta, const RVecF& offlineObj_phi, const float dR_thr)
     {
-        RVecB findMatching(pre_sel_offline.size(), false);
+        std::vector<std::set<int>> findMatching(pre_sel_offline.size());
         for(size_t online_idx = 0 ; online_idx < pre_sel_online.size() ; online_idx ++ ){
             if(pre_sel_online[online_idx]==0) continue;
-            float dR_min = dR_thr;
             for(size_t offline_idx = 0 ; offline_idx < pre_sel_offline.size() ; offline_idx ++ ){
                 if(pre_sel_offline[offline_idx]==0) continue;
                 auto dR_current = DeltaR( TrigObj_eta[online_idx], TrigObj_phi[online_idx],  offlineObj_eta[offline_idx], offlineObj_phi[offline_idx]);
-                if(dR_current < dR_min ){
-                    dR_min = dR_current;
-                    findMatching[offline_idx] = true;
+                if(dR_current < dR_thr ){
+                    findMatching[offline_idx].insert(online_idx);
                 }
             }
         }
@@ -145,19 +143,24 @@ RVecB FindMatching(const RVecB& pre_sel_offline, const RVecB& pre_sel_online, co
     }
 
 
-  bool HasHttMatching(const HTTCand& httCand, const std::vector<std::pair<Leg, RVecB>> legVector ){
+  bool HasHttMatching(const HTTCand& httCand, const std::vector<std::pair<Leg, std::vector<std::set<int>>>> legVector ){
     RVecI already_considered_indices;
+
     RVecB hasHttMatchingVector(legVector.size(), false);
+
+    // iterate over HttCandidates and check that the index has not already been considered
     for(size_t legHtt_idx = 0; legHtt_idx < HTTCand::n_legs; legHtt_idx++){
       if(std::find(already_considered_indices.begin(), already_considered_indices.end(), legHtt_idx)!=already_considered_indices.end()) continue;
+      size_t obj_idx = httCand.leg_index[legHtt_idx];
+      // iterate over the legVector (which will have size 1 or 2)
       for(size_t leg_idx=0; leg_idx<legVector.size(); leg_idx++){
-        std::pair<Leg, RVecB> leg = legVector[leg_idx];
-          for(size_t obj_idx=0; obj_idx<leg.second.size(); obj_idx++){
-            if(leg.second[httCand.leg_index[legHtt_idx]]!=0) {
-              already_considered_indices.push_back(legHtt_idx);
-              hasHttMatchingVector[leg_idx]=true;
-            }
-          }
+        auto leg = legVector[leg_idx];
+        // check that the type is the correct leg type
+        if(httCand.leg_type[legHtt_idx] != legVector[leg_idx].first) continue;
+        if(leg.second[obj_idx].size()!=1) continue;
+        already_considered_indices.push_back(legHtt_idx);
+        hasHttMatchingVector[leg_idx]=true;
+
       }
     }
     bool hasHttMatching = true;

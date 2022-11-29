@@ -6,7 +6,6 @@ def PrintDecayChain(df, evtIds, outFile):
                                   "{outFile}")''')
     df.Histo1D("printer").GetValue()
 
-
 if __name__ == "__main__":
     import argparse
     import os

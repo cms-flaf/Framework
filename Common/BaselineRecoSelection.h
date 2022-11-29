@@ -146,14 +146,26 @@ std::vector<std::set<int>> FindMatchingOnlineIndices(const RVecB& pre_sel_offlin
 
   bool HasHttMatching(const std::vector<std::vector<std::set<int>>> legVector ){
     RVecB hasHttMatchingVector(legVector.size(), false);
+    std::set<int> already_counted_offline_obj;
+    std::set<int> already_counted_online_obj;
 
     // iterate over the legVector (which will have size 1 or 2)
+    if(legVector.size()==0)
+      return true;
+
     for(size_t leg_idx=0; leg_idx<legVector.size(); leg_idx++){
       auto leg = legVector[leg_idx];
       // iterate over the object in the legVector
       for(size_t obj_idx=0;obj_idx<leg.size();obj_idx++){
-        if(leg[obj_idx].size()!=1) continue;
-        hasHttMatchingVector[leg_idx]=true;
+        if(already_counted_offline_obj.count(obj_idx)) continue;
+        if(leg[obj_idx].size()==0)
+          hasHttMatchingVector[leg_idx]=true;
+        for(auto set_element : leg[obj_idx]){
+          if(already_counted_online_obj.count(set_element)) continue;
+          hasHttMatchingVector[leg_idx]=true;
+          already_counted_online_obj.insert(set_element);
+        }
+        already_counted_offline_obj.insert(obj_idx);
       }
     }
     bool hasHttMatching = true;

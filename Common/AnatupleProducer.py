@@ -28,16 +28,17 @@ def DefineAndAppend(df, varToDefine, varToCall):
     colToSave.append(varToDefine)
     return df
 
-def addAllVariables(df, syst_name, isData):
+def addAllVariables(df, syst_name, isData, trigger_class):
     df = Baseline.SelectRecoP4(df, syst_name)
     df = Baseline.RecoLeptonsSelection(df)
     df = Baseline.RecoJetAcceptance(df)
     df = Baseline.RecoHttCandidateSelection(df)
-    df = Triggers.ApplyTriggers(df, yaml_dict, isData)
     df = Baseline.RecoJetSelection(df)
     df = Baseline.RequestOnlyResolvedRecoJets(df)
     df = Baseline.ThirdLeptonVeto(df)
     df = Baseline.DefineHbbCand(df)
+    df,hltBranches = trigger_class.ApplyTriggers(df, isData)
+    #colToSave.extend(hltBranches)
     df = DefineAndAppend(df, f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
     df = DefineAndAppend(df, f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
     df = DefineAndAppend(df, f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
@@ -104,11 +105,13 @@ def addAllVariables(df, syst_name, isData):
     return df
 
 
-def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,range, isData, evtIds, isHH, yaml_dict,
+def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,range, isData, evtIds, isHH, triggerFile,
                    store_noncentral):
     Baseline.Initialize(True, True)
     if not isData:
         Corrections.Initialize(period=period)
+
+    trigger_class = Triggers.Triggers(triggerFile)
     df = ROOT.RDataFrame("Events", inFile)
     if range is not None:
         df = df.Range(range)
@@ -130,7 +133,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     for syst_name, source_name in syst_dict.items():
         suffix = '' if syst_name in [ 'Central', 'nano' ] else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
-        df_syst = addAllVariables(df, syst_name, isData)
+        df_syst = addAllVariables(df, syst_name, isData, trigger_class)
         report = df_syst.Report()
         histReport = ReportTools.SaveReport(report.GetValue(), reoprtName=f"Report{suffix}")
         varToSave = Utilities.ListToVector(colToSave)
@@ -154,6 +157,7 @@ if __name__ == "__main__":
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--store-noncentral', action="store_true", help="Store ES variations.")
+    parser.add_argument('--triggerFile', type=str)
 
     args = parser.parse_args()
 
@@ -168,10 +172,11 @@ if __name__ == "__main__":
         isData = True
     if os.path.exists(args.outFile):
         os.remove(args.outFile)
+
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
     snapshotOptions.fMode="UPDATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
     createAnatuple(args.inFile, args.outFile, args.period, args.sample_type, args.mass, snapshotOptions, args.nEvents,
-                   isData, args.evtIds, isHH, args.store_noncentral)
+                   isData, args.evtIds, isHH, args.triggerFile, args.store_noncentral)

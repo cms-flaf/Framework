@@ -27,7 +27,6 @@ class Triggers():
             additional_conditions = [""]
             total_objects_matched = []
             already_considered_legs = []
-            isDifferentLeg = 'false'
             for leg_id, leg_tuple in enumerate(path_dict['legs']):
                 # define offline cuts
                 leg_dict_offline= leg_tuple["offline_obj"]
@@ -53,7 +52,7 @@ class Triggers():
                     # find matching online <-> offline
                     df = df.Define(f'{matching_var}', f"""FindMatchingOnlineIndices(isHttLegAndPassOfflineSel_{var_name_offline}_{type_name_offline}, {var_name_online},
                                                 TrigObj_eta, TrigObj_phi, {leg_dict_offline["type"]}_eta,{leg_dict_offline["type"]}_phi, 0.4 )""")
-                    total_objects_matched.append(f'{{ {isDifferentLeg}, {matching_var} }}')
+                    total_objects_matched.append(f'{{ {self.dict_legtypes[type_name_offline]}, {matching_var} }}')
 
             legVector = f'{{ { ", ".join(total_objects_matched)} }}'
             # find solution

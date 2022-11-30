@@ -142,34 +142,42 @@ std::vector<std::set<int>> FindMatchingOnlineIndices(const RVecB& pre_sel_offlin
         return findMatching;
     }
 
+void FindSet(Leg leg, std::set<int>& set, Leg other_leg, std::set<int>& other_set){
+    if(leg!=other_leg) return;
+    if(set.size()>other_set.size()) return FindSet(other_leg, other_set, leg, set);
+    for (const auto& set_element : set){
+        if(other_set.count(set_element)) {
+            other_set.erase(set_element);
+            FindSet(leg, set, other_leg, other_set);
+        }
+        else continue;
+    }
+    return;
+}
 
 
-  bool HasHttMatching(const std::vector<std::pair<bool, std::vector<std::set<int>>>> legVector ){
+void FindSetVector(Leg leg, std::vector<std::set<int>>& set, Leg other_leg, std::vector<std::set<int>>& other_set){
+    if(leg!=other_leg) return;
+
+    for (size_t vec_idx = 0 ; vec_idx < set.size(); vec_idx++){
+        for (size_t other_vec_idx = 0 ; other_vec_idx < set.size(); other_vec_idx++){
+            FindSet(leg, set[vec_idx], other_leg, other_set[other_vec_idx]);
+        }
+    }
+    return;
+}
+
+  bool HasHttMatching(std::vector<std::pair<Leg, std::vector<std::set<int>>>> legVector ){
     RVecB hasHttMatchingVector(legVector.size(), false);
-    std::set<int> already_counted_offline_obj;
-    std::set<int> already_counted_online_obj;
-
-    // iterate over the legVector (which will have size 1 or 2)
     if(legVector.size()==0)
       return true;
 
     for(size_t leg_idx=0; leg_idx<legVector.size(); leg_idx++){
-      auto leg = legVector[leg_idx];
-      bool isDifferentLeg = leg.first;
-      std::vector<std::set<int>> legSetVector = leg.second;
-      // iterate over the object in the legVector
-      for(size_t obj_idx=0;obj_idx<legSetVector.size();obj_idx++){
-        if(already_counted_offline_obj.count(obj_idx)) continue;
-        for(auto set_element : legSetVector[obj_idx]){
-          if(already_counted_online_obj.count(set_element) && isDifferentLeg == false) {
-            legSetVector[obj_idx].erase(set_element);
-            continue;
-          };
-          if(legSetVector.size()==0) continue;
-          hasHttMatchingVector[leg_idx]=true;
-          already_counted_online_obj.insert(set_element);
-        }
-        already_counted_offline_obj.insert(obj_idx);
+      for(size_t other_leg_idx = 0 ; other_leg_idx<leg_idx ; other_leg_idx++){
+        FindSetVector(legVector[leg_idx].first, legVector[leg_idx].second, legVector[other_leg_idx].first, legVector[other_leg_idx].second);
+      }
+      if(!legVector[leg_idx].second.empty()){
+        hasHttMatchingVector[leg_idx] = true;
       }
     }
     bool hasHttMatching = true;

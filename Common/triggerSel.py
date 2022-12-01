@@ -26,7 +26,7 @@ class Triggers():
                 var_name_offline = f'{type_name_offline}_offlineCut_{leg_id+1}_{path}'
                 df = df.Define(var_name_offline, leg_dict_offline["cut"])
                 if not leg_tuple["doMatching"]:
-                    if(leg_dict_offline["type"]!='MET'):
+                    if not leg_dict_offline["type"].startswith('MET'):
                         var_name_offline = f'{leg_dict_offline["type"]}_idx[{var_name_offline}].size()>0'
                     additional_conditions.append(f' {var_name_offline} ')
                 else:

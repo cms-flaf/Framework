@@ -45,7 +45,7 @@ singleTau:
           type: Tau
           cut: v_ops::pt(Tau_p4) > 180 && abs(v_ops::eta(Tau_p4)) < 2.1
         online_obj:
-          cut: TrigObj_id == 15 && (TrigObj_filterBits&1024)!=0 && (TrigObj_filterBits&2)!=0 # --> 2 is for MediumChargedIso tau filter bit
+          cut: TrigObj_id == 15 && (TrigObj_filterBits&1024)!=0
         doMatching: True
 
 singleMu:
@@ -59,7 +59,7 @@ singleMu:
         type: Muon
         cut:  v_ops::pt(Muon_p4) > 20 && abs(v_ops::eta(Muon_p4)) < 2.1
       online_obj:
-        cut: TrigObj_id == 13 && (TrigObj_filterBits&8)!=0 && (TrigObj_filterBits&32)!=0 # isoMu
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&32)!=0
       doMatching: True
 
 MuTau:
@@ -75,7 +75,7 @@ MuTau:
         type: Muon
         cut: v_ops::pt(Muon_p4) > 20 && abs(v_ops::eta(Muon_p4)) < 2.1
       online_obj:
-        cut: TrigObj_id == 13 && (TrigObj_filterBits&512)!=0 && (TrigObj_filterBits&8)!=0 # eleTau and looseChargedIso tau
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&512)!=0
       doMatching: True
     - offline_obj:
         type: Tau
@@ -96,7 +96,7 @@ singleEle:
         type: Electron
         cut: v_ops::pt(Electron_p4) > 20 && abs(v_ops::eta(Electron_p4)) < 2.1
       online_obj:
-        cut: TrigObj_id == 11 && (TrigObj_filterBits&2)!=0 # should I ask also for Gsf?
+        cut: TrigObj_id == 11 && (TrigObj_filterBits&2)!=0
       doMatching: True
 
 EleTau:
@@ -112,11 +112,11 @@ EleTau:
         type: Electron
         cut: v_ops::pt(Electron_p4) > 20 && abs(v_ops::eta(Electron_p4)) < 2.1
       online_obj:
-        cut: TrigObj_id == 11 && (TrigObj_filterBits&256)!=0 && (TrigObj_filterBits&2)!=0 # eleTau and looseChargedIso tau
+        cut: TrigObj_id == 11 && (TrigObj_filterBits&256)!=0
       doMatching: True
     - offline_obj:
         type: Tau
         cut: v_ops::pt(Tau_p4) > 40 && abs(v_ops::eta(Tau_p4)) < 2.1
       online_obj:
-        cut: TrigObj_id == 15 && (TrigObj_filterBits&1)!=0 && (TrigObj_filterBits&256)!=0
+        cut: TrigObj_id == 15 && (TrigObj_filterBits&256)!=0
       doMatching: True

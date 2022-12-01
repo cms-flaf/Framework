@@ -124,7 +124,6 @@ HbbCand GetHbbCandidate(const RVecF& HHbTagScores, const RVecB& JetSel,  const R
 
   return HbbCandidate;
 }
-
 std::vector<std::set<int>> FindMatchingOnlineIndices(const RVecB& pre_sel_offline, const RVecB& pre_sel_online, const RVecF& TrigObj_eta,
     const RVecF& TrigObj_phi, const RVecF& offlineObj_eta, const RVecF& offlineObj_phi, const float dR_thr)
     {
@@ -142,47 +141,33 @@ std::vector<std::set<int>> FindMatchingOnlineIndices(const RVecB& pre_sel_offlin
         return findMatching;
     }
 
-void FindSet(Leg leg, std::set<int>& set, Leg other_leg, std::set<int>& other_set){
-    if(leg!=other_leg) return;
-    if(set.size()>other_set.size()) return FindSet(other_leg, other_set, leg, set);
-    for (const auto& set_element : set){
-        if(other_set.count(set_element)) {
-            other_set.erase(set_element);
-            FindSet(leg, set, other_leg, other_set);
+using LegIndexPair = std::pair<Leg, size_t>;
+using LegMatching = std::pair<Leg, std::vector<std::set<int>>>;
+
+bool _HasOOMatching(const std::vector<LegMatching>& legVector, size_t legIndex,
+                    std::set<int>& onlineSelected, std::set<LegIndexPair>& offlineSelected)
+{
+    if(legIndex >= legVector.size()) return true;
+    for(size_t offlineIndex = 0; offlineIndex < legVector[legIndex].second.size(); ++offlineIndex) {
+        const LegIndexPair offlinePair(legVector[legIndex].first, offlineIndex);
+        if(offlineSelected.count(offlinePair)) continue;
+        offlineSelected.insert(offlinePair);
+        for(int onlineIndex : legVector[legIndex].second[offlineIndex]) {
+            if(onlineSelected.count(onlineIndex)) continue;
+            onlineSelected.insert(onlineIndex);
+            if(_HasOOMatching(legVector, legIndex + 1, onlineSelected, offlineSelected))
+                return true;
+            onlineSelected.erase(onlineIndex);
         }
-        else continue;
+        offlineSelected.erase(offlinePair);
     }
-    return;
+    return false;
 }
 
+bool HasOOMatching(const std::vector<LegMatching>& legVector)
+{
+    std::set<int> onlineSelected;
+    std::set<LegIndexPair> offlineSelected;
 
-void FindSetVector(Leg leg, std::vector<std::set<int>>& set, Leg other_leg, std::vector<std::set<int>>& other_set){
-    if(leg!=other_leg) return;
-
-    for (size_t vec_idx = 0 ; vec_idx < set.size(); vec_idx++){
-        for (size_t other_vec_idx = 0 ; other_vec_idx < set.size(); other_vec_idx++){
-            FindSet(leg, set[vec_idx], other_leg, other_set[other_vec_idx]);
-        }
-    }
-    return;
+    return _HasOOMatching(legVector, 0, onlineSelected, offlineSelected);
 }
-
-  bool HasHttMatching(std::vector<std::pair<Leg, std::vector<std::set<int>>>> legVector ){
-    RVecB hasHttMatchingVector(legVector.size(), false);
-    if(legVector.size()==0)
-      return true;
-
-    for(size_t leg_idx=0; leg_idx<legVector.size(); leg_idx++){
-      for(size_t other_leg_idx = 0 ; other_leg_idx<leg_idx ; other_leg_idx++){
-        FindSetVector(legVector[leg_idx].first, legVector[leg_idx].second, legVector[other_leg_idx].first, legVector[other_leg_idx].second);
-      }
-      if(!legVector[leg_idx].second.empty()){
-        hasHttMatchingVector[leg_idx] = true;
-      }
-    }
-    bool hasHttMatching = true;
-    for (const auto & match : hasHttMatchingVector){
-      hasHttMatching = hasHttMatching && match;
-    }
-    return hasHttMatching;
-  }

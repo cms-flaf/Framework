@@ -56,7 +56,7 @@ class Triggers():
 
             legVector = f'{{ { ", ".join(total_objects_matched)} }}'
             # find solution
-            df = df.Define(f'hasHttCandCorrespondance_{path}', f'HasHttMatching({legVector} )')
+            df = df.Define(f'hasHttCandCorrespondance_{path}', f'HasOOMatching({legVector} )')
             stringToAppend = f'{or_paths} &&  hasHttCandCorrespondance_{path}'
             stringToAppend += ' && '.join(additional_conditions)
             hltBranches.append(stringToAppend)

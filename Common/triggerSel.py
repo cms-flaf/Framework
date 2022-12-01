@@ -25,24 +25,24 @@ class Triggers():
                 if not leg_tuple["doMatching"]:
                     if not leg_dict_offline["type"].startswith('MET'):
                         var_name_offline = f'{leg_dict_offline["type"]}_idx[{var_name_offline}].size()>0'
-                    additional_conditions.append(f' {var_name_offline} ')
+                    additional_conditions.append(var_name_offline)
                 else:
                     df = df.Define(f'{type_name_offline}_{var_name_offline}_sel', f'httCand.isLeg({type_name_offline}_idx, {self.dict_legtypes[type_name_offline]}) && ({var_name_offline})')
                     leg_dict_online= leg_tuple["online_obj"]
                     var_name_online =  f'{leg_dict_offline["type"]}_onlineCut_{leg_id+1}_{path}'
                     df = df.Define(f'{var_name_online}',f'{leg_dict_online["cut"]}')
                     matching_var = f'{leg_dict_offline["type"]}_Matching_{leg_id+1}_{path}'
-                    df = df.Define(f'{matching_var}', f"""FindMatchingSet( {type_name_offline}_{var_name_offline}_sel,{var_name_online},
+                    df = df.Define(matching_var, f"""FindMatchingSet( {type_name_offline}_{var_name_offline}_sel,{var_name_online},
                                                                             {leg_dict_offline["type"]}_p4, TrigObj_p4,{self.deltaR_matching} )""")
                     total_objects_matched.append(f'{{ {self.dict_legtypes[type_name_offline]}, {matching_var} }}')
 
             legVector = f'{{ { ", ".join(total_objects_matched)} }}'
-            df = df.Define(f'hasHttCandCorrespondance_{path}', f'HasOOMatching({legVector} )')
-            stringToAppend = f'{or_paths} &&  hasHttCandCorrespondance_{path}'
-            stringToAppend += ' && '.join(additional_conditions)
+            df = df.Define(f'hasOOMatching_{path}', f'HasOOMatching({legVector} )')
+            fullPathSelection = f'{or_paths} &&  hasOOMatching_{path}'
+            fullPathSelection += ' && '.join(additional_conditions)
             hltBranch = f'HLT_{path}'
             hltBranches.append(hltBranch)
-            df = df.Define(hltBranch, stringToAppend)
+            df = df.Define(hltBranch, fullPathSelection)
         total_or_string = ' || '.join(hltBranches)
         df = df.Filter(total_or_string)
         return df,hltBranches

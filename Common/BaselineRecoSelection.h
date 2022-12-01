@@ -127,9 +127,10 @@ HbbCand GetHbbCandidate(const RVecF& HHbTagScores, const RVecB& JetSel,  const R
 
 
 using LegIndexPair = std::pair<Leg, size_t>;
-using LegMatching = std::pair<Leg, std::vector<std::set<int>>>;
+using LegMatching = std::pair<Leg, RVecSetInt>;
+using RVecMatching = ROOT::VecOps::RVec<LegMatching>;
 
-bool _HasOOMatching(const std::vector<LegMatching>& legVector, size_t legIndex,
+bool _HasOOMatching(const RVecMatching& legVector, size_t legIndex,
                     std::set<int>& onlineSelected, std::set<LegIndexPair>& offlineSelected)
 {
     if(legIndex >= legVector.size()) return true;
@@ -149,7 +150,7 @@ bool _HasOOMatching(const std::vector<LegMatching>& legVector, size_t legIndex,
     return false;
 }
 
-bool HasOOMatching(const std::vector<LegMatching>& legVector)
+bool HasOOMatching(const RVecMatching& legVector)
 {
     std::set<int> onlineSelected;
     std::set<LegIndexPair> offlineSelected;

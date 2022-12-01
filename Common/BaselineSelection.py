@@ -132,6 +132,8 @@ def SelectRecoP4(df, syst_name='nano'):
     return df
 
 def CreateRecoP4(df, suffix='nano'):
+    df = df.Define(f"TrigObj_idx", f"CreateIndexes(TrigObj_pt.size())").Define("TrigObj_mass", "RVecF mass ; for(int i =0; i< TrigObj_pt.size(); i++){mass.push_back(0.);} return mass;")
+    df = df.Define(f"TrigObj_p4", f"GetP4(TrigObj_pt,TrigObj_eta,TrigObj_phi, TrigObj_mass, TrigObj_idx)")
     for obj in ana_reco_object_collections:
         if "MET" in obj:
             df = df.Define(f"{obj}_p4_{suffix}", f"LorentzVectorM({obj}_pt, 0., {obj}_phi, 0.)")

@@ -14,6 +14,7 @@ using RVecF = ROOT::VecOps::RVec<float>;
 using RVecB = ROOT::VecOps::RVec<bool>;
 using RVecVecI = ROOT::VecOps::RVec<RVecI>;
 using RVecLV = ROOT::VecOps::RVec<LorentzVectorM>;
+using RVecSetInt = ROOT::VecOps::RVec<std::set<int>>;
 
 enum class Leg : int {
   e = 1,
@@ -190,17 +191,17 @@ RVecI FindMatching(const RVecLV& target_p4, const RVecLV& ref_p4,const float del
   return targetIndices;
 }
 
-std::vector<std::set<int>> FindMatchingSet(const RVecB& pre_sel, const RVecB& pre_sel_other, const RVecLV& obj_p4,
-    const RVecLV& other_p4, const float dR_thr)
+RVecSetInt FindMatchingSet(const RVecB& pre_sel_target, const RVecB& pre_sel_ref, const RVecLV& target_p4,
+    const RVecLV& ref_p4, const float dR_thr)
     {
-        std::vector<std::set<int>> findMatching(pre_sel_other.size());
-        for(size_t obj_idx = 0 ; obj_idx < pre_sel.size() ; obj_idx ++ ){
-            if(pre_sel[obj_idx]==0) continue;
-            for(size_t other_idx = 0 ; other_idx < pre_sel_other.size() ; other_idx ++ ){
-                if(pre_sel_other[other_idx]==0) continue;
-                auto dR_current = ROOT::Math::VectorUtil::DeltaR(obj_p4[obj_idx], other_p4[other_idx]);
+        RVecSetInt findMatching(pre_sel_target.size());
+        for(size_t ref_idx = 0 ; ref_idx < pre_sel_ref.size() ; ref_idx ++ ){
+            if(pre_sel_ref[ref_idx]==0) continue;
+            for(size_t target_idx = 0 ; target_idx < pre_sel_target.size() ; target_idx ++ ){
+                if(pre_sel_target[target_idx]==0) continue;
+                auto dR_current = ROOT::Math::VectorUtil::DeltaR(target_p4[target_idx], ref_p4[ref_idx]);
                 if(dR_current < dR_thr ){
-                    findMatching[other_idx].insert(obj_idx);
+                    findMatching[target_idx].insert(ref_idx);
                 }
             }
         }

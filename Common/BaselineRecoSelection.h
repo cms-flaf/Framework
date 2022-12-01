@@ -124,22 +124,7 @@ HbbCand GetHbbCandidate(const RVecF& HHbTagScores, const RVecB& JetSel,  const R
 
   return HbbCandidate;
 }
-std::vector<std::set<int>> FindMatchingOnlineIndices(const RVecB& pre_sel_offline, const RVecB& pre_sel_online, const RVecF& TrigObj_eta,
-    const RVecF& TrigObj_phi, const RVecF& offlineObj_eta, const RVecF& offlineObj_phi, const float dR_thr)
-    {
-        std::vector<std::set<int>> findMatching(pre_sel_offline.size());
-        for(size_t online_idx = 0 ; online_idx < pre_sel_online.size() ; online_idx ++ ){
-            if(pre_sel_online[online_idx]==0) continue;
-            for(size_t offline_idx = 0 ; offline_idx < pre_sel_offline.size() ; offline_idx ++ ){
-                if(pre_sel_offline[offline_idx]==0) continue;
-                auto dR_current = DeltaR( TrigObj_eta[online_idx], TrigObj_phi[online_idx],  offlineObj_eta[offline_idx], offlineObj_phi[offline_idx]);
-                if(dR_current < dR_thr ){
-                    findMatching[offline_idx].insert(online_idx);
-                }
-            }
-        }
-        return findMatching;
-    }
+
 
 using LegIndexPair = std::pair<Leg, size_t>;
 using LegMatching = std::pair<Leg, std::vector<std::set<int>>>;

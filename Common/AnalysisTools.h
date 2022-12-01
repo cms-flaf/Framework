@@ -190,6 +190,23 @@ RVecI FindMatching(const RVecLV& target_p4, const RVecLV& ref_p4,const float del
   return targetIndices;
 }
 
+std::vector<std::set<int>> FindMatchingSet(const RVecB& pre_sel, const RVecB& pre_sel_other, const RVecLV& obj_p4,
+    const RVecLV& other_p4, const float dR_thr)
+    {
+        std::vector<std::set<int>> findMatching(pre_sel_other.size());
+        for(size_t obj_idx = 0 ; obj_idx < pre_sel.size() ; obj_idx ++ ){
+            if(pre_sel[obj_idx]==0) continue;
+            for(size_t other_idx = 0 ; other_idx < pre_sel_other.size() ; other_idx ++ ){
+                if(pre_sel_other[other_idx]==0) continue;
+                auto dR_current = ROOT::Math::VectorUtil::DeltaR(obj_p4[obj_idx], other_p4[other_idx]);
+                if(dR_current < dR_thr ){
+                    findMatching[other_idx].insert(obj_idx);
+                }
+            }
+        }
+        return findMatching;
+    }
+
 
 namespace v_ops{
   template<typename LV>

@@ -19,7 +19,7 @@ diTau:
         type: Tau
         cut: v_ops::pt(Tau_p4) > 40 && abs(v_ops::eta(Tau_p4)) < 2.1
       online_obj:
-        cut: TrigObj_id == 15 && (TrigObj_filterBits&64)!=0
+        cut: TrigObj_id == 15 && (TrigObj_filterBits&64)!=0 # for charged iso? and for HPS ??
       doMatching: True
 MET:
     channels:
@@ -45,5 +45,78 @@ singleTau:
           type: Tau
           cut: v_ops::pt(Tau_p4) > 180 && abs(v_ops::eta(Tau_p4)) < 2.1
         online_obj:
-          cut: TrigObj_id == 15 && (TrigObj_filterBits&1024)!=0
+          cut: TrigObj_id == 15 && (TrigObj_filterBits&1024)!=0 && (TrigObj_filterBits&2)!=0 # --> 2 is for MediumChargedIso tau filter bit
         doMatching: True
+
+singleMu:
+  channels:
+    - muTau
+  path:
+    - HLT_IsoMu24
+    - HLT_IsoMu27
+  legs:
+    - offline_obj:
+        type: Muon
+        cut:  v_ops::pt(Muon_p4) > 20 && abs(v_ops::eta(Muon_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&8)!=0 && (TrigObj_filterBits&32)!=0 # isoMu
+      doMatching: True
+
+MuTau:
+  channels:
+    - muTau
+  path_MC:
+    - HLT_IsoMu20_eta2p1_LooseChargedIsoPFTauHPS27_eta2p1_CrossL1
+  path_data:
+    - HLT_IsoMu20_eta2p1_LooseChargedIsoPFTau27_eta2p1_CrossL1
+    - HLT_IsoMu20_eta2p1_LooseChargedIsoPFTauHPS27_eta2p1_CrossL1
+  legs:
+    - offline_obj:
+        type: Muon
+        cut: v_ops::pt(Muon_p4) > 20 && abs(v_ops::eta(Muon_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&512)!=0 && (TrigObj_filterBits&8)!=0 # eleTau and looseChargedIso tau
+      doMatching: True
+    - offline_obj:
+        type: Tau
+        cut: v_ops::pt(Tau_p4) > 40 && abs(v_ops::eta(Tau_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id == 15 && (TrigObj_filterBits&1)!=0 && (TrigObj_filterBits&512)!=0
+      doMatching: True
+
+
+singleEle:
+  channels:
+    - eTau
+  path:
+    - HLT_Ele32_WPTight_Gsf
+    - HLT_Ele35_WPTight_Gsf
+  legs:
+    - offline_obj:
+        type: Electron
+        cut: v_ops::pt(Electron_p4) > 20 && abs(v_ops::eta(Electron_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id == 11 && (TrigObj_filterBits&2)!=0 # should I ask also for Gsf?
+      doMatching: True
+
+EleTau:
+  channels:
+    - eTau
+  path_MC:
+    - HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTauHPS30_eta2p1_CrossL1
+  path_data:
+    - HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTau30_eta2p1_CrossL1
+    - HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTauHPS30_eta2p1_CrossL1
+  legs:
+    - offline_obj:
+        type: Electron
+        cut: v_ops::pt(Electron_p4) > 20 && abs(v_ops::eta(Electron_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id == 11 && (TrigObj_filterBits&256)!=0 && (TrigObj_filterBits&2)!=0 # eleTau and looseChargedIso tau
+      doMatching: True
+    - offline_obj:
+        type: Tau
+        cut: v_ops::pt(Tau_p4) > 40 && abs(v_ops::eta(Tau_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id == 15 && (TrigObj_filterBits&1)!=0 && (TrigObj_filterBits&256)!=0
+      doMatching: True

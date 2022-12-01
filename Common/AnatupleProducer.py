@@ -37,8 +37,9 @@ def addAllVariables(df, syst_name, isData, trigger_class):
     df = Baseline.RequestOnlyResolvedRecoJets(df)
     df = Baseline.ThirdLeptonVeto(df)
     df = Baseline.DefineHbbCand(df)
-    df,hltBranches = trigger_class.ApplyTriggers(df, isData)
-    #colToSave.extend(hltBranches)
+    if trigger_class is not None:
+        df,hltBranches = trigger_class.ApplyTriggers(df, isData)
+        colToSave.extend(hltBranches)
     df = DefineAndAppend(df, f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
     df = DefineAndAppend(df, f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
     df = DefineAndAppend(df, f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
@@ -80,9 +81,6 @@ def addAllVariables(df, syst_name, isData, trigger_class):
             df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_hadronFlavour",
                                     f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_hadronFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1;")
 
-
-
-
         df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_pt",
                                     f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Pt() : -1;")
         df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_eta",
@@ -111,7 +109,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     if not isData:
         Corrections.Initialize(period=period)
 
-    trigger_class = Triggers.Triggers(triggerFile)
+    trigger_class = Triggers.Triggers(triggerFile) if triggerFile is not None else None
     df = ROOT.RDataFrame("Events", inFile)
     if range is not None:
         df = df.Range(range)
@@ -157,7 +155,7 @@ if __name__ == "__main__":
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--store-noncentral', action="store_true", help="Store ES variations.")
-    parser.add_argument('--triggerFile', type=str)
+    parser.add_argument('--triggerFile', type=str, default=None)
 
     args = parser.parse_args()
 

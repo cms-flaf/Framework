@@ -128,6 +128,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     else:
         df, syst_dict = Corrections.applyScaleUncertainties(df)
 
+    df,weights = Corrections.getWeights(df)
     for syst_name, source_name in syst_dict.items():
         suffix = '' if syst_name in [ 'Central', 'nano' ] else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue

@@ -51,6 +51,7 @@ HTTCand GetBestHTTCandidate(const std::vector<const ROOT::VecOps::RVec<HTTCand>*
     for(size_t idx = 0; idx < cand1.leg_index.size(); ++idx) {
       if(cand1.leg_rawIso[idx] != cand2.leg_rawIso[idx]) return cand1.leg_rawIso[idx] < cand2.leg_rawIso[idx];
       if(cand1.leg_p4[idx].pt() != cand2.leg_p4[idx].pt()) return cand1.leg_p4[idx].pt() > cand2.leg_p4[idx].pt();
+      if(std::abs(cand1.leg_p4[idx].eta()) != std::abs(cand2.leg_p4[idx].eta())) return std::abs(cand1.leg_p4[idx].eta()) > std::abs(cand2.leg_p4[idx].eta());
     }
     throw analysis::exception("ERROR: criteria for best tau pair selection is not found in channel %1% and event %2%" )
     % static_cast<int>(cand1.channel()) % event ;

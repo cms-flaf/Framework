@@ -13,7 +13,17 @@ class Triggers():
             path_key = 'path'
             if 'path' not in path_dict:
                 path_key += '_data' if isData else '_MC'
-            or_paths = " || ".join(path for path in path_dict[path_key])
+            trigger_string = ''
+            trigName = ''
+            keys = [k for k in path_dict[path_key]]
+            # check that HLT path exists:
+            for key in keys:
+                trigger_string = key.split(' ')
+                trigName = trigger_string[0]
+                if trigName not in df.GetColumnNames():
+                    print(f"{trigName} does not exist!!")
+                    path_dict[path_key].remove(key)
+            or_paths = " || ".join(f'({p})' for p in path_dict[path_key])
             or_paths = f' ( { or_paths } ) '
             additional_conditions = [""]
             total_objects_matched = []
@@ -40,7 +50,7 @@ class Triggers():
             df = df.Define(f'hasOOMatching_{path}', f'HasOOMatching({legVector} )')
             fullPathSelection = f'{or_paths} &&  hasOOMatching_{path}'
             fullPathSelection += ' && '.join(additional_conditions)
-            hltBranch = f'HLT_{path}'
+            hltBranch = f'HLT_{trigName}'
             hltBranches.append(hltBranch)
             df = df.Define(hltBranch, fullPathSelection)
         total_or_string = ' || '.join(hltBranches)

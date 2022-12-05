@@ -2,10 +2,10 @@ diTau:
   channels:
     - tauTau
   path_data:
-    - HLT_DoubleTightChargedIsoPFTau35_Trk1_TightID_eta2p1_Reg
-    - HLT_DoubleMediumChargedIsoPFTau40_Trk1_TightID_eta2p1_Reg
-    - HLT_DoubleTightChargedIsoPFTau40_Trk1_eta2p1_Reg
-    - HLT_DoubleMediumChargedIsoPFTauHPS35_Trk1_eta2p1_Reg
+    - HLT_DoubleTightChargedIsoPFTau35_Trk1_TightID_eta2p1_Reg && run < 317509
+    - HLT_DoubleTightChargedIsoPFTau40_Trk1_eta2p1_Reg && run < 317509
+    - HLT_DoubleMediumChargedIsoPFTau40_Trk1_TightID_eta2p1_Reg && run < 317509
+    - HLT_DoubleMediumChargedIsoPFTauHPS35_Trk1_eta2p1_Reg && run >= 317509
   path_MC:
     - HLT_DoubleMediumChargedIsoPFTauHPS35_Trk1_eta2p1_Reg
   legs:
@@ -69,8 +69,8 @@ MuTau:
   path_MC:
     - HLT_IsoMu20_eta2p1_LooseChargedIsoPFTauHPS27_eta2p1_CrossL1
   path_data:
-    - HLT_IsoMu20_eta2p1_LooseChargedIsoPFTau27_eta2p1_CrossL1
-    - HLT_IsoMu20_eta2p1_LooseChargedIsoPFTauHPS27_eta2p1_CrossL1
+    - HLT_IsoMu20_eta2p1_LooseChargedIsoPFTau27_eta2p1_CrossL1 && run < 317509
+    - HLT_IsoMu20_eta2p1_LooseChargedIsoPFTauHPS27_eta2p1_CrossL1 && run >= 317509
   legs:
     - offline_obj:
         type: Muon
@@ -108,8 +108,8 @@ EleTau:
   path_MC:
     - HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTauHPS30_eta2p1_CrossL1
   path_data:
-    - HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTau30_eta2p1_CrossL1
-    - HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTauHPS30_eta2p1_CrossL1
+    - HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTau30_eta2p1_CrossL1 && run < 317509
+    - HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTauHPS30_eta2p1_CrossL1 && run >= 317509
   legs:
     - offline_obj:
         type: Electron

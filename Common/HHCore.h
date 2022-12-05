@@ -8,10 +8,10 @@ struct HTTCand {
   std::array<Leg, n_legs> leg_type;
   std::array<int, n_legs> leg_index;
   std::array<LorentzVectorM, n_legs> leg_p4;
-  std::array<int, n_legs> leg_charge; 
+  std::array<int, n_legs> leg_charge;
   std::array<float, n_legs> leg_rawIso;
   std::array<int, n_legs> leg_genMatchIdx;
-  
+
   Channel channel() const { return LegsToChannel(leg_type[0], leg_type[1]); }
 
   bool operator==(const HTTCand& other) const
@@ -22,8 +22,8 @@ struct HTTCand {
     }
     return true;
   }
-  bool isLeg(int obj_index, Leg leg) const { 
-    for(size_t idx = 0; idx < n_legs; ++idx){ 
+  bool isLeg(int obj_index, Leg leg) const {
+    for(size_t idx = 0; idx < n_legs; idx++){
       if(leg_type[idx] == leg && leg_index[idx]==obj_index){
         return true;
       }
@@ -41,9 +41,9 @@ struct HTTCand {
 };
 
 struct HbbCand {
-  static constexpr size_t n_legs = 2; 
+  static constexpr size_t n_legs = 2;
   std::array<int, n_legs> leg_index;
-  std::array<LorentzVectorM, n_legs> leg_p4; 
+  std::array<LorentzVectorM, n_legs> leg_p4;
 };
 
 

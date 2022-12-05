@@ -1,0 +1,125 @@
+diTau:
+  channels:
+    - tauTau
+  path_data:
+    - HLT_DoubleTightChargedIsoPFTau35_Trk1_TightID_eta2p1_Reg && run < 317509
+    - HLT_DoubleTightChargedIsoPFTau40_Trk1_eta2p1_Reg && run < 317509
+    - HLT_DoubleMediumChargedIsoPFTau40_Trk1_TightID_eta2p1_Reg && run < 317509
+    - HLT_DoubleMediumChargedIsoPFTauHPS35_Trk1_eta2p1_Reg && run >= 317509
+  path_MC:
+    - HLT_DoubleMediumChargedIsoPFTauHPS35_Trk1_eta2p1_Reg
+  legs:
+    - offline_obj:
+        type: Tau
+        cut: v_ops::pt(Tau_p4) > 40 && abs(v_ops::eta(Tau_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id == 15 && (TrigObj_filterBits&64)!=0
+      doMatching: True
+    - offline_obj:
+        type: Tau
+        cut: v_ops::pt(Tau_p4) > 40 && abs(v_ops::eta(Tau_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id == 15 && (TrigObj_filterBits&64)!=0 # for charged iso? and for HPS ??
+      doMatching: True
+MET:
+    channels:
+      - tauTau
+      - muTau
+      - eTau
+    path:
+      - HLT_PFMETNoMu120_PFMHTNoMu120_IDTight
+    legs:
+      - offline_obj:
+          type: MET
+          cut: MET_pt > 120
+        doMatching: False
+singleTau:
+    channels:
+      - tauTau
+      - muTau
+      - eTau
+    path:
+      - HLT_MediumChargedIsoPFTau180HighPtRelaxedIso_Trk50_eta2p1
+    legs:
+      - offline_obj:
+          type: Tau
+          cut: v_ops::pt(Tau_p4) > 190 && abs(v_ops::eta(Tau_p4)) < 2.1
+        online_obj:
+          cut: TrigObj_id == 15 && (TrigObj_filterBits&1024)!=0
+        doMatching: True
+
+singleMu:
+  channels:
+    - muTau
+    - muMu
+    - eMu
+  path:
+    - HLT_IsoMu24
+  legs:
+    - offline_obj:
+        type: Muon
+        cut:  v_ops::pt(Muon_p4) > 25 && abs(v_ops::eta(Muon_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&32)!=0
+      doMatching: True
+
+MuTau:
+  channels:
+    - muTau
+  path_MC:
+    - HLT_IsoMu20_eta2p1_LooseChargedIsoPFTauHPS27_eta2p1_CrossL1
+  path_data:
+    - HLT_IsoMu20_eta2p1_LooseChargedIsoPFTau27_eta2p1_CrossL1 && run < 317509
+    - HLT_IsoMu20_eta2p1_LooseChargedIsoPFTauHPS27_eta2p1_CrossL1 && run >= 317509
+  legs:
+    - offline_obj:
+        type: Muon
+        cut: v_ops::pt(Muon_p4) > 21 && abs(v_ops::eta(Muon_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&512)!=0
+      doMatching: True
+    - offline_obj:
+        type: Tau
+        cut: v_ops::pt(Tau_p4) > 32 && abs(v_ops::eta(Tau_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id == 15 && (TrigObj_filterBits&1)!=0 && (TrigObj_filterBits&512)!=0
+      doMatching: True
+
+
+singleEle:
+  channels:
+    - eTau
+    - eE
+    - eMu
+  path:
+    - HLT_Ele32_WPTight_Gsf
+    - HLT_Ele35_WPTight_Gsf
+  legs:
+    - offline_obj:
+        type: Electron
+        cut: v_ops::pt(Electron_p4) > 33 && abs(v_ops::eta(Electron_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id == 11 && (TrigObj_filterBits&2)!=0
+      doMatching: True
+
+EleTau:
+  channels:
+    - eTau
+  path_MC:
+    - HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTauHPS30_eta2p1_CrossL1
+  path_data:
+    - HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTau30_eta2p1_CrossL1 && run < 317509
+    - HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTauHPS30_eta2p1_CrossL1 && run >= 317509
+  legs:
+    - offline_obj:
+        type: Electron
+        cut: v_ops::pt(Electron_p4) > 25 && abs(v_ops::eta(Electron_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id == 11 && (TrigObj_filterBits&256)!=0
+      doMatching: True
+    - offline_obj:
+        type: Tau
+        cut: v_ops::pt(Tau_p4) > 35 && abs(v_ops::eta(Tau_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id == 15 && (TrigObj_filterBits&256)!=0
+      doMatching: True

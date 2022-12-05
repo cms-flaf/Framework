@@ -3,6 +3,7 @@ import numpy as np
 import Common.BaselineSelection as Baseline
 import Common.Utilities as Utilities
 import Common.ReportTools as ReportTools
+import Common.triggerSel as Triggers
 import Corrections.Corrections as Corrections
 
 deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
@@ -27,7 +28,7 @@ def DefineAndAppend(df, varToDefine, varToCall):
     colToSave.append(varToDefine)
     return df
 
-def addAllVariables(df, syst_name, isData):
+def addAllVariables(df, syst_name, isData, trigger_class):
     df = Baseline.SelectRecoP4(df, syst_name)
     df = Baseline.RecoLeptonsSelection(df)
     df = Baseline.RecoJetAcceptance(df)
@@ -36,6 +37,9 @@ def addAllVariables(df, syst_name, isData):
     df = Baseline.RequestOnlyResolvedRecoJets(df)
     df = Baseline.ThirdLeptonVeto(df)
     df = Baseline.DefineHbbCand(df)
+    if trigger_class is not None:
+        df,hltBranches = trigger_class.ApplyTriggers(df, isData)
+        colToSave.extend(hltBranches)
     df = DefineAndAppend(df, f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
     df = DefineAndAppend(df, f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
     df = DefineAndAppend(df, f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
@@ -77,9 +81,6 @@ def addAllVariables(df, syst_name, isData):
             df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_hadronFlavour",
                                     f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_hadronFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1;")
 
-
-
-
         df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_pt",
                                     f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Pt() : -1;")
         df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_eta",
@@ -102,11 +103,13 @@ def addAllVariables(df, syst_name, isData):
     return df
 
 
-def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,range, isData, evtIds, isHH,
+def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,range, isData, evtIds, isHH, triggerFile,
                    store_noncentral):
     Baseline.Initialize(True, True)
     if not isData:
         Corrections.Initialize(period=period)
+
+    trigger_class = Triggers.Triggers(triggerFile) if triggerFile is not None else None
     df = ROOT.RDataFrame("Events", inFile)
     if range is not None:
         df = df.Range(range)
@@ -128,7 +131,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
     for syst_name, source_name in syst_dict.items():
         suffix = '' if syst_name in [ 'Central', 'nano' ] else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
-        df_syst = addAllVariables(df, syst_name, isData)
+        df_syst = addAllVariables(df, syst_name, isData, trigger_class)
         report = df_syst.Report()
         histReport = ReportTools.SaveReport(report.GetValue(), reoprtName=f"Report{suffix}")
         varToSave = Utilities.ListToVector(colToSave)
@@ -140,7 +143,7 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
 if __name__ == "__main__":
     import argparse
     import os
-
+    import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument('--period', type=str)
     parser.add_argument('--inFile', type=str)
@@ -152,6 +155,7 @@ if __name__ == "__main__":
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--store-noncentral', action="store_true", help="Store ES variations.")
+    parser.add_argument('--triggerFile', type=str, default=None)
 
     args = parser.parse_args()
 
@@ -166,10 +170,11 @@ if __name__ == "__main__":
         isData = True
     if os.path.exists(args.outFile):
         os.remove(args.outFile)
+
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
     snapshotOptions.fMode="UPDATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
     createAnatuple(args.inFile, args.outFile, args.period, args.sample_type, args.mass, snapshotOptions, args.nEvents,
-                   isData, args.evtIds, isHH, args.store_noncentral)
+                   isData, args.evtIds, isHH, args.triggerFile, args.store_noncentral)

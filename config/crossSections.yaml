@@ -1,0 +1,619 @@
+ST_tW_antitop:
+  crossSec: 35.85
+  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#Single_top
+  unc: 35.85 +0.90 -0.90 +1.70 -1.70
+ST_tW_top:
+  crossSec: 35.85
+  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#Single_top
+  unc: 35.85 +0.90 -0.90 +1.70 -1.70
+ST_t-channel_top:
+  crossSec: 136.02
+  reference: HTT AN-19-109
+  unc:
+ST_t-channel_antitop:
+  crossSec: 80.95
+  reference: HTT AN-19-109
+  unc:
+EWKWMinus2Jets_WToLNu_M-50:
+  crossSec: 20.25
+  reference: HTT AN-19-109
+  unc:
+EWKWPlus2Jets_WToLNu_M-50:
+  crossSec: 25.62
+  reference: HTT AN-19-109
+  unc:
+EWKZ2Jets_ZToLL_M-50:
+  crossSec: 3.987
+  reference: HTT AN-19-109
+  unc:
+TTTo2L2Nu:
+  crossSec: 88.29
+  reference: HTT AN-19-109
+  unc:
+TTToSemiLeptonic:
+  crossSec: 365.35
+  reference: HTT AN-19-109
+  unc:
+TTToHadronic:
+  crossSec: 377.96
+  reference: HTT AN-19-109
+  unc:
+ttHTobb:
+  crossSec: 0.2953
+  reference: Higgs_XSBR_YR4_update
+  unc:
+ttHToTauTau:
+  crossSec: 0.031805
+  reference: Higgs_XSBR_YR4_update
+  unc:
+ttHToNonbbORtautau:
+  crossSec: 0.17996
+  reference: Higgs_XSBR_YR4_update
+  unc:
+ttHToNonbb:
+  crossSec: 0.212
+  reference: tH AN-19-111
+  unc:
+TTWJetsToLNu:
+  crossSec: 0.2043
+  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#TT_X
+  unc: 0.2043 +- 0.0020
+TTWJetsToQQ:
+  crossSec: 0.4062
+  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#TT_X
+  unc: 0.4062 +- 0.0021
+TTZToLLNuNu_M-10:
+  crossSec: 0.2529
+  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#TT_X
+  unc: 0.2529 +- 0.0004
+TTZToQQ:
+  crossSec: 0.5297
+  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#TT_X
+  unc: 0.5297 +- 0.0008
+TTWW:
+  crossSec: 0.00698
+  reference: ttH AN-19-111
+  unc:
+TTWZ:
+  crossSec: 0.002441
+  reference: XSDB
+  unc: 1.427e-06
+TTWH:
+  crossSec: 0.00158
+  reference: ttH AN-19-111
+  unc: 6.007e-07
+TTZH:
+  crossSec: 0.00154
+  reference: ttH AN-19-111
+  unc: 8.716e-07
+TTZZ:
+  crossSec: 0.001386
+  reference: XSDB
+  unc: 1.28e-06
+WJetsToLNu_NNLO:
+  crossSec: 61526.7
+  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#W_jets
+  unc: +497.1-264.6
+WJetsToLNu_LO:
+  crossSec: 53870.0
+  reference: XSDB
+  unc: 129.7
+W1JetsToLNu_LO:
+  crossSec: 8927.0
+  reference: XSDB
+  unc: 24.09
+W2JetsToLNu_LO:
+  crossSec: 2809.0
+  reference: XSDB
+  unc: 8.201
+W3etsToLNu_LO:
+  crossSec: 826.3
+  reference: XSDB
+  unc: 2.51
+W4etsToLNu_LO:
+  crossSec: 544.3
+  reference: XSDB
+  unc: 1.656
+WJetsToLNu_HT-70To100_LO:
+  crossSec: 1264.0
+  reference: XSDB
+  unc: 3.696
+WJetsToLNu_HT-100To200_LO:
+  crossSec: 1256.0
+  reference: XSDB
+  unc: 3.724
+WJetsToLNu_HT-200To400_LO:
+  crossSec: 335.5
+  reference: XSDB
+  unc: 1.007
+WJetsToLNu_HT-400To600_LO:
+  crossSec: 45.25
+  reference: XSDB
+  unc: 0.136
+WJetsToLNu_HT-600To800_LO:
+  crossSec: 10.97
+  reference: XSDB
+  unc: 0.03307
+WJetsToLNu_HT-800To1200_LO:
+  crossSec: 4.933
+  reference: XSDB
+  unc: 0.01492
+WJetsToLNu_HT-1200To2500_LO:
+  crossSec: 1.16
+  reference: XSDB
+  unc: 0.003605
+WJetsToLNu_HT-2500ToInf_LO:
+  crossSec: 0.008001
+  reference: XSDB
+  unc: 2.486e-05
+W_To_TauNu_M-200:
+  crossSec: 7.253
+  reference: XSDB
+  unc: 0.01233
+W_To_MuNu_M-200:
+  crossSec: 7.268
+  reference: XSDB
+  unc: 0.01236
+ZZTo4L:
+  crossSec: 1.26
+  reference: ttH AN-19-111
+  unc:
+ZZTo2L2Nu:
+  crossSec: 0.564
+  reference: https://indico.cern.ch/event/448517/contributions/1943045/attachments/1164999/1679225/Long_Generators_WZxsec_05_10_15.pdf
+  unc:
+ZZTo2Q2L:
+  crossSec: 5.52
+  reference: ttH AN-19-111
+  unc:
+ZZTo2Q2Nu:
+  crossSec: 4.07
+  reference: https://indico.cern.ch/event/448517/contributions/1943045/attachments/1164999/1679225/Long_Generators_WZxsec_05_10_15.pdf
+  unc:
+ZZTo4Q:
+  crossSec: 6.912
+  reference: unknown
+  unc:
+WZTo3LNu:
+  crossSec: 4.43
+  reference: HTT AN-19-109
+  unc:
+WZTo1L1Nu2Q:
+  crossSec: 10.71
+  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#Diboson
+  unc:
+WZTo1L3Nu:
+  crossSec: 3.06
+  reference: https://indico.cern.ch/event/448517/contributions/1943045/attachments/1164999/1679225/Long_Generators_WZxsec_05_10_15.pdf unc=+-0.02060
+WZTo2L2Q:
+  crossSec: 5.595
+  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#Diboson
+  unc:
+WWTo2L2Nu:
+  crossSec: 12.178
+  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#Diboson
+  unc:
+WWToLNuQQ:
+  crossSec: 49.997
+  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#Diboson
+  unc:
+WWTo4Q:
+  crossSec: 51.723
+  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#Diboson
+  unc:
+ZZZ:
+  crossSec: 0.0147
+  reference: ttH AN-19-111
+  unc:
+WZZ:
+  crossSec: 0.057
+  reference: ttH AN-19-111
+  unc:
+WWW:
+  crossSec: 0.209
+  reference: ttH AN-19-111
+  unc:
+WWZ:
+  crossSec: 0.168
+  reference: ttH AN-19-111
+  unc:
+ZH_HToBB_ZToLL:
+  crossSec: 0.052
+  reference: Higgs_XSBR_YR4_update
+  unc:
+ZH_HToBB_ZToQQ:
+  crossSec: 0.36
+  reference: Higgs_XSBR_YR4_update
+  unc:
+ZHToTauTau:
+  crossSec: 0.0554
+  reference: Higgs_XSBR_YR4_update
+  unc:
+WplusHToTauTau:
+  crossSec: 0.05268
+  reference: Higgs_XSBR_YR4_update
+  unc:
+WminusHToTauTau:
+  crossSec: 0.03342
+  reference: Higgs_XSBR_YR4_update
+  unc:
+VBFHToTauTau:
+  crossSec: 0.237
+  reference: Higgs_XSBR_YR4_update
+  unc:
+GluGluHToTauTau:
+  crossSec: 3.0469
+  reference: =Higgs_XSBR_YR4_update
+  unc:
+WW:
+  crossSec: 12.178+49.997+51.723
+  ref: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#Diboson
+  unc:
+WWTo1L1Nu2Q:
+  crossSec: 49.997
+  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#Diboson
+  unc:
+WZ:
+  crossSec: 47.13
+  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#Diboson
+  unc:
+ggX_HH_bbtautau:
+  crossSec: 1
+  reference:
+  unc:
+VBFX_HH_bbtautau:
+  crossSec: 1
+  reference:
+  unc:
+ggHH_bbtautau_SM:
+  crossSec: 0.031047 * 2* 5.824e-01 * 6.272e-02
+  reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHXSWGHH#Current_recommendations_for_HH_c
+  unc: +2.2-5.0
+GluGluToHHTo2B2Tau_node:
+  crossSec: 1
+  reference:
+  unc:
+TTZToBB:
+  crossSec: 0.1118
+  reference: XSDB
+  unc: 0.0001631
+TTZToNuNu:
+  crossSec: 0.1476
+  reference: XSDB
+  unc: 0.0001971
+TTZToQQ_Dilept:
+  crossSec: 0.0568
+  reference: XSDB
+  unc: 8.059e-05
+TTGJets:
+  crossSec: 3.757
+  reference: XSDB
+  unc: 0.02243
+TTGamma_Dilept:
+  crossSec: 1.494
+  reference: XSDB
+  unc: 0.001264
+TTGamma_Hadronic:
+  crossSec: 4.178
+  reference: XSDB
+  unc: 0.003734
+TTGamma_SingleLept:
+  crossSec: 5.095
+  reference: XSDB
+  unc: 0.00342
+TTTJ:
+  crossSec: 0.0003974
+  reference: XSDB
+  unc: 2.299e-7
+TTTT:
+  crossSec: 0.008213
+  reference: XSDB
+  unc: 1.189e-05
+TTTW:
+  crossSec: 0.0007314
+  reference: XSDB
+  unc: 4.889e-07
+TTZZTo4b:
+  crossSec: 0.001387
+  reference: XSDB
+  unc: 1..006e-06
+TTZZToNon4b:
+  crossSec: 0.00139
+  reference: XSDB
+  unc: 1.006e-06
+TT4b:
+  crossSec: 0.06683
+  reference: XSDB
+  unc: 5.292e-05
+TTHHTo4b:
+  crossSec: 0.0006676
+  reference: XSDB
+  unc: 4.633e-06
+TTHHToNon4b:
+  crossSec: 0.0006679
+  reference: XSDB
+  unc: 4.628e-07
+TTHH:
+  crossSec: 0.0006655
+  reference: XSDB
+  unc: 5.345e-06
+QCD_HT50to100:
+  crossSec: 185300000.0
+  reference: XSDB
+  unc: 507400.0
+QCD_HT50to100_PSWeights:
+  crossSec: 187300000.0
+  reference: XSDB
+  unc: 520900.0
+QCD_HT100to200:
+  crossSec: 23590000.0
+  reference: XSDB
+  unc: 68440.0
+QCD_HT100to200_PSWeights:
+  crossSec: 23590000.0
+  reference: XSDB
+  unc: 68630.0
+QCD_HT200to300:
+  crossSec: 1557000.0
+  reference: XSDB
+  unc: 4515.0
+QCD_HT200to300_PSWeights:
+  crossSec: 1555000.0
+  reference: XSDB
+  unc: 4626.0
+QCD_HT300to500:
+  crossSec: 323400.0
+  reference: XSDB
+  unc: 967.8
+QCD_HT300to500_PSWeights:
+  crossSec: 324500.0
+  reference: XSDB
+  unc: 976.7
+QCD_HT500to700:
+  crossSec: 30140.0
+  reference: XSDB
+  unc: 90.92
+QCD_HT500to700_PSWeights:
+  crossSec: 30310.0
+  reference: XSDB
+  unc: 91.71
+QCD_HT700to1000:
+  crossSec: 6310.0
+  reference: XSDB
+  unc: 19.15
+QCD_HT700to1000_PSWeights:
+  crossSec: 6444.0
+  reference: XSDB
+  unc: 19.56
+QCD_HT1000to1500:
+  crossSec: 1094.0
+  reference: XSDB
+  unc: 3.334
+QCD_HT1000to1500_PSWeights:
+  crossSec: 1127.0
+  reference: XSDB
+  unc: 3.426
+QCD_HT1500to2000:
+  crossSec: 99.38
+  reference: XSDB
+  unc: 0.3043
+QCD_HT1500to2000_PSWeights:
+  crossSec: 109.8
+  reference: XSDB
+  unc: 0.3341
+QCD_HT2000toInf:
+  crossSec: 20.2
+  reference: XSDB
+  unc: 0.06242
+QCD_HT2000toInf_PSWeights:
+  crossSec: 21.98
+  reference: XSDB
+  unc: 0.0669
+QCD_Pt_15to30:
+  crossSec: 1244000000.0
+  reference: XSDB
+  unc: 2026000.0
+QCD_Pt_30to50:
+  crossSec: 106500000.0
+  reference: XSDB
+  unc: 174900.0
+QCD_Pt_50to80:
+  crossSec: 15700000.0
+  reference: XSDB
+  unc: 25410.0
+QCD_Pt_80to120:
+  crossSec: 2346000.0
+  reference: XSDB
+  unc: 3854.0
+QCD_Pt_120to170:
+  crossSec: 407700.0
+  reference: XSDB
+  unc: 633.4
+QCD_Pt_170to300:
+  crossSec: 103700.0
+  reference: XSDB
+  unc: 160.0
+QCD_Pt_300to470:
+  crossSec: 6826.0
+  reference: XSDB
+  unc: 10.52
+QCD_Pt_470to600:
+  crossSec: 551.2
+  reference: XSDB
+  unc: 0.8276
+QCD_Pt_600to800:
+  crossSec: 156.7
+  reference: XSDB
+  unc: 0.2357
+QCD_Pt_800to1000:
+  crossSec: 26.25
+  reference: XSDB
+  unc: 0.03865
+QCD_Pt_1000to1400:
+  crossSec: 7.465
+  reference: XSDB
+  unc: 0.01126
+QCD_Pt_1400to1800:
+  crossSec: 0.6487
+  reference: XSDB
+  unc: 0.0009784
+QCD_Pt_1800to2400:
+  crossSec: 0.08734
+  reference: XSDB
+  unc: 0.0001364
+QCD_Pt_2400to3200:
+  crossSec: 0.005237
+  reference: XSDB
+  unc: 8.287e-06
+QCD_Pt_3200toInf:
+  crossSec: 0.0001352
+  reference: XSDB
+  unc: 2.298e-07
+QCD_Pt-20_MuEnrichedPt15:
+  crossSec: 239000.0
+  reference: XSDB
+  unc: 755.8
+QCD_Pt-15To20_MuEnrichedPt5:
+  crossSec: 2797000.0
+  reference: XSDB
+  unc: 8800.0
+QCD_Pt-20To30_MuEnrichedPt5:
+  crossSec:
+  reference: XSDB
+  unc:
+QCD_Pt-30To50_MuEnrichedPt5:
+  crossSec: 2518000.0
+  reference: XSDB
+  unc: 7940.0
+QCD_Pt-50To80_MuEnrichedPt5:
+  crossSec: 377800.0
+  reference: XSDB
+  unc: 1184.0
+QCD_Pt-80To120_MuEnrichedPt5:
+  crossSec: 88620.0
+  reference: XSDB
+  unc: 275.1
+QCD_Pt-120To170_MuEnrichedPt5:
+  crossSec: 21070.0
+  reference: XSDB
+  unc: 65.28
+QCD_Pt-170To300_MuEnrichedPt5:
+  crossSec: 7019.0
+  reference: XSDB
+  unc: 21.61
+QCD_Pt-300To470_MuEnrichedPt5:
+  crossSec: 622.4
+  reference: XSDB
+  unc: 1.891
+QCD_Pt-470To600_MuEnrichedPt5:
+  crossSec: 58.86
+  reference: XSDB
+  unc: 0.1776
+QCD_Pt-600To800_MuEnrichedPt5:
+  crossSec: 18.22
+  reference: XSDB
+  unc: 0.05471
+QCD_Pt-800To1000_MuEnrichedPt5:
+  crossSec: 3.25
+  reference: XSDB
+  unc: 0.0148
+QCD_Pt-1000ToInf_MuEnrichedPt5:
+  crossSec: 1.078
+  reference: XSDB
+  unc: 0.003236
+QCD_Pt-15to20_EMEnriched:
+  crossSec: 1324000.0
+  reference: XSDB
+  unc: 4183.0
+QCD_Pt-20to30_EMEnriched:
+  crossSec: 4896000.0
+  reference: XSDB
+  unc: 15410.0
+QCD_Pt-30to50_EMEnriched:
+  crossSec: 6447000.0
+  reference: XSDB
+  unc: 19870.0
+QCD_Pt-50to80_EMEnriched:
+  crossSec: 1988000.0
+  reference: XSDB
+  unc: 5961.0
+QCD_Pt-80to120_EMEnriched:
+  crossSec: 367500.0
+  reference: XSDB
+  unc: 1091.0
+QCD_Pt-120to170_EMEnriched:
+  crossSec: 66590.0
+  reference: XSDB
+  unc: 196.6
+QCD_Pt-170to300_EMEnriched:
+  crossSec: 16620.0
+  reference: XSDB
+  unc: 49.1
+QCD_Pt-300toInf_EMEnriched:
+  crossSec: 1104.0
+  reference: XSDB
+  unc: 3.282
+DY_NNLO:
+    crossSec: 6077.22
+    reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#DY_Z
+    unc: +-1.49 (integration) +- 14.78 (pdf) +- 2% (scale)
+DY_NLO:
+    crossSec: 6404.0
+    reference: XSDB
+    unc: 27.69
+DY_NLO_0J:
+  crossSec: 5129.0
+  reference: XSDB
+  unc: 8.715
+DY_NLO_1J:
+  crossSec: 951.5
+  reference: XSDB
+  unc: 6.067
+DY_NLO_2J:
+  crossSec: 361.4
+  reference: XSDB
+  unc: 3.704
+DY_NLO_LHEFilterPtZ-0To50:
+  crossSec: 1485.0
+  reference: XSDB
+  unc: 8.457
+DY_NLO_LHEFilterPtZ-50To100:
+  crossSec: 397.4
+  reference: XSDB
+  unc: 2.867
+DY_NLO_LHEFilterPtZ-100To250:
+  crossSec: 97.2
+  reference: XSDB
+  unc: 0.7121
+DY_NLO_LHEFilterPtZ-250To400:
+  crossSec: 3.701
+  reference: XSDB
+  unc: 0.02487
+DY_NLO_LHEFilterPtZ-400To650:
+  crossSec: 0.5086
+  reference: XSDB
+  unc: 0.003171
+DY_NLO_LHEFilterPtZ-650ToInf:
+  crossSec: 0.04728
+  reference: XSDB
+  unc: 0.0002801
+ZJetsToQQ_HT-200to400:
+  crossSec: 1012.0
+  reference: XSDB
+  unc: 2.997
+ZJetsToQQ_HT-400to600:
+  crossSec: 114.2
+  reference: XSDB
+  unc: 0.3432
+ZJetsToQQ_HT-600to800:
+  crossSec: 25.34
+  reference: XSDB
+  unc: 0.07663
+ZJetsToQQ_HT-800toInf:
+  crossSec: 190.2
+  reference: XSDB
+  unc: 0.1051
+ZZ:
+  crossSec: 12.17
+  reference: XSDB
+  unc: 0.01966

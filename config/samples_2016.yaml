@@ -1,5 +1,17 @@
 GLOBAL:
-  period: '2016'
+  era: '2016'
+  luminosity: 36.31
+  MET_flags:
+    - Flag_goodVertices
+    - Flag_globalSuperTightHalo2016Filter
+    - Flag_HBHENoiseFilter
+    - Flag_HBHENoiseIsoFilter
+    - EcalDeadCellTriggerPrimitiveFilter
+    - Flag_BadPFMuonFilter
+    - Flag_BadPFMuonDzFilter
+    - Flag_BadChargedCandidateFilter
+    - Flag_eeBadScFilter
+    - Flag_hfNoisyHitsFilter
 GluGluToRadionToHHTo2B2Tau_M-250:
   miniAOD: /GluGluToRadionToHHTo2B2Tau_M-250_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM
   nanoAOD: /GluGluToRadionToHHTo2B2Tau_M-250_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL16NanoAODv9-106X_mcRun2_asymptotic_v17-v1/NANOAODSIM

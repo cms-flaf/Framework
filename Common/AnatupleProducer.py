@@ -103,8 +103,11 @@ def addAllVariables(df, syst_name, isData, trigger_class):
     return df
 
 
-def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,range, isData, evtIds, isHH, triggerFile,
+def createAnatuple(inFile, outFile, config, sample_name, mass, snapshotOptions,range, isData, evtIds, isHH, triggerFile,
                    store_noncentral):
+
+    period = config["GLOBAL"]["era"]
+
     Baseline.Initialize(True, True)
     if not isData:
         Corrections.Initialize(period=period)
@@ -115,9 +118,10 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
         df = df.Range(range)
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
-    df = DefineAndAppend(df,"sample_type", f"static_cast<int>(SampleType::{sample})")
+    df = Baseline.applyMETFlags(df, config["GLOBAL"]["MET_flags"])
+    df = DefineAndAppend(df,"sample_type", f"static_cast<int>(SampleType::{config[sample_name]['sampleType']})")
     df = DefineAndAppend(df,"period", f"static_cast<int>(Period::{period})")
-    df = DefineAndAppend(df,"X_mass", f"static_cast<int>({X_mass})")
+    df = DefineAndAppend(df,"X_mass", f"static_cast<int>({mass})")
     is_data = 'true' if isData else 'false'
     df = DefineAndAppend(df,"is_data", is_data)
 
@@ -127,8 +131,11 @@ def createAnatuple(inFile, outFile, period, sample, X_mass, snapshotOptions,rang
         syst_dict = { 'nano' : 'Central' }
     else:
         df, syst_dict = Corrections.applyScaleUncertainties(df)
-
-    df,weights = Corrections.getWeights(df)
+    #df, weight_list = getWeights(df, df_nonsel, config, sample)
+    df,weight_branches = Corrections.getWeights(df, config, sample_name)
+    for br in weight_branches:
+        br_name = f'weight_{br}' if br != "Central" else "weight"
+        colToSave.append(br_name)
     for syst_name, source_name in syst_dict.items():
         suffix = '' if syst_name in [ 'Central', 'nano' ] else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
@@ -145,12 +152,14 @@ if __name__ == "__main__":
     import argparse
     import os
     import yaml
+    from yaml.loader import SafeLoader
     parser = argparse.ArgumentParser()
-    parser.add_argument('--period', type=str)
+    parser.add_argument('--configFile', type=str)
+    #parser.add_argument('--period', type=str)
     parser.add_argument('--inFile', type=str)
     parser.add_argument('--outFile', type=str)
     parser.add_argument('--mass', type=int, default=-1)
-    parser.add_argument('--sample_type', type=str)
+    parser.add_argument('--sample', type=str)
     parser.add_argument('--compressionLevel', type=int, default=9)
     parser.add_argument('--compressionAlgo', type=str, default="LZMA")
     parser.add_argument('--nEvents', type=int, default=None)
@@ -164,18 +173,27 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
     isHH=False
     isData = False
+    with open(args.configFile, 'r') as f:
+        config = yaml.safe_load(f)
+    sample_name = f'{args.sample}_M-{args.mass}' if args.mass>0 else args.sample
+
     hh_samples = [ "GluGluToRadion", "GluGluToBulkGraviton", "VBFToRadion", "VBFToBulkGraviton", "HHnonRes", "TTHH" ]
-    if args.mass>0 and args.sample_type in hh_samples:
+
+    if args.mass>0 and config[sample_name]['sampleType'] in hh_samples:
         isHH = True
-    if args.sample_type =='data':
+    if config[sample_name]['sampleType'] =='data':
         isData = True
     if os.path.exists(args.outFile):
         os.remove(args.outFile)
+
+
+
+
 
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
     snapshotOptions.fMode="UPDATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
-    createAnatuple(args.inFile, args.outFile, args.period, args.sample_type, args.mass, snapshotOptions, args.nEvents,
+    createAnatuple(args.inFile, args.outFile, config, sample_name, args.mass, snapshotOptions, args.nEvents,
                    isData, args.evtIds, isHH, args.triggerFile, args.store_noncentral)

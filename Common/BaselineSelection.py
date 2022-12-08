@@ -76,6 +76,9 @@ class WorkingPointsBoostedTauVSjet:
    VTight = 6
    VVTight = 7
 
+def applyMETFlags(df, MET_flags):
+    MET_flags_string = ' && '.join(MET_flags)
+    return df.Filter(MET_flags_string)
 
 def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125., p4_suffix='nano'):
     if isData:

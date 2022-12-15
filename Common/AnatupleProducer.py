@@ -103,15 +103,18 @@ def addAllVariables(df, syst_name, isData, trigger_class):
     return df
 
 
-def createAnatuple(inFile, outFile, config, sample_name, mass, snapshotOptions,range, isData, evtIds, isHH, triggerFile,
+def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, evtIds,
                    store_noncentral):
 
     period = config["GLOBAL"]["era"]
+    mass = -1 if 'mass' not in config[sample_name] else config[sample_name]['mass']
+    isHH = True if mass > 0 else False
+    isData = True if config[sample_name]['sampleType'] == 'data' else False
 
     Baseline.Initialize(True, True)
     if not isData:
         Corrections.Initialize(period=period)
-
+    triggerFile = config['GLOBAL']['triggerFile']
     trigger_class = Triggers.Triggers(triggerFile) if triggerFile is not None else None
     df = ROOT.RDataFrame("Events", inFile)
     if range is not None:
@@ -131,7 +134,6 @@ def createAnatuple(inFile, outFile, config, sample_name, mass, snapshotOptions,r
         syst_dict = { 'nano' : 'Central' }
     else:
         df, syst_dict = Corrections.applyScaleUncertainties(df)
-    #df, weight_list = getWeights(df, df_nonsel, config, sample)
     df,weight_branches = Corrections.getWeights(df, config, sample_name)
     for br in weight_branches:
         br_name = f'weight_{br}' if br != "Central" else "weight"
@@ -152,20 +154,16 @@ if __name__ == "__main__":
     import argparse
     import os
     import yaml
-    from yaml.loader import SafeLoader
     parser = argparse.ArgumentParser()
     parser.add_argument('--configFile', type=str)
-    #parser.add_argument('--period', type=str)
     parser.add_argument('--inFile', type=str)
     parser.add_argument('--outFile', type=str)
-    parser.add_argument('--mass', type=int, default=-1)
     parser.add_argument('--sample', type=str)
     parser.add_argument('--compressionLevel', type=int, default=9)
     parser.add_argument('--compressionAlgo', type=str, default="LZMA")
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--store-noncentral', action="store_true", help="Store ES variations.")
-    parser.add_argument('--triggerFile', type=str, default=None)
 
     args = parser.parse_args()
 
@@ -175,14 +173,7 @@ if __name__ == "__main__":
     isData = False
     with open(args.configFile, 'r') as f:
         config = yaml.safe_load(f)
-    sample_name = f'{args.sample}_M-{args.mass}' if args.mass>0 else args.sample
 
-    hh_samples = [ "GluGluToRadion", "GluGluToBulkGraviton", "VBFToRadion", "VBFToBulkGraviton", "HHnonRes", "TTHH" ]
-
-    if args.mass>0 and config[sample_name]['sampleType'] in hh_samples:
-        isHH = True
-    if config[sample_name]['sampleType'] =='data':
-        isData = True
     if os.path.exists(args.outFile):
         os.remove(args.outFile)
 
@@ -195,5 +186,5 @@ if __name__ == "__main__":
     snapshotOptions.fMode="UPDATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
-    createAnatuple(args.inFile, args.outFile, config, sample_name, args.mass, snapshotOptions, args.nEvents,
-                   isData, args.evtIds, isHH, args.triggerFile, args.store_noncentral)
+    createAnatuple(args.inFile, args.outFile, config, args.sample, snapshotOptions, args.nEvents,
+                   args.evtIds, args.store_noncentral)

@@ -1,5 +1,5 @@
 GLOBAL:
-  era: '2017'
+  era: 'Run2_2017'
   luminosity: 41.48
   MET_flags:
     - Flag_goodVertices

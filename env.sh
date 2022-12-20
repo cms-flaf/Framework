@@ -35,7 +35,7 @@ action() {
     else
         export SCRAM_ARCH=el8_amd64_gcc10
     fi
-    CMSSW_VER=CMSSW_12_4_8
+    CMSSW_VER=CMSSW_12_6_0_patch1
     if ! [ -f "$this_dir/soft/CentOS$os_version/$CMSSW_VER/.installed" ]; then
         run_cmd mkdir -p "$this_dir/soft/CentOS$os_version"
         run_cmd cd "$this_dir/soft/CentOS$os_version"
@@ -48,11 +48,19 @@ action() {
         run_cmd scramv1 project CMSSW $CMSSW_VER
         run_cmd cd $CMSSW_VER/src
         run_cmd eval `scramv1 runtime -sh`
+        run_cmd git-cms-init
+        run_cmd git clone ssh://git@gitlab.cern.ch:7999/akhukhun/roccor.git RoccoR
+        run_cmd git clone git@github.com:SVfit/ClassicSVfit.git TauAnalysis/ClassicSVfit -b fastMTT_19_02_2019
+        run_cmd git clone git@github.com:SVfit/SVfitTF.git TauAnalysis/SVfitTF
+        run_cmd git clone ssh://git@gitlab.cern.ch:7999/rgerosa/particlenetstudiesrun2.git ParticleNetStudiesRun2 -b cmssw_126X
+        run_cmd git cms-addpkg RecoBTag/Combined
+        run_cmd mkdir -p RecoBTag/Combined/data/ParticleNetAK4/CHS/PNETUL
+        run_cmd cp -r ParticleNetStudiesRun2/TrainingNtupleMakerAK4/data/ParticleNetAK4/CHS/PNETUL/ClassRegQuantileNoJECLost RecoBTag/Combined/data/ParticleNetAK4/CHS/PNETUL/
         run_cmd mkdir -p Framework/NanoProd/
-        run_cmd ln -s "$this_dir/NanoProd" Framework/NanoProd/python  
+        run_cmd ln -s "$this_dir/NanoProd" Framework/NanoProd/python
         run_cmd mkdir -p HHTools
         run_cmd ln -s "$this_dir/HHbtag" HHTools/HHbtag
-        run_cmd scram b -j8 
+        run_cmd scram b -j8
         run_cmd cd "$this_dir"
         run_cmd mkdir -p "$this_dir/soft/CentOS$os_version/bin"
         run_cmd ln -s $(which python3) "$this_dir/soft/CentOS$os_version/bin/python"

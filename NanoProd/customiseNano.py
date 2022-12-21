@@ -87,8 +87,8 @@ def customise_pnet(process):
     process.pfParticleNetAK4LastJetTags = boostedJetONNXJetTagsProducer.clone();
     process.pfParticleNetAK4LastJetTags.src = cms.InputTag("pfParticleNetAK4LastJetTagInfos");
     process.pfParticleNetAK4LastJetTags.flav_names = cms.vstring('probmu','probele','probtaup1h0p','probtaup1h1p','probtaup1h2p','probtaup3h0p','probtaup3h1p','probtaum1h0p','probtaum1h1p','probtaum1h2p','probtaum3h0p','probtaum3h1p','probb','probc','probuds','probg','ptcorr','ptreshigh','ptreslow');
-    process.pfParticleNetAK4LastJetTags.preprocess_json = cms.string('RecoBTag/Combined/data/ParticleNetAK4/CHS/PNETUL/ClassRegQuantileNoJECLost/preprocess.json');
-    process.pfParticleNetAK4LastJetTags.model_path = cms.FileInPath('RecoBTag/Combined/data/ParticleNetAK4/CHS/PNETUL/ClassRegQuantileNoJECLost/particle-net.onnx');
+    process.pfParticleNetAK4LastJetTags.preprocess_json = cms.string('Framework/NanoProd/data/ParticleNetAK4/CHS/PNETUL/ClassRegQuantileNoJECLost/preprocess.json');
+    process.pfParticleNetAK4LastJetTags.model_path = cms.FileInPath('Framework/NanoProd/data/ParticleNetAK4/CHS/PNETUL/ClassRegQuantileNoJECLost/particle-net.onnx');
     process.pfParticleNetAK4LastJetTags.debugMode = cms.untracked.bool(False)
 
     pnetDiscriminatorsAK4.extend([
@@ -182,8 +182,8 @@ def customise_pnet(process):
       process.pfParticleNetAK8LastJetTags = boostedJetONNXJetTagsProducer.clone();
       process.pfParticleNetAK8LastJetTags.src = cms.InputTag("pfParticleNetAK8LastJetTagInfos");
       process.pfParticleNetAK8LastJetTags.flav_names = cms.vstring('probHtt','probHtm','probHte','probHbb','probHcc','probHqq','probHgg','probQCD2hf','probQCD1hf','probQCD0hf','masscorr');
-      process.pfParticleNetAK8LastJetTags.preprocess_json = cms.string('RecoBTag/Combined/data/ParticleNetAK8/Puppi/PNETUL/ClassReg/preprocess.json');
-      process.pfParticleNetAK8LastJetTags.model_path = cms.FileInPath('RecoBTag/Combined/data/ParticleNetAK8/Puppi/PNETUL/ClassReg/particle-net.onnx');
+      process.pfParticleNetAK8LastJetTags.preprocess_json = cms.string('Framework/NanoProd/data/ParticleNetAK8/Puppi/PNETUL/ClassReg/preprocess.json');
+      process.pfParticleNetAK8LastJetTags.model_path = cms.FileInPath('Framework/NanoProd/data/ParticleNetAK8/Puppi/PNETUL/ClassReg/particle-net.onnx');
 
       pnetDiscriminatorsAK8.extend([
           "pfParticleNetAK8LastJetTags:probHtt",
@@ -223,8 +223,8 @@ def customise_pnet(process):
 
       process.pfParticleNetMassRegressionJetTags = boostedJetONNXJetTagsProducer.clone(
           src = 'pfParticleNetAK8JetTagInfos',
-          preprocess_json = 'RecoBTag/Combined/data/ParticleNetAK8/MassRegression/V01/preprocess.json',
-          model_path = 'RecoBTag/Combined/data/ParticleNetAK8/MassRegression/V01/particle-net.onnx',
+          preprocess_json = 'Framework/NanoProd/data/ParticleNetAK8/MassRegression/V01/preprocess.json',
+          model_path = 'Framework/NanoProd/data/ParticleNetAK8/MassRegression/V01/particle-net.onnx',
           flav_names = ["mass"]
       )
 

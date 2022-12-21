@@ -48,21 +48,22 @@ action() {
         run_cmd scramv1 project CMSSW $CMSSW_VER
         run_cmd cd $CMSSW_VER/src
         run_cmd eval `scramv1 runtime -sh`
-        run_cmd git-cms-init
-        run_cmd git cms-addpkg RecoBTag/Combined
+        # clone repos
         run_cmd git clone ssh://git@gitlab.cern.ch:7999/akhukhun/roccor.git RoccoR
         run_cmd git clone git@github.com:SVfit/ClassicSVfit.git TauAnalysis/ClassicSVfit -b fastMTT_19_02_2019
         run_cmd git clone git@github.com:SVfit/SVfitTF.git TauAnalysis/SVfitTF
         run_cmd git clone ssh://git@gitlab.cern.ch:7999/rgerosa/particlenetstudiesrun2.git ParticleNetStudiesRun2 -b cmssw_126X
         run_cmd git clone git@github.com:cms-data/RecoBTag-Combined.git recobtag_data
-        run_cmd mkdir -p RecoBTag/Combined/data/ParticleNetAK4/CHS/PNETUL
-        run_cmd cp -r ParticleNetStudiesRun2/TrainingNtupleMakerAK4/data/ParticleNetAK4/CHS/PNETUL/ClassRegQuantileNoJECLost RecoBTag/Combined/data/ParticleNetAK4/CHS/PNETUL/
-        run_cmd mkdir -p RecoBTag/Combined/data/ParticleNetAK8/Puppi/PNETUL/ClassReg
-        run_cmd cp -r ParticleNetStudiesRun2/TrainingNtupleMakerAK8/data/ParticleNetAK8/Puppi/PNETUL/ClassReg/* RecoBTag/Combined/data/ParticleNetAK8/Puppi/PNETUL/ClassReg/
-        run_cmd mkdir -p RecoBTag/Combined/data/ParticleNetAK8/MassRegression/V01
-        run_cmd cp recobtag_data/ParticleNetAK8/MassRegression/V01/modelfile/model.onnx RecoBTag/Combined/data/ParticleNetAK8/MassRegression/V01/particle-net.onnx
+        # copy model files
+        run_cmd mkdir -p Framework/NanoProd/data/ParticleNetAK4/CHS/PNETUL
+        run_cmd cp -r ParticleNetStudiesRun2/TrainingNtupleMakerAK4/data/ParticleNetAK4/CHS/PNETUL/ClassRegQuantileNoJECLost Framework/NanoProd/data/ParticleNetAK4/CHS/PNETUL/
+        run_cmd mkdir -p Framework/NanoProd/data/ParticleNetAK8/Puppi/PNETUL/ClassReg
+        run_cmd cp -r ParticleNetStudiesRun2/TrainingNtupleMakerAK8/data/ParticleNetAK8/Puppi/PNETUL/ClassReg/* Framework/NanoProd/data/ParticleNetAK8/Puppi/PNETUL/ClassReg/
+        run_cmd mkdir -p Framework/NanoProd/data/ParticleNetAK8/MassRegression/V01
+        run_cmd cp recobtag_data/ParticleNetAK8/MassRegression/V01/modelfile/model.onnx Framework/NanoProd/data/ParticleNetAK8/MassRegression/V01/particle-net.onnx
+        run_cmd cp recobtag_data/ParticleNetAK8/MassRegression/V01/*.json Framework/NanoProd/data/ParticleNetAK8/MassRegression/V01/
         run_cmd rm -rf recobtag_data
-        run_cmd mkdir -p Framework/NanoProd/
+        # link framework files into release
         run_cmd ln -s "$this_dir/NanoProd" Framework/NanoProd/python
         run_cmd mkdir -p HHTools
         run_cmd ln -s "$this_dir/HHbtag" HHTools/HHbtag
@@ -83,6 +84,7 @@ action() {
         # end of workaround
         run_cmd cd "$this_dir"
         run_cmd mkdir -p "$this_dir/soft/CentOS$os_version/bin"
+        run_cmd rm -f "$this_dir/soft/CentOS$os_version/bin/python"
         run_cmd ln -s $(which python3) "$this_dir/soft/CentOS$os_version/bin/python"
         run_cmd touch "$this_dir/soft/CentOS$os_version/$CMSSW_VER/.installed"
     else

@@ -44,10 +44,16 @@ def customise(process, skip_ak4_scores=False):
     process = nanoAOD_addDeepInfoAK4CHS(process, False, False, True)
     process = AddParticleNetAK4Scores(process, 'jetTable')
 
+  for coord in [ 'x', 'y', 'z' ]:
+    setattr(process.genParticleTable.variables, 'v' + coord,
+            Var(f'vertex().{coord}', float, precision=10,
+                doc=f'{coord} coordinate of the gen particle production vertex'))
+
   process.boostedTauTable.variables.dxy = Var("leadChargedHadrCand().dxy()", float,
     doc="d_{xy} of lead track with respect to PV, in cm (with sign)", precision=10)
   process.boostedTauTable.variables.dz = Var("leadChargedHadrCand().dz()", float,
     doc="d_{z} of lead track with respect to PV, in cm (with sign)", precision=14)
+
   return process
 
 

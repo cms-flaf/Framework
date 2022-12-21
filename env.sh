@@ -67,6 +67,20 @@ action() {
         run_cmd mkdir -p HHTools
         run_cmd ln -s "$this_dir/HHbtag" HHTools/HHbtag
         run_cmd scram b -j8
+        # workaround for CMSSW - CRAB compatibility
+        # since recently, "scram b" does not link files into the python directory any longer and
+        # therefore, crab's bundling of the python directory will miss all files (for now), so below,
+        # create symlinks manually that are picked up through dereferencing during crab job bundling
+        run_cmd touch ../python/__init__.py
+        for n in */*/python; do
+            subsys="$( echo ${n} | awk -F '/' '{print $1}' )"
+            mod="$( echo ${n} | awk -F '/' '{print $2}' )"
+            run_cmd mkdir -p "../python/${subsys}"
+            run_cmd rm -rf "../python/${subsys}/${mod}"
+            run_cmd ln -s "../../src/${subsys}/${mod}/python" "../python/${subsys}/${mod}"
+            run_cmd touch "../python/${subsys}/__init__.py" "../python/${subsys}/${mod}/__init__.py"
+        done
+        # end of workaround
         run_cmd cd "$this_dir"
         run_cmd mkdir -p "$this_dir/soft/CentOS$os_version/bin"
         run_cmd ln -s $(which python3) "$this_dir/soft/CentOS$os_version/bin/python"

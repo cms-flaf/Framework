@@ -57,7 +57,7 @@ def customise_pnet(process):
     """
     process = customise(process, skip_ak4_scores=True)
 
-    addAK8 = False
+    addAK8 = True
 
     pnetDiscriminatorsAK4 = []
 

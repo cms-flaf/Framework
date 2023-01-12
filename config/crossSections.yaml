@@ -27,15 +27,15 @@ EWKZ2Jets_ZToLL_M-50:
   reference: XSDB EWKZ2Jets_ZToLL_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8 modifiedOn 2021-06-21 09:27:52
   unc: 0.004456
 TTTo2L2Nu:
-  crossSec: 687.1 * (0.111+0.114+0.107)*(0.111+0.114+0.107)
+  crossSec:  687.1 * (1 - 0.6741) * (1 - 0.6741)
   reference: XSDB TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8 modifiedOn 2021-10-11 08:56:35
   unc: 0.5174
 TTToSemiLeptonic:
-  crossSec: 687.1 * 0.665 * (0.111+0.114+0.107)
+  crossSec: 687.1 * 0.6741 * (1-0.6741)
   reference: XSDB TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8 modifiedOn 2021-06-21 09:57:37
   unc: 0.5174
 TTToHadronic:
-  crossSec: 687.1 * 0.665 * 0.665
+  crossSec: 687.1 * 0.6741 * 0.6741
   reference: XSDB TTToHadronic_TuneCP5_13TeV-powheg-pythia8
   unc: 0.5174
 ttHTobb:
@@ -160,19 +160,19 @@ ZZTo4L:
   unc: 0.00122
 ZZTo2L2Nu:
   crossSec: 0.9738
-  reference: XSDB ZZTo2L2Nu_TuneCP5_13TeV_powheg_pythia8 modifiedOn 2021-09-28 13:26:27 mll>4GeV
+  reference: XSDB ZZTo2L2Nu_TuneCP5_13TeV_powheg_pythia8 modifiedOn 2021-09-28 13:26:27
   unc: 0.0009971
 ZZTo2Q2L:
-  crossSec:  3.693e # 5.52
-  reference: ttH AN-19-111
-  unc: 4.149e-03
+  crossSec:  2.214
+  reference: XSDB ZZTo2Q2L_14TeV_powheg_pythia8 modifiedOn 2019-11-11 18:49:02 mll>4GeV
+  unc: 0.001657
 ZZTo2Q2Nu:
   crossSec: 4.561
   reference: XSDB ZZTo2Q2Nu_TuneCP5_13TeV modifiedOn 2020-09-25 05:03:18
   unc: 0.01533
 ZZTo4Q:
   crossSec:  3.302 #6.912 <-- previous value. The new one has been evaluated on many MiniAOD
-  reference: unknown
+  reference: from GenXSecAnalyzer
   unc: 6.328e-03
 WZTo3LNu:
   crossSec: 5.213
@@ -180,11 +180,11 @@ WZTo3LNu:
   unc:
 WZTo1L1Nu2Q:
   crossSec: 10.71
-  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#Diboson
+  reference: from GenXSecAnalyzer
   unc: 0.01618
 WZTo2L2Q:
   crossSec: 6.419
-  reference: XSDB WZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2021-10-11 11:27:06
+  reference: XSDB WZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2021-10-11 11:27:06 mll>4GeV
   unc: 0.01984
 WWTo2L2Nu:
   crossSec: 11.09
@@ -192,7 +192,7 @@ WWTo2L2Nu:
   unc: 0.00704
 WWTo4Q:
   crossSec: 51.55  #51.723
-  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#Diboson
+  reference: from GenXSecAnalyzer
   unc: 4.849e-02
 ZZZ:
   crossSec: 0.01476
@@ -259,8 +259,8 @@ VBFX_HH_bbtautau:
   reference:
   unc:
 ggHH_bbTauTau_SM:
-  crossSec: 31.05*0.001 *0.5824*0.06272
-  reference: Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV
+  crossSec: 31.05*0.001 *0.5824*0.06272*2
+  reference: HH twiki https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWGHH#Latest_recommendations_for_gluon and Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV
   unc:
 GluGluToHHTo2B2Tau_node:
   crossSec: 1
@@ -296,7 +296,7 @@ TTGamma_SingleLept:
   unc: 0.00342
 TTTJ:
   crossSec: 0.0003974
-  reference: XSDB WZTo1L1Nu2Q_13TeV_TuneCP5_amcatnloFXFX_madspin_pythia8 modifiedOn 2018-07-10 12:48:41
+  reference: XSDB TTTJ_TuneCP5_13TeV-madgraph-pythia8 modifiedOn 2018-07-10 12:48:41
   unc: 2.299e-7
 TTTT:
   crossSec: 0.008213
@@ -557,7 +557,7 @@ QCD_Pt-300toInf_EMEnriched:
 DY_NNLO:
     crossSec: 6077.22
     reference: XSDB DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2019-10-11 14:36:12
-    unc: 2% (to be corrected)
+    unc: 2%
 DY_NLO:
     crossSec: 6404.0
     reference: XSDB DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2021-06-21 09:27:12
@@ -652,11 +652,11 @@ DYJetsToLL_M-2000to3000:
   unc: 2.745e-06
 DYJetsToLL_0J_MLL_200_400:
   crossSec:
-  reference: XSDB
+  reference:
   unc:
 DYJetsToLL_0J_MLL_400_800:
   crossSec:
-  reference: XSDB
+  reference:
   unc:
 DYJetsToLL_0J_MLL_800_1400:
   crossSec: 0.02492
@@ -668,7 +668,7 @@ DYJetsToLL_0J_MLL_1400_2300:
   unc: 4.57e-06
 DYJetsToLL_0J_MLL_2300_3500:
   crossSec:
-  reference: XSDB
+  reference:
   unc:
 DYJetsToLL_0J_MLL_3500_4500:
   crossSec: 3.979e-06
@@ -707,9 +707,9 @@ DYJetsToLL_1J_MLL_3500_4500:
   reference: XSDB DYJetsToLL_1J_MLL_3500_4500_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:22
   unc: 1.69e-08
 DYJetsToLL_1J_MLL_4500_6000:
-  crossSec: 4.007e-07
-  reference: XSDB
-  unc: 1.499e-09
+  crossSec:
+  reference:
+  unc:
 DYJetsToLL_1J_MLL_6000_Inf:
   crossSec: 2.508e-08
   reference: XSDB DYJetsToLL_1J_MLL_6000_Inf_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 14:23:28

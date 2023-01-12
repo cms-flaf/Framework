@@ -1079,64 +1079,52 @@ SingleMuon_2018A:
   nanoAOD: /SingleMuon/Run2018A-UL2018_MiniAODv2_NanoAODv9-v2/NANOAOD
   miniAOD: /SingleMuon/Run2018A-UL2018_MiniAODv2_GT36-v1/MINIAOD
   sampleType: data
-  crossSection:
 SingleMuon_2018B:
   nanoAOD: /SingleMuon/Run2018B-UL2018_MiniAODv2_NanoAODv9-v2/NANOAOD
   miniAOD: /SingleMuon/Run2018B-UL2018_MiniAODv2_GT36-v1/MINIAOD
   sampleType: data
-  crossSection:
 SingleMuon_2018C:
   nanoAOD: /SingleMuon/Run2018C-UL2018_MiniAODv2_NanoAODv9-v2/NANOAOD
   miniAOD: /SingleMuon/Run2018C-UL2018_MiniAODv2_GT36-v2/MINIAOD
   sampleType: data
-  crossSection:
 SingleMuon_2018D:
   nanoAOD: /SingleMuon/Run2018D-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD
   miniAOD: /SingleMuon/Run2018D-UL2018_MiniAODv2_GT36-v1/MINIAOD
   sampleType: data
-  crossSection:
 
 EGamma_2018A:
   nanoAOD: /EGamma/Run2018A-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD
   miniAOD: /EGamma/Run2018A-UL2018_MiniAODv2_GT36-v1/MINIAOD
   sampleType: data
-  crossSection:
 EGamma_2018B:
   nanoAOD: /EGamma/Run2018B-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD
   miniAOD: /EGamma/Run2018B-UL2018_MiniAODv2-v1/MINIAOD
   sampleType: data
-  crossSection:
 EGamma_2018C:
   nanoAOD: /EGamma/Run2018C-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD
   miniAOD: /EGamma/Run2018C-UL2018_MiniAODv2_GT36-v1/MINIAOD
   sampleType: data
-  crossSection:
 EGamma_2018D:
   nanoAOD: /EGamma/Run2018D-UL2018_MiniAODv2_NanoAODv9-v3/NANOAOD
   miniAOD: /EGamma/Run2018D-UL2018_MiniAODv2-v2/MINIAOD
   sampleType: data
-  crossSection:
 
 Tau_2018A:
   nanoAOD: /Tau/Run2018A-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD
   miniAOD: /Tau/Run2018A-UL2018_MiniAODv2-v1/MINIAOD
   sampleType: data
-  crossSection:
 Tau_2018B:
   nanoAOD: /Tau/Run2018B-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD
   miniAOD: /Tau/Run2018B-UL2018_MiniAODv2_GT36-v1/MINIAOD
   sampleType: data
-  crossSection:
 Tau_2018C:
   nanoAOD: /Tau/Run2018C-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD
   miniAOD: /Tau/Run2018C-UL2018_MiniAODv2_GT36-v1/MINIAOD
   sampleType: data
-  crossSection:
 Tau_2018D:
   nanoAOD: /Tau/Run2018D-UL2018_MiniAODv2_NanoAODv9-v2/NANOAOD
   miniAOD: /Tau/Run2018D-UL2018_MiniAODv2-v1/MINIAOD
   sampleType: data
-  crossSection:
   miniAOD_ignoreFiles:
     - /store/data/Run2018D/Tau/MINIAOD/UL2018_MiniAODv2-v1/240000/85725A5B-F5E3-7A44-BDBD-7812E48A9733.root
 
@@ -1144,43 +1132,35 @@ MET_2018A:
   nanoAOD: /MET/Run2018A-UL2018_MiniAODv2_NanoAODv9-v2/NANOAOD
   miniAOD: /MET/Run2018A-UL2018_MiniAODv2_GT36-v1/MINIAOD
   sampleType: data
-  crossSection:
 MET_2018B:
   nanoAOD: /MET/Run2018B-UL2018_MiniAODv2_NanoAODv9-v2/NANOAOD
   miniAOD: /MET/Run2018B-UL2018_MiniAODv2_GT36-v1/MINIAOD
   sampleType: data
-  crossSection:
 MET_2018C:
   nanoAOD: /MET/Run2018C-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD
   miniAOD: /MET/Run2018C-UL2018_MiniAODv2-v1/MINIAOD
   sampleType: data
-  crossSection:
 MET_2018D:
   nanoAOD: /MET/Run2018D-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD
   miniAOD: /MET/Run2018D-UL2018_MiniAODv2-v1/MINIAOD
   sampleType: data
-  crossSection:
 
 JetHT_2018A:
   nanoAOD: /JetHT/Run2018A-UL2018_MiniAODv2_NanoAODv9-v2/NANOAOD
   miniAOD: /JetHT/Run2018A-UL2018_MiniAODv2_GT36-v1/MINIAOD
   sampleType: data
-  crossSection:
 JetHT_2018B:
   nanoAOD: /JetHT/Run2018B-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD
   miniAOD: /JetHT/Run2018B-UL2018_MiniAODv2_GT36-v1/MINIAOD
   sampleType: data
-  crossSection:
 JetHT_2018C:
   nanoAOD: /JetHT/Run2018C-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD
   miniAOD: /JetHT/Run2018C-UL2018_MiniAODv2_GT36-v1/MINIAOD
   sampleType: data
-  crossSection:
 JetHT_2018D:
   nanoAOD: /JetHT/Run2018D-UL2018_MiniAODv2_NanoAODv9-v2/NANOAOD
   miniAOD: /JetHT/Run2018D-UL2018_MiniAODv2-v2/MINIAOD
   sampleType: data
-  crossSection:
 
 DYJetsToLL_M-100to200:
   miniAOD: /DYJetsToLL_M-100to200_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v3/MINIAODSIM

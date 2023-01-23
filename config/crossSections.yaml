@@ -672,7 +672,7 @@ DYJetsToLL_1J_MLL_3500_4500:
   unc: 1.69e-08
 DYJetsToLL_1J_MLL_4500_6000:
   crossSec: 3.542e-07
-  reference: GenXSecAnalyzer
+  reference: GenXSecAnalyzer /DYJetsToLL_1J_MLL_4500_6000_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v4/MINIAODSIM
   unc: 2.482e-09
 DYJetsToLL_1J_MLL_6000_Inf:
   crossSec: 2.508e-08

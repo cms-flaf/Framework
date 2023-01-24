@@ -134,7 +134,7 @@ def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, 
         syst_dict = { 'nano' : 'Central' }
     else:
         df, syst_dict = Corrections.applyScaleUncertainties(df)
-    df,weight_branches = Corrections.getWeights(df, config, sample_name)
+    df,weight_branches = Corrections.getNormalisationCorrections(df, config, sample_name)
     for br in weight_branches:
         br_name = f'weight_{br}' if br != "Central" else "weight"
         colToSave.append(br_name)

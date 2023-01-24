@@ -262,7 +262,7 @@ ggHH_bbTauTau_SM:
   crossSec: 31.05*0.001 *0.5824*0.06272*2
   reference: HH twiki https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWGHH#Latest_recommendations_for_gluon and Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV
   unc:
-GluGluToHHTo2B2Tau_node:
+1pb:
   crossSec: 1
   reference:
   unc:

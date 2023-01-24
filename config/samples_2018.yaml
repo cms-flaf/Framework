@@ -1020,51 +1020,51 @@ GluGluToHHTo2B2Tau_node_SM:
 GluGluToHHTo2B2Tau_node_1:
   miniAOD: /GluGluToHHTo2B2Tau_TuneCP5_PSWeights_node_1_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: HHnonRes
-  crossSection: GluGluToHHTo2B2Tau_node
+  crossSection: 1pb
 GluGluToHHTo2B2Tau_node_2:
   miniAOD: /GluGluToHHTo2B2Tau_TuneCP5_PSWeights_node_2_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: HHnonRes
-  crossSection: GluGluToHHTo2B2Tau_node
+  crossSection: 1pb
 GluGluToHHTo2B2Tau_node_3:
   miniAOD: /GluGluToHHTo2B2Tau_TuneCP5_PSWeights_node_3_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: HHnonRes
-  crossSection: GluGluToHHTo2B2Tau_node
+  crossSection: 1pb
 GluGluToHHTo2B2Tau_node_4:
   miniAOD: /GluGluToHHTo2B2Tau_TuneCP5_PSWeights_node_4_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: HHnonRes
-  crossSection: GluGluToHHTo2B2Tau_node
+  crossSection: 1pb
 GluGluToHHTo2B2Tau_node_5:
   miniAOD: /GluGluToHHTo2B2Tau_TuneCP5_PSWeights_node_5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: HHnonRes
-  crossSection: GluGluToHHTo2B2Tau_node
+  crossSection: 1pb
 GluGluToHHTo2B2Tau_node_6:
   miniAOD: /GluGluToHHTo2B2Tau_TuneCP5_PSWeights_node_6_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: HHnonRes
-  crossSection: GluGluToHHTo2B2Tau_node
+  crossSection: 1pb
 GluGluToHHTo2B2Tau_node_7:
   miniAOD: /GluGluToHHTo2B2Tau_TuneCP5_PSWeights_node_7_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: HHnonRes
-  crossSection: GluGluToHHTo2B2Tau_node
+  crossSection: 1pb
 GluGluToHHTo2B2Tau_node_8:
   miniAOD: /GluGluToHHTo2B2Tau_TuneCP5_PSWeights_node_8_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: HHnonRes
-  crossSection: GluGluToHHTo2B2Tau_node
+  crossSection: 1pb
 GluGluToHHTo2B2Tau_node_9:
   miniAOD: /GluGluToHHTo2B2Tau_TuneCP5_PSWeights_node_9_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: HHnonRes
-  crossSection: GluGluToHHTo2B2Tau_node
+  crossSection: 1pb
 GluGluToHHTo2B2Tau_node_10:
   miniAOD: /GluGluToHHTo2B2Tau_TuneCP5_PSWeights_node_10_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: HHnonRes
-  crossSection: GluGluToHHTo2B2Tau_node
+  crossSection: 1pb
 GluGluToHHTo2B2Tau_node_11:
   miniAOD: /GluGluToHHTo2B2Tau_TuneCP5_PSWeights_node_11_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: HHnonRes
-  crossSection: GluGluToHHTo2B2Tau_node
+  crossSection: 1pb
 GluGluToHHTo2B2Tau_node_12:
   miniAOD: /GluGluToHHTo2B2Tau_TuneCP5_PSWeights_node_12_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: HHnonRes
-  crossSection: GluGluToHHTo2B2Tau_node
+  crossSection: 1pb
 
 SingleMuon_2018A:
   nanoAOD: /SingleMuon/Run2018A-UL2018_MiniAODv2_NanoAODv9-v2/NANOAOD

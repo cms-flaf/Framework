@@ -2,38 +2,31 @@ import ROOT
 import numpy as np
 import Common.BaselineSelection as Baseline
 import Corrections.Corrections as Corrections
+from Corrections.CorrectionsCore import *
+from Corrections.pu import *
 
-#def createAnaCache(inFile, outFile, config, sample_name, snapshotOptions,range, evtIds,
-def createAnaCache(inFile, config, sample_name, range, evtIds,
-                   store_noncentral, dict):
+def createAnaCache(inDir, config, range, dict):
 
     period = config["GLOBAL"]["era"]
-    print(period)
-
-    isData = True if config[sample_name]['sampleType'] == 'data' else False
 
     Baseline.Initialize(True, True)
-    if not isData:
-        Corrections.Initialize(period=period)
-
-    df_sel = ROOT.RDataFrame("Events", inFile)
+    Corrections.Initialize(period=period)
+    df_sel = ROOT.RDataFrame("Events", os.listdir(inDir))
+    df_nonSel = ROOT.RDataFrame("EventsNotSelected", os.listdir(inDir))
     if range is not None:
         df_sel = df_sel.Range(range)
-    df_nonSel = ROOT.RDataFrame("EventsNotSelected", inFile)
-    if range is not None:
         df_nonSel = df_nonSel.Range(range)
-    if len(evtIds) > 0:
-        df_sel = df_sel.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
-    if len(evtIds) > 0:
-        df_nonSel = df_nonSel.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
 
-    print(dict)
-    df_denumerator_sel,syst_names = Corrections.getDenumerator(df_sel)
-    df_denumerator_nonSel,syst_names = Corrections.getDenumerator(df_nonSel)
-    dict[sample_name]={}
-    for syst_name in syst_names:
-        dict[sample_name][syst_name] = df_denumerator_sel.Sum(f'weight_denum_{syst_name}').GetValue()+df_denumerator_nonSel.Sum(f'weight_denum_{syst_name}').GetValue()
-        print(f'for {syst_name} the denumerator is {dict[sample_name][syst_name]}')
+    sources = [ central, puWeightProducer.uncSource ]
+    df_denumerator_sel,syst_names = Corrections.getDenumerator(df_sel, sources)
+    df_denumerator_nonSel,syst_names = Corrections.getDenumerator(df_nonSel, sources)
+    dict['denumerator']={}
+    for source in sources:
+        dict['denumerator'][source]={}
+        for scale in getScales(source):
+            syst_name = getSystName(source, scale)
+            dict['denumerator'][source][scale] = df_denumerator_sel.Sum(f'weight_denum_{syst_name}').GetValue()+df_denumerator_nonSel.Sum(f'weight_denum_{syst_name}').GetValue()
+            print(f'for {syst_name} the denumerator is {dict["denumerator"][source][scale]}')
     print(dict)
 
 
@@ -45,12 +38,9 @@ if __name__ == "__main__":
     import json
     parser = argparse.ArgumentParser()
     parser.add_argument('--configFile', type=str)
-    parser.add_argument('--inFile', type=str)
+    parser.add_argument('--inDir', type=str)
     parser.add_argument('--outFile', type=str)
-    parser.add_argument('--sample', type=str)
     parser.add_argument('--nEvents', type=int, default=None)
-    parser.add_argument('--evtIds', type=str, default='')
-    parser.add_argument('--store-noncentral', action="store_true", help="Store ES variations.")
 
     args = parser.parse_args()
 
@@ -64,8 +54,7 @@ if __name__ == "__main__":
     if os.path.exists(args.outFile):
         with open(args.outFile, 'r') as file:
             dict = yaml.safe_load(file)
-    createAnaCache(args.inFile, config, args.sample, args.nEvents,
-                   args.evtIds, args.store_noncentral, dict)
+    createAnaCache(args.inDir, config, args.nEvents, dict)
     with open(args.outFile, 'w') as file:
         yaml.dump(dict, file)
 

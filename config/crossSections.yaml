@@ -162,7 +162,7 @@ ZZTo2L2Nu:
   crossSec: 0.9738
   reference: XSDB ZZTo2L2Nu_TuneCP5_13TeV_powheg_pythia8 modifiedOn 2021-09-28 13:26:27
   unc: 0.0009971
-ZZTo2Q2L:
+ZZTo2Q2L_mll>4GeV:
   crossSec:  2.214
   reference: XSDB ZZTo2Q2L_14TeV_powheg_pythia8 modifiedOn 2019-11-11 18:49:02 mll>4GeV
   unc: 0.001657
@@ -182,7 +182,7 @@ WZTo1L1Nu2Q:
   crossSec: 10.71
   reference: from GenXSecAnalyzer /WZTo1L1Nu2Q_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   unc: 0.01618
-WZTo2L2Q:
+WZTo2L2Q_mll>4GeV:
   crossSec: 6.419
   reference: XSDB WZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2021-10-11 11:27:06 mll>4GeV
   unc: 0.01984

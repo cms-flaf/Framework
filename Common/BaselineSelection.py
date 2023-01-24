@@ -76,6 +76,9 @@ class WorkingPointsBoostedTauVSjet:
    VTight = 6
    VVTight = 7
 
+def applyMETFlags(df, MET_flags):
+    MET_flags_string = ' && '.join(MET_flags)
+    return df.Filter(MET_flags_string, "MET filters")
 
 def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125., p4_suffix='nano'):
     if isData:
@@ -132,9 +135,10 @@ def SelectRecoP4(df, syst_name='nano'):
     return df
 
 def CreateRecoP4(df, suffix='nano'):
-    df = df.Define(f"TrigObj_idx", f"CreateIndexes(TrigObj_pt.size())")
-    df = df.Define("TrigObj_mass", "RVecF(TrigObj_pt.size(), 0.f)")
-    df = df.Define(f"TrigObj_p4", f"GetP4(TrigObj_pt,TrigObj_eta,TrigObj_phi, TrigObj_mass, TrigObj_idx)")
+    if("TrigObj_pt" in df.GetColumnNames()):
+        df = df.Define(f"TrigObj_idx", f"CreateIndexes(TrigObj_pt.size())")
+        df = df.Define("TrigObj_mass", "RVecF(TrigObj_pt.size(), 0.f)")
+        df = df.Define(f"TrigObj_p4", f"GetP4(TrigObj_pt,TrigObj_eta,TrigObj_phi, TrigObj_mass, TrigObj_idx)")
     for obj in ana_reco_object_collections:
         if "MET" in obj:
             df = df.Define(f"{obj}_p4_{suffix}", f"LorentzVectorM({obj}_pt, 0., {obj}_phi, 0.)")

@@ -49,6 +49,7 @@ def addAllVariables(df, syst_name, isData, trigger_class):
         jet_obs.extend(JetObservablesMC)
         colToSave.append("LHE_HT")
     for leg_idx in [0,1]:
+        df = DefineAndAppend(df, f"tau{leg_idx+1}_p4", f"httCand.leg_p4[{leg_idx}]")
         df = DefineAndAppend(df, f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
         df = DefineAndAppend(df, f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
         df = DefineAndAppend(df,f"tau{leg_idx+1}_phi", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Phi())")

@@ -15,6 +15,23 @@ GLOBAL:
     - Flag_ecalBadCalibFilter
   triggerFile: config/triggers_2018.yaml
   crossSectionsFile : config/crossSections13TeV.yaml
+  genuineTau_SFtype:
+    eTau: 'pt'
+    muTau: 'pt'
+    tauTau: 'dm'
+  deepTauWPs:
+    eTau:
+      VSe: VLoose
+      VSmu: Tight
+      VSjet: Medium
+    muTau:
+      VSe: VLoose
+      VSmu: Tight
+      VSjet: Medium
+    tauTau:
+      VSe: VVLoose
+      VSmu: VLoose
+      VSjet: Medium
 GluGluToRadionToHHTo2B2Tau_M-250:
   miniAOD: /GluGluToRadionToHHTo2B2Tau_M-250_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /GluGluToRadionToHHTo2B2Tau_M-250_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v2/NANOAODSIM

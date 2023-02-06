@@ -94,7 +94,11 @@
 			"*.tcc": "cpp",
 			"memory_resource": "cpp",
 			"stop_token": "cpp",
-			"cinttypes": "cpp"
+			"cinttypes": "cpp",
+			"strstream": "cpp",
+			"set": "cpp",
+			"cfenv": "cpp",
+			"typeindex": "cpp"
 		},
 		"git.ignoreLimitWarning": true
 	}

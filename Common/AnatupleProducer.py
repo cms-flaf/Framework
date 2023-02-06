@@ -5,6 +5,7 @@ import Common.Utilities as Utilities
 import Common.ReportTools as ReportTools
 import Common.triggerSel as Triggers
 import Corrections.Corrections as Corrections
+from Corrections.lumi import LumiFilter
 
 deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
             "rawDeepTau2017v2p1VSjet", "rawDeepTau2018v2p5VSe", "rawDeepTau2018v2p5VSmu",
@@ -121,6 +122,11 @@ def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, 
         df = df.Range(range)
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
+
+    if isData and 'lumiFile' in config['GLOBAL']:
+        lumiFilter = LumiFilter(config['GLOBAL']['lumiFile'])
+        df = lumiFilter.filter(df)
+
     df = Baseline.applyMETFlags(df, config["GLOBAL"]["MET_flags"])
     df = DefineAndAppend(df,"sample_type", f"static_cast<int>(SampleType::{config[sample_name]['sampleType']})")
     df = DefineAndAppend(df,"period", f"static_cast<int>(Period::{period})")
@@ -134,10 +140,10 @@ def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, 
         syst_dict = { 'nano' : 'Central' }
     else:
         df, syst_dict = Corrections.applyScaleUncertainties(df)
-    df,weight_branches = Corrections.getNormalisationCorrections(df, config, sample_name)
-    for br in weight_branches:
-        br_name = f'weight_{br}' if br != "Central" else "weight"
-        colToSave.append(br_name)
+        df,weight_branches = Corrections.getNormalisationCorrections(df, config, sample_name)
+        for br in weight_branches:
+            br_name = f'weight_{br}' if br != "Central" else "weight"
+            colToSave.append(br_name)
     for syst_name, source_name in syst_dict.items():
         suffix = '' if syst_name in [ 'Central', 'nano' ] else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
@@ -176,10 +182,6 @@ if __name__ == "__main__":
 
     if os.path.exists(args.outFile):
         os.remove(args.outFile)
-
-
-
-
 
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True

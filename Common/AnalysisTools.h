@@ -69,34 +69,6 @@ enum class GenLeptonMatch : int {
 };
 
 
-enum class WorkingPointsTauVSmu : int {
-    VLoose = 1,
-    Loose = 2,
-    Medium = 3,
-    Tight = 4
-};
-
-enum class WorkingPointsTauVSjet : int {
-    VVVLoose = 1,
-    VVLoose = 2,
-    VLoose = 3,
-    Loose = 4,
-    Medium = 5,
-    Tight = 6,
-    VTight = 7,
-    VVTight = 8
-};
-
-enum class WorkingPointsTauVSe : int {
-    VVVLoose = 1,
-    VVLoose = 2,
-    VLoose = 3,
-    Loose = 4,
-    Medium = 5,
-    Tight = 6,
-    VTight = 7,
-    VVTight = 8
-};
 
 enum class Channel : int {
   eTau = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::tau),

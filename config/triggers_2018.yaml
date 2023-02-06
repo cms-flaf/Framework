@@ -63,7 +63,7 @@ singleMu:
         cut: TrigObj_id == 13 && (TrigObj_filterBits&32)!=0
       doMatching: True
 
-MuTau:
+muTau:
   channels:
     - muTau
   path_MC:
@@ -102,7 +102,7 @@ singleEle:
         cut: TrigObj_id == 11 && (TrigObj_filterBits&2)!=0
       doMatching: True
 
-EleTau:
+eTau:
   channels:
     - eTau
   path_MC:

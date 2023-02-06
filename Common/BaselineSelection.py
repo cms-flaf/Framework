@@ -3,6 +3,7 @@ import os
 from scipy import stats
 import numpy as np
 import enum
+from Utilities import *
 
 initialized = False
 
@@ -41,40 +42,6 @@ channelLegs = {
     "eE": [ "Electron", "Electron" ],
 }
 
-class WorkingPointsTauVSmu:
-    VLoose = 1
-    Loose = 2
-    Medium = 3
-    Tight = 4
-
-class WorkingPointsTauVSjet:
-   VVVLoose = 1
-   VVLoose = 2
-   VLoose = 3
-   Loose = 4
-   Medium = 5
-   Tight = 6
-   VTight = 7
-   VVTight = 8
-
-class WorkingPointsTauVSe:
-    VVVLoose = 1
-    VVLoose = 2
-    VLoose = 3
-    Loose = 4
-    Medium = 5
-    Tight = 6
-    VTight = 7
-    VVTight = 8
-
-class WorkingPointsBoostedTauVSjet:
-   VVLoose = 1
-   VLoose = 2
-   Loose = 3
-   Medium = 4
-   Tight = 5
-   VTight = 6
-   VVTight = 7
 
 def applyMETFlags(df, MET_flags):
     MET_flags_string = ' && '.join(MET_flags)

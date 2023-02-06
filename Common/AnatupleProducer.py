@@ -145,7 +145,7 @@ def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, 
         dfw = DataFrameWrapper(df)
         addAllVariables(dfw, syst_name, isData, trigger_class)
         df_syst = dfw.df
-        df_syst, weight_branches = Corrections.getNormalisationCorrections(df_syst, config, sample_name, is_central)
+        df_syst, weight_branches = Corrections.getNormalisationCorrections(df_syst, config, sample_name)
         dfw.colToSave.extend(weight_branches)
         report = df_syst.Report()
         histReport = ReportTools.SaveReport(report.GetValue(), reoprtName=f"Report{suffix}")

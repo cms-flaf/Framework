@@ -49,9 +49,9 @@ class DataFrameWrapper:
 
 def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
-    dfw.Apply(Baseline.RecoLeptonsSelection)
+    dfw.Apply(Baseline.RecoLeptonsSelection, config["GLOBAL"])
     dfw.Apply(Baseline.RecoJetAcceptance)
-    dfw.Apply(Baseline.RecoHttCandidateSelection)
+    dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
     dfw.Apply(Baseline.RecoJetSelection)
     dfw.Apply(Baseline.RequestOnlyResolvedRecoJets)
     dfw.Apply(Baseline.ThirdLeptonVeto)
@@ -128,7 +128,7 @@ def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, 
     mass = -1 if 'mass' not in config[sample_name] else config[sample_name]['mass']
     isHH = True if mass > 0 else False
     isData = True if config[sample_name]['sampleType'] == 'data' else False
-    Baseline.Initialize(config["GLOBAL"],True, True)
+    Baseline.Initialize(True, True)
     if not isData:
         Corrections.Initialize(config=config['GLOBAL'])
     triggerFile = config['GLOBAL']['triggerFile']

@@ -6,13 +6,11 @@ import enum
 from Utilities import *
 
 initialized = False
-config = None
 
 ana_reco_object_collections = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau", "MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"]
 
-def Initialize(conf, loadTF=False, loadHHBtag=False):
+def Initialize(loadTF=False, loadHHBtag=False):
     global initialized
-    global config
     if not initialized:
         import os
         headers_dir = os.path.dirname(os.path.abspath(__file__))
@@ -23,7 +21,6 @@ def Initialize(conf, loadTF=False, loadHHBtag=False):
         ROOT.gInterpreter.Declare(f'#include "{header_path_GenLepton}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Gen}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Reco}"')
-        config = conf
         for wpcl in [WorkingPointsTauVSe,WorkingPointsTauVSmu,WorkingPointsTauVSjet]:
             ROOT.gInterpreter.Declare(f'{generate_enum_class(wpcl)}')
         if(loadTF):
@@ -124,7 +121,7 @@ def DefineMETCuts(met_thr, met_collections):
   return f"( {cut} )"
 
 
-def RecoLeptonsSelection(df, apply_filter=True):
+def RecoLeptonsSelection(df, config, apply_filter=True):
     df = df.Define("Electron_B0", f"""
         v_ops::pt(Electron_p4) > 18 && abs(v_ops::eta(Electron_p4)) < 2.3 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
         && (Electron_mvaIso_WP90 || (Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all < 0.5))
@@ -213,7 +210,7 @@ def RecoJetAcceptance(df, apply_filter=True):
         return df, filter_expr
 
 
-def RecoHttCandidateSelection(df):
+def RecoHttCandidateSelection(df, config):
     df = df.Define("Electron_iso", "Electron_pfRelIso03_all") \
            .Define("Muon_iso", "Muon_pfRelIso04_all") \
            .Define("Tau_iso", "-Tau_rawDeepTau2017v2p1VSjet")

@@ -21,6 +21,8 @@ def Initialize(config,loadTF=False, loadHHBtag=False):
         ROOT.gInterpreter.Declare(f'#include "{header_path_GenLepton}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Gen}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Reco}"')
+        for wpcl in [WorkingPointsTauVSe,WorkingPointsTauVSmu,WorkingPointsTauVSjet]:
+            ROOT.gInterpreter.Declare(f'{generate_enum_class(wpcl)}')
         if(loadTF):
             import RunKit.includeCMSSWlibs as IncludeLibs
             IncludeLibs.includeLibTool("tensorflow")

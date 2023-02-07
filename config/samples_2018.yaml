@@ -16,9 +16,9 @@ GLOBAL:
   triggerFile: config/triggers_2018.yaml
   crossSectionsFile : config/crossSections13TeV.yaml
   genuineTau_SFtype:
-    eTau: 'pt'
-    muTau: 'pt'
-    tauTau: 'dm'
+    eTau: pt
+    muTau: pt
+    tauTau: dm
   deepTauWPs:
     eTau:
       VSe: VLoose

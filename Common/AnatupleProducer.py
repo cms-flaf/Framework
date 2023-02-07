@@ -30,25 +30,36 @@ class DataFrameWrapper:
         self.df = df
         self.colToSave = copy.deepcopy(defaultColToSave)
 
-    def DefineAndAppend(self, varToDefine, varToCall):
+    def Define(self, varToDefine, varToCall):
         self.df = self.df.Define(f"{varToDefine}", f"{varToCall}")
+
+    def DefineAndAppend(self, varToDefine, varToCall):
+        self.Define(varToDefine, varToCall)
         self.colToSave.append(varToDefine)
 
+    def Apply(self, func, *args, **kwargs):
+        result = func(self.df, *args, **kwargs)
+        if isinstance(result, tuple):
+            self.df = result[0]
+            return result[1:]
+        else:
+            self.df = result
+
 def addAllVariables(dfw, syst_name, isData, trigger_class):
-    dfw.df = Baseline.SelectRecoP4(dfw.df, syst_name)
-    dfw.df = Baseline.RecoLeptonsSelection(dfw.df)
-    dfw.df = Baseline.RecoJetAcceptance(dfw.df)
-    dfw.df = Baseline.RecoHttCandidateSelection(dfw.df)
-    dfw.df = Baseline.RecoJetSelection(dfw.df)
-    dfw.df = Baseline.RequestOnlyResolvedRecoJets(dfw.df)
-    dfw.df = Baseline.ThirdLeptonVeto(dfw.df)
-    dfw.df = Baseline.DefineHbbCand(dfw.df)
+    dfw.Apply(Baseline.SelectRecoP4, syst_name)
+    dfw.Apply(Baseline.RecoLeptonsSelection)
+    dfw.Apply(Baseline.RecoJetAcceptance)
+    dfw.Apply(Baseline.RecoHttCandidateSelection)
+    dfw.Apply(Baseline.RecoJetSelection)
+    dfw.Apply(Baseline.RequestOnlyResolvedRecoJets)
+    dfw.Apply(Baseline.ThirdLeptonVeto)
+    dfw.Apply(Baseline.DefineHbbCand)
     if trigger_class is not None:
-        dfw.df,hltBranches = trigger_class.ApplyTriggers(dfw.df, isData)
-        dfw.colToSave.extend(hltBranches)
-    dfw.df= dfw.df.Define(f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
-    dfw.df= dfw.df.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
-    dfw.df= dfw.df.Define( f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
+        hltBranches = dfw.Apply(trigger_class.ApplyTriggers, isData)
+        dfw.colToSave.extend(hltBranches[0])
+    dfw.Define(f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
+    dfw.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
+    dfw.Define( f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
     dfw.DefineAndAppend("channelId","static_cast<int>(httCand.channel())")
     jet_obs = JetObservables
     if not isData:
@@ -60,9 +71,9 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         dfw.DefineAndAppend(f"tau{leg_idx+1}_phi", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Phi())")
         dfw.DefineAndAppend(f"tau{leg_idx+1}_mass", f"static_cast<float>(httCand.leg_p4[{leg_idx}].M())")
         dfw.DefineAndAppend(f"tau{leg_idx+1}_charge", f"httCand.leg_charge[{leg_idx}]")
-        dfw.df = dfw.df.Define(f"tau{leg_idx+1}_idx", f"httCand.leg_index[{leg_idx}]")
-        dfw.df = dfw.df.Define(f"tau{leg_idx+1}_genMatchIdx", f"httCand.leg_genMatchIdx[{leg_idx}]")
-        dfw.df = dfw.df.Define(f"tau{leg_idx+1}_recoJetMatchIdx", f"FindMatching(httCand.leg_p4[{leg_idx}], Jet_p4, 0.3)")
+        dfw.Define(f"tau{leg_idx+1}_idx", f"httCand.leg_index[{leg_idx}]")
+        dfw.Define(f"tau{leg_idx+1}_genMatchIdx", f"httCand.leg_genMatchIdx[{leg_idx}]")
+        dfw.Define(f"tau{leg_idx+1}_recoJetMatchIdx", f"FindMatching(httCand.leg_p4[{leg_idx}], Jet_p4, 0.3)")
         dfw.DefineAndAppend( f"tau{leg_idx+1}_iso", f"httCand.leg_rawIso.at({leg_idx})")
         for deepTauScore in deepTauScores:
             dfw.DefineAndAppend( f"tau{leg_idx+1}_{deepTauScore}",
@@ -109,13 +120,13 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
 
 
 def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, evtIds,
-                   store_noncentral):
+                   store_noncentral, compute_unc_variations):
 
     period = config["GLOBAL"]["era"]
     mass = -1 if 'mass' not in config[sample_name] else config[sample_name]['mass']
     isHH = True if mass > 0 else False
     isData = True if config[sample_name]['sampleType'] == 'data' else False
-    Baseline.Initialize(True, True)
+    Baseline.Initialize(config["GLOBAL"],True, True)
     if not isData:
         Corrections.Initialize(config=config['GLOBAL'])
     triggerFile = config['GLOBAL']['triggerFile']
@@ -140,17 +151,18 @@ def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, 
         df, syst_dict = Corrections.applyScaleUncertainties(df)
     for syst_name, source_name in syst_dict.items():
         is_central = syst_name in [ 'Central', 'nano' ]
+        if not is_central and not compute_unc_variations: continue
         suffix = '' if is_central else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
         dfw = DataFrameWrapper(df)
         addAllVariables(dfw, syst_name, isData, trigger_class)
-        df_syst = dfw.df
-        df_syst, weight_branches = Corrections.getNormalisationCorrections(df_syst, config, sample_name)
-        dfw.colToSave.extend(weight_branches)
-        report = df_syst.Report()
+        weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name, is_central and compute_unc_variations)
+        #dfw.df, weight_branches = Corrections.getNormalisationCorrections(dfw.df, config, sample_name)
+        dfw.colToSave.extend(weight_branches[0])
+        report = dfw.df.Report()
         histReport = ReportTools.SaveReport(report.GetValue(), reoprtName=f"Report{suffix}")
         varToSave = Utilities.ListToVector(dfw.colToSave)
-        df_syst.Snapshot(f"Events{suffix}", outFile, varToSave, snapshotOptions)
+        dfw.df.Snapshot(f"Events{suffix}", outFile, varToSave, snapshotOptions)
         outputRootFile= ROOT.TFile(outFile, "UPDATE")
         outputRootFile.WriteTObject(histReport, f"Report{suffix}", "Overwrite")
         outputRootFile.Close()
@@ -169,6 +181,7 @@ if __name__ == "__main__":
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--store-noncentral', action="store_true", help="Store ES variations.")
+    parser.add_argument('--compute_unc_variations', type=bool, default=True)
 
     args = parser.parse_args()
 
@@ -192,4 +205,4 @@ if __name__ == "__main__":
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
     createAnatuple(args.inFile, args.outFile, config, args.sample, snapshotOptions, args.nEvents,
-                   args.evtIds, args.store_noncentral)
+                   args.evtIds, args.store_noncentral, args.compute_unc_variations)

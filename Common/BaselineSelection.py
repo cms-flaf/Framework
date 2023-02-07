@@ -9,7 +9,7 @@ initialized = False
 
 ana_reco_object_collections = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau", "MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"]
 
-def Initialize(loadTF=False, loadHHBtag=False):
+def Initialize(config,loadTF=False, loadHHBtag=False):
     global initialized
     if not initialized:
         import os

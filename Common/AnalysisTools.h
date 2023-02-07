@@ -68,8 +68,6 @@ enum class GenLeptonMatch : int {
   NoMatch = 6
 };
 
-
-
 enum class Channel : int {
   eTau = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::tau),
   muTau = static_cast<int>(Leg::mu) * 10 + static_cast<int>(Leg::tau),

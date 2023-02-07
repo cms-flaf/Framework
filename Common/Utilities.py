@@ -42,7 +42,7 @@ def ListToVector(list, type="string"):
 	return vec
 
 def generate_enum_class(cls):
-    enum_string = "enum class {} {{\n".format(cls.__name__)
+    enum_string = "enum class {} : int {{\n".format(cls.__name__)
     for name, value in cls.__dict__.items():
         if not name.startswith("__"):
             enum_string += "    {} = {},\n".format(name, value)

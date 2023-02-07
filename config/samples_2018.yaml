@@ -32,6 +32,26 @@ GLOBAL:
       VSe: VVLoose
       VSmu: VLoose
       VSjet: Medium
+    tauSel:
+      Loose:
+        VSe: VVLoose
+        VSmu: VLoose
+        VSjet: VVVLoose
+      Tight:
+        VSjet: Medium
+    boostedtauSel:
+      Loose:
+        VSjet: VVLoose
+      Tight:
+        VSjet: Medium
+  deepTauVp5WPs:
+    tauSel:
+      Loose:
+        VSe: VVLoose
+        VSmu: VLoose
+        VSjet: VVVLoose
+      Tight:
+        VSjet: Loose
 GluGluToRadionToHHTo2B2Tau_M-250:
   miniAOD: /GluGluToRadionToHHTo2B2Tau_M-250_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /GluGluToRadionToHHTo2B2Tau_M-250_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v2/NANOAODSIM

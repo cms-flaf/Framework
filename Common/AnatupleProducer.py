@@ -41,6 +41,8 @@ class DataFrameWrapper:
         result = func(self.df, *args, **kwargs)
         if isinstance(result, tuple):
             self.df = result[0]
+            if len(result) == 2:
+                return result[1]
             return result[1:]
         else:
             self.df = result
@@ -56,7 +58,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Apply(Baseline.DefineHbbCand)
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, isData)
-        dfw.colToSave.extend(hltBranches[0])
+        dfw.colToSave.extend(hltBranches)
     dfw.Define(f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
     dfw.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
     dfw.Define( f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
@@ -158,7 +160,7 @@ def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, 
         addAllVariables(dfw, syst_name, isData, trigger_class)
         weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name, is_central and compute_unc_variations)
         #dfw.df, weight_branches = Corrections.getNormalisationCorrections(dfw.df, config, sample_name)
-        dfw.colToSave.extend(weight_branches[0])
+        dfw.colToSave.extend(weight_branches)
         report = dfw.df.Report()
         histReport = ReportTools.SaveReport(report.GetValue(), reoprtName=f"Report{suffix}")
         varToSave = Utilities.ListToVector(dfw.colToSave)

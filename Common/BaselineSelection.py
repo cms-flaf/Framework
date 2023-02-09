@@ -133,18 +133,18 @@ def RecoLeptonsSelection(df, config, apply_filter=True):
     """)
     df = df.Define("Tau_B0", f"""
         v_ops::pt(Tau_p4) > 15 && abs(v_ops::eta(Tau_p4)) < 2.5 && abs(Tau_dz) < 0.2 && Tau_decayMode != 5 && Tau_decayMode != 6
-        && (    (    Tau_idDeepTau2017v2p1VSe >= {getattr(WorkingPointsTauVSe, config["deepTauWPs"]["tauSel"]["Loose"]["VSe"])}
-                  && Tau_idDeepTau2017v2p1VSmu >= {getattr(WorkingPointsTauVSmu, config["deepTauWPs"]["tauSel"]["Loose"]["VSmu"])}
-                  && Tau_idDeepTau2017v2p1VSjet >= {getattr(WorkingPointsTauVSjet, config["deepTauWPs"]["tauSel"]["Loose"]["VSjet"])} )
-             || (    Tau_idDeepTau2018v2p5VSe >= {getattr(WorkingPointsTauVSe, config["deepTauVp5WPs"]["tauSel"]["Loose"]["VSe"])}
-                  && Tau_idDeepTau2018v2p5VSmu >= {getattr(WorkingPointsTauVSmu, config["deepTauVp5WPs"]["tauSel"]["Loose"]["VSmu"])}
-                  && Tau_idDeepTau2018v2p5VSjet >= {getattr(WorkingPointsTauVSjet, config["deepTauVp5WPs"]["tauSel"]["Loose"]["VSjet"])} )
+        && (    (    Tau_idDeepTau2017v2p1VSe >= {WorkingPointsTauVSe.VVLoose}
+                  && Tau_idDeepTau2017v2p1VSmu >= {WorkingPointsTauVSmu.VLoose}
+                  && Tau_idDeepTau2017v2p1VSjet >= {WorkingPointsTauVSjet.VVVLoose} )
+             || (    Tau_idDeepTau2018v2p5VSe >= {WorkingPointsTauVSe.VVLoose}
+                  && Tau_idDeepTau2018v2p5VSmu >= {WorkingPointsTauVSmu.VLoose}
+                  && Tau_idDeepTau2018v2p5VSjet >= {WorkingPointsTauVSjet.VVVLoose} )
            )
     """)
 
     df = df.Define("boostedTau_B0", f"""
         v_ops::pt(boostedTau_p4) > 40 && abs(v_ops::eta(boostedTau_p4)) < 2.3 && abs(boostedTau_dz) < 0.2 && boostedTau_decayMode != 5
-        && boostedTau_decayMode != 6 && boostedTau_idMVAnewDM2017v2 >= {getattr(WorkingPointsTauVSjet, config["deepTauWPs"]["boostedtauSel"]["Loose"]["VSjet"])}
+        && boostedTau_decayMode != 6 && boostedTau_idMVAnewDM2017v2 >= {WorkingPointsBoostedTauVSjet.VVLoose}
     """)
 
     df = df.Define("Electron_B0T", """
@@ -159,12 +159,12 @@ def RecoLeptonsSelection(df, config, apply_filter=True):
 
     df = df.Define("Tau_B0T", f"""
         Tau_B0 && (
-                      Tau_idDeepTau2017v2p1VSjet >= {getattr(WorkingPointsTauVSjet, config["deepTauWPs"]["tauSel"]["Tight"]["VSjet"])}
-                   || Tau_idDeepTau2018v2p5VSjet >= {getattr(WorkingPointsTauVSjet, config["deepTauVp5WPs"]["tauSel"]["Tight"]["VSjet"])} )
+                    Tau_idDeepTau2017v2p1VSjet >= {WorkingPointsTauVSjet.Medium}
+                   || Tau_idDeepTau2018v2p5VSjet >= {WorkingPointsTauVSjet.Loose} )
     """)
 
     df = df.Define("boostedTau_B0T", f"""
-        boostedTau_B0 && boostedTau_idMVAnewDM2017v2 >= {getattr(WorkingPointsTauVSjet, config["deepTauWPs"]["boostedtauSel"]["Tight"]["VSjet"])}
+        boostedTau_B0 && boostedTau_idMVAnewDM2017v2 >= {WorkingPointsBoostedTauVSjet.Medium}
     """)
 
     met_cuts = DefineMETCuts(80, ["MET", "DeepMETResolutionTune", "DeepMETResponseTune", "PuppiMET"])

@@ -49,7 +49,7 @@ class DataFrameWrapper:
 
 def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
-    dfw.Apply(Baseline.RecoLeptonsSelection, config["GLOBAL"])
+    dfw.Apply(Baseline.RecoLeptonsSelection)
     dfw.Apply(Baseline.RecoJetAcceptance)
     dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
     dfw.Apply(Baseline.RecoJetSelection)

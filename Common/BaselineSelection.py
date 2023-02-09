@@ -121,7 +121,7 @@ def DefineMETCuts(met_thr, met_collections):
   return f"( {cut} )"
 
 
-def RecoLeptonsSelection(df, config, apply_filter=True):
+def RecoLeptonsSelection(df, apply_filter=True):
     df = df.Define("Electron_B0", f"""
         v_ops::pt(Electron_p4) > 18 && abs(v_ops::eta(Electron_p4)) < 2.3 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
         && (Electron_mvaIso_WP90 || (Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all < 0.5))

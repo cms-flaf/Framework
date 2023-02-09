@@ -24,8 +24,8 @@ diTau:
 MET:
     channels:
       - tauTau
-      - MuTau
-      - EleTau
+      - muTau
+      - eTau
     path:
       - HLT_PFMETNoMu120_PFMHTNoMu120_IDTight
     legs:
@@ -33,11 +33,11 @@ MET:
           type: MET
           cut: MET_pt > 120
         doMatching: False
-singlEleTau:
+singleTau:
     channels:
       - tauTau
-      - MuTau
-      - EleTau
+      - muTau
+      - eTau
     path:
       - HLT_MediumChargedIsoPFTau180HighPtRelaxedIso_Trk50_eta2p1
     legs:
@@ -50,7 +50,7 @@ singlEleTau:
 
 singleMu:
   channels:
-    - MuTau
+    - muTau
     - muMu
     - eMu
   path:
@@ -65,7 +65,7 @@ singleMu:
 
 MuTau:
   channels:
-    - MuTau
+    - muTau
   path_MC:
     - HLT_IsoMu20_eta2p1_LooseChargedIsoPFTauHPS27_eta2p1_CrossL1
   path_data:
@@ -88,7 +88,7 @@ MuTau:
 
 singleEle:
   channels:
-    - EleTau
+    - eTau
     - eE
     - eMu
   path:
@@ -104,7 +104,7 @@ singleEle:
 
 EleTau:
   channels:
-    - EleTau
+    - eTau
   path_MC:
     - HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTauHPS30_eta2p1_CrossL1
   path_data:

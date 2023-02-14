@@ -6,6 +6,9 @@ import Common.ReportTools as ReportTools
 import Common.triggerSel as Triggers
 import Corrections.Corrections as Corrections
 from Corrections.lumi import LumiFilter
+import copy
+
+#ROOT.EnableImplicitMT(1)
 
 deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
             "rawDeepTau2017v2p1VSjet", "rawDeepTau2018v2p5VSe", "rawDeepTau2018v2p5VSmu",
@@ -18,103 +21,117 @@ JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"]
 JetObservablesMC = ["hadronFlavour","partonFlavour"]
 
-colToSave = ["event","luminosityBlock","run",
+defaultColToSave = ["event","luminosityBlock","run", "sample_type", "period", "X_mass", "isData",
                 "MET_pt", "MET_phi","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
-                "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs",
-                "Electron_genMatchIdx", "Muon_genMatchIdx","Tau_genMatchIdx" ]
+                "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs"]
 
-def DefineAndAppend(df, varToDefine, varToCall):
-    df = df.Define(f"{varToDefine}", f"{varToCall}")
-    colToSave.append(varToDefine)
-    return df
+class DataFrameWrapper:
+    def __init__(self, df):
+        self.df = df
+        self.colToSave = copy.deepcopy(defaultColToSave)
 
-def addAllVariables(df, syst_name, isData, trigger_class):
-    df = Baseline.SelectRecoP4(df, syst_name)
-    df = Baseline.RecoLeptonsSelection(df)
-    df = Baseline.RecoJetAcceptance(df)
-    df = Baseline.RecoHttCandidateSelection(df)
-    df = Baseline.RecoJetSelection(df)
-    df = Baseline.RequestOnlyResolvedRecoJets(df)
-    df = Baseline.ThirdLeptonVeto(df)
-    df = Baseline.DefineHbbCand(df)
+    def Define(self, varToDefine, varToCall):
+        self.df = self.df.Define(f"{varToDefine}", f"{varToCall}")
+
+    def DefineAndAppend(self, varToDefine, varToCall):
+        self.Define(varToDefine, varToCall)
+        self.colToSave.append(varToDefine)
+
+    def Apply(self, func, *args, **kwargs):
+        result = func(self.df, *args, **kwargs)
+        if isinstance(result, tuple):
+            self.df = result[0]
+            if len(result) == 2:
+                return result[1]
+            return result[1:]
+        else:
+            self.df = result
+
+def addAllVariables(dfw, syst_name, isData, trigger_class):
+    dfw.Apply(Baseline.SelectRecoP4, syst_name)
+    dfw.Apply(Baseline.RecoLeptonsSelection)
+    dfw.Apply(Baseline.RecoJetAcceptance)
+    dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
+    dfw.Apply(Baseline.RecoJetSelection)
+    dfw.Apply(Baseline.RequestOnlyResolvedRecoJets)
+    dfw.Apply(Baseline.ThirdLeptonVeto)
+    dfw.Apply(Baseline.DefineHbbCand)
     if trigger_class is not None:
-        df,hltBranches = trigger_class.ApplyTriggers(df, isData)
-        colToSave.extend(hltBranches)
-    df = DefineAndAppend(df, f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
-    df = DefineAndAppend(df, f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
-    df = DefineAndAppend(df, f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
-    df = DefineAndAppend(df,"channelId","static_cast<int>(httCand.channel())")
+        hltBranches = dfw.Apply(trigger_class.ApplyTriggers, isData)
+        dfw.colToSave.extend(hltBranches)
+    dfw.Define(f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
+    dfw.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
+    dfw.Define( f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
+    dfw.DefineAndAppend("channelId","static_cast<int>(httCand.channel())")
     jet_obs = JetObservables
     if not isData:
         jet_obs.extend(JetObservablesMC)
-        colToSave.append("LHE_HT")
+        dfw.colToSave.append("LHE_HT")
     for leg_idx in [0,1]:
-        df = DefineAndAppend(df, f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
-        df = DefineAndAppend(df, f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
-        df = DefineAndAppend(df,f"tau{leg_idx+1}_phi", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Phi())")
-        df = DefineAndAppend(df,f"tau{leg_idx+1}_mass", f"static_cast<float>(httCand.leg_p4[{leg_idx}].M())")
-        df = DefineAndAppend(df,f"tau{leg_idx+1}_charge", f"httCand.leg_charge[{leg_idx}]")
-        df = df.Define(f"tau{leg_idx+1}_idx", f"httCand.leg_index[{leg_idx}]")
-        df = df.Define(f"tau{leg_idx+1}_genMatchIdx", f"httCand.leg_genMatchIdx[{leg_idx}]")
-        df = df.Define(f"tau{leg_idx+1}_recoJetMatchIdx", f"FindMatching(httCand.leg_p4[{leg_idx}], Jet_p4, 0.3)")
-        df = DefineAndAppend(df, f"tau{leg_idx+1}_iso", f"httCand.leg_rawIso.at({leg_idx})")
+        dfw.DefineAndAppend( f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
+        dfw.DefineAndAppend( f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
+        dfw.DefineAndAppend(f"tau{leg_idx+1}_phi", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Phi())")
+        dfw.DefineAndAppend(f"tau{leg_idx+1}_mass", f"static_cast<float>(httCand.leg_p4[{leg_idx}].M())")
+        dfw.DefineAndAppend(f"tau{leg_idx+1}_charge", f"httCand.leg_charge[{leg_idx}]")
+        dfw.Define(f"tau{leg_idx+1}_idx", f"httCand.leg_index[{leg_idx}]")
+        dfw.Define(f"tau{leg_idx+1}_genMatchIdx", f"httCand.leg_genMatchIdx[{leg_idx}]")
+        dfw.Define(f"tau{leg_idx+1}_recoJetMatchIdx", f"FindMatching(httCand.leg_p4[{leg_idx}], Jet_p4, 0.3)")
+        dfw.DefineAndAppend( f"tau{leg_idx+1}_iso", f"httCand.leg_rawIso.at({leg_idx})")
         for deepTauScore in deepTauScores:
-            df = DefineAndAppend(df, f"tau{leg_idx+1}_{deepTauScore}",
+            dfw.DefineAndAppend( f"tau{leg_idx+1}_{deepTauScore}",
                                      f"httCand.leg_type[{leg_idx}] == Leg::tau ? Tau_{deepTauScore}.at(httCand.leg_index[{leg_idx}]) : -1;")
 
         if not isData:
-            df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_kind", f"""tau{leg_idx+1}_genMatchIdx>=0 ? static_cast<int>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).kind()) :
+            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_kind", f"""tau{leg_idx+1}_genMatchIdx>=0 ? static_cast<int>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).kind()) :
                                               static_cast<int>(GenLeptonMatch::NoMatch);""")
-            df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_vis_pt", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().Pt()) :
-                                                    -1.;""")
-            df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_vis_eta", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().Eta()) :
-                                                        -1.;""")
-            df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_vis_phi", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().Phi()) :
-                                                        -1.;""")
-            df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_vis_mass", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().M()) :
-                                                    -1.;""")
-            df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_nChHad", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).nChargedHadrons() : 0;""")
-            df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_nNeutHad", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).nNeutralHadrons() : 0;""")
-            df = DefineAndAppend(df,f"tau{leg_idx+1}_gen_charge", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).charge() : -10;""")
-            df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_partonFlavour",
+            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_vis_pt", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().Pt()) :
+                                                    -1.f;""")
+            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_vis_eta", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().Eta()) :
+                                                        -1.f;""")
+            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_vis_phi", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().Phi()) :
+                                                        -1.f;""")
+            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_vis_mass", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().M()) :
+                                                    -1.f;""")
+            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_nChHad", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).nChargedHadrons() : 0;""")
+            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_nNeutHad", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).nNeutralHadrons() : 0;""")
+            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_charge", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).charge() : -10;""")
+            dfw.DefineAndAppend( f"tau{leg_idx+1}_seedingJet_partonFlavour",
                                         f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_partonFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1;")
-            df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_hadronFlavour",
+            dfw.DefineAndAppend( f"tau{leg_idx+1}_seedingJet_hadronFlavour",
                                     f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_hadronFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1;")
 
-        df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_pt",
-                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Pt() : -1;")
-        df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_eta",
-                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Eta() : -1;")
-        df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_phi",
-                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Phi() : -1;")
-        df = DefineAndAppend(df, f"tau{leg_idx+1}_seedingJet_mass",
-                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).M() : -1;")
+        dfw.DefineAndAppend( f"tau{leg_idx+1}_seedingJet_pt",
+                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? static_cast<float>(Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Pt()) : -1.f;")
+        dfw.DefineAndAppend( f"tau{leg_idx+1}_seedingJet_eta",
+                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? static_cast<float>(Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Eta()) : -1.f;")
+        dfw.DefineAndAppend( f"tau{leg_idx+1}_seedingJet_phi",
+                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? static_cast<float>(Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Phi()) : -1.f;")
+        dfw.DefineAndAppend( f"tau{leg_idx+1}_seedingJet_mass",
+                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? static_cast<float>(Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).M()) : -1.f;")
 
 
-        df = DefineAndAppend(df,f"b{leg_idx+1}_pt", f"HbbCandidate.leg_p4[{leg_idx}].Pt()")
-        df = DefineAndAppend(df,f"b{leg_idx+1}_eta", f"HbbCandidate.leg_p4[{leg_idx}].Eta()")
-        df = DefineAndAppend(df,f"b{leg_idx+1}_phi", f"HbbCandidate.leg_p4[{leg_idx}].Phi()")
-        df = DefineAndAppend(df,f"b{leg_idx+1}_mass", f"HbbCandidate.leg_p4[{leg_idx}].M()")
+        dfw.DefineAndAppend(f"b{leg_idx+1}_pt", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Pt())")
+        dfw.DefineAndAppend(f"b{leg_idx+1}_eta", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Eta())")
+        dfw.DefineAndAppend(f"b{leg_idx+1}_phi", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Phi())")
+        dfw.DefineAndAppend(f"b{leg_idx+1}_mass", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].M())")
 
         for jetVar in jet_obs:
-            if(jetVar not in df.GetColumnNames()): continue
-            df = DefineAndAppend(df,f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")
-        df = DefineAndAppend(df,f"b{leg_idx+1}_HHbtag", f"Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}])")
-    return df
+            if(jetVar not in dfw.df.GetColumnNames()): continue
+            dfw.DefineAndAppend(f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")
+        dfw.DefineAndAppend(f"b{leg_idx+1}_HHbtag", f"static_cast<float>(Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}]))")
 
 
 def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, evtIds,
-                   store_noncentral):
+                   store_noncentral, compute_unc_variations):
 
     period = config["GLOBAL"]["era"]
     mass = -1 if 'mass' not in config[sample_name] else config[sample_name]['mass']
     isHH = True if mass > 0 else False
     isData = True if config[sample_name]['sampleType'] == 'data' else False
-
     Baseline.Initialize(True, True)
     if not isData:
-        Corrections.Initialize(period=period)
+        Corrections.Initialize(config=config['GLOBAL'])
     triggerFile = config['GLOBAL']['triggerFile']
     trigger_class = Triggers.Triggers(triggerFile) if triggerFile is not None else None
     df = ROOT.RDataFrame("Events", inFile)
@@ -128,11 +145,11 @@ def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, 
         df = lumiFilter.filter(df)
 
     df = Baseline.applyMETFlags(df, config["GLOBAL"]["MET_flags"])
-    df = DefineAndAppend(df,"sample_type", f"static_cast<int>(SampleType::{config[sample_name]['sampleType']})")
-    df = DefineAndAppend(df,"period", f"static_cast<int>(Period::{period})")
-    df = DefineAndAppend(df,"X_mass", f"static_cast<int>({mass})")
+    df = df.Define("sample_type", f"static_cast<int>(SampleType::{config[sample_name]['sampleType']})")
+    df = df.Define("period", f"static_cast<int>(Period::{period})")
+    df = df.Define("X_mass", f"static_cast<int>({mass})")
     is_data = 'true' if isData else 'false'
-    df = DefineAndAppend(df,"is_data", is_data)
+    df = df.Define("isData", is_data)
 
     df = Baseline.CreateRecoP4(df)
     df = Baseline.DefineGenObjects(df, isData=isData, isHH=isHH)
@@ -140,18 +157,20 @@ def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, 
         syst_dict = { 'nano' : 'Central' }
     else:
         df, syst_dict = Corrections.applyScaleUncertainties(df)
-        df,weight_branches = Corrections.getNormalisationCorrections(df, config, sample_name)
-        for br in weight_branches:
-            br_name = f'weight_{br}' if br != "Central" else "weight"
-            colToSave.append(br_name)
     for syst_name, source_name in syst_dict.items():
-        suffix = '' if syst_name in [ 'Central', 'nano' ] else f'_{syst_name}'
+        is_central = syst_name in [ 'Central', 'nano' ]
+        if not is_central and not compute_unc_variations: continue
+        suffix = '' if is_central else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
-        df_syst = addAllVariables(df, syst_name, isData, trigger_class)
-        report = df_syst.Report()
+        dfw = DataFrameWrapper(df)
+        addAllVariables(dfw, syst_name, isData, trigger_class)
+        weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name, is_central and compute_unc_variations)
+        #dfw.df, weight_branches = Corrections.getNormalisationCorrections(dfw.df, config, sample_name)
+        dfw.colToSave.extend(weight_branches)
+        report = dfw.df.Report()
         histReport = ReportTools.SaveReport(report.GetValue(), reoprtName=f"Report{suffix}")
-        varToSave = Utilities.ListToVector(colToSave)
-        df_syst.Snapshot(f"Events{suffix}", outFile, varToSave, snapshotOptions)
+        varToSave = Utilities.ListToVector(dfw.colToSave)
+        dfw.df.Snapshot(f"Events{suffix}", outFile, varToSave, snapshotOptions)
         outputRootFile= ROOT.TFile(outFile, "UPDATE")
         outputRootFile.WriteTObject(histReport, f"Report{suffix}", "Overwrite")
         outputRootFile.Close()
@@ -170,6 +189,7 @@ if __name__ == "__main__":
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--store-noncentral', action="store_true", help="Store ES variations.")
+    parser.add_argument('--compute_unc_variations', type=bool, default=True)
 
     args = parser.parse_args()
 
@@ -189,4 +209,4 @@ if __name__ == "__main__":
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
     createAnatuple(args.inFile, args.outFile, config, args.sample, snapshotOptions, args.nEvents,
-                   args.evtIds, args.store_noncentral)
+                   args.evtIds, args.store_noncentral, args.compute_unc_variations)

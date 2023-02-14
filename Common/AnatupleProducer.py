@@ -5,6 +5,7 @@ import Common.Utilities as Utilities
 import Common.ReportTools as ReportTools
 import Common.triggerSel as Triggers
 import Corrections.Corrections as Corrections
+from Corrections.lumi import LumiFilter
 import copy
 
 #ROOT.EnableImplicitMT(1)
@@ -138,6 +139,11 @@ def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, 
         df = df.Range(range)
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
+
+    if isData and 'lumiFile' in config['GLOBAL']:
+        lumiFilter = LumiFilter(config['GLOBAL']['lumiFile'])
+        df = lumiFilter.filter(df)
+
     df = Baseline.applyMETFlags(df, config["GLOBAL"]["MET_flags"])
     df = df.Define("sample_type", f"static_cast<int>(SampleType::{config[sample_name]['sampleType']})")
     df = df.Define("period", f"static_cast<int>(Period::{period})")
@@ -196,10 +202,6 @@ if __name__ == "__main__":
 
     if os.path.exists(args.outFile):
         os.remove(args.outFile)
-
-
-
-
 
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True

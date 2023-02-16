@@ -152,10 +152,12 @@ bool _HasOOMatching(const RVecMatching& legVector, size_t legIndex,
     return false;
 }
 
-bool HasOOMatching(const RVecMatching& legVector)
+std::pair<bool, std::set<LegIndexPair>>  HasOOMatching(const RVecMatching& legVector)
 {
     std::set<int> onlineSelected;
     std::set<LegIndexPair> offlineSelected;
 
-    return _HasOOMatching(legVector, 0, onlineSelected, offlineSelected);
+    const bool hasMatching = _HasOOMatching(legVector, 0, onlineSelected, offlineSelected);
+    return std::make_pair(hasMatching, offlineSelected);
 }
+

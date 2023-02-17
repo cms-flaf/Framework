@@ -34,7 +34,13 @@ std::shared_ptr<TFile> inline OpenRootFile(const std::string& file_name){
 }
 
 
-void WriteObject(const TObject& object, TDirectory* dir, const std::string& name = "");
+void WriteObject(const TObject& object, TDirectory* dir, const std::string& name = ""){
+    if(!dir)
+        throw analysis::exception("Can't write object to nullptr.");
+    const std::string name_to_write = name.size() ? name : object.GetName();
+    dir->WriteTObject(&object, name_to_write.c_str(), "Overwrite");
+}
+
 
 template<typename Object>
 void WriteObject(const Object& object)
@@ -95,11 +101,48 @@ Object* ReadCloneObject(TDirectory& file, const std::string& original_name, cons
     return CloneObject(*original_object, new_name, detach_from_file);
 }
 
-TDirectory* GetDirectory(TDirectory& root_dir, const std::string& name, bool create_if_needed = true);
+TDirectory* GetDirectory(TDirectory& root_dir, const std::string& name, bool create_if_needed = true)
+{
+    if(!name.size() || (name.size() == 1 && name.at(0) == '/'))
+        return &root_dir;
+    TDirectory* dir = root_dir.GetDirectory(name.c_str());
+    if(!dir && create_if_needed) {
+        const size_t pos = name.find("/");
+        if(pos == std::string::npos || pos == name.size() - 1) {
+            root_dir.mkdir(name.c_str());
+            dir = root_dir.GetDirectory(name.c_str());
+        } else {
+            const std::string first_dir_name = name.substr(0, pos), sub_dirs_path = name.substr(pos + 1);
+            TDirectory* first_dir = GetDirectory(root_dir, first_dir_name, true);
+            dir = GetDirectory(*first_dir, sub_dirs_path, true);
+        }
+    }
+
+    if(!dir)
+        throw analysis::exception("Unable to get directory '%1%' from the root directory '%2%'.")
+            % name % root_dir.GetName();
+    return dir;
+}
 
 enum class ClassInheritance { TH1, TTree, TDirectory };
 
-ClassInheritance FindClassInheritance(const std::string& class_name);
+ClassInheritance FindClassInheritance(const std::string& class_name){
+    TClass *cl = gROOT->GetClass(class_name.c_str());
+    if(!cl)
+        throw analysis::exception("Unable to get TClass for class named '%1%'.") % class_name;
+
+    ClassInheritance inheritance;
+    if(cl->InheritsFrom("TH1"))
+        inheritance = ClassInheritance::TH1;
+    else if(cl->InheritsFrom("TTree"))
+        inheritance = ClassInheritance::TTree;
+    else if(cl->InheritsFrom("TDirectory"))
+        inheritance = ClassInheritance::TDirectory;
+    else
+        throw analysis::exception("Unknown class inheritance for class named '%1%'.") % class_name;
+
+    return inheritance;
+}
 
 struct WarningSuppressor {
     const Int_t old_ignore_level;
@@ -114,11 +157,5 @@ struct WarningSuppressor {
     }
 };
 
-void RebinAndFill(TH2&, const TH2&);
 
 } // namespace root_ext
-
-
-std::ostream& operator<<(std::ostream& s, const TVector3& v);
-std::ostream& operator<<(std::ostream& s, const TLorentzVector& v);
-std::ostream& operator<<(std::ostream& s, const TMatrixD& matrix);

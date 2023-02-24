@@ -2,10 +2,55 @@ import law
 import luigi
 import math
 import os
+import re
 import yaml
 
+from RunKit.envToJson import get_cmsenv
 
 law.contrib.load("htcondor")
+
+def select_items(all_items, filters):
+    def name_match(name, pattern):
+        if pattern[0] == '^':
+            return re.match(pattern, name) is not None
+        return name == pattern
+
+    selected_items = { c for c in all_items }
+    excluded_items = set()
+    keep_prefix = "keep "
+    drop_prefix = "drop "
+    used_filters = set()
+    for item_filter in filters:
+        if item_filter.startswith(keep_prefix):
+            keep = True
+            items_from = excluded_items
+            items_to = selected_items
+            prefix = keep_prefix
+        elif item_filter.startswith(drop_prefix):
+            keep = False
+            items_from = selected_items
+            items_to = excluded_items
+            prefix = drop_prefix
+        else:
+            raise RuntimeError(f'Unsupported filter = "{item_filter}".')
+        pattern = item_filter[len(prefix):]
+        if len(pattern) == 0:
+            raise RuntimeError(f'Filter with an empty pattern expression.')
+
+        to_move = [ item for item in items_from if name_match(item, pattern) ]
+        if len(to_move) > 0:
+            used_filters.add(item_filter)
+            for column in to_move:
+                items_from.remove(column)
+                items_to.add(column)
+
+    unused_filters = set(filters) - used_filters
+    if len(unused_filters) > 0:
+        print("Unused filters: " + " ".join(unused_filters))
+
+    return list(sorted(selected_items))
+
+
 
 class Task(law.Task):
     """
@@ -14,27 +59,26 @@ class Task(law.Task):
     """
 
     version = luigi.Parameter()
-    periods = luigi.Parameter()
+    period = luigi.Parameter()
 
     def __init__(self, *args, **kwargs):
         super(Task, self).__init__(*args, **kwargs)
-        self.all_periods = [ p for p in self.periods.split(',') if len(p) > 0 ]
+        self.cmssw_env_ = None
+        self.sample_config = os.path.join(self.ana_path(), 'config', f'samples_{self.period}.yaml')
 
     def load_sample_configs(self):
-        self.samples = {}
-        self.global_sample_params = {}
-        for period in self.all_periods:
-            self.samples[period] = {}
-            sample_config = os.path.join(self.ana_path(), 'config', f'samples_{period}.yaml')
-            with open(sample_config, 'r') as f:
-                samples = yaml.safe_load(f)
-            for key, value in samples.items():
-                if(type(value) != dict):
-                    raise RuntimeError(f'Invalid sample definition period="{period}", sample_name="{key}"' )
-                if key == 'GLOBAL':
-                    self.global_sample_params[period] = value
-                else:
-                    self.samples[period][key] = value
+        with open(self.sample_config, 'r') as f:
+            samples = yaml.safe_load(f)
+
+        self.global_params = samples['GLOBAL']
+        all_samples = []
+        for key, value in samples.items():
+            if(type(value) != dict):
+                raise RuntimeError(f'Invalid sample definition period="{self.period}", sample_name="{key}"' )
+            if key != 'GLOBAL':
+                all_samples.append(key)
+        selected_samples = select_items(all_samples, self.global_params.get('sampleSelection', []))
+        self.samples = { key : samples[key] for key in selected_samples }
 
     def store_parts(self):
         return (self.__class__.__name__, self.version)
@@ -51,6 +95,15 @@ class Task(law.Task):
     def central_path(self):
         return os.getenv("CENTRAL_STORAGE")
 
+    def central_nanoAOD_path(self):
+        return os.path.join(self.central_path(), 'nanoAOD', self.period)
+
+    def central_anaTuples_path(self):
+        return os.path.join(self.central_path(), 'anaTuples', self.period, self.version)
+
+    def central_anaCache_path(self):
+        return os.path.join(self.central_path(), 'anaCache', self.period, self.version)
+
     def local_path(self, *path):
         parts = (self.ana_data_path(),) + self.store_parts() + path
         return os.path.join(*parts)
@@ -61,6 +114,15 @@ class Task(law.Task):
 
     def local_target(self, *path):
         return law.LocalFileTarget(self.local_path(*path))
+
+    def cmssw_env(self):
+        if self.cmssw_env_ is None:
+            self.cmssw_env_ = get_cmsenv(cmssw_path=os.getenv("DEFAULT_CMSSW_BASE"))
+            for var in [ 'HOME', 'ANALYSIS_PATH', 'ANALYSIS_DATA_PATH', 'X509_USER_PROXY', 'CENTRAL_STORAGE',
+                         'ANALYSIS_BIG_DATA_PATH', 'DEFAULT_CMSSW_BASE']:
+                if var in os.environ:
+                    self.cmssw_env_[var] = os.environ[var]
+        return self.cmssw_env_
 
 
 class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
@@ -89,7 +151,7 @@ class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
         # render_variables are rendered into all files sent with a job
         config.render_variables["analysis_path"] = ana_path
         # force to run on CC7, http://batchdocs.web.cern.ch/batchdocs/local/submit.html#os-choice
-        config.custom_content.append(("requirements", "(OpSysAndVer =?= \"CentOS7\")"))
+        #config.custom_content.append(("requirements", "(OpSysAndVer =?= \"CentOS7\")"))
         # maximum runtime
         config.custom_content.append(("+MaxRuntime", int(math.floor(self.max_runtime * 3600)) - 1))
         # copy the entire environment

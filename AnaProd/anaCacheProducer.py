@@ -1,5 +1,6 @@
 import os
 import sys
+import yaml
 import ROOT
 
 if __name__ == "__main__":
@@ -10,16 +11,21 @@ import Corrections.Corrections as Corrections
 from Corrections.CorrectionsCore import *
 from Corrections.pu import *
 
-def createAnaCache(inDir, config, range, dict):
-
-    period = config["GLOBAL"]["era"]
-
+def createAnaCache(inDir, outFile, global_params, range=None, verbose=1):
     Baseline.Initialize(False, False)
-    Corrections.Initialize(period=period)
+    Corrections.Initialize(config=global_params, load_corr_lib=True, load_pu=True, load_tau=False, load_trg=False,
+                           load_btag=False, loadBTagEff=False, load_met=False)
+
+    if os.path.exists(args.outFile):
+        with open(args.outFile, 'r') as file:
+            dict = yaml.safe_load(file)
+    else:
+        dict = {}
     dict['denumerator']={}
-    sources = [ central, puWeightProducer.uncSource ]
+    sources = [ central ] + puWeightProducer.uncSource
+    input_files = [ os.path.join(inDir, f) for f in os.listdir(inDir) ]
     for tree in [ 'Events', 'EventsNotSelected']:
-        df = ROOT.RDataFrame(tree, os.listdir(inDir))
+        df = ROOT.RDataFrame(tree, input_files)
         if range is not None:
             df = df.Range(range)
         df,syst_names = Corrections.getDenumerator(df, sources)
@@ -29,32 +35,22 @@ def createAnaCache(inDir, config, range, dict):
             for scale in getScales(source):
                 syst_name = getSystName(source, scale)
                 dict['denumerator'][source][scale] = dict['denumerator'][source].get(scale, 0.) + df.Sum(f'weight_denum_{syst_name}').GetValue()
-    print(dict)
+    if verbose > 0:
+        print(dict)
+    with open(outFile, 'w') as file:
+        yaml.dump(dict, file)
 
 if __name__ == "__main__":
     import argparse
     import os
-    import yaml
-    import json
     parser = argparse.ArgumentParser()
-    parser.add_argument('--configFile', type=str)
-    parser.add_argument('--inDir', type=str)
-    parser.add_argument('--outFile', type=str)
+    parser.add_argument('--config', required=True, type=str)
+    parser.add_argument('--inDir', required=True, type=str)
+    parser.add_argument('--outFile', required=True, type=str)
     parser.add_argument('--nEvents', type=int, default=None)
 
     args = parser.parse_args()
 
-    ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
-    ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
-    isHH=False
-    isData = False
-    with open(args.configFile, 'r') as f:
+    with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
-    if os.path.exists(args.outFile):
-        with open(args.outFile, 'r') as file:
-            dict = yaml.safe_load(file)
-    else:
-        dict = {}
-    createAnaCache(args.inDir, config, args.nEvents, dict)
-    with open(args.outFile, 'w') as file:
-        yaml.dump(dict, file)
+    createAnaCache(args.inDir, args.outFile, config['GLOBAL'], range=args.nEvents)

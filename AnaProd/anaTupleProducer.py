@@ -187,10 +187,10 @@ if __name__ == "__main__":
     import os
     import yaml
     parser = argparse.ArgumentParser()
-    parser.add_argument('--configFile', type=str)
-    parser.add_argument('--inFile', type=str)
-    parser.add_argument('--outFile', type=str)
-    parser.add_argument('--sample', type=str)
+    parser.add_argument('--config', required=True, type=str)
+    parser.add_argument('--inFile', required=True, type=str)
+    parser.add_argument('--outFile', required=True, type=str)
+    parser.add_argument('--sample', required=True, type=str)
     parser.add_argument('--compressionLevel', type=int, default=9)
     parser.add_argument('--compressionAlgo', type=str, default="LZMA")
     parser.add_argument('--nEvents', type=int, default=None)
@@ -202,9 +202,7 @@ if __name__ == "__main__":
 
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
-    isHH=False
-    isData = False
-    with open(args.configFile, 'r') as f:
+    with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
 
     if os.path.exists(args.outFile):

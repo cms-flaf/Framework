@@ -11,10 +11,12 @@ def Initialize(loadTF=False, loadHHBtag=False):
     global initialized
     if not initialized:
         headers_dir = os.path.dirname(os.path.abspath(__file__))
+        header_path_RootExt = os.path.join(headers_dir, "RootExt.h")
         header_path_GenLepton = os.path.join(headers_dir, "GenLepton.h")
         header_path_Gen = os.path.join(headers_dir, "BaselineGenSelection.h")
         header_path_Reco = os.path.join(headers_dir, "BaselineRecoSelection.h")
         header_path_HHbTag = os.path.join(headers_dir, "HHbTagScores.h")
+        ROOT.gInterpreter.Declare(f'#include "{header_path_RootExt}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_GenLepton}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Gen}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Reco}"')
@@ -214,7 +216,8 @@ def RecoHttCandidateSelection(df, config):
            .Define("Muon_iso", "Muon_pfRelIso04_all") \
            .Define("Tau_iso", "-Tau_rawDeepTau2017v2p1VSjet")
 
-    df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaIso_WP80")
+    #df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaIso_WP80")
+    df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all<0.1")
     df = df.Define("Tau_B2_eTau_2", f"""
         Tau_B0 && v_ops::pt(Tau_p4) > 20
         && (Tau_idDeepTau2017v2p1VSe >= {getattr(WorkingPointsTauVSe, config["deepTauWPs"]["eTau"]["VSe"])})
@@ -262,11 +265,10 @@ def RecoHttCandidateSelection(df, config):
     """)
 
     df = df.Define("Electron_B2_eE_1", f"""
-        Electron_B0 && v_ops::pt(Electron_p4) > 20
-        && (Electron_mvaIso_WP80 || Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.15)
+        Electron_B0 && v_ops::pt(Electron_p4) > 20 &&  Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.15
     """)
     df = df.Define("Electron_B2_eE_2", f"""
-        Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3
+                    Electron_B2_eE_1
     """)
 
     cand_columns = []

@@ -1,4 +1,4 @@
-diTau:
+ditau:
   channels:
     - tauTau
   path_data:
@@ -58,12 +58,12 @@ singleMu:
   legs:
     - offline_obj:
         type: Muon
-        cut:  v_ops::pt(Muon_p4) > 25 && abs(v_ops::eta(Muon_p4)) < 2.1
+        cut:  v_ops::pt(Muon_p4) > 26 && abs(v_ops::eta(Muon_p4)) < 2.1
       online_obj:
         cut: TrigObj_id == 13 && (TrigObj_filterBits&32)!=0
       doMatching: True
 
-MuTau:
+mutau:
   channels:
     - muTau
   path_MC:
@@ -93,16 +93,16 @@ singleEle:
     - eMu
   path:
     - HLT_Ele32_WPTight_Gsf
-    - HLT_Ele35_WPTight_Gsf
+    #- HLT_Ele35_WPTight_Gsf ? understand
   legs:
     - offline_obj:
         type: Electron
-        cut: v_ops::pt(Electron_p4) > 33 && abs(v_ops::eta(Electron_p4)) < 2.1
+        cut: v_ops::pt(Electron_p4) > 34 && abs(v_ops::eta(Electron_p4)) < 2.5
       online_obj:
         cut: TrigObj_id == 11 && (TrigObj_filterBits&2)!=0
       doMatching: True
 
-EleTau:
+etau:
   channels:
     - eTau
   path_MC:

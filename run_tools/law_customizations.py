@@ -1,3 +1,4 @@
+import copy
 import law
 import luigi
 import math
@@ -8,6 +9,12 @@ import yaml
 from RunKit.envToJson import get_cmsenv
 
 law.contrib.load("htcondor")
+
+def copy_param(ref_param, new_default):
+  param = copy.deepcopy(ref_param)
+  param._default = new_default
+  return param
+
 
 def select_items(all_items, filters):
     def name_match(name, pattern):
@@ -102,7 +109,7 @@ class Task(law.Task):
         return os.path.join(self.central_path(), 'anaTuples', self.period, self.version)
 
     def central_anaCache_path(self):
-        return os.path.join(self.central_path(), 'anaCache', self.period, self.version)
+        return os.path.join(self.central_path(), 'anaCache', self.period)
 
     def local_path(self, *path):
         parts = (self.ana_data_path(),) + self.store_parts() + path
@@ -135,7 +142,7 @@ class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
     """
 
     max_runtime = law.DurationParameter(default=12.0, unit="h", significant=False,
-        description="maximum runtime, default unit is hours, default: 12")
+                                        description="maximum runtime, default unit is hours")
 
     def htcondor_output_directory(self):
         # the directory where submission meta data should be stored
@@ -144,18 +151,16 @@ class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
     def htcondor_bootstrap_file(self):
         # each job can define a bootstrap file that is executed prior to the actual job
         # in order to setup software and environment variables
-        return law.util.rel_path(__file__, "bootstrap.sh")
+        return os.path.join(os.getenv("ANALYSIS_PATH"), "bootstrap.sh")
 
     def htcondor_job_config(self, config, job_num, branches):
         ana_path = os.getenv("ANALYSIS_PATH")
         # render_variables are rendered into all files sent with a job
         config.render_variables["analysis_path"] = ana_path
-        # force to run on CC7, http://batchdocs.web.cern.ch/batchdocs/local/submit.html#os-choice
-        #config.custom_content.append(("requirements", "(OpSysAndVer =?= \"CentOS7\")"))
+        # force to run on CC7, https://batchdocs.web.cern.ch/local/submit.html
+        config.custom_content.append(("requirements", '( (OpSysAndVer =?= "CentOS7") || (OpSysAndVer =?= "CentOS8") )'))
         # maximum runtime
         config.custom_content.append(("+MaxRuntime", int(math.floor(self.max_runtime * 3600)) - 1))
-        # copy the entire environment
-        config.custom_content.append(("getenv", "true"))
 
         log_path = os.path.join(ana_path, "data", "logs")
         os.makedirs(log_path, exist_ok=True)

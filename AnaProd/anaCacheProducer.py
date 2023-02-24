@@ -2,6 +2,7 @@ import os
 import sys
 import yaml
 import ROOT
+import datetime
 
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
@@ -12,6 +13,7 @@ from Corrections.CorrectionsCore import *
 from Corrections.pu import *
 
 def createAnaCache(inDir, outFile, global_params, range=None, verbose=1):
+    start_time = datetime.datetime.now()
     Baseline.Initialize(False, False)
     Corrections.Initialize(config=global_params, load_corr_lib=True, load_pu=True, load_tau=False, load_trg=False,
                            load_btag=False, loadBTagEff=False, load_met=False)
@@ -21,20 +23,22 @@ def createAnaCache(inDir, outFile, global_params, range=None, verbose=1):
             dict = yaml.safe_load(file)
     else:
         dict = {}
-    dict['denumerator']={}
+    dict['denominator']={}
     sources = [ central ] + puWeightProducer.uncSource
     input_files = [ os.path.join(inDir, f) for f in os.listdir(inDir) ]
     for tree in [ 'Events', 'EventsNotSelected']:
         df = ROOT.RDataFrame(tree, input_files)
         if range is not None:
             df = df.Range(range)
-        df,syst_names = Corrections.getDenumerator(df, sources)
+        df,syst_names = Corrections.getDenomerator(df, sources)
         for source in sources:
-            if source not in dict['denumerator']:
-                dict['denumerator'][source]={}
+            if source not in dict['denominator']:
+                dict['denominator'][source]={}
             for scale in getScales(source):
                 syst_name = getSystName(source, scale)
-                dict['denumerator'][source][scale] = dict['denumerator'][source].get(scale, 0.) + df.Sum(f'weight_denum_{syst_name}').GetValue()
+                dict['denominator'][source][scale] = dict['denominator'][source].get(scale, 0.) + df.Sum(f'weight_denom_{syst_name}').GetValue()
+    end_time = datetime.datetime.now()
+    dict['runtime'] = (end_time - start_time).total_seconds()
     if verbose > 0:
         print(dict)
     with open(outFile, 'w') as file:

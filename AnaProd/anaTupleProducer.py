@@ -1,4 +1,5 @@
 import copy
+import datetime
 import os
 import sys
 import ROOT
@@ -107,9 +108,9 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         dfw.DefineAndAppend(f"b{leg_idx+1}_HHbtag", f"static_cast<float>(Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}]))")
 
 
-def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, evtIds,
+def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptions,range, evtIds,
                    store_noncentral, compute_unc_variations):
-
+    start_time = datetime.datetime.now()
     period = config["GLOBAL"]["era"]
     mass = -1 if 'mass' not in config[sample_name] else config[sample_name]['mass']
     isHH = True if mass > 0 else False
@@ -150,7 +151,9 @@ def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, 
         dfw = Utilities.DataFrameWrapper(df)
         addAllVariables(dfw, syst_name, isData, trigger_class)
         if not isData:
-            weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name, is_central and compute_unc_variations)
+            weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name,
+                                        return_variations=is_central and compute_unc_variations,
+                                        ana_cache=anaCache)
             weight_branches.extend(dfw.Apply(Corrections.trg.getTrgSF, trigger_class.trigger_dict.keys(), is_central and compute_unc_variations))
             weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations))
             dfw.colToSave.extend(weight_branches)
@@ -161,6 +164,12 @@ def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, 
         outputRootFile= ROOT.TFile(outFile, "UPDATE")
         outputRootFile.WriteTObject(histReport, f"Report{suffix}", "Overwrite")
         outputRootFile.Close()
+    outputRootFile= ROOT.TFile(outFile, "UPDATE")
+    hist_time = ROOT.TH1D("time", "time", 1, 0, 1)
+    end_time = datetime.datetime.now()
+    hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
+    outputRootFile.WriteTObject(hist_time, f"runtime", "Overwrite")
+    outputRootFile.Close()
 
 if __name__ == "__main__":
     import argparse
@@ -171,6 +180,7 @@ if __name__ == "__main__":
     parser.add_argument('--inFile', required=True, type=str)
     parser.add_argument('--outFile', required=True, type=str)
     parser.add_argument('--sample', required=True, type=str)
+    parser.add_argument('--anaCache', required=True, type=str)
     parser.add_argument('--compressionLevel', type=int, default=9)
     parser.add_argument('--compressionAlgo', type=str, default="LZMA")
     parser.add_argument('--nEvents', type=int, default=None)
@@ -185,6 +195,9 @@ if __name__ == "__main__":
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
 
+    with open(args.anaCache, 'r') as f:
+        anaCache = yaml.safe_load(f)
+
     if os.path.exists(args.outFile):
         os.remove(args.outFile)
 
@@ -193,5 +206,5 @@ if __name__ == "__main__":
     snapshotOptions.fMode="UPDATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
-    createAnatuple(args.inFile, args.outFile, config, args.sample, snapshotOptions, args.nEvents,
+    createAnatuple(args.inFile, args.outFile, config, args.sample, anaCache, snapshotOptions, args.nEvents,
                    args.evtIds, args.store_noncentral, args.compute_unc_variations)

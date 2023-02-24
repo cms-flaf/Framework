@@ -1,5 +1,10 @@
+import os
+import sys
 import ROOT
-import numpy as np
+
+if __name__ == "__main__":
+    sys.path.append(os.environ['ANALYSIS_PATH'])
+
 import Common.BaselineSelection as Baseline
 import Corrections.Corrections as Corrections
 from Corrections.CorrectionsCore import *
@@ -25,8 +30,6 @@ def createAnaCache(inDir, config, range, dict):
                 syst_name = getSystName(source, scale)
                 dict['denumerator'][source][scale] = dict['denumerator'][source].get(scale, 0.) + df.Sum(f'weight_denum_{syst_name}').GetValue()
     print(dict)
-
-
 
 if __name__ == "__main__":
     import argparse
@@ -55,5 +58,3 @@ if __name__ == "__main__":
     createAnaCache(args.inDir, config, args.nEvents, dict)
     with open(args.outFile, 'w') as file:
         yaml.dump(dict, file)
-
-

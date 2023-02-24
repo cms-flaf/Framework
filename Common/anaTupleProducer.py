@@ -1,12 +1,18 @@
+import copy
+import os
+import sys
 import ROOT
-import numpy as np
+
+if __name__ == "__main__":
+    sys.path.append(os.environ['ANALYSIS_PATH'])
+
 import Common.BaselineSelection as Baseline
 import Common.Utilities as Utilities
 import Common.ReportTools as ReportTools
 import Common.triggerSel as Triggers
 import Corrections.Corrections as Corrections
 from Corrections.lumi import LumiFilter
-import copy
+
 
 #ROOT.EnableImplicitMT(1)
 

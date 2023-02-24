@@ -10,7 +10,7 @@ Author: Konstantin Androsov
 #include <Math/PtEtaPhiM4D.h>
 #include <Math/Point3D.h>
 #include <Math/GenVector/Cartesian3D.h>
-
+#include "GenStatusFlags.h"
 
 namespace reco_tau {
 namespace gen_truth {

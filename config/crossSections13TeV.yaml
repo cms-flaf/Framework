@@ -322,6 +322,10 @@ TTHHTo4b:
   crossSec: 756.5e-06 * 0.5824 * 0.5824
   reference: Higgs_XSBR_YR4
   unc: 4.633e-06
+TTHHTo2B2Tau:
+  crossSec: 756.5e-06 * 0.5824 * 0.06272 * 2
+  reference: Higgs_XSBR_YR4
+  unc: 4.633e-06
 TTHHToNon4b:
   crossSec: 756.5e-06 * (1-0.5824 * 0.5824)
   reference: Higgs_XSBR_YR4

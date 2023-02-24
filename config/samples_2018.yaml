@@ -1394,6 +1394,16 @@ TTHHToNon4b:
   miniAOD: /TTHHToNon4b_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: TTHH
   crossSection: TTHHToNon4b
+TTHHTo2B2Tau:
+  miniAOD: /TTHHTo2B2Tau_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
+  miniAOD_ignoreFiles:
+    - /store/mc/RunIISummer20UL18MiniAODv2/TTHHTo2B2Tau_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/2820000/B10EADB5-9F22-8B47-A316-140AB9BFE8CD.root
+    - /store/mc/RunIISummer20UL18MiniAODv2/TTHHTo2B2Tau_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/2820000/758465EE-50F3-1A46-B5B7-C26A49058F13.root
+    - /store/mc/RunIISummer20UL18MiniAODv2/TTHHTo2B2Tau_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/2820000/06C695CF-EA45-4F45-B578-D7190D17E6A7.root
+    - /store/mc/RunIISummer20UL18MiniAODv2/TTHHTo2B2Tau_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/2820000/915E868B-B7D4-DB4D-9D7E-250C944EE284.root
+    - /store/mc/RunIISummer20UL18MiniAODv2/TTHHTo2B2Tau_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/2820000/887995A6-7658-B544-9851-8EC0561707F2.root
+  sampleType: TTHH
+  crossSection: TTHHTo2B2Tau
 TTHH:
   miniAOD: /TTHH_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: TTHH

@@ -126,9 +126,9 @@ column_filters_for_failed:
   - keep ^Pileup_(nPU|nTrueInt)$
 
 processing_module:
-  file: NanoProd/skimNano.py
+  file: Common/skimNano.py
   function: skim_RecoLeptons
 
 processing_module_for_failed:
-  file: NanoProd/skimNano.py
+  file: Common/skimNano.py
   function: skim_failed_RecoLeptons

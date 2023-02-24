@@ -1,10 +1,8 @@
 import ROOT
 import os
-from scipy import stats
-import numpy as np
-import enum
-from Utilities import *
+from .Utilities import *
 
+print
 initialized = False
 
 ana_reco_object_collections = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau", "MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"]
@@ -12,7 +10,6 @@ ana_reco_object_collections = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boo
 def Initialize(loadTF=False, loadHHBtag=False):
     global initialized
     if not initialized:
-        import os
         headers_dir = os.path.dirname(os.path.abspath(__file__))
         header_path_GenLepton = os.path.join(headers_dir, "GenLepton.h")
         header_path_Gen = os.path.join(headers_dir, "BaselineGenSelection.h")
@@ -104,16 +101,18 @@ def SelectRecoP4(df, syst_name='nano'):
     return df
 
 def CreateRecoP4(df, suffix='nano'):
+    if len(suffix) > 0:
+        suffix = "_" + suffix
     if("TrigObj_pt" in df.GetColumnNames()):
         df = df.Define(f"TrigObj_idx", f"CreateIndexes(TrigObj_pt.size())")
         df = df.Define("TrigObj_mass", "RVecF(TrigObj_pt.size(), 0.f)")
         df = df.Define(f"TrigObj_p4", f"GetP4(TrigObj_pt,TrigObj_eta,TrigObj_phi, TrigObj_mass, TrigObj_idx)")
     for obj in ana_reco_object_collections:
         if "MET" in obj:
-            df = df.Define(f"{obj}_p4_{suffix}", f"LorentzVectorM({obj}_pt, 0., {obj}_phi, 0.)")
+            df = df.Define(f"{obj}_p4{suffix}", f"LorentzVectorM({obj}_pt, 0., {obj}_phi, 0.)")
         else:
             df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())")
-            df = df.Define(f"{obj}_p4_{suffix}", f"GetP4({obj}_pt, {obj}_eta, {obj}_phi, {obj}_mass, {obj}_idx)")
+            df = df.Define(f"{obj}_p4{suffix}", f"GetP4({obj}_pt, {obj}_eta, {obj}_phi, {obj}_mass, {obj}_idx)")
     return df
 
 def DefineMETCuts(met_thr, met_collections):

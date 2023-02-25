@@ -118,8 +118,12 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
     Baseline.Initialize(True, True)
     if not isData:
         Corrections.Initialize(config=config['GLOBAL'])
-    triggerFile = config['GLOBAL']['triggerFile']
-    trigger_class = Triggers.Triggers(triggerFile) if triggerFile is not None else None
+    triggerFile = config['GLOBAL'].get('triggerFile')
+    if triggerFile is not None:
+        triggerFile = os.path.join(os.environ['ANALYSIS_PATH'], triggerFile)
+        trigger_class = Triggers.Triggers(triggerFile)
+    else:
+        trigger_class = None
     df = ROOT.RDataFrame("Events", inFile)
     if range is not None:
         df = df.Range(range)
@@ -158,9 +162,9 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
             weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations))
             dfw.colToSave.extend(weight_branches)
         report = dfw.df.Report()
-        histReport = ReportTools.SaveReport(report.GetValue(), reoprtName=f"Report{suffix}")
         varToSave = Utilities.ListToVector(dfw.colToSave)
         dfw.df.Snapshot(f"Events{suffix}", outFile, varToSave, snapshotOptions)
+        histReport = ReportTools.SaveReport(report.GetValue(), reoprtName=f"Report{suffix}")
         outputRootFile= ROOT.TFile(outFile, "UPDATE")
         outputRootFile.WriteTObject(histReport, f"Report{suffix}", "Overwrite")
         outputRootFile.Close()

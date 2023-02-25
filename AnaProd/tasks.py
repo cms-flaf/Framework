@@ -43,7 +43,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return { "anaCache" : AnaCacheTask.req(self) }
 
     def requires(self):
-        return [ AnaCacheTask.req(self) ]
+        return [ AnaCacheTask.req(self, max_runtime=AnaCacheTask.max_runtime._default) ]
 
     def create_branch_map(self):
         self.load_sample_configs()

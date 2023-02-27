@@ -35,18 +35,20 @@ def bTagProdEff(inFile, config, sample_name, range, evtIds):
     dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
     dfw.Apply(Baseline.RecoJetSelection)
     df = dfw.df
-    pt_bins = Utilities.ListToVector([20,30,40,60,100,150,200,300,1000], "double")
-    eta_bins = Utilities.ListToVector([0,0.6,1.2,2.1,2.4], "double")
+    pt_bins = Utilities.ListToVector([20,25,30,35,40,50,60,70,80,100,150,200,300,500,1000], "double")
+    eta_bins = Utilities.ListToVector([0,0.6,1.2,2.1,2.5], "double")
     model = ROOT.RDF.TH2DModel("", "", pt_bins.size()-1, pt_bins.data(), eta_bins.size()-1, eta_bins.data())
     hists = {}
     for flav in [ 0, 4, 5]:
-        df = df.Define(f"Jet_eta_flavour{flav}", f"abs(v_ops::eta(Jet_p4[Jet_bCand && Jet_hadronFlavour=={flav}]))")
-        df = df.Define(f"Jet_pt_flavour{flav}", f"v_ops::pt(Jet_p4[Jet_bCand && Jet_hadronFlavour=={flav}])")
         hist_name = f'jet_pt_eta_{flav}'
+        df = df.Define(f"Jet_flavour{flav}_sel", f"Jet_bCand && Jet_hadronFlavour=={flav}")
+        df = df.Define(f"Jet_eta_flavour{flav}", f"abs(v_ops::eta(Jet_p4[Jet_flavour{flav}_sel]))")
+        df = df.Define(f"Jet_pt_flavour{flav}", f"v_ops::pt(Jet_p4[Jet_flavour{flav}_sel])")
         hists[hist_name] = df.Histo2D(model, f"Jet_pt_flavour{flav}", f"Jet_eta_flavour{flav}")
         for wp, thr in wpValues.items():
-            df = df.Define(f"Jet_eta_WP{wp.name}_flavour{flav}", f"abs(v_ops::eta(Jet_p4[Jet_bCand && Jet_hadronFlavour=={flav} && Jet_btagDeepFlavB > {thr}]))")
-            df = df.Define(f"Jet_pt_WP{wp.name}_flavour{flav}", f"v_ops::pt(Jet_p4[Jet_bCand && Jet_hadronFlavour=={flav} && Jet_btagDeepFlavB > {thr}])")
+            df = df.Define(f"Jet_WP{wp.name}_flavour{flav}_sel", f"Jet_flavour{flav}_sel && Jet_btagDeepFlavB > {thr}")
+            df = df.Define(f"Jet_eta_WP{wp.name}_flavour{flav}", f"abs(v_ops::eta(Jet_p4[Jet_WP{wp.name}_flavour{flav}_sel]))")
+            df = df.Define(f"Jet_pt_WP{wp.name}_flavour{flav}", f"v_ops::pt(Jet_p4[Jet_WP{wp.name}_flavour{flav}_sel])")
             hist_name = f'jet_pt_eta_{flav}_{wp.name}'
             hists[hist_name] = df.Histo2D(model, f"Jet_pt_WP{wp.name}_flavour{flav}", f"Jet_eta_WP{wp.name}_flavour{flav}")
     return hists
@@ -79,3 +81,5 @@ if __name__ == "__main__":
         hist.SetName(hist_name)
         fileToSave.WriteTObject(hist.GetValue(), hist_name)
     fileToSave.Close()
+    #for hist_name, hist in hists.items():
+

@@ -15,6 +15,9 @@ def copy_param(ref_param, new_default):
   param._default = new_default
   return param
 
+def get_param_value(cls, param_name):
+    param = getattr(cls, param_name)
+    return param.task_value(cls.__name__, param_name)
 
 def select_items(all_items, filters):
     def name_match(name, pattern):
@@ -143,6 +146,10 @@ class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
 
     max_runtime = law.DurationParameter(default=12.0, unit="h", significant=False,
                                         description="maximum runtime, default unit is hours")
+    poll_interval = copy_param(law.htcondor.HTCondorWorkflow.poll_interval, 5)
+
+    def htcondor_check_job_completeness(self):
+        return False
 
     def htcondor_output_directory(self):
         # the directory where submission meta data should be stored

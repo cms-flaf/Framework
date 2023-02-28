@@ -111,6 +111,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
 def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptions,range, evtIds,
                    store_noncentral, compute_unc_variations):
     start_time = datetime.datetime.now()
+    compression_settings = snapshotOptions.fCompressionAlgorithm * 100 + snapshotOptions.fCompressionLevel
     period = config["GLOBAL"]["era"]
     mass = -1 if 'mass' not in config[sample_name] else config[sample_name]['mass']
     isHH = True if mass > 0 else False
@@ -124,7 +125,8 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
         trigger_class = Triggers.Triggers(triggerFile)
     else:
         trigger_class = None
-    df = ROOT.RDataFrame("Events", inFile)
+    inFiles = Utilities.ListToVector(inFile.split(','))
+    df = ROOT.RDataFrame("Events", inFiles)
     if range is not None:
         df = df.Range(range)
     if len(evtIds) > 0:
@@ -164,11 +166,12 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
         report = dfw.df.Report()
         varToSave = Utilities.ListToVector(dfw.colToSave)
         dfw.df.Snapshot(f"Events{suffix}", outFile, varToSave, snapshotOptions)
+        snapshotOptions.fMode = "UPDATE"
         histReport = ReportTools.SaveReport(report.GetValue(), reoprtName=f"Report{suffix}")
-        outputRootFile= ROOT.TFile(outFile, "UPDATE")
+        outputRootFile= ROOT.TFile(outFile, "UPDATE", "", compression_settings)
         outputRootFile.WriteTObject(histReport, f"Report{suffix}", "Overwrite")
         outputRootFile.Close()
-    outputRootFile= ROOT.TFile(outFile, "UPDATE")
+    outputRootFile= ROOT.TFile(outFile, "UPDATE", "", compression_settings)
     hist_time = ROOT.TH1D("time", "time", 1, 0, 1)
     end_time = datetime.datetime.now()
     hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
@@ -206,8 +209,8 @@ if __name__ == "__main__":
         os.remove(args.outFile)
 
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
-    snapshotOptions.fOverwriteIfExists=True
-    snapshotOptions.fMode="UPDATE"
+    snapshotOptions.fOverwriteIfExists=False
+    snapshotOptions.fMode="RECREATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
     createAnatuple(args.inFile, args.outFile, config, args.sample, anaCache, snapshotOptions, args.nEvents,

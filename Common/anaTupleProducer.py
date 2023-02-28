@@ -177,6 +177,7 @@ if __name__ == "__main__":
     parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--store-noncentral', action="store_true", help="Store ES variations.")
     parser.add_argument('--compute_unc_variations', type=bool, default=True)
+    parser.add_argument('--customisations', type=str, default="")
 
     args = parser.parse_args()
 
@@ -186,6 +187,16 @@ if __name__ == "__main__":
     isData = False
     with open(args.configFile, 'r') as f:
         config = yaml.safe_load(f)
+    config_global = config['GLOBAL']
+    customisations= args.customisations.split(',')
+    for customisation in customisations:
+        substrings = customisation.split('=')
+        value = substrings[-1]
+        key_entries = substrings[0].split('.')
+        cfg_entry = config_global
+        for key in key_entries[:-1]:
+            cfg_entry = cfg_entry[key]
+        cfg_entry[key_entries[-1]] = value
 
     if os.path.exists(args.outFile):
         os.remove(args.outFile)

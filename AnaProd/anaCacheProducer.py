@@ -30,7 +30,7 @@ def createAnaCache(inDir, outFile, global_params, range=None, verbose=1):
         df = ROOT.RDataFrame(tree, input_files)
         if range is not None:
             df = df.Range(range)
-        df,syst_names = Corrections.getDenomerator(df, sources)
+        df,syst_names = Corrections.getDenominator(df, sources)
         for source in sources:
             if source not in dict['denominator']:
                 dict['denominator'][source]={}

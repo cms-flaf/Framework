@@ -28,14 +28,16 @@ for jet_fl in jet_flavors:
                 num = hist_num.GetBinContent(bin_number)
                 den = hist_den.GetBinContent(bin_number)
                 bin_content_num = hist_num.GetBinContent(bin_number)
-                if( bin_number_num == 0 ):
+                if( bin_content_num == 0 ):
                     print(f""" key = {key_num} has bin_number = {bin_number} with 0 entries""")
                 bin_content_den = hist_den.GetBinContent(bin_number)
-                if( bin_number_den == 0 ):
+                if( bin_content_den == 0 ):
                     print(f""" key = {key_den} has bin_number = {bin_number} with 0 entries""")
+                if (bin_content_den < 0):
+                    print(f""" key = {key_den} has bin_number = {bin_number} with {bin_content_den} entries""")
+                    continue
                 c_low = ROOT.TEfficiency.ClopperPearson(den, num, 0.68, False)
                 c_up = ROOT.TEfficiency.ClopperPearson(den, num, 0.68, True)
-                #print(f"low = {c_low}, up = {c_up}")
                 eff= num/den
                 rel_cl_size=(c_up- c_low)/(2*eff)
                 if rel_cl_size>0.01:

@@ -202,17 +202,8 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
-    config_global = config['GLOBAL']
-    customisations= args.customisations.split(',')
-    for customisation in customisations:
-        substrings = customisation.split('=')
-        value = substrings[-1]
-        key_entries = substrings[0].split('.')
-        cfg_entry = config_global
-        for key in key_entries[:-1]:
-            cfg_entry = cfg_entry[key]
-        cfg_entry[key_entries[-1]] = value
-
+    if(args.customisations!=""):
+        Utilities.ApplyConfigCustomisations(config['GLOBAL'], args.customisations)
     with open(args.anaCache, 'r') as f:
         anaCache = yaml.safe_load(f)
 

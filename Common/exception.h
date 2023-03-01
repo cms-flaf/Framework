@@ -6,11 +6,11 @@
 #include <memory>
 #include <boost/format.hpp>
 #include <sstream>
-#ifndef PROJECT_VERSION
-    #define BOOST_STACKTRACE_LINK
-    #define BOOST_STACKTRACE_USE_ADDR2LINE
-    #include <boost/stacktrace.hpp>
-#endif
+// #ifndef PROJECT_VERSION
+//     #define BOOST_STACKTRACE_LINK
+//     #define BOOST_STACKTRACE_USE_ADDR2LINE
+//     #include <boost/stacktrace.hpp>
+// #endif
 namespace analysis {
 
 class exception : public std::exception {
@@ -20,9 +20,9 @@ public:
     {
         try {
             std::ostringstream ss;
-            #ifndef PROJECT_VERSION
-            ss << boost::stacktrace::stacktrace();
-            #endif
+            // #ifndef PROJECT_VERSION
+            // ss << boost::stacktrace::stacktrace();
+            // #endif
             stack_trace = ss.str();
             f_msg = std::make_unique<boost::format>(f_str);
             f_msg->exceptions(boost::io::all_error_bits);

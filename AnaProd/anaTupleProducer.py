@@ -1,4 +1,5 @@
 import copy
+import datetime
 import os
 import sys
 import ROOT
@@ -107,9 +108,10 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         dfw.DefineAndAppend(f"b{leg_idx+1}_HHbtag", f"static_cast<float>(Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}]))")
 
 
-def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, evtIds,
+def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptions,range, evtIds,
                    store_noncentral, compute_unc_variations):
-
+    start_time = datetime.datetime.now()
+    compression_settings = snapshotOptions.fCompressionAlgorithm * 100 + snapshotOptions.fCompressionLevel
     period = config["GLOBAL"]["era"]
     mass = -1 if 'mass' not in config[sample_name] else config[sample_name]['mass']
     isHH = True if mass > 0 else False
@@ -117,9 +119,14 @@ def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, 
     Baseline.Initialize(True, True)
     if not isData:
         Corrections.Initialize(config=config['GLOBAL'])
-    triggerFile = config['GLOBAL']['triggerFile']
-    trigger_class = Triggers.Triggers(triggerFile) if triggerFile is not None else None
-    df = ROOT.RDataFrame("Events", inFile)
+    triggerFile = config['GLOBAL'].get('triggerFile')
+    if triggerFile is not None:
+        triggerFile = os.path.join(os.environ['ANALYSIS_PATH'], triggerFile)
+        trigger_class = Triggers.Triggers(triggerFile)
+    else:
+        trigger_class = None
+    inFiles = Utilities.ListToVector(inFile.split(','))
+    df = ROOT.RDataFrame("Events", inFiles)
     if range is not None:
         df = df.Range(range)
     if len(evtIds) > 0:
@@ -150,27 +157,37 @@ def createAnatuple(inFile, outFile, config, sample_name, snapshotOptions,range, 
         dfw = Utilities.DataFrameWrapper(df)
         addAllVariables(dfw, syst_name, isData, trigger_class)
         if not isData:
-            weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name, is_central and compute_unc_variations)
+            weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name,
+                                        return_variations=is_central and compute_unc_variations,
+                                        ana_cache=anaCache)
             weight_branches.extend(dfw.Apply(Corrections.trg.getTrgSF, trigger_class.trigger_dict.keys(), is_central and compute_unc_variations))
             weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations))
             dfw.colToSave.extend(weight_branches)
         report = dfw.df.Report()
-        histReport = ReportTools.SaveReport(report.GetValue(), reoprtName=f"Report{suffix}")
         varToSave = Utilities.ListToVector(dfw.colToSave)
         dfw.df.Snapshot(f"Events{suffix}", outFile, varToSave, snapshotOptions)
-        outputRootFile= ROOT.TFile(outFile, "UPDATE")
+        snapshotOptions.fMode = "UPDATE"
+        histReport = ReportTools.SaveReport(report.GetValue(), reoprtName=f"Report{suffix}")
+        outputRootFile= ROOT.TFile(outFile, "UPDATE", "", compression_settings)
         outputRootFile.WriteTObject(histReport, f"Report{suffix}", "Overwrite")
         outputRootFile.Close()
+    outputRootFile= ROOT.TFile(outFile, "UPDATE", "", compression_settings)
+    hist_time = ROOT.TH1D("time", "time", 1, 0, 1)
+    end_time = datetime.datetime.now()
+    hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
+    outputRootFile.WriteTObject(hist_time, f"runtime", "Overwrite")
+    outputRootFile.Close()
 
 if __name__ == "__main__":
     import argparse
     import os
     import yaml
     parser = argparse.ArgumentParser()
-    parser.add_argument('--configFile', type=str)
-    parser.add_argument('--inFile', type=str)
-    parser.add_argument('--outFile', type=str)
-    parser.add_argument('--sample', type=str)
+    parser.add_argument('--config', required=True, type=str)
+    parser.add_argument('--inFile', required=True, type=str)
+    parser.add_argument('--outFile', required=True, type=str)
+    parser.add_argument('--sample', required=True, type=str)
+    parser.add_argument('--anaCache', required=True, type=str)
     parser.add_argument('--compressionLevel', type=int, default=9)
     parser.add_argument('--compressionAlgo', type=str, default="LZMA")
     parser.add_argument('--nEvents', type=int, default=None)
@@ -183,9 +200,7 @@ if __name__ == "__main__":
 
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
-    isHH=False
-    isData = False
-    with open(args.configFile, 'r') as f:
+    with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
     config_global = config['GLOBAL']
     customisations= args.customisations.split(',')
@@ -198,13 +213,16 @@ if __name__ == "__main__":
             cfg_entry = cfg_entry[key]
         cfg_entry[key_entries[-1]] = value
 
+    with open(args.anaCache, 'r') as f:
+        anaCache = yaml.safe_load(f)
+
     if os.path.exists(args.outFile):
         os.remove(args.outFile)
 
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
-    snapshotOptions.fOverwriteIfExists=True
-    snapshotOptions.fMode="UPDATE"
+    snapshotOptions.fOverwriteIfExists=False
+    snapshotOptions.fMode="RECREATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
-    createAnatuple(args.inFile, args.outFile, config, args.sample, snapshotOptions, args.nEvents,
+    createAnatuple(args.inFile, args.outFile, config, args.sample, anaCache, snapshotOptions, args.nEvents,
                    args.evtIds, args.store_noncentral, args.compute_unc_variations)

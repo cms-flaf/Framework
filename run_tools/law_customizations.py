@@ -76,7 +76,7 @@ class Task(law.Task):
         self.cmssw_env_ = None
         self.sample_config = os.path.join(self.ana_path(), 'config', f'samples_{self.period}.yaml')
 
-    def load_sample_configs(self, customisations=""):
+    def load_sample_configs(self):
         with open(self.sample_config, 'r') as f:
             samples = yaml.safe_load(f)
 

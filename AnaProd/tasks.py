@@ -142,7 +142,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             sample_types[sample_type].append(sample)
         for sample_type, samples in sample_types.items():
             pre_outputs = {}
-            for pre_branch, pre_branch_data in all_pre_branches.items():
+            for pre_branch, pre_branch_data in sorted(all_pre_branches.items()):
                 sample_id, sample_name, pre_sample_type, split_idx, input_files = pre_branch_data
                 if sample_name in samples:
                     pre_output = AnaTuplePreTask.getOutputFile(self.central_anaTuples_path(), sample_name, split_idx)

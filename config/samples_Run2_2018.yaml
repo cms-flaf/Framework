@@ -37,12 +37,48 @@ GLOBAL:
     - tauID
     - tauES
   deepTauVersion: 2p5
+  channelSelection:
+    - eTau
+    - muTau
+    - tauTau
   sampleSelection:
     - drop ^.*$
-    - keep ^GluGluToRadionToHHTo2B2Tau_M-(250|320)$
+    - keep ^GluGluToRadion*
+    - keep ^GluGluToBulkGraviton*
+    - keep ^VBFToRadion*
+    - keep ^VBFToBulkGraviton*
     - keep ^TTTo(2L2Nu|SemiLeptonic)$
-    - keep ^Tau_2018D$
     - keep ^DYJetsToLL_M-50$
+    - keep ^DYJetsToLL_[0-2]J$
+    - keep ^DYJetsToLL_LHEFilterPtZ*
+    - keep ^EWKW(Minus|Plus)2Jets_WToLNu_M-50$
+    - keep ^EWKZ2Jets_ZToLL_M-50$
+    - keep ^ST_*
+    - drop ^.*NoFully
+    - keep ^WJetsToLNu$
+    - keep ^W[1-4]JetsToLNu$
+    - keep ^[W,Z]{1,3}$
+    - keep ^.*HToTauTau$
+    - keep ^ttHTo*
+    - drop ^ttHToNonbb$
+    - keep ^TTWJetsTo*
+    - keep ^TTZToLLNuNu_M-10$
+    - keep ^TTWW$
+    - keep ^TTZZ$
+    - keep ^TTWZ$
+    - keep ^GluGluToHHTo2B2Tau_node_SM$
+    - keep ^SingleMuon_2018*
+    - keep ^EGamma_2018*
+    - keep ^Tau_2018*
+    - keep ^T{2,3}?
+    - drop ^TT[G*]
+    - drop ^TT4b
+    - drop ^TT[HZ]{1,2}To*
+    - drop ^TTHH$
+    - keep ^TTHHTo2B2Tau$
+    - keep ^QCD_Pt*
+    - drop ^.*Enriched
+
 
 GluGluToRadionToHHTo2B2Tau_M-250:
   miniAOD: /GluGluToRadionToHHTo2B2Tau_M-250_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM

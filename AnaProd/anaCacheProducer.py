@@ -59,6 +59,6 @@ if __name__ == "__main__":
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
 
-    if(args.customisations!=""):
+    if len(args.customisations) > 0:
         Utilities.ApplyConfigCustomisations(config['GLOBAL'], args.customisations)
     createAnaCache(args.inDir, args.outFile, config['GLOBAL'], range=args.nEvents)

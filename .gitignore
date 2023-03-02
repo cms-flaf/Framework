@@ -27,3 +27,5 @@ Studies/Visual
 /filesEntries.txt
 /filesEntries_SingleMuon2018A.txt
 /cmssw_report.xml
+Corrections/data/*/*/*.root
+*.txt

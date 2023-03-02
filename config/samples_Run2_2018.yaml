@@ -36,8 +36,7 @@ GLOBAL:
   corrections:
     - tauID
     - tauES
-  deepTauVersion:
-   2p5
+  deepTauVersion: 2p5
   sampleSelection:
     - drop ^.*$
     - keep ^GluGluToRadionToHHTo2B2Tau_M-(250|320)$

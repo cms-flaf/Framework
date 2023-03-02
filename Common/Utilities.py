@@ -81,16 +81,13 @@ def ApplyConfigCustomisations(config_dict, customisations):
     customisations_to_apply = customisations.split(',')
     for customisation in customisations_to_apply:
         substrings = customisation.split('=')
+        if len(substrings) != 2 :
+            raise RuntimeError("len of substring is not 2!")
+        print(f"len substring is {len(substrings)}")
         value = substrings[-1]
         key_entries = substrings[0].split('.')
         cfg_entry = config_dict
         for key in key_entries[:-1]:
             cfg_entry = cfg_entry[key]
-        cfg_entry[key_entries[-1]] = value
-    print(config_dict)
-
-    with open(args.anaCache, 'r') as f:
-        anaCache = yaml.safe_load(f)
-
-    if os.path.exists(args.outFile):
-        os.remove(args.outFile)
+        entry_type = type(cfg_entry[key_entries[-1]])
+        cfg_entry[key_entries[-1]] = entry_type(value)

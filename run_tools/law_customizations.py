@@ -75,6 +75,7 @@ class Task(law.Task):
         super(Task, self).__init__(*args, **kwargs)
         self.cmssw_env_ = None
         self.sample_config = os.path.join(self.ana_path(), 'config', f'samples_{self.period}.yaml')
+        self.customisations = ""
 
     def load_sample_configs(self):
         with open(self.sample_config, 'r') as f:
@@ -134,6 +135,8 @@ class Task(law.Task):
                     self.cmssw_env_[var] = os.environ[var]
         return self.cmssw_env_
 
+    def load_customisations(self):
+        return self.customisations
 
 class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
     """

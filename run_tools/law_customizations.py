@@ -70,6 +70,7 @@ class Task(law.Task):
 
     version = luigi.Parameter()
     period = luigi.Parameter()
+    customisations =luigi.Parameter(default="")
 
     def __init__(self, *args, **kwargs):
         super(Task, self).__init__(*args, **kwargs)

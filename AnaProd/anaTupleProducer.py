@@ -50,8 +50,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
     dfw.Define( f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
     dfw.DefineAndAppend("channelId","static_cast<int>(httCand.channel())")
-    channel_to_select = " || ".join(f"channelId==static_cast<int>(Channel::{ch})" for ch in config["GLOBAL"]["channelSelection"])
-    dfw.Filter(channel_to_select)
+    channel_to_select = " || ".join(f"httCand.channel()==Channel::{ch}" for ch in config["GLOBAL"]["channelSelection"])
+    dfw.Filter(channel_to_select, "select channels")
     jet_obs = JetObservables
     if not isData:
         jet_obs.extend(JetObservablesMC)

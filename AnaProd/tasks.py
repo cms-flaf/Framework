@@ -75,7 +75,7 @@ class AnaTuplePreTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             os.remove(tmp_file)
         anaCache = os.path.join(self.central_anaCache_path(), sample_name, 'anaCache.yaml')
         sh_call([ 'python3', producer, '--config', self.sample_config, '--inFile', ','.join(input_files),
-                  '--outFile', tmp_file, '--sample', sample_name, '--anaCache', anaCache, '--customisations', load_customisations()], env=self.cmssw_env())
+                  '--outFile', tmp_file, '--sample', sample_name, '--anaCache', anaCache, '--customisations', self.customisations], env=self.cmssw_env())
         if not checkRootFileSafe(tmp_file, 'Events', verbose=1):
             os.remove(tmp_file)
             raise RuntimeError(f'Produced anaTuple {tmp_file} is corrupted')

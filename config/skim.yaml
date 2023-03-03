@@ -116,6 +116,7 @@ column_filters:
   - drop ^HLT_.*Tau3[mM]u.*$
   - drop ^HLT_Mu.*(Ele|Mu|Jpsi|Upsilon|NoFilters|IP).*
   - drop ^.*_idx$
+  - drop ^TrigObj_mass$
   - drop ^.*_p4$
   - drop ^.*_B[01](T|)$
 

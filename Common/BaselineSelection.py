@@ -107,7 +107,8 @@ def CreateRecoP4(df, suffix='nano'):
         suffix = "_" + suffix
     if("TrigObj_pt" in df.GetColumnNames()):
         df = df.Define(f"TrigObj_idx", f"CreateIndexes(TrigObj_pt.size())")
-        df = df.Define("TrigObj_mass", "RVecF(TrigObj_pt.size(), 0.f)")
+        if "TrigObj_mass" not in df.GetColumnNames():
+            df = df.Define("TrigObj_mass", "RVecF(TrigObj_pt.size(), 0.f)")
         df = df.Define(f"TrigObj_p4", f"GetP4(TrigObj_pt,TrigObj_eta,TrigObj_phi, TrigObj_mass, TrigObj_idx)")
     for obj in ana_reco_object_collections:
         if "MET" in obj:

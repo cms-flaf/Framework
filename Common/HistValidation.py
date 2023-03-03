@@ -1,5 +1,4 @@
 import ROOT
-
 import os
 ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
 hist_file = ROOT.TFile("Corrections/data/BTV/2018_UL/btagEff.root","READ") # take as argument
@@ -24,7 +23,7 @@ for jet_fl in jet_flavors:
         hist_num = hist_file.Get(key_num)
         for x_bin_number in range(1, hist_den.GetNbinsX()-1):
             for y_bin_number in range(1, hist_den.GetNbinsY()-1):
-                bin_number = hist.GetBin(x_bin_number,y_bin_number)
+                bin_number = hist_den.GetBin(x_bin_number,y_bin_number)
                 num = hist_num.GetBinContent(bin_number)
                 den = hist_den.GetBinContent(bin_number)
                 if( num == 0 ):

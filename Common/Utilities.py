@@ -63,6 +63,9 @@ class DataFrameWrapper:
     def Define(self, varToDefine, varToCall):
         self.df = self.df.Define(f"{varToDefine}", f"{varToCall}")
 
+    def Filter(self, filter_str, filter_name=""):
+        self.df = self.df.Filter(filter_str, filter_name)
+
     def DefineAndAppend(self, varToDefine, varToCall):
         self.Define(varToDefine, varToCall)
         self.colToSave.append(varToDefine)
@@ -76,3 +79,17 @@ class DataFrameWrapper:
             return result[1:]
         else:
             self.df = result
+
+def ApplyConfigCustomisations(config_dict, customisations):
+    customisations_to_apply = customisations.split(',')
+    for customisation in customisations_to_apply:
+        substrings = customisation.split('=')
+        if len(substrings) != 2 :
+            raise RuntimeError("len of substring is not 2!")
+        value = substrings[-1]
+        key_entries = substrings[0].split('.')
+        cfg_entry = config_dict
+        for key in key_entries[:-1]:
+            cfg_entry = cfg_entry[key]
+        entry_type = type(cfg_entry[key_entries[-1]])
+        cfg_entry[key_entries[-1]] = entry_type(value)

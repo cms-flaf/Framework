@@ -35,7 +35,7 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             inDir = os.path.join(self.central_nanoAOD_path(), sample_name)
             os.makedirs(os.path.dirname(self.output().path), exist_ok=True)
             sh_call(['python3', producer, '--config', self.sample_config, '--inDir', inDir,
-                    '--outFile', self.output().path], env=self.cmssw_env())
+                    '--outFile', self.output().path, '--customisations', self.customisations ], env=self.cmssw_env())
         print(f'anaCache for sample {sample_name} is created in {self.output().path}')
 
 class AnaTuplePreTask(Task, HTCondorWorkflow, law.LocalWorkflow):
@@ -75,7 +75,7 @@ class AnaTuplePreTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             os.remove(tmp_file)
         anaCache = os.path.join(self.central_anaCache_path(), sample_name, 'anaCache.yaml')
         sh_call([ 'python3', producer, '--config', self.sample_config, '--inFile', ','.join(input_files),
-                  '--outFile', tmp_file, '--sample', sample_name, '--anaCache', anaCache ], env=self.cmssw_env())
+                  '--outFile', tmp_file, '--sample', sample_name, '--anaCache', anaCache, '--customisations', self.customisations], env=self.cmssw_env())
         if not checkRootFileSafe(tmp_file, 'Events', verbose=1):
             os.remove(tmp_file)
             raise RuntimeError(f'Produced anaTuple {tmp_file} is corrupted')
@@ -142,7 +142,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             sample_types[sample_type].append(sample)
         for sample_type, samples in sample_types.items():
             pre_outputs = {}
-            for pre_branch, pre_branch_data in all_pre_branches.items():
+            for pre_branch, pre_branch_data in sorted(all_pre_branches.items()):
                 sample_id, sample_name, pre_sample_type, split_idx, input_files = pre_branch_data
                 if sample_name in samples:
                     pre_output = AnaTuplePreTask.getOutputFile(self.central_anaTuples_path(), sample_name, split_idx)

@@ -9,6 +9,7 @@ if __name__ == "__main__":
 
 import Common.BaselineSelection as Baseline
 import Corrections.Corrections as Corrections
+import Common.Utilities as Utilities
 from Corrections.CorrectionsCore import *
 from Corrections.pu import *
 
@@ -52,9 +53,12 @@ if __name__ == "__main__":
     parser.add_argument('--inDir', required=True, type=str)
     parser.add_argument('--outFile', required=True, type=str)
     parser.add_argument('--nEvents', type=int, default=None)
-
+    parser.add_argument('--customisations', type=str, default="")
     args = parser.parse_args()
 
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
+
+    if len(args.customisations) > 0:
+        Utilities.ApplyConfigCustomisations(config['GLOBAL'], args.customisations)
     createAnaCache(args.inDir, args.outFile, config['GLOBAL'], range=args.nEvents)

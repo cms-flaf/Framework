@@ -50,10 +50,13 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
     dfw.Define( f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
     dfw.DefineAndAppend("channelId","static_cast<int>(httCand.channel())")
+    channel_to_select = " || ".join(f"httCand.channel()==Channel::{ch}" for ch in config["GLOBAL"]["channelSelection"])
+    dfw.Filter(channel_to_select, "select channels")
     jet_obs = JetObservables
     if not isData:
         jet_obs.extend(JetObservablesMC)
-        dfw.colToSave.append("LHE_HT")
+        if "LHE_HLT" in dfw.df.GetColumnNames():
+            dfw.colToSave.append("LHE_HT")
     for leg_idx in [0,1]:
         dfw.DefineAndAppend( f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
         dfw.DefineAndAppend( f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
@@ -194,6 +197,7 @@ if __name__ == "__main__":
     parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--store-noncentral', action="store_true", help="Store ES variations.")
     parser.add_argument('--compute_unc_variations', type=bool, default=True)
+    parser.add_argument('--customisations', type=str, default="")
 
     args = parser.parse_args()
 
@@ -201,7 +205,8 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
-
+    if len(args.customisations)>0:
+        Utilities.ApplyConfigCustomisations(config['GLOBAL'], args.customisations)
     with open(args.anaCache, 'r') as f:
         anaCache = yaml.safe_load(f)
 

@@ -55,7 +55,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     jet_obs = JetObservables
     if not isData:
         jet_obs.extend(JetObservablesMC)
-        dfw.colToSave.append("LHE_HT")
+        if "LHE_HLT" in dfw.df.GetColumnNames():
+            dfw.colToSave.append("LHE_HT")
     for leg_idx in [0,1]:
         dfw.DefineAndAppend( f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
         dfw.DefineAndAppend( f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")

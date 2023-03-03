@@ -1081,7 +1081,7 @@ TTWZ:
 GluGluToHHTo2B2Tau_node_SM:
   miniAOD: /GluGluToHHTo2B2Tau_TuneCP5_PSWeights_node_SM_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: HHnonRes
-  crossSection: ggHH_bbtautau_SM
+  crossSection: ggHH_bbTauTau_SM
 GluGluToHHTo2B2Tau_node_1:
   miniAOD: /GluGluToHHTo2B2Tau_TuneCP5_PSWeights_node_1_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: HHnonRes

@@ -63,8 +63,8 @@ class DataFrameWrapper:
     def Define(self, varToDefine, varToCall):
         self.df = self.df.Define(f"{varToDefine}", f"{varToCall}")
 
-    def Filter(self, filter_str):
-        self.df = self.df.Filter(filter_str)
+    def Filter(self, filter_str, filter_name=""):
+        self.df = self.df.Filter(filter_str, filter_name)
 
     def DefineAndAppend(self, varToDefine, varToCall):
         self.Define(varToDefine, varToCall)

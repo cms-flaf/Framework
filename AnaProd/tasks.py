@@ -2,6 +2,7 @@ import law
 import luigi
 import os
 import shutil
+import time
 from RunKit.sh_tools import sh_call
 from RunKit.checkRootFile import checkRootFileSafe
 
@@ -171,7 +172,8 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         os.makedirs(self.local_central_path(), exist_ok=True)
         if os.path.exists(tmp_file):
             os.remove(tmp_file)
-        sh_call([ 'hadd', '-f209', tmp_file ] + input_files, verbose=1)
+        sh_call([ 'hadd', '-f209', '-n', '11', tmp_file ] + input_files, verbose=1)
+        time.sleep(10)
         if not checkRootFileSafe(tmp_file, 'Events', verbose=1):
             os.remove(tmp_file)
             raise RuntimeError(f'Produced anaTuple {tmp_file} is corrupted')

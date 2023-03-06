@@ -38,8 +38,8 @@ GLOBAL:
     - tauES
   deepTauVersion: 2p1
   channelSelection:
-    - eTau
-    - muTau
+    #- eTau
+    #- muTau
     - tauTau
   sampleSelection:
     - drop ^.*$

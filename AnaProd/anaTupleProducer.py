@@ -106,7 +106,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         dfw.DefineAndAppend(f"b{leg_idx+1}_mass", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].M())")
 
         for jetVar in jet_obs:
-            if(jetVar not in dfw.df.GetColumnNames()): continue
+            if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
             dfw.DefineAndAppend(f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")
         dfw.DefineAndAppend(f"b{leg_idx+1}_HHbtag", f"static_cast<float>(Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}]))")
 
@@ -157,7 +157,7 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
         if not is_central and not compute_unc_variations: continue
         suffix = '' if is_central else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
-        dfw = Utilities.DataFrameWrapper(df)
+        dfw = Utilities.DataFrameWrapper(df,defaultColToSave)
         addAllVariables(dfw, syst_name, isData, trigger_class)
         if not isData:
             weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name,

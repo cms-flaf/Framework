@@ -75,7 +75,7 @@ GLOBAL:
     - drop ^TT4b
     - drop ^TT[HZ]{1,2}To*
     - drop ^TTHH$
-    - keep ^TTHHTo2B2Tau$
+    #- keep ^TTHHTo2B2Tau$
     - keep ^QCD_Pt*
     - drop ^.*Enriched
 

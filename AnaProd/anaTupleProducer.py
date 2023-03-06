@@ -157,7 +157,7 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
         if not is_central and not compute_unc_variations: continue
         suffix = '' if is_central else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
-        dfw = Utilities.DataFrameWrapper(df)
+        dfw = Utilities.DataFrameWrapper(df,defaultColToSave)
         addAllVariables(dfw, syst_name, isData, trigger_class)
         if not isData:
             weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name,

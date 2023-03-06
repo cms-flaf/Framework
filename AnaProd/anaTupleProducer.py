@@ -106,7 +106,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         dfw.DefineAndAppend(f"b{leg_idx+1}_mass", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].M())")
 
         for jetVar in jet_obs:
-            if(jetVar not in dfw.df.GetColumnNames()): continue
+            if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
             dfw.DefineAndAppend(f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")
         dfw.DefineAndAppend(f"b{leg_idx+1}_HHbtag", f"static_cast<float>(Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}]))")
 

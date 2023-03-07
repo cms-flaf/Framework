@@ -1,0 +1,31 @@
+- name: DY
+  title: "DY #rightarrow ll + jets"
+  color: kYellow-7
+- name: TT
+  title: t#bar{t}
+  color: kCyan-7
+- name: W
+  title: "W #rightarrow l#nu + jets"
+  color: kViolet+6
+- name: QCD
+  title: QCD
+  color: kPink+1
+- name: GluGluToBulkGraviton
+  title: "gluGlu Bulk Graviton "
+  type: signal
+  color: kCyan
+- name: GluGluToRadion
+  title: "gluGlu Bulk Graviton "
+  type: signal
+  color: kBlue
+- name: VBFToBulkGraviton
+  title: "qqHH #rightarrow bb#tau#tau"
+  type: signal
+  color: kMagenta
+- name: VBFToRadion
+  title: "qqHH #rightarrow bb#tau#tau"
+  type: signal
+  color: kGreen
+- name: Other
+  title: "other backgrounds"
+  color: kRed

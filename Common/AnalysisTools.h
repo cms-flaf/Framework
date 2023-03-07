@@ -106,6 +106,10 @@ T DeltaR(T eta1, T phi1, T eta2, T phi2){
   return std::hypot(dphi, deta);
 }
 
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
 RVecS CreateIndexes(size_t vecSize){
   RVecS i(vecSize);
   std::iota(i.begin(), i.end(), 0);

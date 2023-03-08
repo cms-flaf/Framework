@@ -1,71 +1,120 @@
-import copy
-import datetime
-import os
-import sys
 import ROOT
+import Common.Utilities as Utilities
+import sys
+import os
+
 
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
-import Common.Utilities as Utilities
-import PlotKit.Plotter as Plotter
-import Common.skimAnatuple as skimAnatuple
-page_cfg = "config/plot/cms_stacked.yaml"
-page_cfg_custom = "config/plot/2018.yaml"
-hist_cfg = "config/plot/histograms.yaml"
-inputs_cfg = "config/plot/inputs.yaml"
-
+weights_to_apply = ["weight_Central","weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central", "weight_tauID_Central",]
 files= {
     "DY":["DY"],
     "Other":["EWK", "ST", "TTT", "TTTT", "TTVH", "TTV", "TTVV", "TTTV", "VH", "VV", "VVV", "H", "HHnonRes", "TTHH", "ttH"],
-    "GluGluToBulkGraviton":["GluGluToBulkGraviton"],
-    "GluGluToRadion":["GluGluToRadion"],
+    #"GluGluToBulkGraviton":["GluGluToBulkGraviton"],
     "QCD":["QCD"],
     "TT":["TT"],
-    "VBFToBulkGraviton":["VBFToBulkGraviton"],
-    "VBFToRadion":["VBFToRadion"],
+    "GluGluToRadion":["GluGluToRadion"],
+    #"VBFToBulkGraviton":["VBFToBulkGraviton"],
+    # "VBFToRadion":["VBFToRadion"],
     "W":["W"],
-    #"data":["data"],
+    "data":["data"],
 }
+signals = ["GluGluToBulkGraviton", "GluGluToRadion", "VBFToBulkGraviton", "VBFToRadion"]
+deepTauYears = {'v2p1':'2017','v2p5':'2018'}
 
-def MakeStackedPlot(df_dict, var):
+class AnaSkimmer:
+    def defineP4(self):
+        for idx in [0,1]:
+            self.df = self.df.Define(f"tau{idx+1}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(tau{idx+1}_pt,tau{idx+1}_eta,tau{idx+1}_phi,tau{idx+1}_mass)")
+            self.df = self.df.Define(f"b{idx+1}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(b{idx+1}_pt,b{idx+1}_eta,b{idx+1}_phi,b{idx+1}_mass)")
+            self.df = self.df.Define(f"tau{idx+1}_seedingJet_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(tau{idx+1}_seedingJet_pt,tau{idx+1}_seedingJet_eta,tau{idx+1}_seedingJet_phi,tau{idx+1}_mass)")
+
+    def createInvMass(self):
+        self.df = self.df.Define("tautau_m_vis", "(tau1_p4+tau2_p4).M()")
+        self.df = self.df.Define("tautau_seedingJet_m_vis", "(tau1_seedingJet_p4+tau2_seedingJet_p4).M()")
+        self.df = self.df.Define("bb_m_vis", "(b1_p4+b2_p4).M()")
+
+    def __init__(self, df):
+        self.df = df
+        self.deepTauVersion = 'v2p1'
+        self.deepTauYear = deepTauYears[self.deepTauVersion]
+        self.defineP4()
+        self.createInvMass()
+
+
+    def skimAnatuple(self):
+        for tau_idx in [1,2]:
+            self.df = self.df.Filter(f'tau{tau_idx}_pt>40 && abs(tau{tau_idx}_eta)<2.1')
+            self.df = self.df.Filter(f'tau{tau_idx}_idDeepTau{self.deepTauYear}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value}')
+        self.df = self.df.Filter('std::copysign(tau1_charge, tau2_charge)<0')
+        self.df = self.df.Filter('HLT_ditau')
+
+
+
+
+def createHistograms(df_dict, var):
     hists = {}
-    plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg, inputs_cfg=inputs_cfg)
     x_bins = Utilities.ListToVector(plotter.hist_cfg[var]['x_bins'], "double")
     model = ROOT.RDF.TH1DModel("", "", x_bins.size()-1, x_bins.data())
     for sample in df_dict.keys():
-        hists[sample] = df.Histo1D(model,var).GetValue()
-    plotter.plot(var, hists, 'output/prova_hist.pdf')
+        weight_names=[]
+        for weight in weights_to_apply:
+            weight_names.append(weight if weight in df_dict[sample].GetColumnNames() else "1")
+            if weight == 'weight_Central' and weight in df_dict[sample].GetColumnNames():
+                weight_names.append("1000")
+        weight_str = " * ".join(weight_names)
+        print(weight_str)
+        df_dict[sample]=df_dict[sample].Define("weight",weight_str)
+        hists[sample] = df_dict[sample].Histo1D(model,var, "weight")
+    return hists
 
 
 
 if __name__ == "__main__":
     import argparse
-    import os
+    import PlotKit.Plotter as Plotter
     import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument('--period', required=False, type=str, default = 'Run2_2018')
     parser.add_argument('--version', required=False, type=str, default = 'v2_deepTau_v2p1')
     parser.add_argument('--vars', required=False, type=str, default = 'tau1_pt')
-
+    parser.add_argument('--mass', required=False, type=int, default=500)
     args = parser.parse_args()
+    sys.path.append(os.environ['ANALYSIS_PATH'])
 
-    ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
     abs_path = os.environ['CENTRAL_STORAGE']
     anaTuplePath= "/eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v2_deepTau_v2p1/" # os.path.join(os.environ['CENTRAL_STORAGE'], 'anaTuples', args.period, args.version)
 
+    page_cfg = "config/plot/cms_stacked.yaml"
+    page_cfg_custom = "config/plot/2018.yaml"
+    hist_cfg = "config/plot/histograms.yaml"
+    inputs_cfg = "config/plot/inputs.yaml"
+    with open(inputs_cfg, 'r') as f:
+        inputs_cfg_dict = yaml.safe_load(f)
+
+    plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg, inputs_cfg=inputs_cfg_dict)
 
     dataframes = {}
 
     for sample in files.keys():
         rootFiles = [anaTuplePath+f + ".root" for f in files[sample]]
         df = ROOT.RDataFrame("Events", rootFiles)
-        dataframes[sample] = skimAnatuple.skimAnatuple(df)
+        anaskimmer = AnaSkimmer(df)
+        anaskimmer.deepTauVersion = args.version.split('_')[-1]
+        if(sample in signals):
+            for input in inputs_cfg_dict:
+                name = input['name']
+                if(name == sample):
+                    input['title']+= f"mass {args.mass}"
+            anaskimmer.df = anaskimmer.df.Filter(f"X_mass=={args.mass}")
+        anaskimmer.skimAnatuple()
+        dataframes[sample] = anaskimmer.df
 
-        # apply changes to dF
     for var in args.vars.split(','):
-        if(var == 'tau_inv_mass'):
-            df = skimAnatuple.findInvMass(df)
-        print(var)
-        MakeStackedPlot(dataframes, var)
+        hists = createHistograms(dataframes, var)
+        for sample in hists.keys():
+            hist = hists[sample]
+            hists[sample] = hist.GetValue()
+        plotter.plot(var, hists, f"output/plots/{var}_XMass{args.mass}.pdf")
 

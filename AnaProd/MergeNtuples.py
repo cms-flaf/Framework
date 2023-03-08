@@ -29,9 +29,7 @@ ROOT.gInterpreter.Declare(
         else{
             std::set<unsigned long long> s;
             s.insert(event);
-            static lumiEventMapType lumiEventMap;
-            lumiEventMap[lumi] = s ;
-            eventMap[run]= lumiEventMap;
+            eventMap[run][lumi]=s;
         }
             return true;
         }

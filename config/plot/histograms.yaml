@@ -6,10 +6,10 @@ tau1_pt:
   max_y_sf: 1.5
   divide_by_bin_width: False
 
-tau_inv_mass:
+tautau_m_vis:
   x_bins: [0, 40, 80,120, 160,200, 250, 300, 350, 400, 450, 500, 1000]
   x_title: inv mass(GeV)
   y_title: Events
   use_log_y: False
   max_y_sf: 1.5
-  divide_by_bin_width: False
+  divide_by_bin_width: True

@@ -3,36 +3,36 @@ ROOT.gInterpreter.Declare(
     """
     using lumiEventMapType = std::map < unsigned int, std::set <unsigned long long > >;
     using eventMapType =  std::map < unsigned int ,  lumiEventMapType >;
+    using RunLumiEventSet = std::set < std::tuple < unsigned int, unsigned int, unsigned long long > > ;
 
-    bool saveEvent(unsigned long event, unsigned int run, unsigned int lumi, bool isData){
-        if(!isData) return true;
+    bool saveEvent(unsigned int run, unsigned int lumi, unsigned long long event){
         static eventMapType eventMap;
         static std::mutex eventMap_mutex;
-            if (eventMap.find(run)!= eventMap.end()){
-                if(eventMap.at(run).find(lumi) != eventMap.at(run).end() ) {
-                    if( eventMap.at(run).at(lumi).find(event) != eventMap.at(run).at(lumi).end()){
-                        std::cout << "event " << event << " lumi " << lumi << " run " << run << " already present in df "<< std::endl;
-                        return false;
-                    }
-                    else{
-                        eventMap.at(run).at(lumi).insert(event);
-                    }
+        const std::lock_guard<std::mutex> lock(eventMap_mutex);
+        if (eventMap.find(run)!= eventMap.end()){
+            lumiEventMapType evtMapLumi = eventMap.at(run);
+            if(evtMapLumi.find(lumi) != evtMapLumi.end()){
+                if( eventMap.at(run).at(lumi).find(event) != eventMap.at(run).at(lumi).end()){
+                    //std::cout<< "found event " << event << " for lumi " << lumi << " for run " << run << std::endl;
+                    return false;
                 }
-                /*else{
-                    std::set<unsigned long long> s;
-                    s.insert(event);
-                    lumiEventMapType lumiEventMap;
-                    lumiEventMap[lumi] = s ;
-                    eventMap[run]= lumiEventMap;
-                }*/
+                else{
+                    eventMap.at(run).at(lumi).insert(event);
+                    }
             }
-            eventMap_mutex.lock();
-            static std::set<unsigned long long> s;
+            else{
+                std::set<unsigned long long> s;
+                s.insert(event);
+                eventMap[run][lumi]=s;
+            }
+        }
+        else{
+            std::set<unsigned long long> s;
             s.insert(event);
             static lumiEventMapType lumiEventMap;
             lumiEventMap[lumi] = s ;
             eventMap[run]= lumiEventMap;
-            eventMap_mutex.unlock();
+        }
             return true;
         }
     """
@@ -40,6 +40,6 @@ ROOT.gInterpreter.Declare(
 
 def merge_ntuples(df):
     print(df.Count().GetValue())
-    df = df.Filter("saveEvent(event, run, luminosityBlock, isData)")
+    df = df.Filter("saveEvent(run, luminosityBlock, event)")
     print(df.Count().GetValue())
     return df

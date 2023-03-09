@@ -4,9 +4,6 @@ import sys
 import os
 
 
-if __name__ == "__main__":
-    sys.path.append(os.environ['ANALYSIS_PATH'])
-
 weights_to_apply = ["weight_Central","weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central", "weight_tauID_Central",]
 files= {
     "DY":["DY"],
@@ -18,9 +15,7 @@ files= {
     #"VBFToBulkGraviton":["VBFToBulkGraviton"],
     # "VBFToRadion":["VBFToRadion"],
     "W":["W"],
-    "data":["data"],
-
-    #"data":["data_unique"],
+    "data":["data_unique"],
 }
 signals = ["GluGluToBulkGraviton", "GluGluToRadion", "VBFToBulkGraviton", "VBFToRadion"]
 deepTauYears = {'v2p1':'2017','v2p5':'2018'}
@@ -60,10 +55,11 @@ def defineWeights(df_dict):
     for sample in df_dict.keys():
         weight_names=[]
         for weight in weights_to_apply:
-            weight_names.append(weight if weight in df_dict[sample].GetColumnNames() else "1")
+            weight_names.append(weight if sample!="data" else "1")
             if weight == 'weight_Central' and weight in df_dict[sample].GetColumnNames():
                 weight_names.append("1000")
-                weight_names.append('791. / 687.')
+                if(sample=="TT"):
+                    weight_names.append('791. / 687.')
         weight_str = " * ".join(weight_names)
         df_dict[sample]=df_dict[sample].Define("weight",weight_str)
 
@@ -93,7 +89,6 @@ if __name__ == "__main__":
     parser.add_argument('--vars', required=False, type=str, default = 'tau1_pt')
     parser.add_argument('--mass', required=False, type=int, default=500)
     args = parser.parse_args()
-    sys.path.append(os.environ['ANALYSIS_PATH'])
 
     abs_path = os.environ['CENTRAL_STORAGE']
     anaTuplePath= "/eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v2_deepTau_v2p1/" # os.path.join(os.environ['CENTRAL_STORAGE'], 'anaTuples', args.period, args.version)
@@ -128,8 +123,6 @@ if __name__ == "__main__":
     vars = args.vars.split(',')
     for var in vars:
         hists = createHistograms(dataframes, var)
-        for sample in hists.keys():
-            hist = hists[sample]
         all_histograms[var] = hists
 
     for var in vars:

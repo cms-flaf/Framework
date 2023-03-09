@@ -8,7 +8,7 @@ tau1_pt:
 
 tautau_m_vis:
   x_bins: [0, 40, 80,120, 160,200, 250, 300, 350, 400, 450, 500, 1000]
-  x_title: \tau\tau m_{inv} (GeV)
+  x_title: M^{\tau\tau}_{vis} (GeV
   y_title: Events
   use_log_y: False
   max_y_sf: 1.5
@@ -16,7 +16,7 @@ tautau_m_vis:
 
 bbtautau_mass:
   x_bins: "50|150:1500"
-  x_title: bb\tau\tau m_{inv} (GeV)
+  x_title: "M^{HH}_{vis} (GeV)"
   y_title: Events
   use_log_y: False
   max_y_sf: 1.5

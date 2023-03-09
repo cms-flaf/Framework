@@ -19,7 +19,5 @@ ROOT.gInterpreter.Declare(
 )
 
 def merge_ntuples(df):
-    print(df.Count().GetValue())
     df = df.Filter("saveEvent(run, luminosityBlock, event)")
-    print(df.Count().GetValue())
     return df

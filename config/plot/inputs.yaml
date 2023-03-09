@@ -1,15 +1,15 @@
 - name: DY
   title: "DY #rightarrow ll + jets"
-  color: kYellow-7
+  color: kAzure+10
 - name: TT
   title: t#bar{t}
-  color: kGreen+2
+  color: kGreen-3
 - name: W
   title: "W #rightarrow l#nu + jets"
-  color: kViolet+6
+  color: kYellow-7
 - name: SM_HH
   title: "HH SM"
-  color: kPink+1
+  color: kRed
 #- name: GluGluToBulkGraviton
 #  title: "gluGlu Bulk Graviton "
 #  type: signal
@@ -28,7 +28,7 @@
 #  color: kGreen
 - name: Other
   title: "other backgrounds"
-  color: kRed
+  color: kPink+1
 - name: data
   title: "data"
   type: data

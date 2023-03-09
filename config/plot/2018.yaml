@@ -1,0 +1,14 @@
+lumi_text:
+  text: "59800 pb^{-1} (13 TeV)"
+  pos_ref: inner_right_top
+  pos: [ 0, -0.03 ]
+  text_size: 0.035
+  font: 42
+  align: right_bottom
+
+cat_text:
+  text: "inclusive"
+  pos_ref: scope_text
+  pos: [0, -0.1 ]
+  text_size: 0.03
+  font: 62

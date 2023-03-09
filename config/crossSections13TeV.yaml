@@ -28,15 +28,15 @@ EWKZ2Jets_ZToLL_M-50:
   unc: 0.004456
 TTTo2L2Nu:
   crossSec:  791. * (1 - 0.6741) * (1 - 0.6741)
-  reference: XSDB TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8 modifiedOn 2021-10-11 08:56:35
+  reference: https://twiki.cern.ch/twiki/pub/CMSPublic/PhysicsResultsTOPSummaryFigures/tt_xsec_cms_13TeV.pdf
   unc: 0.5174
 TTToSemiLeptonic:
   crossSec: 791. * 0.6741 * (1-0.6741)
-  reference: XSDB TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8 modifiedOn 2021-06-21 09:57:37
+  reference: https://twiki.cern.ch/twiki/pub/CMSPublic/PhysicsResultsTOPSummaryFigures/tt_xsec_cms_13TeV.pdf
   unc: 0.5174
 TTToHadronic:
   crossSec: 791. * 0.6741 * 0.6741
-  reference: XSDB TTToHadronic_TuneCP5_13TeV-powheg-pythia8
+  reference: https://twiki.cern.ch/twiki/pub/CMSPublic/PhysicsResultsTOPSummaryFigures/tt_xsec_cms_13TeV.pdf
   unc: 0.5174
 ttHTobb:
   crossSec: 0.5071 * 0.5824

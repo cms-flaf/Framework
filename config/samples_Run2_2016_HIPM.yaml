@@ -1,6 +1,6 @@
 GLOBAL:
   era: 'Run2_2016_HIPM'
-  luminosity: #36.31
+  luminosity: #36310.
   MET_flags:
     - Flag_goodVertices
     - Flag_globalSuperTightHalo2016Filter

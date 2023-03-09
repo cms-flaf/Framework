@@ -1,10 +1,15 @@
 lumi_text:
+<<<<<<< HEAD
   text: "59800 pb^{-1} (13 TeV)"
+=======
+  text: "59.8 fb^{-1} (13 TeV)"
+>>>>>>> 1ccc2f5b1d47377256ce9e2449ca54e1a23d048f
   pos_ref: inner_right_top
   pos: [ 0, -0.03 ]
   text_size: 0.035
   font: 42
   align: right_bottom
+<<<<<<< HEAD
 
 cat_text:
   text: "inclusive"
@@ -12,3 +17,5 @@ cat_text:
   pos: [0, -0.1 ]
   text_size: 0.03
   font: 62
+=======
+>>>>>>> 1ccc2f5b1d47377256ce9e2449ca54e1a23d048f

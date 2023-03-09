@@ -42,6 +42,15 @@ class WorkingPointsbTag(Enum):
     Medium = 2
     Tight = 3
 
+class WorkingPointsMuonID(Enum):
+    HighPtID = 1
+    LooseID = 2
+    MediumID = 3
+    MediumPromptID = 4
+    SoftID = 5
+    TightID = 6
+    TrkHighPtID = 7
+
 def ListToVector(list, type="string"):
 	vec = ROOT.std.vector(type)()
 	for item in list:

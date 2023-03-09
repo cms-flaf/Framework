@@ -1,0 +1,7 @@
+lumi_text:
+  text: "59.8 fb^{-1} (13 TeV)"
+  pos_ref: inner_right_top
+  pos: [ 0, -0.03 ]
+  text_size: 0.035
+  font: 42
+  align: right_bottom

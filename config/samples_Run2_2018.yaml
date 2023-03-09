@@ -1,6 +1,6 @@
 GLOBAL:
   era: 'Run2_2018'
-  luminosity: 59.83
+  luminosity: 59830.
   MET_flags:
     - Flag_goodVertices
     - Flag_globalSuperTightHalo2016Filter

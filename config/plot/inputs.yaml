@@ -26,6 +26,9 @@
 #  title: "qqHH #rightarrow bb#tau#tau"
 #  type: signal
 #  color: kGreen
+- name: QCD
+  title: QCD
+  color: kMagenta
 - name: Other
   title: "other backgrounds"
   color: kPink+1

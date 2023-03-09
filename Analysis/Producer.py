@@ -63,12 +63,24 @@ def defineWeights(df_dict):
         weight_str = " * ".join(weight_names)
         df_dict[sample]=df_dict[sample].Define("weight",weight_str)
 
-<<<<<<< HEAD
 
+def Estimate_QCD(var, df_dict, hist_dict, model):
+    df_data = df_dict['data']
+    tau_iso_var = f"tau2_idDeepTau{deepTauYear}{deepTauVersion}VSjet"
+    hist_data_A = df_data.Filter("tau1_charge*tau2_charge < 0").Filter(f"{tau_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}").Histo1D(model,var).Clone() # Signal Region
+    hist_data_B = df_data.Filter("tau1_charge*tau2_charge > 0").Filter(f"{tau_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}").Histo1D(model,var).Clone() # SS Isolated
+    hist_data_C = df_data.Filter("tau1_charge*tau2_charge < 0").Filter(f"{tau_iso_var} < {Utilities.WorkingPointsTauVSjet.Medium.value}").Filter(f"{tau_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value}").Histo1D(model,var).Clone() # OS non-iso
+    hist_data_D = df_data.Filter("tau1_charge*tau2_charge > 0").Filter(f"{tau_iso_var} < {Utilities.WorkingPointsTauVSjet.Medium.value}").Filter(f"{tau_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value}").Histo1D(model,var).Clone() # SS non-iso
+    hist_data_BD = hist_data_B.Clone()
+    hist_data_BD.Divide(hist_data_D)
+    for sample in df_dict.keys():
+        if sample=='data':
+            continue
+        hist_C = df_dict[sample].Filter("tau1_charge*tau2_charge < 0").Filter(f"{tau_iso_var} < {Utilities.WorkingPointsTauVSjet.Medium.value}").Filter(f"{tau_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value}").Histo1D(model,var).Clone() # OS non-iso
+        hist_data_C.Add(hist_C, -1)
+    hist_data_C.Multiply(hist_data_BD)
+    return hist_data_C
 
-
-=======
->>>>>>> 1ccc2f5b1d47377256ce9e2449ca54e1a23d048f
 def createHistograms(df_dict, var):
     hists = {}
     x_bins = plotter.hist_cfg[var]['x_bins']
@@ -81,10 +93,7 @@ def createHistograms(df_dict, var):
         model = ROOT.RDF.TH1DModel("", "",int(n_bins), float(start), float(stop))
     for sample in df_dict.keys():
         hists[sample] = df_dict[sample].Histo1D(model,var, "weight")
-<<<<<<< HEAD
     hists['QCD'] = Estimate_QCD(var, dataframes, hists, model, deepTauVersion='v2p1', deepTauYear='2017')
-=======
->>>>>>> 1ccc2f5b1d47377256ce9e2449ca54e1a23d048f
     return hists
 
 
@@ -135,20 +144,11 @@ if __name__ == "__main__":
         hists = createHistograms(dataframes, var)
         all_histograms[var] = hists
 
-<<<<<<< HEAD
 
     for var in vars:
         custom1= {'cat_text':'inclusive'}
         for sample in hists.keys():
             hist = all_histograms[var][sample]
             all_histograms[var][sample] = hist.GetValue() if sample!='QCD' else hist
-=======
-    for var in vars:
-        custom1= {'cat_text':'inclusive'}
-        print(var)
-        for sample in hists.keys():
-            hist = all_histograms[var][sample]
-            all_histograms[var][sample] = hist.GetValue()
->>>>>>> 1ccc2f5b1d47377256ce9e2449ca54e1a23d048f
         plotter.plot(var, all_histograms[var], f"output/plots/{var}_XMass{args.mass}.pdf")#, custom=custom1)
 

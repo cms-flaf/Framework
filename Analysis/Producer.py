@@ -4,7 +4,7 @@ import sys
 import os
 
 
-weights_to_apply = ["weight_Central","weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central", "weight_tauID_Central",]
+weights_to_apply = ["weight_Central"]#,"weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central", "weight_tauID_Central",]
 files= {
     "DY":["DY"],
     "Other":["EWK", "ST", "TTT", "TTTT", "TTVH", "TTV", "TTVV", "TTTV", "VH", "VV", "VVV", "H", "ttH"],
@@ -30,6 +30,14 @@ class AnaSkimmer:
             self.defineP4(f"b{idx+1}")
             self.defineP4(f"tau{idx+1}_seedingJet")
 
+    def defineRegions(self):
+        tau2_iso_var = f"tau2_idDeepTau{self.deepTauYear}{self.deepTauVersion}VSjet"
+        self.df = self.df.Define("region_A", f"tau1_charge*tau2_charge < 0 && {tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
+        self.df = self.df.Define("region_B", f"tau1_charge*tau2_charge > 0 && {tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
+        self.df = self.df.Define("region_C", f"tau1_charge*tau2_charge < 0 && {tau2_iso_var} < {Utilities.WorkingPointsTauVSjet.Medium.value} && {tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value}")
+        self.df = self.df.Define("region_D", f"tau1_charge*tau2_charge > 0 && {tau2_iso_var} < {Utilities.WorkingPointsTauVSjet.Medium.value} && {tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value}")
+
+
     def createInvMass(self):
         self.df = self.df.Define("tautau_m_vis", "(tau1_p4+tau2_p4).M()")
         self.df = self.df.Define("bb_m_vis", "(b1_p4+b2_p4).M()")
@@ -42,14 +50,12 @@ class AnaSkimmer:
         self.deepTauYear = deepTauYears[self.deepTauVersion]
         self.defineAllP4()
         self.createInvMass()
+        self.defineRegions()
 
 
     def skimAnatuple(self):
-        for tau_idx in [1,2]:
-            self.df = self.df.Filter(f'tau{tau_idx}_idDeepTau{self.deepTauYear}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value}')
-        self.df = self.df.Filter('tau1_charge * tau2_charge <0')
+        self.df = self.df.Filter(f'tau1_idDeepTau{self.deepTauYear}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value}')
         self.df = self.df.Filter('HLT_ditau')
-
 
 def defineWeights(df_dict):
     for sample in df_dict.keys():
@@ -64,24 +70,21 @@ def defineWeights(df_dict):
         df_dict[sample]=df_dict[sample].Define("weight",weight_str)
 
 
-def Estimate_QCD(var, df_dict, hist_dict, model):
+def Estimate_QCD(var, df_dict, hist_dict, model, deepTauVersion):
     df_data = df_dict['data']
-    tau_iso_var = f"tau2_idDeepTau{deepTauYear}{deepTauVersion}VSjet"
-    hist_data_A = df_data.Filter("tau1_charge*tau2_charge < 0").Filter(f"{tau_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}").Histo1D(model,var).Clone() # Signal Region
-    hist_data_B = df_data.Filter("tau1_charge*tau2_charge > 0").Filter(f"{tau_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}").Histo1D(model,var).Clone() # SS Isolated
-    hist_data_C = df_data.Filter("tau1_charge*tau2_charge < 0").Filter(f"{tau_iso_var} < {Utilities.WorkingPointsTauVSjet.Medium.value}").Filter(f"{tau_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value}").Histo1D(model,var).Clone() # OS non-iso
-    hist_data_D = df_data.Filter("tau1_charge*tau2_charge > 0").Filter(f"{tau_iso_var} < {Utilities.WorkingPointsTauVSjet.Medium.value}").Filter(f"{tau_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value}").Histo1D(model,var).Clone() # SS non-iso
-    hist_data_BD = hist_data_B.Clone()
-    hist_data_BD.Divide(hist_data_D)
+    data_2 = df_data.Filter('region_B').Sum("weight").GetValue()
+    hist_data_3 = df_data.Filter('region_C').Histo1D(model, var, "weight").Clone()
+    data_4 = df_data.Filter('region_D').Sum("weight").GetValue()
+    kappa = data_2/data_4
     for sample in df_dict.keys():
-        if sample=='data':
+        if sample=='data' or sample in signals:
             continue
-        hist_C = df_dict[sample].Filter("tau1_charge*tau2_charge < 0").Filter(f"{tau_iso_var} < {Utilities.WorkingPointsTauVSjet.Medium.value}").Filter(f"{tau_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value}").Histo1D(model,var).Clone() # OS non-iso
-        hist_data_C.Add(hist_C, -1)
-    hist_data_C.Multiply(hist_data_BD)
-    return hist_data_C
+        hist_3 = df_dict[sample].Filter("region_C").Histo1D(model,var,"weight").Clone() # OS non-iso
+        hist_data_3.Add(hist_3, -1)
+    hist_data_3.Scale(kappa)
+    return hist_data_3
 
-def createHistograms(df_dict, var):
+def createHistograms(df_dict, var, deepTauVersion):
     hists = {}
     x_bins = plotter.hist_cfg[var]['x_bins']
     if type(plotter.hist_cfg[var]['x_bins'])==list:
@@ -91,9 +94,9 @@ def createHistograms(df_dict, var):
         n_bins, bin_range = x_bins.split('|')
         start,stop = bin_range.split(':')
         model = ROOT.RDF.TH1DModel("", "",int(n_bins), float(start), float(stop))
+    hists['QCD'] = Estimate_QCD(var, df_dict, hists, model, deepTauVersion)
     for sample in df_dict.keys():
-        hists[sample] = df_dict[sample].Histo1D(model,var, "weight")
-    hists['QCD'] = Estimate_QCD(var, dataframes, hists, model, deepTauVersion='v2p1', deepTauYear='2017')
+        hists[sample] = df_dict[sample].Filter("region_A").Histo1D(model,var, "weight")
     return hists
 
 
@@ -141,7 +144,7 @@ if __name__ == "__main__":
     all_histograms = {}
     vars = args.vars.split(',')
     for var in vars:
-        hists = createHistograms(dataframes, var)
+        hists = createHistograms(dataframes, var,args.version.split('_')[-1])
         all_histograms[var] = hists
 
 

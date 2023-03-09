@@ -3,12 +3,12 @@
   color: kYellow-7
 - name: TT
   title: t#bar{t}
-  color: kCyan-7
+  color: kGreen+2
 - name: W
   title: "W #rightarrow l#nu + jets"
   color: kViolet+6
-- name: QCD
-  title: QCD
+- name: SM_HH
+  title: "HH SM"
   color: kPink+1
 #- name: GluGluToBulkGraviton
 #  title: "gluGlu Bulk Graviton "

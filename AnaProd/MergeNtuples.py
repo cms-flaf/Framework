@@ -9,29 +9,11 @@ ROOT.gInterpreter.Declare(
         static eventMapType eventMap;
         static std::mutex eventMap_mutex;
         const std::lock_guard<std::mutex> lock(eventMap_mutex);
-        if (eventMap.find(run)!= eventMap.end()){
-            lumiEventMapType evtMapLumi = eventMap.at(run);
-            if(evtMapLumi.find(lumi) != evtMapLumi.end()){
-                if( eventMap.at(run).at(lumi).find(event) != eventMap.at(run).at(lumi).end()){
-                    //std::cout<< "found event " << event << " for lumi " << lumi << " for run " << run << std::endl;
-                    return false;
-                }
-                else{
-                    eventMap.at(run).at(lumi).insert(event);
-                    }
-            }
-            else{
-                std::set<unsigned long long> s;
-                s.insert(event);
-                eventMap[run][lumi]=s;
-            }
-        }
-        else{
-            std::set<unsigned long long> s;
-            s.insert(event);
-            eventMap[run][lumi]=s;
-        }
-            return true;
+        auto& events = eventMap[run][lumi];
+        if(events.find(event) != events.end())
+            return false;
+        events.insert(event);
+        return true;
         }
     """
 )

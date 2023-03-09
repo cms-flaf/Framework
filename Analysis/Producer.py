@@ -10,62 +10,74 @@ if __name__ == "__main__":
 weights_to_apply = ["weight_Central","weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central", "weight_tauID_Central",]
 files= {
     "DY":["DY"],
-    "Other":["EWK", "ST", "TTT", "TTTT", "TTVH", "TTV", "TTVV", "TTTV", "VH", "VV", "VVV", "H", "HHnonRes", "TTHH", "ttH"],
+    "Other":["EWK", "ST", "TTT", "TTTT", "TTVH", "TTV", "TTVV", "TTTV", "VH", "VV", "VVV", "H", "ttH"],
     #"GluGluToBulkGraviton":["GluGluToBulkGraviton"],
-    "QCD":["QCD"],
+    "SM_HH": ["HHnonRes"],
     "TT":["TT"],
     "GluGluToRadion":["GluGluToRadion"],
     #"VBFToBulkGraviton":["VBFToBulkGraviton"],
     # "VBFToRadion":["VBFToRadion"],
     "W":["W"],
     "data":["data"],
+
+    #"data":["data_unique"],
 }
 signals = ["GluGluToBulkGraviton", "GluGluToRadion", "VBFToBulkGraviton", "VBFToRadion"]
 deepTauYears = {'v2p1':'2017','v2p5':'2018'}
 
 class AnaSkimmer:
-    def defineP4(self):
+    def defineP4(self, name):
+        self.df = self.df.Define(f"{name}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({name}_pt,{name}_eta,{name}_phi,{name}_mass)")
+
+    def defineAllP4(self):
         for idx in [0,1]:
-            self.df = self.df.Define(f"tau{idx+1}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(tau{idx+1}_pt,tau{idx+1}_eta,tau{idx+1}_phi,tau{idx+1}_mass)")
-            self.df = self.df.Define(f"b{idx+1}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(b{idx+1}_pt,b{idx+1}_eta,b{idx+1}_phi,b{idx+1}_mass)")
-            self.df = self.df.Define(f"tau{idx+1}_seedingJet_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(tau{idx+1}_seedingJet_pt,tau{idx+1}_seedingJet_eta,tau{idx+1}_seedingJet_phi,tau{idx+1}_mass)")
+            self.defineP4(f"tau{idx+1}")
+            self.defineP4(f"b{idx+1}")
+            self.defineP4(f"tau{idx+1}_seedingJet")
 
     def createInvMass(self):
         self.df = self.df.Define("tautau_m_vis", "(tau1_p4+tau2_p4).M()")
-        self.df = self.df.Define("tautau_seedingJet_m_vis", "(tau1_seedingJet_p4+tau2_seedingJet_p4).M()")
         self.df = self.df.Define("bb_m_vis", "(b1_p4+b2_p4).M()")
+        self.df = self.df.Define("bbtautau_mass", "(b1_p4+b2_p4+tau1_p4+tau2_p4).M()")
+        self.df = self.df.Define("dR_tautau", 'ROOT::Math::VectorUtil::DeltaR(tau1_p4, tau2_p4)')
 
     def __init__(self, df):
         self.df = df
         self.deepTauVersion = 'v2p1'
         self.deepTauYear = deepTauYears[self.deepTauVersion]
-        self.defineP4()
+        self.defineAllP4()
         self.createInvMass()
 
 
     def skimAnatuple(self):
         for tau_idx in [1,2]:
-            self.df = self.df.Filter(f'tau{tau_idx}_pt>40 && abs(tau{tau_idx}_eta)<2.1')
             self.df = self.df.Filter(f'tau{tau_idx}_idDeepTau{self.deepTauYear}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value}')
-        self.df = self.df.Filter('std::copysign(tau1_charge, tau2_charge)<0')
+        self.df = self.df.Filter('tau1_charge * tau2_charge <0')
         self.df = self.df.Filter('HLT_ditau')
 
 
-
-
-def createHistograms(df_dict, var):
-    hists = {}
-    x_bins = Utilities.ListToVector(plotter.hist_cfg[var]['x_bins'], "double")
-    model = ROOT.RDF.TH1DModel("", "", x_bins.size()-1, x_bins.data())
+def defineWeights(df_dict):
     for sample in df_dict.keys():
         weight_names=[]
         for weight in weights_to_apply:
             weight_names.append(weight if weight in df_dict[sample].GetColumnNames() else "1")
             if weight == 'weight_Central' and weight in df_dict[sample].GetColumnNames():
                 weight_names.append("1000")
+                weight_names.append('791. / 687.')
         weight_str = " * ".join(weight_names)
-        print(weight_str)
         df_dict[sample]=df_dict[sample].Define("weight",weight_str)
+
+def createHistograms(df_dict, var):
+    hists = {}
+    x_bins = plotter.hist_cfg[var]['x_bins']
+    if type(plotter.hist_cfg[var]['x_bins'])==list:
+        x_bins_vec = Utilities.ListToVector(x_bins, "double")
+        model = ROOT.RDF.TH1DModel("", "", x_bins_vec.size()-1, x_bins_vec.data())
+    else:
+        n_bins, bin_range = x_bins.split('|')
+        start,stop = bin_range.split(':')
+        model = ROOT.RDF.TH1DModel("", "",int(n_bins), float(start), float(stop))
+    for sample in df_dict.keys():
         hists[sample] = df_dict[sample].Histo1D(model,var, "weight")
     return hists
 
@@ -111,10 +123,20 @@ if __name__ == "__main__":
         anaskimmer.skimAnatuple()
         dataframes[sample] = anaskimmer.df
 
-    for var in args.vars.split(','):
+    defineWeights(dataframes)
+    all_histograms = {}
+    vars = args.vars.split(',')
+    for var in vars:
         hists = createHistograms(dataframes, var)
         for sample in hists.keys():
             hist = hists[sample]
-            hists[sample] = hist.GetValue()
-        plotter.plot(var, hists, f"output/plots/{var}_XMass{args.mass}.pdf")
+        all_histograms[var] = hists
+
+    for var in vars:
+        custom1= {'cat_text':'inclusive'}
+        print(var)
+        for sample in hists.keys():
+            hist = all_histograms[var][sample]
+            all_histograms[var][sample] = hist.GetValue()
+        plotter.plot(var, all_histograms[var], f"output/plots/{var}_XMass{args.mass}.pdf")#, custom=custom1)
 

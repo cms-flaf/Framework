@@ -2,6 +2,7 @@ import ROOT
 import Common.Utilities as Utilities
 import sys
 import os
+import math
 
 
 weights_to_apply = ["weight_Central","weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central", "weight_tauID_Central",]
@@ -72,6 +73,52 @@ def defineWeights(df_dict):
         df_dict[sample]=df_dict[sample].Define("weight",weight_str)
 
 
+def RenormalizeHistogram(histogram, norm, include_overflows=True):
+    integral = histogram.Integral(0, histogram.GetNbinsX()+1, "width") if include_overflows else histogram.Integral()
+    histogram.Scale(norm / integral)
+
+
+def FixNegativeContributions(histogram, debug_info, negative_bins_info):
+    correction_factor = 0.0000001
+
+    ss_debug = ""
+
+    original_Integral = histogram.Integral(0, histogram.GetNbinsX()+1, "width")
+    ss_debug += "\nSubtracted hist for '{}'.\n".format(histogram.GetName())
+    ss_debug += "Integral after bkg subtraction: {}.\n".format(original_Integral)
+    debug_info = ss_debug
+    if original_Integral < 0:
+        print(debug_info)
+        print("Integral after bkg subtraction is negative for histogram '{}'".format(histogram.GetName()))
+        return False
+
+    ss_negative = ""
+
+    for n in range(1, histogram.GetNbinsX()+1):
+        if histogram.GetBinContent(n) >= 0:
+            continue
+        prefix = "WARNING" if histogram.GetBinContent(n) + histogram.GetBinError(n) >= 0 else "ERROR"
+
+        ss_negative += "{}: {} Bin {}, content = {}, error = {}, bin limits=[{},{}].\n".format(
+            prefix, histogram.GetName(), n, histogram.GetBinContent(n), histogram.GetBinError(n),
+            histogram.GetBinLowEdge(n), histogram.GetBinLowEdge(n+1))
+
+        error = correction_factor - histogram.GetBinContent(n)
+        new_error = math.sqrt(math.pow(error, 2) + math.pow(histogram.GetBinError(n), 2))
+        histogram.SetBinContent(n, correction_factor)
+        histogram.SetBinError(n, new_error)
+
+    RenormalizeHistogram(histogram, original_Integral, True)
+    negative_bins_info = ss_negative
+    return True
+
+def GetValues(collection):
+    for key, value in collection.items():
+        if isinstance(value, dict):
+            GetValues(value)
+        else:
+            collection[key] = value.GetValue()
+
 def Estimate_QCD(histograms, sums):
 
     hist_data = histograms['data']
@@ -85,8 +132,16 @@ def Estimate_QCD(histograms, sums):
         # find kappa value
         n_B -= sums[sample]['region_B']
         n_D -= sums[sample]['region_D']
+        debug_info = ""
+        negative_bins_info = ""
+        if not FixNegativeContributions(histograms[sample]['region_C'],debug_info, negative_bins_info):
+            print(debug_info)
+            print(negative_bins_info)
         hist_data_C.Add( histograms[sample]['region_C'], -1)
     kappa = n_B/n_D
+    if kappa<=0:
+        raise  RuntimeError(f"transfer factor <=0 ! {kappa}")
+
     hist_data_C.Scale(kappa)
     return hist_data_C
 
@@ -162,15 +217,12 @@ if __name__ == "__main__":
 
     hists_to_plot = {}
     for var in vars:
+        GetValues(all_histograms)
+        GetValues(all_sums)
         hists_to_plot[var] = {}
         for sample in all_histograms[var].keys():
             for region in regions:
-                hist = all_histograms[var][sample][f"region_{region}"].GetValue()
-                all_histograms[var][sample][f"region_{region}"] = hist
-                if(type(all_sums[sample][f"region_{region}"])!= float):
-                    sum = all_sums[sample][f"region_{region}"].GetValue()
-                    all_sums[sample][f"region_{region}"] = sum
-            hists_to_plot[var][sample] = all_histograms[var][sample]['region_A']
+                hists_to_plot[var][sample] = all_histograms[var][sample]['region_A']
         hists_to_plot[var]['QCD'] = Estimate_QCD(all_histograms[var], all_sums)
         custom1= {'cat_text':'inclusive'}
         plotter.plot(var, hists_to_plot[var], f"output/plots/{var}_XMass{args.mass}_{args.version}.pdf")#, custom=custom1)

@@ -208,7 +208,6 @@ if __name__ == "__main__":
     defineWeights(dataframes)
 
     all_histograms = {}
-    all_sums = {}
     vars = args.vars.split(',')
     all_sums = createSums(dataframes)
     for var in vars:

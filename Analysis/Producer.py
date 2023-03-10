@@ -77,21 +77,19 @@ def RenormalizeHistogram(histogram, norm, include_overflows=True):
     histogram.Scale(norm / integral)
 
 
-def FixNegativeContributions(histogram, debug_info, negative_bins_info):
-    correction_factor = 0.0000001
+def FixNegativeContributions(histogram):
+    correction_factor = 0.
 
     ss_debug = ""
+    ss_negative = ""
 
     original_Integral = histogram.Integral(0, histogram.GetNbinsX()+1, "width")
     ss_debug += "\nSubtracted hist for '{}'.\n".format(histogram.GetName())
     ss_debug += "Integral after bkg subtraction: {}.\n".format(original_Integral)
-    debug_info = ss_debug
     if original_Integral < 0:
         print(debug_info)
         print("Integral after bkg subtraction is negative for histogram '{}'".format(histogram.GetName()))
         return False
-
-    ss_negative = ""
 
     for n in range(1, histogram.GetNbinsX()+1):
         if histogram.GetBinContent(n) >= 0:
@@ -108,8 +106,7 @@ def FixNegativeContributions(histogram, debug_info, negative_bins_info):
         histogram.SetBinError(n, new_error)
 
     RenormalizeHistogram(histogram, original_Integral, True)
-    negative_bins_info = ss_negative
-    return True
+    return True, ss_debug, ss_negative
 
 def GetValues(collection):
     for key, value in collection.items():
@@ -133,14 +130,14 @@ def Estimate_QCD(histograms, sums):
         n_D -= sums[sample]['region_D']
         hist_data_C.Add( histograms[sample]['region_C'], -1)
     kappa = n_B/n_D
-    if kappa<=0:
+    if n_B <= 0 or n_D <= 0:
         raise  RuntimeError(f"transfer factor <=0 ! {kappa}")
     hist_data_C.Scale(kappa)
-    debug_info = ""
-    negative_bins_info = ""
-    if not FixNegativeContributions(hist_data_C,debug_info, negative_bins_info):
+    fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(hist_data_C)
+    if not fix_negative_contributions:
         print(debug_info)
         print(negative_bins_info)
+        raise RuntimeError("Unable to estimate QCD")
     return hist_data_C
 
 def createHistograms(df_dict, var):

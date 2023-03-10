@@ -4,7 +4,7 @@ import sys
 import os
 
 
-weights_to_apply = ["weight_Central"]#,"weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central", "weight_tauID_Central",]
+weights_to_apply = ["weight_Central","weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central", "weight_tauID_Central",]
 files= {
     "DY":["DY"],
     "Other":["EWK", "ST", "TTT", "TTTT", "TTVH", "TTV", "TTVV", "TTTV", "VH", "VV", "VVV", "H", "ttH"],
@@ -19,7 +19,7 @@ files= {
 }
 signals = ["GluGluToBulkGraviton", "GluGluToRadion", "VBFToBulkGraviton", "VBFToRadion"]
 deepTauYears = {'v2p1':'2017','v2p5':'2018'}
-
+regions = ["A", "B", "C", "D"]
 class AnaSkimmer:
     def defineP4(self, name):
         self.df = self.df.Define(f"{name}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({name}_pt,{name}_eta,{name}_phi,{name}_mass)")
@@ -31,7 +31,7 @@ class AnaSkimmer:
             self.defineP4(f"tau{idx+1}_seedingJet")
 
     def defineRegions(self):
-        tau2_iso_var = f"tau2_idDeepTau{self.deepTauYear}{self.deepTauVersion}VSjet"
+        tau2_iso_var = f"tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet"
         self.df = self.df.Define("region_A", f"tau1_charge*tau2_charge < 0 && {tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
         self.df = self.df.Define("region_B", f"tau1_charge*tau2_charge > 0 && {tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
         self.df = self.df.Define("region_C", f"tau1_charge*tau2_charge < 0 && {tau2_iso_var} < {Utilities.WorkingPointsTauVSjet.Medium.value} && {tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value}")
@@ -44,17 +44,19 @@ class AnaSkimmer:
         self.df = self.df.Define("bbtautau_mass", "(b1_p4+b2_p4+tau1_p4+tau2_p4).M()")
         self.df = self.df.Define("dR_tautau", 'ROOT::Math::VectorUtil::DeltaR(tau1_p4, tau2_p4)')
 
+    def deepTauYear(self):
+        return deepTauYears[self.deepTauVersion]
+
     def __init__(self, df):
         self.df = df
         self.deepTauVersion = 'v2p1'
-        self.deepTauYear = deepTauYears[self.deepTauVersion]
         self.defineAllP4()
         self.createInvMass()
         self.defineRegions()
 
 
     def skimAnatuple(self):
-        self.df = self.df.Filter(f'tau1_idDeepTau{self.deepTauYear}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value}')
+        self.df = self.df.Filter(f'tau1_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value}')
         self.df = self.df.Filter('HLT_ditau')
 
 def defineWeights(df_dict):
@@ -70,21 +72,25 @@ def defineWeights(df_dict):
         df_dict[sample]=df_dict[sample].Define("weight",weight_str)
 
 
-def Estimate_QCD(var, df_dict, hist_dict, model, deepTauVersion):
-    df_data = df_dict['data']
-    data_2 = df_data.Filter('region_B').Sum("weight").GetValue()
-    hist_data_3 = df_data.Filter('region_C').Histo1D(model, var, "weight").Clone()
-    data_4 = df_data.Filter('region_D').Sum("weight").GetValue()
-    kappa = data_2/data_4
-    for sample in df_dict.keys():
+def Estimate_QCD(histograms, sums):
+
+    hist_data = histograms['data']
+    sum_data = sums['data']
+    hist_data_C = hist_data['region_C']
+    n_B = sum_data['region_B']
+    n_D = sum_data['region_D']
+    for sample in histograms.keys():
         if sample=='data' or sample in signals:
             continue
-        hist_3 = df_dict[sample].Filter("region_C").Histo1D(model,var,"weight").Clone() # OS non-iso
-        hist_data_3.Add(hist_3, -1)
-    hist_data_3.Scale(kappa)
-    return hist_data_3
+        # find kappa value
+        n_B -= sums[sample]['region_B']
+        n_D -= sums[sample]['region_D']
+        hist_data_C.Add( histograms[sample]['region_C'], -1)
+    kappa = n_B/n_D
+    hist_data_C.Scale(kappa)
+    return hist_data_C
 
-def createHistograms(df_dict, var, deepTauVersion):
+def createHistograms(df_dict, var):
     hists = {}
     x_bins = plotter.hist_cfg[var]['x_bins']
     if type(plotter.hist_cfg[var]['x_bins'])==list:
@@ -94,12 +100,19 @@ def createHistograms(df_dict, var, deepTauVersion):
         n_bins, bin_range = x_bins.split('|')
         start,stop = bin_range.split(':')
         model = ROOT.RDF.TH1DModel("", "",int(n_bins), float(start), float(stop))
-    hists['QCD'] = Estimate_QCD(var, df_dict, hists, model, deepTauVersion)
     for sample in df_dict.keys():
-        hists[sample] = df_dict[sample].Filter("region_A").Histo1D(model,var, "weight")
+        hists[sample] = {}
+        for region in regions:
+            hists[sample][f"region_{region}"] = df_dict[sample].Filter(f"region_{region}").Histo1D(model,var, "weight")
     return hists
 
-
+def createSums(df_dict):
+    sums = {}
+    for sample in df_dict.keys():
+        sums[sample] = {}
+        for region in regions:
+            sums[sample][f"region_{region}"] = df_dict[sample].Filter(f"region_{region}").Sum("weight")
+    return sums
 
 if __name__ == "__main__":
     import argparse
@@ -113,8 +126,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     abs_path = os.environ['CENTRAL_STORAGE']
-    anaTuplePath= "/eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v2_deepTau_v2p1/" # os.path.join(os.environ['CENTRAL_STORAGE'], 'anaTuples', args.period, args.version)
-
+    anaTuplePath= f"/eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/{args.version}/"
     page_cfg = "config/plot/cms_stacked.yaml"
     page_cfg_custom = "config/plot/2018.yaml"
     hist_cfg = "config/plot/histograms.yaml"
@@ -125,7 +137,6 @@ if __name__ == "__main__":
     plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg, inputs_cfg=inputs_cfg_dict)
 
     dataframes = {}
-
     for sample in files.keys():
         rootFiles = [anaTuplePath+f + ".root" for f in files[sample]]
         df = ROOT.RDataFrame("Events", rootFiles)
@@ -139,19 +150,27 @@ if __name__ == "__main__":
             anaskimmer.df = anaskimmer.df.Filter(f"X_mass=={args.mass}")
         anaskimmer.skimAnatuple()
         dataframes[sample] = anaskimmer.df
-
     defineWeights(dataframes)
+
     all_histograms = {}
+    all_sums = {}
     vars = args.vars.split(',')
+    all_sums = createSums(dataframes)
     for var in vars:
-        hists = createHistograms(dataframes, var,args.version.split('_')[-1])
+        hists = createHistograms(dataframes, var)
         all_histograms[var] = hists
 
-
+    hists_to_plot = {}
     for var in vars:
+        hists_to_plot[var] = {}
+        for sample in all_histograms[var].keys():
+            for region in regions:
+                hist = all_histograms[var][sample][f"region_{region}"].GetValue()
+                all_histograms[var][sample][f"region_{region}"] = hist
+                if(type(all_sums[sample][f"region_{region}"])!= float):
+                    sum = all_sums[sample][f"region_{region}"].GetValue()
+                    all_sums[sample][f"region_{region}"] = sum
+            hists_to_plot[var][sample] = all_histograms[var][sample]['region_A']
+        hists_to_plot[var]['QCD'] = Estimate_QCD(all_histograms[var], all_sums)
         custom1= {'cat_text':'inclusive'}
-        for sample in hists.keys():
-            hist = all_histograms[var][sample]
-            all_histograms[var][sample] = hist.GetValue() if sample!='QCD' else hist
-        plotter.plot(var, all_histograms[var], f"output/plots/{var}_XMass{args.mass}.pdf")#, custom=custom1)
-
+        plotter.plot(var, hists_to_plot[var], f"output/plots/{var}_XMass{args.mass}_{args.version}.pdf")#, custom=custom1)

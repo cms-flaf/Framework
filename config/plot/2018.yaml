@@ -6,9 +6,3 @@ lumi_text:
   font: 42
   align: right_bottom
 
-cat_text:
-  text: "inclusive"
-  pos_ref: scope_text
-  pos: [0, -0.1 ]
-  text_size: 0.03
-  font: 62

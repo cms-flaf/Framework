@@ -57,7 +57,6 @@ class AnaSkimmer:
 
 
     def skimAnatuple(self):
-        self.df = self.df.Filter(f'tau1_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value}')
         self.df = self.df.Filter('HLT_ditau')
 
 def defineWeights(df_dict):
@@ -132,17 +131,16 @@ def Estimate_QCD(histograms, sums):
         # find kappa value
         n_B -= sums[sample]['region_B']
         n_D -= sums[sample]['region_D']
-        debug_info = ""
-        negative_bins_info = ""
-        if not FixNegativeContributions(histograms[sample]['region_C'],debug_info, negative_bins_info):
-            print(debug_info)
-            print(negative_bins_info)
         hist_data_C.Add( histograms[sample]['region_C'], -1)
     kappa = n_B/n_D
     if kappa<=0:
         raise  RuntimeError(f"transfer factor <=0 ! {kappa}")
-
     hist_data_C.Scale(kappa)
+    debug_info = ""
+    negative_bins_info = ""
+    if not FixNegativeContributions(hist_data_C,debug_info, negative_bins_info):
+        print(debug_info)
+        print(negative_bins_info)
     return hist_data_C
 
 def createHistograms(df_dict, var):

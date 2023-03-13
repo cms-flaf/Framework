@@ -111,12 +111,12 @@ def FixNegativeContributions(histogram):
 def GetValues(collection):
     for key, value in collection.items():
         if isinstance(value, dict):
-            new_collection= GetValues(value)
+            GetValues(value)
         else:
             collection[key] = value.GetValue()
-    return value
-def Estimate_QCD(histograms, sums):
+    return collection
 
+def Estimate_QCD(histograms, sums):
     hist_data = histograms['data']
     sum_data = sums['data']
     hist_data_C = hist_data['region_C']
@@ -210,9 +210,9 @@ if __name__ == "__main__":
         all_histograms[var] = hists
 
     hists_to_plot = {}
+    all_histograms=GetValues(all_histograms)
+    all_sums=GetValues(all_sums)
     for var in vars:
-        GetValues(all_histograms)
-        GetValues(all_sums)
         hists_to_plot[var] = {}
         for sample in all_histograms[var].keys():
             for region in regions:

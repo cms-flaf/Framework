@@ -73,7 +73,7 @@ def defineWeights(df_dict):
 
 
 def RenormalizeHistogram(histogram, norm, include_overflows=True):
-    integral = histogram.Integral(0, histogram.GetNbinsX()+1, "width") if include_overflows else histogram.Integral()
+    integral = histogram.Integral(0, histogram.GetNbinsX()+1) if include_overflows else histogram.Integral()
     histogram.Scale(norm / integral)
 
 
@@ -111,10 +111,10 @@ def FixNegativeContributions(histogram):
 def GetValues(collection):
     for key, value in collection.items():
         if isinstance(value, dict):
-            GetValues(value)
+            new_collection= GetValues(value)
         else:
             collection[key] = value.GetValue()
-
+    return value
 def Estimate_QCD(histograms, sums):
 
     hist_data = histograms['data']

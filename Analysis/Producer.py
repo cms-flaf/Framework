@@ -83,7 +83,7 @@ def FixNegativeContributions(histogram):
     ss_debug = ""
     ss_negative = ""
 
-    original_Integral = histogram.Integral(0, histogram.GetNbinsX()+1, "width")
+    original_Integral = histogram.Integral(0, histogram.GetNbinsX()+1)
     ss_debug += "\nSubtracted hist for '{}'.\n".format(histogram.GetName())
     ss_debug += "Integral after bkg subtraction: {}.\n".format(original_Integral)
     if original_Integral < 0:
@@ -119,26 +119,26 @@ def GetValues(collection):
 def Estimate_QCD(histograms, sums):
     hist_data = histograms['data']
     sum_data = sums['data']
-    hist_data_C = hist_data['region_C']
-    n_B = sum_data['region_B']
+    hist_data_B = hist_data['region_B']
+    n_C = sum_data['region_C']
     n_D = sum_data['region_D']
     for sample in histograms.keys():
         if sample=='data' or sample in signals:
             continue
         # find kappa value
-        n_B -= sums[sample]['region_B']
+        n_C -= sums[sample]['region_C']
         n_D -= sums[sample]['region_D']
-        hist_data_C.Add( histograms[sample]['region_C'], -1)
-    kappa = n_B/n_D
-    if n_B <= 0 or n_D <= 0:
+        hist_data_B.Add(histograms[sample]['region_B'], -1)
+    kappa = n_C/n_D
+    if n_C <= 0 or n_D <= 0:
         raise  RuntimeError(f"transfer factor <=0 ! {kappa}")
-    hist_data_C.Scale(kappa)
-    fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(hist_data_C)
+    hist_data_B.Scale(kappa)
+    fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(hist_data_B)
     if not fix_negative_contributions:
         print(debug_info)
         print(negative_bins_info)
         raise RuntimeError("Unable to estimate QCD")
-    return hist_data_C
+    return hist_data_B
 
 def createHistograms(df_dict, var):
     hists = {}
@@ -205,6 +205,7 @@ if __name__ == "__main__":
     all_histograms = {}
     vars = args.vars.split(',')
     all_sums = createSums(dataframes)
+
     for var in vars:
         hists = createHistograms(dataframes, var)
         all_histograms[var] = hists

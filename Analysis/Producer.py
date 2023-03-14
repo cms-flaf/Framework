@@ -66,12 +66,9 @@ def defineWeights(df_dict, use_new_weights=False):
         if sample != "data":
             if(use_new_weights):
                 df_dict[sample] = GetNewSFs_DM(df_dict[sample],weights_to_apply, args.version.split('_')[-1])
-                #df_dict[sample].Display({"weight_tau1ID_Central_new_DM","weight_tau2ID_Central_new_DM"}).Print()
             else:
                 if "weight_tauID_Central" not in weights_to_apply:
                     weights_to_apply.append("weight_tauID_Central")
-                #df_dict[sample].Display({"weight_tauID_Central"}).Print()
-        #print(weights_to_apply)
         for weight in weights_to_apply:
             weight_names.append(weight if sample!="data" else "1")
             if weight == 'weight_Central' and weight in df_dict[sample].GetColumnNames():
@@ -79,10 +76,7 @@ def defineWeights(df_dict, use_new_weights=False):
                 if(sample=="TT"):
                     weight_names.append('791. / 687.')
         weight_str = " * ".join(weight_names)
-        #print(weight_str)
         df_dict[sample]=df_dict[sample].Define("weight",weight_str)
-        print(df_dict[sample].Sum("weight").GetValue())
-        df_dict[sample].Display({"weight"}).Print()
 
 
 
@@ -124,12 +118,10 @@ def FixNegativeContributions(histogram):
 
 def GetValues(collection):
     for key, value in collection.items():
-        #print(key)
         if isinstance(value, dict):
             GetValues(value)
         else:
             collection[key] = value.GetValue()
-            #print(f"obtained object for {key} and it's {collection[key]}")
     return collection
 
 def Estimate_QCD(histograms, sums):
@@ -170,7 +162,6 @@ def createHistograms(df_dict, var):
         hists[sample] = {}
         for region in regions:
             hists[sample][f"region_{region}"] = df_dict[sample].Filter(f"region_{region}").Histo1D(model,var, "weight")
-    #print(f"all histograms created")
     return hists
 
 def createSums(df_dict):

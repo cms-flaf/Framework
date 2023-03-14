@@ -6,7 +6,7 @@ import math
 from TauIDSFs_modifier import *
 
 
-weights_to_apply = ["weight_Central"]#,"weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central"]#, "weight_tauID_Central",]
+weights_to_apply = ["weight_Central","weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central"]#, "weight_tauID_Central",]
 files= {
     "DY":["DY"],
     "Other":["EWK", "ST", "TTT", "TTTT", "TTVH", "TTV", "TTVV", "TTTV", "VH", "VV", "VVV", "H", "ttH"],

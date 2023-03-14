@@ -13,9 +13,16 @@ ROOT.gInterpreter.Declare(
             histMap[variable] = std::shared_ptr<TH1>(hist);
         }
     }
+
     float GetSFValue(float value, std::string fileName, std::string variable){
         return histMap.at(variable)->GetBinContent(histMap.at(variable)->FindFixBin(value));
         }
+    static std::map<int,float> deepTauV2p5SFs= {
+        {0, 0.8861654},
+        {1, 0.9226725},
+        {10, 0.9329327},
+        {11, 0.7653489},
+    };
     """
 )
 
@@ -42,15 +49,10 @@ def GetNewSFs_DM(df,weights_to_apply, deepTauVersion='v2p1'):
             if f"weight_tau{tau_idx}ID_Central_new_DM" not in weights_to_apply:
                 weights_to_apply.append(f"weight_tau{tau_idx}ID_Central_new_DM")
     elif deepTauVersion=='v2p5':
-        SF_DM_dict = {
-                      '0': 0.8861654,
-                      '1': 0.9226725,
-                      '10': 0.9329327,
-                      '11': 0.7653489
-                      }
+
         for tau_idx in [1,2]:
-            df = df.Define(f'weight_tau{tau_idx}ID_Central_new_DM{decayMode}', f"""{SF_DM_dict["tau{tau_idx}_decayMode"]}""")
-            weights_to_apply.append(f"weight_tau{tau_idx}ID_Central_new_DM{decayMode}")
+            df = df.Define(f'weight_tau{tau_idx}ID_Central_new_DM', f"""deepTauV2p5SFs.at(tau{tau_idx}_decayMode)""")
+            weights_to_apply.append(f"weight_tau{tau_idx}ID_Central_new_DM")
             if f"weight_tau{tau_idx}ID_Central_new_DM" not in weights_to_apply:
                 weights_to_apply.append(f"weight_tau{tau_idx}ID_Central_new_DM")
     else:

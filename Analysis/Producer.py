@@ -3,9 +3,10 @@ import Common.Utilities as Utilities
 import sys
 import os
 import math
+from TauIDSFs_modifier import *
 
 
-weights_to_apply = ["weight_Central","weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central", "weight_tauID_Central",]
+weights_to_apply = ["weight_Central","weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central"]#, "weight_tauID_Central",]
 files= {
     "DY":["DY"],
     "Other":["EWK", "ST", "TTT", "TTTT", "TTVH", "TTV", "TTVV", "TTTV", "VH", "VV", "VVV", "H", "ttH"],
@@ -59,9 +60,14 @@ class AnaSkimmer:
     def skimAnatuple(self):
         self.df = self.df.Filter('HLT_ditau')
 
-def defineWeights(df_dict):
+def defineWeights(df_dict, use_new_weights=False):
     for sample in df_dict.keys():
         weight_names=[]
+        if sample != "data":
+            if(use_new_weights):
+                df_dict[sample] = GetNewSFs_DM(df_dict[sample],weights_to_apply, args.version.split('_')[-1])
+            else:
+                weights_to_apply.append("weight_tauID_Central")
         for weight in weights_to_apply:
             weight_names.append(weight if sample!="data" else "1")
             if weight == 'weight_Central' and weight in df_dict[sample].GetColumnNames():
@@ -173,6 +179,7 @@ if __name__ == "__main__":
     parser.add_argument('--version', required=False, type=str, default = 'v2_deepTau_v2p1')
     parser.add_argument('--vars', required=False, type=str, default = 'tau1_pt')
     parser.add_argument('--mass', required=False, type=int, default=500)
+    parser.add_argument('--new-weights', required=False, type=bool, default=False)
     args = parser.parse_args()
 
     abs_path = os.environ['CENTRAL_STORAGE']
@@ -200,7 +207,7 @@ if __name__ == "__main__":
             anaskimmer.df = anaskimmer.df.Filter(f"X_mass=={args.mass}")
         anaskimmer.skimAnatuple()
         dataframes[sample] = anaskimmer.df
-    defineWeights(dataframes)
+    defineWeights(dataframes, args.new_weights)
 
     all_histograms = {}
     vars = args.vars.split(',')

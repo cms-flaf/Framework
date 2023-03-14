@@ -25,7 +25,8 @@ def GetNewSFs_Pt(df, weights_to_apply, deepTauVersion='v2p1'):
     ROOT.FillHistNamesMap('pt',"DMinclusive_2018_hist")
     for tau_idx in [1,2]:
         df = df.Define(f"weight_tau{tau_idx}ID_Central_new",f"""GetSFValue(tau{tau_idx}_pt,"{hist_path}","pt")""")
-        weights_to_apply.append(f"weight_tau{tau_idx}ID_Central_new")
+        if "weight_tau{tau_idx}ID_Central_new" not in weights_to_apply:
+            weights_to_apply.append(f"weight_tau{tau_idx}ID_Central_new")
     return df
 
 def GetNewSFs_DM(df,weights_to_apply, deepTauVersion='v2p1'):
@@ -37,8 +38,9 @@ def GetNewSFs_DM(df,weights_to_apply, deepTauVersion='v2p1'):
         for decayMode in decayModes:
             ROOT.FillHistNamesMap(decayMode, f"DM{decayMode}_2018_hist")
         for tau_idx in [1,2]:
-            df = df.Define(f'weight_tau{tau_idx}ID_Central_new_DM{decayMode}',f"""GetSFValue(tau{tau_idx}_pt,"{hist_path}",std::to_string(tau{tau_idx}_decayMode))""")
-            weights_to_apply.append(f"weight_tau{tau_idx}ID_Central_new_DM{decayMode}")
+            df = df.Define(f"weight_tau{tau_idx}ID_Central_new_DM",f"""GetSFValue(tau{tau_idx}_pt,"{hist_path}",std::to_string(tau{tau_idx}_decayMode))""")
+            if f"weight_tau{tau_idx}ID_Central_new_DM" not in weights_to_apply:
+                weights_to_apply.append(f"weight_tau{tau_idx}ID_Central_new_DM")
     elif deepTauVersion=='v2p5':
         SF_DM_dict = {
                       '0': 0.8861654,
@@ -49,6 +51,8 @@ def GetNewSFs_DM(df,weights_to_apply, deepTauVersion='v2p1'):
         for tau_idx in [1,2]:
             df = df.Define(f'weight_tau{tau_idx}ID_Central_new_DM{decayMode}', f"""{SF_DM_dict["tau{tau_idx}_decayMode"]}""")
             weights_to_apply.append(f"weight_tau{tau_idx}ID_Central_new_DM{decayMode}")
+            if f"weight_tau{tau_idx}ID_Central_new_DM" not in weights_to_apply:
+                weights_to_apply.append(f"weight_tau{tau_idx}ID_Central_new_DM")
     else:
         raise RuntimeError("Error: unknown deepTauVersion")
     return df

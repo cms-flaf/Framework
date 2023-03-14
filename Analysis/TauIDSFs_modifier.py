@@ -14,7 +14,7 @@ ROOT.gInterpreter.Declare(
         }
     }
 
-    float GetSFValue(float value, std::string fileName, std::string variable){
+    float GetSFValue(float value, std::string variable){
         return histMap.at(variable)->GetBinContent(histMap.at(variable)->FindFixBin(value));
         }
     static std::map<int,float> deepTauV2p5SFs= {
@@ -31,7 +31,7 @@ def GetNewSFs_Pt(df, weights_to_apply, deepTauVersion='v2p1'):
     hist_path =  os.path.join(os.environ['ANALYSIS_PATH'], "Corrections/data/TAU/2018_UL/TauID_SF_pt_DeepTau2017v2p1VSjet_VSjetMedium_VSeleVVLoose_Mar07.root")
     ROOT.FillhistMap('pt',hist_path,"DMinclusive_2018_hist")
     for tau_idx in [1,2]:
-        df = df.Define(f"weight_tau{tau_idx}ID_Central_new",f"""GetSFValue(tau{tau_idx}_pt,"{hist_path}","pt")""")
+        df = df.Define(f"weight_tau{tau_idx}ID_Central_new",f"""tau{tau_idx}_gen_kind == 5 ? GetSFValue(tau{tau_idx}_pt,"pt"):1.f;""")
         if "weight_tau{tau_idx}ID_Central_new" not in weights_to_apply:
             weights_to_apply.append(f"weight_tau{tau_idx}ID_Central_new")
     return df
@@ -45,13 +45,13 @@ def GetNewSFs_DM(df,weights_to_apply, deepTauVersion='v2p1'):
         for decayMode in decayModes:
             ROOT.FillhistMap(decayMode,hist_path, f"DM{decayMode}_2018_hist")
         for tau_idx in [1,2]:
-            df = df.Define(f"weight_tau{tau_idx}ID_Central_new_DM",f"""GetSFValue(tau{tau_idx}_pt,"{hist_path}",std::to_string(tau{tau_idx}_decayMode))""")
+            df = df.Define(f"weight_tau{tau_idx}ID_Central_new_DM",f"""tau{tau_idx}_gen_kind == 5 ? GetSFValue(tau{tau_idx}_pt,std::to_string(tau{tau_idx}_decayMode)): 1.f;""")
             if f"weight_tau{tau_idx}ID_Central_new_DM" not in weights_to_apply:
                 weights_to_apply.append(f"weight_tau{tau_idx}ID_Central_new_DM")
     elif deepTauVersion=='v2p5':
 
         for tau_idx in [1,2]:
-            df = df.Define(f'weight_tau{tau_idx}ID_Central_new_DM', f"""deepTauV2p5SFs.at(tau{tau_idx}_decayMode)""")
+            df = df.Define(f'weight_tau{tau_idx}ID_Central_new_DM', f"""tau{tau_idx}_gen_kind == 5 ? deepTauV2p5SFs.at(tau{tau_idx}_decayMode) : 1.f;""")
             weights_to_apply.append(f"weight_tau{tau_idx}ID_Central_new_DM")
             if f"weight_tau{tau_idx}ID_Central_new_DM" not in weights_to_apply:
                 weights_to_apply.append(f"weight_tau{tau_idx}ID_Central_new_DM")

@@ -22,16 +22,16 @@ GLOBAL:
     tauTau: dm
   deepTauWPs:
     eTau:
-      VSe: VLoose
+      VSe: VVLoose
       VSmu: Tight
       VSjet: Medium
     muTau:
-      VSe: VLoose
+      VSe: VVLoose
       VSmu: Tight
       VSjet: Medium
     tauTau:
       VSe: VVLoose
-      VSmu: VLoose
+      VSmu: Tight
       VSjet: Medium
   corrections:
     - tauID

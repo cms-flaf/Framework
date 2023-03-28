@@ -9,8 +9,6 @@ GLOBAL:
     - Flag_EcalDeadCellTriggerPrimitiveFilter
     - Flag_BadPFMuonFilter
     - Flag_BadPFMuonDzFilter
-    - Flag_hfNoisyHitsFilter
-    - Flag_BadChargedCandidateFilter
     - Flag_eeBadScFilter
     - Flag_ecalBadCalibFilter
   triggerFile: config/triggers_2018.yaml
@@ -31,11 +29,12 @@ GLOBAL:
       VSjet: Medium
     tauTau:
       VSe: VVLoose
-      VSmu: Tight
+      VSmu: VLoose
       VSjet: Medium
   corrections:
     - tauID
     - tauES
+    - JEC_JER
   deepTauVersion: 2p1
   channelSelection:
     #- eTau

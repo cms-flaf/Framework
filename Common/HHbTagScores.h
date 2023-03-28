@@ -77,9 +77,10 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
     std::vector<int> goodJet_idx;
 
     LorentzVectorM hTT_p4 =HTT_Cand.leg_p4[0]+HTT_Cand.leg_p4[1];
+    LorentzVectorM MET_p4(met_pt, 0, met_phi, 0);
     float htt_pt=hTT_p4.Pt();
     float htt_eta=hTT_p4.Eta();
-    float htt_met_dphi = DeltaPhi(static_cast<float>(hTT_p4.Phi()),static_cast<float>(met_phi));
+    float htt_met_dphi = ROOT::Math::VectorUtil::DeltaPhi(hTT_p4, MET_p4);
     float htt_scalar_pt= HTT_Cand.leg_p4[0].Pt()+HTT_Cand.leg_p4[1].Pt();
     float rel_met_pt_htt_pt=met_pt/htt_scalar_pt;
 
@@ -93,8 +94,8 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
         jet_deepFlavour.push_back(Jet_deepFlavour.at(jet_idx));
         rel_jet_M_pt.push_back(jet_p4.at(jet_idx).M()/jet_p4.at(jet_idx).Pt());
         rel_jet_E_pt.push_back(jet_p4.at(jet_idx).E()/jet_p4.at(jet_idx).Pt());
-        jet_htt_deta.push_back(DeltaEta(static_cast<float>(hTT_p4.Eta()),static_cast<float>(jet_p4.at(jet_idx).Eta())));
-        jet_htt_dphi.push_back(DeltaPhi(static_cast<float>(hTT_p4.Phi()),static_cast<float>(jet_p4.at(jet_idx).Phi())));
+        jet_htt_deta.push_back(static_cast<float>(jet_p4.at(jet_idx).Eta() - hTT_p4.Eta()) );
+        jet_htt_dphi.push_back(ROOT::Math::VectorUtil::DeltaPhi(hTT_p4,jet_p4.at(jet_idx)));
     }
 
 

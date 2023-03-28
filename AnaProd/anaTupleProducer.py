@@ -167,6 +167,7 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
             weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations))
             dfw.colToSave.extend(weight_branches)
         report = dfw.df.Report()
+        report.Print()
         varToSave = Utilities.ListToVector(dfw.colToSave)
         dfw.df.Snapshot(f"Events{suffix}", outFile, varToSave, snapshotOptions)
         snapshotOptions.fMode = "UPDATE"

@@ -69,6 +69,6 @@ class Triggers():
             hltBranches.append(hltBranch)
             df = df.Define(hltBranch, fullPathSelection)
         total_or_string = ' || '.join(hltBranches)
-        df = df.Filter(total_or_string)
+        df = df.Filter(total_or_string, "trigger application")
         hltBranches.extend(matchedObjectsBranches)
         return df,hltBranches

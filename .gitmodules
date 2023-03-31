@@ -10,3 +10,6 @@
 [submodule "PlotKit"]
 	path = PlotKit
 	url = git@github.com:kandrosov/PlotKit.git
+[submodule "SyncTool"]
+	path = SyncTool
+	url = git@github.com:cms-hh-bbtautau/SyncTool.git

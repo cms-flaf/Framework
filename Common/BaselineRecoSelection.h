@@ -32,6 +32,11 @@ ROOT::VecOps::RVec<HTTCand> GetHTTCandidates(Channel channel, double dR_thr,
         cand.leg_rawIso[1] = leg2_rawIso.at(leg2_idx);
         cand.leg_genMatchIdx[0] = leg1_genMatchIdx.at(leg1_idx);
         cand.leg_genMatchIdx[1] = leg2_genMatchIdx.at(leg2_idx);
+        //std::cout << "leg 1 idx " << leg1_idx << " leg 2 idx " << leg2_idx << std::endl;
+        //std::cout << "idx 1 iso " << cand.leg_rawIso[0] << " idx 2 iso " << cand.leg_rawIso[1] << std::endl;
+        //std::cout << "idx 1 pt " << cand.leg_p4[0].pt() << " idx 2 pt " << cand.leg_p4[1].pt() << std::endl;
+        //std::cout << "idx 1 eta " << cand.leg_p4[0].eta() << " idx 2 eta " << cand.leg_p4[1].eta() << std::endl;
+        //std::cout << std::endl;
         httCands.push_back(cand);
       }
     }
@@ -44,7 +49,7 @@ HTTCand GetBestHTTCandidate(const std::vector<const ROOT::VecOps::RVec<HTTCand>*
 {
   const auto& comparitor = [&](const HTTCand& cand1, const HTTCand& cand2) -> bool {
     if(cand1 == cand2) return false;
-    if(cand1.channel() != cand1.channel()) {
+    if(cand1.channel() != cand2.channel()) {
       throw analysis::exception("ERROR: different channels considered for HTT candiate choice!! %1% VS %2%")
       % static_cast<int>(cand1.channel()) % static_cast<int>(cand2.channel());
     }

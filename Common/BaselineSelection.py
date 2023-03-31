@@ -2,7 +2,6 @@ import ROOT
 import os
 from .Utilities import *
 
-print
 initialized = False
 
 ana_reco_object_collections = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau", "MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"]
@@ -134,7 +133,7 @@ def RecoLeptonsSelection(df, apply_filter=True):
         && ( ((Muon_tightId || Muon_mediumId) && Muon_pfRelIso04_all < 0.5) || (Muon_highPtId && Muon_tkRelIso < 0.5) )
     """)
     df = df.Define("Tau_B0", f"""
-        v_ops::pt(Tau_p4) > 15 && abs(v_ops::eta(Tau_p4)) < 2.5 && abs(Tau_dz) < 0.2 && Tau_decayMode != 5 && Tau_decayMode != 6
+        v_ops::pt(Tau_p4) > 15 && abs(v_ops::eta(Tau_p4)) < 2.3 && abs(Tau_dz) < 0.2 && Tau_decayMode != 5 && Tau_decayMode != 6
         && (    (    Tau_idDeepTau2017v2p1VSe >= {WorkingPointsTauVSe.VVLoose.value}
                   && Tau_idDeepTau2017v2p1VSmu >= {WorkingPointsTauVSmu.VLoose.value}
                   && Tau_idDeepTau2017v2p1VSjet >= {WorkingPointsTauVSjet.VVVLoose.value} )
@@ -164,6 +163,7 @@ def RecoLeptonsSelection(df, apply_filter=True):
                     Tau_idDeepTau2017v2p1VSjet >= {WorkingPointsTauVSjet.Medium.value}
                    || Tau_idDeepTau2018v2p5VSjet >= {WorkingPointsTauVSjet.Loose.value} )
     """)
+    #df.Display({"Tau_pt","Tau_B0","Tau_B0T"}).Print()
 
     df = df.Define("boostedTau_B0T", f"""
         boostedTau_B0 && boostedTau_idMVAnewDM2017v2 >= {WorkingPointsBoostedTauVSjet.Medium.value}
@@ -210,9 +210,9 @@ def RecoHttCandidateSelection(df, config):
     """)
 
     df = df.Define("Muon_B2_muTau_1", f"""
-        Muon_B0 && v_ops::pt(Muon_p4) > 20 && (   (Muon_tightId && Muon_pfRelIso04_all < 0.15)
-                                    || (Muon_highPtId && Muon_tkRelIso < 0.15) )
+        Muon_B0 && v_ops::pt(Muon_p4) > 20 && (   (Muon_tightId && Muon_pfRelIso04_all < 0.15) )
     """)
+    #|| (Muon_highPtId && Muon_tkRelIso < 0.15) )
     df = df.Define("Tau_B2_muTau_2", f"""
         Tau_B0 && v_ops::pt(Tau_p4) > 20
         && (Tau_idDeepTau2017v2p1VSe >= {getattr(WorkingPointsTauVSe, config["deepTauWPs"]["muTau"]["VSe"]).value})
@@ -266,6 +266,9 @@ def RecoHttCandidateSelection(df, config):
         """)
         cand_columns.append(cand_column)
     cand_filters = [ f'{c}.size() > 0' for c in cand_columns ]
+    #for c in cand_columns:
+    #    df=df.Define(f"candSize_{c}", f"{c}.size()")
+    #    df.Display({f"candSize_{c}"}).Print()
     df = df.Filter(" || ".join(cand_filters), "Reco Baseline 2")
     cand_list_str = ', '.join([ '&' + c for c in cand_columns])
     return df.Define('httCand', f'GetBestHTTCandidate({{ {cand_list_str} }}, event)')
@@ -284,10 +287,11 @@ def ThirdLeptonVeto(df):
     return df
 
 def RecoJetSelection(df):
-    df = df.Define("Jet_bIncl", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 2.5 && ( Jet_jetId & 2 ) && (Jet_puId>0 || v_ops::pt(Jet_p4)>50)")
+    df = df.Define("Jet_bIncl", f"abs(v_ops::eta(Jet_p4)) < 2.5 ")# v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 2.5 && ( Jet_jetId & 2 ) && (Jet_puId>0 || v_ops::pt(Jet_p4)>50)")
     df = df.Define("FatJet_bbIncl", "FatJet_msoftdrop > 30 && abs(v_ops::eta(FatJet_p4)) < 2.5")
     df = df.Define("Jet_bCand", "RemoveOverlaps(Jet_p4, Jet_bIncl,{{httCand.leg_p4[0], httCand.leg_p4[1]},}, 2, 0.5)")
     df = df.Define("FatJet_bbCand", "RemoveOverlaps(FatJet_p4, FatJet_bbIncl, {{httCand.leg_p4[0], httCand.leg_p4[1]},}, 2, 0.5)")
+    df.Define("JetBInclSize","Jet_idx[Jet_bIncl].size()").Define("JetbCandSize", "Jet_idx[Jet_bCand].size()").Display({"JetBInclSize", "JetbCandSize"}).Print()
     return df.Filter("Jet_idx[Jet_bCand].size()>=2 || FatJet_idx[FatJet_bbCand].size()>=1", "Reco bjet candidates")
 
 

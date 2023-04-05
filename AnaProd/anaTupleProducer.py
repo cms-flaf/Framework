@@ -24,6 +24,8 @@ deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
             "idDeepTau2017v2p1VSe", "idDeepTau2017v2p1VSjet", "idDeepTau2017v2p1VSmu",
             "idDeepTau2018v2p5VSe","idDeepTau2018v2p5VSjet","idDeepTau2018v2p5VSmu",
             "decayMode"]
+Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all"]
+Electron_observables = ["Electron_mvaNoIso_WP90", "Electron_mvaIso_WP90", "Electron_pfRelIso03_all"]
 JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",
                 "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"]
@@ -31,7 +33,7 @@ JetObservablesMC = ["hadronFlavour","partonFlavour"]
 
 defaultColToSave = ["event","luminosityBlock","run", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
-                "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs"]
+                "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs" ]
 
 
 
@@ -80,7 +82,12 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         for deepTauScore in deepTauScores:
             dfw.DefineAndAppend( f"tau{leg_idx+1}_{deepTauScore}",
                                      f"httCand.leg_type[{leg_idx}] == Leg::tau ? Tau_{deepTauScore}.at(httCand.leg_index[{leg_idx}]) : -1;")
-
+        for muon_obs in Muon_observables:
+            dfw.DefineAndAppend( f"tau{leg_idx+1}_{muon_obs}",
+                                     f"httCand.leg_type[{leg_idx}] == Leg::mu ? {muon_obs}.at(httCand.leg_index[{leg_idx}]) : -1;")
+        for ele_obs in Electron_observables:
+            dfw.DefineAndAppend( f"tau{leg_idx+1}_{ele_obs}",
+                                     f"httCand.leg_type[{leg_idx}] == Leg::e ? {ele_obs}.at(httCand.leg_index[{leg_idx}]) : -1;")
         if not isData:
             dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_kind", f"""tau{leg_idx+1}_genMatchIdx>=0 ? static_cast<int>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).kind()) :
                                               static_cast<int>(GenLeptonMatch::NoMatch);""")
@@ -144,7 +151,7 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
         df = df.Range(range)
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
-    df.Display({"run", "luminosityBlock", "event"}).Print()
+    #df.Display({"run", "luminosityBlock", "event"}).Print()
     if isData and 'lumiFile' in config['GLOBAL']:
         lumiFilter = LumiFilter(config['GLOBAL']['lumiFile'])
         df = lumiFilter.filter(df)

@@ -138,12 +138,8 @@ RVecB RemoveOverlaps(const RVecLV& obj_p4, const RVecB& pre_sel, const std::vect
     for(const auto& other_obj_col : other_objects) {
       for(const auto& other_obj_p4 : other_obj_col) {
         const double dR2 = ROOT::Math::VectorUtil::DeltaR2(p4, other_obj_p4);
-        //std::cout << "Jet pt = " << p4.pt() << " tau pt " << other_obj_p4.pt() << " delta R 2 " << dR2 << " dr2min " << min_deltaR2 << std::endl;
-        //std::cout << "Jet eta = " << p4.eta() << " tau eta " << other_obj_p4.eta() << " delta R 2 " << dR2 << " dr2min " << min_deltaR2 << std::endl;
-        //std::cout << std::endl;
         if(dR2 > min_deltaR2) {
           ++cnt;
-          //std::cout << " count " << cnt << std::endl;
           if(cnt >= min_number_of_non_overlaps)
             return true;
         }

@@ -200,7 +200,7 @@ def RecoHttCandidateSelection(df, config):
            .Define("Muon_iso", "Muon_pfRelIso04_all") \
            .Define("Tau_iso", "-Tau_rawDeepTau2017v2p1VSjet")
 
-    df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && v_ops::pt(Electron_p4) > 20 ")
+    df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && abs(v_ops::eta(Electron_p4)) < 2.3 && v_ops::pt(Electron_p4) > 20 && Electron_mvaIso_WP80 ")
     #df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaIso_WP80")
     #df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all<0.1")
     df = df.Define("Tau_B2_eTau_2", f"""
@@ -210,8 +210,11 @@ def RecoHttCandidateSelection(df, config):
     """)
 
     df = df.Define("Muon_B2_muTau_1", f"""
-        Muon_B0 && v_ops::pt(Muon_p4) > 20 && (   (Muon_tightId ) || (v_ops::pt(Muon_p4)>120 && Muon_highPtId ) )
-    """) # --> removed for sync Muon_pfRelIso04_all < 0.15 Muon_tkRelIso < 0.15
+        Muon_B0 && v_ops::pt(Muon_p4) > 20 && abs(v_ops::eta(Muon_p4))<2.3 && (
+            ( v_ops::pt(Muon_p4) <= 120  && Muon_tightId && Muon_pfRelIso04_all < 0.15) ||
+            ( v_ops::pt(Muon_p4)>120 && Muon_highPtId && Muon_tkRelIso < 0.15 )
+        )
+    """)
 
     df = df.Define("Tau_B2_muTau_2", f"""
         Tau_B0 && v_ops::pt(Tau_p4) > 20

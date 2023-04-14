@@ -156,8 +156,9 @@ def RecoLeptonsSelection(df, apply_filter=True):
         Muon_B0 && ( ((Muon_tightId || Muon_mediumId) && Muon_pfRelIso04_all < 0.15)
                     || (Muon_highPtId && Muon_tkRelIso < 0.15) )
     """)
+
     df = df.Define("Tau_B0T", f"""
-         Tau_B0 && (
+        Tau_B0 && (
                     Tau_idDeepTau2017v2p1VSjet >= {WorkingPointsTauVSjet.Medium.value}
                    || Tau_idDeepTau2018v2p5VSjet >= {WorkingPointsTauVSjet.Loose.value} )
     """)

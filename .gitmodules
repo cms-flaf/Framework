@@ -13,6 +13,3 @@
 [submodule "SyncTool"]
 	path = SyncTool
 	url = git@github.com:cms-hh-bbtautau/SyncTool.git
-[submodule "HHKinFit2"]
-	path = HHKinFit2
-	url = git@github.com:cms-hh-bbtautau/HHKinFit2.git

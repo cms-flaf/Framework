@@ -149,16 +149,15 @@ def RecoLeptonsSelection(df, apply_filter=True):
     """)
 
     df = df.Define("Electron_B0T", """
-        Electron_B0 """)
-    #&& (Electron_mvaIso_WP80
-    #                    || (Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.15))
-    #""")
-
+        Electron_B0 && (Electron_mvaIso_WP80
+                        || (Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.15))
+    """)
     df = df.Define("Muon_B0T", """
-        Muon_B0 && ( (Muon_tightId && Muon_pfRelIso04_all < 0.5) || (v_ops::pt(Muon_p4) > 120 && Muon_highPtId ) )""" )
-
+        Muon_B0 && ( ((Muon_tightId || Muon_mediumId) && Muon_pfRelIso04_all < 0.15)
+                    || (Muon_highPtId && Muon_tkRelIso < 0.15) )
+    """)
     df = df.Define("Tau_B0T", f"""
-        Tau_B0 && (
+         Tau_B0 && (
                     Tau_idDeepTau2017v2p1VSjet >= {WorkingPointsTauVSjet.Medium.value}
                    || Tau_idDeepTau2018v2p5VSjet >= {WorkingPointsTauVSjet.Loose.value} )
     """)

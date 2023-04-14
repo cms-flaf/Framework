@@ -130,7 +130,7 @@ def RecoLeptonsSelection(df, apply_filter=True):
 
     df = df.Define("Muon_B0", f"""
         v_ops::pt(Muon_p4) > 18 && abs(v_ops::eta(Muon_p4)) < 2.3 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045
-        && ( (Muon_tightId || Muon_mediumId) || (v_ops::pt(Muon_p4) > 120 && Muon_highPtId) )
++        && ( ((Muon_tightId || Muon_mediumId) && Muon_pfRelIso04_all < 0.5) || (Muon_highPtId && Muon_tkRelIso < 0.5) )
     """)
     df = df.Define("Tau_B0", f"""
         v_ops::pt(Tau_p4) > 15 && abs(v_ops::eta(Tau_p4)) < 2.5 && abs(Tau_dz) < 0.2 && Tau_decayMode != 5 && Tau_decayMode != 6
@@ -155,10 +155,7 @@ def RecoLeptonsSelection(df, apply_filter=True):
     #""")
 
     df = df.Define("Muon_B0T", """
-        Muon_B0 """ )
-    #&& ( ((Muon_tightId || Muon_mediumId) && Muon_pfRelIso04_all < 0.15)
-     #               || (Muon_highPtId && Muon_tkRelIso < 0.15) )
-    #""")
+        Muon_B0 && ( (Muon_tightId && Muon_pfRelIso04_all < 0.5) || (v_ops::pt(Muon_p4) > 120 && Muon_highPtId ) )""" )
 
     df = df.Define("Tau_B0T", f"""
         Tau_B0 && (

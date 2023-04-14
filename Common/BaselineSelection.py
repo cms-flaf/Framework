@@ -125,14 +125,14 @@ def DefineMETCuts(met_thr, met_collections):
 def RecoLeptonsSelection(df, apply_filter=True):
     df = df.Define("Electron_B0", f"""
         v_ops::pt(Electron_p4) > 18 && abs(v_ops::eta(Electron_p4)) < 2.3 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
-    """) # && (Electron_mvaIso_WP90 || (Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all < 0.5))
-
+        && (Electron_mvaIso_WP90 || (Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all < 0.5))
+    """)
     df = df.Define("Muon_B0", f"""
         v_ops::pt(Muon_p4) > 18 && abs(v_ops::eta(Muon_p4)) < 2.3 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045
         && ( (Muon_tightId || Muon_mediumId) || (v_ops::pt(Muon_p4) > 120 && Muon_highPtId) )
-    """) # ((Muon_tightId || Muon_mediumId) && Muon_pfRelIso04_all < 0.5)
+-    """)
     df = df.Define("Tau_B0", f"""
-        v_ops::pt(Tau_p4) > 15 && abs(v_ops::eta(Tau_p4)) < 2.3 && abs(Tau_dz) < 0.2 && Tau_decayMode != 5 && Tau_decayMode != 6
+        v_ops::pt(Tau_p4) > 15 && abs(v_ops::eta(Tau_p4)) < 2.5 && abs(Tau_dz) < 0.2 && Tau_decayMode != 5 && Tau_decayMode != 6
         && (    (    Tau_idDeepTau2017v2p1VSe >= {WorkingPointsTauVSe.VVLoose.value}
                   && Tau_idDeepTau2017v2p1VSmu >= {WorkingPointsTauVSmu.VLoose.value}
                   && Tau_idDeepTau2017v2p1VSjet >= {WorkingPointsTauVSjet.VVVLoose.value} )

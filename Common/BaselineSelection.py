@@ -152,6 +152,7 @@ def RecoLeptonsSelection(df, apply_filter=True):
         Electron_B0 && (Electron_mvaIso_WP80
                         || (Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.15))
     """)
+
     df = df.Define("Muon_B0T", """
         Muon_B0 && ( ((Muon_tightId || Muon_mediumId) && Muon_pfRelIso04_all < 0.15)
                     || (Muon_highPtId && Muon_tkRelIso < 0.15) )

@@ -3,6 +3,7 @@ import datetime
 import os
 import sys
 import ROOT
+import zlib
 
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
@@ -23,15 +24,16 @@ deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
             "idDeepTau2017v2p1VSe", "idDeepTau2017v2p1VSjet", "idDeepTau2017v2p1VSmu",
             "idDeepTau2018v2p5VSe","idDeepTau2018v2p5VSjet","idDeepTau2018v2p5VSmu",
             "decayMode"]
+Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all"]
+Electron_observables = ["Electron_mvaNoIso_WP90", "Electron_mvaIso_WP90", "Electron_pfRelIso03_all"]
 JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",
                 "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"]
 JetObservablesMC = ["hadronFlavour","partonFlavour"]
 
-defaultColToSave = ["event","luminosityBlock","run", "sample_type", "period", "X_mass", "isData",
-                "MET_pt", "MET_phi","PuppiMET_pt", "PuppiMET_phi",
+defaultColToSave = ["event","luminosityBlock","run", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
-                "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs"]
+                "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs" ]
 
 
 
@@ -39,9 +41,14 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
     dfw.Apply(Baseline.RecoLeptonsSelection)
     dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
+    #dfw.df.Define("tau1pt","httCand.leg_p4[0].pt()").Display("tau1pt").Print()
+    #dfw.df.Define("tau1dm","Tau_decayMode.at(httCand.leg_index[0])").Display("tau1dm").Print()
+    #dfw.df.Define("tau2pt","httCand.leg_p4[1].pt()").Display("tau2pt").Print()
+    #dfw.df.Define("tau2dm","Tau_decayMode.at(httCand.leg_index[1])").Display("tau2dm").Print()
     dfw.Apply(Baseline.RecoJetSelection)
     dfw.Apply(Baseline.RequestOnlyResolvedRecoJets)
     dfw.Apply(Baseline.ThirdLeptonVeto)
+
     dfw.Apply(Baseline.DefineHbbCand)
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, isData)
@@ -50,6 +57,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
     dfw.Define( f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
     dfw.DefineAndAppend("channelId","static_cast<int>(httCand.channel())")
+    #dfw.df.Display({"channelId"}).Print()
     channel_to_select = " || ".join(f"httCand.channel()==Channel::{ch}" for ch in config["GLOBAL"]["channelSelection"])
     dfw.Filter(channel_to_select, "select channels")
     jet_obs = JetObservables
@@ -57,6 +65,10 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         jet_obs.extend(JetObservablesMC)
         if "LHE_HLT" in dfw.df.GetColumnNames():
             dfw.colToSave.append("LHE_HT")
+    dfw.DefineAndAppend(f"met_pt_nano", f"static_cast<float>(MET_p4_nano.pt())")
+    dfw.DefineAndAppend(f"met_phi_nano", f"static_cast<float>(MET_p4_nano.phi())")
+    dfw.DefineAndAppend("met_pt", "static_cast<float>(MET_p4.pt())")
+    dfw.DefineAndAppend("met_phi", "static_cast<float>(MET_p4.phi())")
     for leg_idx in [0,1]:
         dfw.DefineAndAppend( f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
         dfw.DefineAndAppend( f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
@@ -70,7 +82,12 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         for deepTauScore in deepTauScores:
             dfw.DefineAndAppend( f"tau{leg_idx+1}_{deepTauScore}",
                                      f"httCand.leg_type[{leg_idx}] == Leg::tau ? Tau_{deepTauScore}.at(httCand.leg_index[{leg_idx}]) : -1;")
-
+        for muon_obs in Muon_observables:
+            dfw.DefineAndAppend( f"tau{leg_idx+1}_{muon_obs}",
+                                     f"httCand.leg_type[{leg_idx}] == Leg::mu ? {muon_obs}.at(httCand.leg_index[{leg_idx}]) : -1;")
+        for ele_obs in Electron_observables:
+            dfw.DefineAndAppend( f"tau{leg_idx+1}_{ele_obs}",
+                                     f"httCand.leg_type[{leg_idx}] == Leg::e ? {ele_obs}.at(httCand.leg_index[{leg_idx}]) : -1;")
         if not isData:
             dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_kind", f"""tau{leg_idx+1}_genMatchIdx>=0 ? static_cast<int>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).kind()) :
                                               static_cast<int>(GenLeptonMatch::NoMatch);""")
@@ -112,7 +129,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
 
 
 def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptions,range, evtIds,
-                   store_noncentral, compute_unc_variations):
+                   store_noncentral, compute_unc_variations, print_cutflow):
     start_time = datetime.datetime.now()
     compression_settings = snapshotOptions.fCompressionAlgorithm * 100 + snapshotOptions.fCompressionLevel
     period = config["GLOBAL"]["era"]
@@ -134,13 +151,14 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
         df = df.Range(range)
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
-
+    #df.Display({"run", "luminosityBlock", "event"}).Print()
     if isData and 'lumiFile' in config['GLOBAL']:
         lumiFilter = LumiFilter(config['GLOBAL']['lumiFile'])
         df = lumiFilter.filter(df)
 
     df = Baseline.applyMETFlags(df, config["GLOBAL"]["MET_flags"])
     df = df.Define("sample_type", f"static_cast<int>(SampleType::{config[sample_name]['sampleType']})")
+    df = df.Define("sample_name", f"{zlib.crc32(sample_name.encode())}")
     df = df.Define("period", f"static_cast<int>(Period::{period})")
     df = df.Define("X_mass", f"static_cast<int>({mass})")
     is_data = 'true' if isData else 'false'
@@ -166,7 +184,10 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
             weight_branches.extend(dfw.Apply(Corrections.trg.getTrgSF, trigger_class.trigger_dict.keys(), is_central and compute_unc_variations))
             weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations))
             dfw.colToSave.extend(weight_branches)
+
         report = dfw.df.Report()
+        if print_cutflow:
+            report.Print()
         varToSave = Utilities.ListToVector(dfw.colToSave)
         dfw.df.Snapshot(f"Events{suffix}", outFile, varToSave, snapshotOptions)
         snapshotOptions.fMode = "UPDATE"
@@ -196,7 +217,8 @@ if __name__ == "__main__":
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--store-noncentral', action="store_true", help="Store ES variations.")
-    parser.add_argument('--compute_unc_variations', type=bool, default=True)
+    parser.add_argument('--compute_unc_variations', type=bool, default=False)
+    parser.add_argument('--print-cutflow', type=bool, default=False)
     parser.add_argument('--customisations', type=str, default="")
 
     args = parser.parse_args()
@@ -219,4 +241,4 @@ if __name__ == "__main__":
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
     createAnatuple(args.inFile, args.outFile, config, args.sample, anaCache, snapshotOptions, args.nEvents,
-                   args.evtIds, args.store_noncentral, args.compute_unc_variations)
+                   args.evtIds, args.store_noncentral, args.compute_unc_variations, args.print_cutflow)

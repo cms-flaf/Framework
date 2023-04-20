@@ -44,7 +44,7 @@ HTTCand GetBestHTTCandidate(const std::vector<const ROOT::VecOps::RVec<HTTCand>*
 {
   const auto& comparitor = [&](const HTTCand& cand1, const HTTCand& cand2) -> bool {
     if(cand1 == cand2) return false;
-    if(cand1.channel() != cand1.channel()) {
+    if(cand1.channel() != cand2.channel()) {
       throw analysis::exception("ERROR: different channels considered for HTT candiate choice!! %1% VS %2%")
       % static_cast<int>(cand1.channel()) % static_cast<int>(cand2.channel());
     }

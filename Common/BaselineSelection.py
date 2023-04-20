@@ -204,33 +204,38 @@ def RecoHttCandidateSelection(df, config):
     #df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaIso_WP80")
     #df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all<0.1")
     df = df.Define("Tau_B2_eTau_2", f"""
-        Tau_B0 && v_ops::pt(Tau_p4) > 20
+        Tau_B0 && v_ops::pt(Tau_p4) > 20 && v_ops::eta(Tau_p4) < 2.3
         && (Tau_idDeepTau2017v2p1VSe >= {getattr(WorkingPointsTauVSe, config["deepTauWPs"]["eTau"]["VSe"]).value})
         && (Tau_idDeepTau2017v2p1VSmu >= {getattr(WorkingPointsTauVSmu, config["deepTauWPs"]["eTau"]["VSmu"]).value})
     """)
-
+    '''
     df = df.Define("Muon_B2_muTau_1", f"""
         Muon_B0 && v_ops::pt(Muon_p4) > 20 && abs(v_ops::eta(Muon_p4))<2.3 && (
             ( v_ops::pt(Muon_p4) <= 120  && Muon_tightId && Muon_pfRelIso04_all < 0.15) ||
             ( v_ops::pt(Muon_p4)>120 && Muon_highPtId && Muon_tkRelIso < 0.15 )
         )
     """)
-
+    '''
+    df = df.Define("Muon_B2_muTau_1", f"""
+        Muon_B0 && v_ops::pt(Muon_p4) > 20 && abs(v_ops::eta(Muon_p4))<2.3 && (
+            ( Muon_tightId && Muon_pfRelIso04_all < 0.15 )
+        )
+    """)
     df = df.Define("Tau_B2_muTau_2", f"""
-        Tau_B0 && v_ops::pt(Tau_p4) > 20
+        Tau_B0 && v_ops::pt(Tau_p4) > 20 && v_ops::eta(Tau_p4) < 2.3
         && (Tau_idDeepTau2017v2p1VSe >= {getattr(WorkingPointsTauVSe, config["deepTauWPs"]["muTau"]["VSe"]).value})
         && (Tau_idDeepTau2017v2p1VSmu >= {getattr(WorkingPointsTauVSmu, config["deepTauWPs"]["muTau"]["VSmu"]).value})
     """)
 
     df = df.Define("Tau_B2_tauTau_1", f"""
-        Tau_B0 && v_ops::pt(Tau_p4) > 20
+        Tau_B0 && v_ops::pt(Tau_p4) > 20 && v_ops::eta(Tau_p4) < 2.3
         && (Tau_idDeepTau2017v2p1VSe >= {getattr(WorkingPointsTauVSe, config["deepTauWPs"]["tauTau"]["VSe"]).value})
         && (Tau_idDeepTau2017v2p1VSmu >= {getattr(WorkingPointsTauVSmu, config["deepTauWPs"]["tauTau"]["VSmu"]).value})
         && (Tau_idDeepTau2017v2p1VSjet >= {getattr(WorkingPointsTauVSjet, config["deepTauWPs"]["tauTau"]["VSjet"]).value})
     """)
 
     df = df.Define("Tau_B2_tauTau_2", f"""
-        Tau_B0 && v_ops::pt(Tau_p4) > 20
+        Tau_B0 && v_ops::pt(Tau_p4) > 20 && v_ops::eta(Tau_p4) < 2.3
         && (Tau_idDeepTau2017v2p1VSe >= {getattr(WorkingPointsTauVSe, config["deepTauWPs"]["tauTau"]["VSe"]).value})
         && (Tau_idDeepTau2017v2p1VSmu >= {getattr(WorkingPointsTauVSmu, config["deepTauWPs"]["tauTau"]["VSmu"]).value})
     """)

@@ -183,7 +183,6 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
         if len(suffix) and not store_noncentral: continue
         dfw = Utilities.DataFrameWrapper(df,defaultColToSave)
         addAllVariables(dfw, syst_name, isData, trigger_class)
-    '''
         if not isData:
             weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name,
                                         return_variations=is_central and compute_unc_variations,
@@ -208,7 +207,7 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
     hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
     outputRootFile.WriteTObject(hist_time, f"runtime", "Overwrite")
     outputRootFile.Close()
-    '''
+
 
 if __name__ == "__main__":
     import argparse

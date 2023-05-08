@@ -37,13 +37,14 @@ def GetKinFitConvergence(df):
     #df = df.Define("Tau_DecayMode_size", "Tau_decayMode.size()")
     #df = df.Define("Tau_pt_size", "Tau_pt.size()")
     #df.Display({"first_index","second_index","Tau_DecayMode_size","Tau_pt_size"}).Print()
+    for leg_idx in [0,1]:
+        df=df.Define(f"Tau_dm_{leg_idx}", f"httCand.leg_type[{leg_idx}] == Leg::tau ? Tau_decayMode.at(httCand.leg_index[{leg_idx}]) : -1;")
     df = df.Define('SVfit_result',
-                """sv_fit::FitProducer::Fit(httCand.leg_p4[0], httCand.leg_type[0], Tau_decayMode.at(httCand.leg_index[0]),
-                                            httCand.leg_p4[1], httCand.leg_type[1], Tau_decayMode.at(httCand.leg_index[1]),
+                """sv_fit::FitProducer::Fit(httCand.leg_p4[0], httCand.leg_type[0], Tau_dm_0,
+                                            httCand.leg_p4[1], httCand.leg_type[1], Tau_dm_1,
                                             MET_p4, MET_covXX, MET_covXY, MET_covYY)""")
 
     df = df.Define('SVfit_valid', 'int(SVfit_result.has_valid_momentum)')
-    '''
     df = df.Define('SVfit_pt', 'float(SVfit_result.momentum.pt())')
     df = df.Define('SVfit_eta', 'float(SVfit_result.momentum.eta())')
     df = df.Define('SVfit_phi', 'float(SVfit_result.momentum.phi())')
@@ -55,8 +56,6 @@ def GetKinFitConvergence(df):
     df = df.Define('SVfit_mt', 'float(SVfit_result.transverseMass)')
     df = df.Define('SVfit_mt_error', 'float(SVfit_result.transverseMass_error)')
     cols_to_append=['MT2','kinFit_result','kinFit_convergence','kinFit_m','kinFit_chi2', 'SVfit_valid', 'SVfit_pt', 'SVfit_eta', 'SVfit_phi', 'SVfit_m', 'SVfit_pt_error', 'SVfit_eta_error', 'SVfit_phi_error', 'SVfit_m_error', 'SVfit_mt', 'SVfit_mt_error']
-    '''
-    cols_to_append=['MT2','kinFit_result','kinFit_convergence','kinFit_m','kinFit_chi2']
     return df,cols_to_append
 
 

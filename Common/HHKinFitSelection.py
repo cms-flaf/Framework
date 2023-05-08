@@ -47,6 +47,7 @@ def GetKinFitConvergence(df):
     df = df.Define('SVfit_m_error', 'float(SVfit_result.momentum_error.mass())')
     df = df.Define('SVfit_mt', 'float(SVfit_result.transverseMass)')
     df = df.Define('SVfit_mt_error', 'float(SVfit_result.transverseMass_error)')
-    return df
+    cols_to_append=['MT2','kinFit_result','kinFit_convergence','kinFit_m','kinFit_chi2', 'SVfit_valid', 'SVfit_pt', 'SVfit_eta', 'SVfit_phi', 'SVfit_m', 'SVfit_pt_error', 'SVfit_eta_error', 'SVfit_phi_error', 'SVfit_m_error', 'SVfit_mt', 'SVfit_mt_error']
+    return df,cols_to_append
 
 

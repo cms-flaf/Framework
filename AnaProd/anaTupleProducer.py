@@ -52,7 +52,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Apply(Baseline.ThirdLeptonVeto)
 
     dfw.Apply(Baseline.DefineHbbCand)
-    dfw.Apply(KinFitSel.GetKinFitConvergence)
+    fitBranches = dfw.Apply(KinFitSel.GetKinFitConvergence)
+    dfw.colToSave.extend(fitBranches)
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, isData)
         dfw.colToSave.extend(hltBranches)

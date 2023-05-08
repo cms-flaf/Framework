@@ -8,7 +8,6 @@ def Initialize():
     global initialized
     if initialized:
         raise RuntimeError('HH KinFitSel already initialized')
-    #headers_dir = os.environ['ANALYSIS_PATH']
     headers_dir = os.path.dirname(os.path.abspath(__file__))
     header_path_HHKinFit = os.path.join(headers_dir, "KinFitInterface.h")
     ROOT.gInterpreter.Declare(f'#include "{header_path_HHKinFit}"')
@@ -25,7 +24,6 @@ def GetKinFitConvergence(df):
     if not initialized:
         raise RuntimeError("HH KinFit selection not initialised!")
     df = df.Define('MT2', 'float(analysis::Calculate_MT2(httCand.leg_p4[0], httCand.leg_p4[1], HbbCandidate.leg_p4[0],HbbCandidate.leg_p4[1], MET_p4))')
-    df.Display({"MT2"}).Print()
     df = df.Define("kinFit_result", f"""kin_fit::FitProducer::Fit(HbbCandidate.leg_p4[0],HbbCandidate.leg_p4[1],
                                                        httCand.leg_p4[0], httCand.leg_p4[1],
                                                        MET_p4, MET_covXX, MET_covXY, MET_covYY, Jet_ptRes.at(HbbCandidate.leg_index[0]),
@@ -33,7 +31,6 @@ def GetKinFitConvergence(df):
     df = df.Define('kinFit_convergence', 'kinFit_result.convergence')
     df = df.Define('kinFit_m', 'float(kinFit_result.mass)')
     df = df.Define('kinFit_chi2', 'float(kinFit_result.chi2)')
-    df.Display({"kinFit_convergence","kinFit_m", "kinFit_chi2"}).Print()
     df = df.Define('SVfit_result',
                 '''sv_fit::FitProducer::Fit(httCand.leg_p4[0], Leg::tau, Tau_decayMode.at(httCand.leg_index[0]),
                                             httCand.leg_p4[1], Leg::tau, Tau_decayMode.at(httCand.leg_index[1]),

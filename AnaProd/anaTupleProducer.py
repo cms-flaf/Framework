@@ -53,7 +53,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
 
     dfw.Apply(Baseline.DefineHbbCand)
     dfw.Apply(KinFitSel.GetKinFitConvergence)
-    '''
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, isData)
         dfw.colToSave.extend(hltBranches)
@@ -130,7 +129,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
             if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
             dfw.DefineAndAppend(f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")
         dfw.DefineAndAppend(f"b{leg_idx+1}_HHbtag", f"static_cast<float>(Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}]))")
-    '''
+
 
 def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptions,range, evtIds,
                    store_noncentral, compute_unc_variations, print_cutflow):

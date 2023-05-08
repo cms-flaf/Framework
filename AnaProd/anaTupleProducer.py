@@ -14,7 +14,7 @@ import Common.ReportTools as ReportTools
 import Common.triggerSel as Triggers
 import Corrections.Corrections as Corrections
 from Corrections.lumi import LumiFilter
-
+import Common.HHKinFitSelection as KinFitSel
 
 #ROOT.EnableImplicitMT(1)
 
@@ -41,6 +41,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
     dfw.Apply(Baseline.RecoLeptonsSelection)
     dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
+    KinFitSel.Initialize()
+
     #dfw.df.Define("tau1pt","httCand.leg_p4[0].pt()").Display("tau1pt").Print()
     #dfw.df.Define("tau1dm","Tau_decayMode.at(httCand.leg_index[0])").Display("tau1dm").Print()
     #dfw.df.Define("tau2pt","httCand.leg_p4[1].pt()").Display("tau2pt").Print()
@@ -50,6 +52,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Apply(Baseline.ThirdLeptonVeto)
 
     dfw.Apply(Baseline.DefineHbbCand)
+    dfw.Apply(KinFitSel.GetKinFitConvergence)
+    '''
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, isData)
         dfw.colToSave.extend(hltBranches)
@@ -126,7 +130,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
             if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
             dfw.DefineAndAppend(f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")
         dfw.DefineAndAppend(f"b{leg_idx+1}_HHbtag", f"static_cast<float>(Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}]))")
-
+    '''
 
 def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptions,range, evtIds,
                    store_noncentral, compute_unc_variations, print_cutflow):
@@ -152,6 +156,9 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
     #df.Display({"run", "luminosityBlock", "event"}).Print()
+
+
+    df = Corrections.jet.getEnergyResolution(df)
     if isData and 'lumiFile' in config['GLOBAL']:
         lumiFilter = LumiFilter(config['GLOBAL']['lumiFile'])
         df = lumiFilter.filter(df)
@@ -177,6 +184,7 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
         if len(suffix) and not store_noncentral: continue
         dfw = Utilities.DataFrameWrapper(df,defaultColToSave)
         addAllVariables(dfw, syst_name, isData, trigger_class)
+    '''
         if not isData:
             weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name,
                                         return_variations=is_central and compute_unc_variations,
@@ -201,6 +209,7 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
     hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
     outputRootFile.WriteTObject(hist_time, f"runtime", "Overwrite")
     outputRootFile.Close()
+    '''
 
 if __name__ == "__main__":
     import argparse
@@ -220,7 +229,6 @@ if __name__ == "__main__":
     parser.add_argument('--compute_unc_variations', type=bool, default=False)
     parser.add_argument('--print-cutflow', type=bool, default=False)
     parser.add_argument('--customisations', type=str, default="")
-
     args = parser.parse_args()
 
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])

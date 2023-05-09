@@ -1,10 +1,7 @@
-/*! A wrapper for SVfit code.
-This file is part of https://github.com/hh-italian-group/h-tautau. */
+/*! A wrapper for SVfit code. */
 
 #pragma once
 
-//#include "h-tautau/Core/include/Candidate.h"
-//#include "h-tautau/Core/include/TupleObjects.h"
 #include "RootExt.h"
 #include "TauAnalysis/ClassicSVfit/interface/ClassicSVfit.h"
 #include "TauAnalysis/ClassicSVfit/interface/MeasuredTauLepton.h"

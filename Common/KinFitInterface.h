@@ -1,18 +1,17 @@
-/*! Definition of wrappers for KinFit.
-This file is part of https://github.com/hh-italian-group/h-tautau. */
+/*! Definition of wrappers for KinFit.*/
 
 #pragma once
 
-//#include "AnalysisTools/Core/include/AnalysisMath.h"
 #include "TextIO.h"
 #include "RootExt.h"
 #include "HHKinFit2/interface/HHKinFitMasterHeavyHiggs.h"
 template<typename LVector>
-TLorentzVector ConvertVector(const LVector& v)
-{
-    return TLorentzVector(v.Px(), v.Py(), v.Pz(), v.E());
-}
+
 namespace kin_fit {
+    TLorentzVector ConvertVector(const LVector& v)
+    {
+        return TLorentzVector(v.Px(), v.Py(), v.Pz(), v.E());
+    }
     struct FitResults {
         double mass, chi2, probability;
         int convergence;

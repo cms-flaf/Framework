@@ -14,7 +14,7 @@ import Common.ReportTools as ReportTools
 import Common.triggerSel as Triggers
 import Corrections.Corrections as Corrections
 from Corrections.lumi import LumiFilter
-import Common.HHKinFitSelection as KinFitSel
+import Common.LegacyVariables as LegacyVariables
 
 #ROOT.EnableImplicitMT(1)
 
@@ -41,19 +41,19 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
     dfw.Apply(Baseline.RecoLeptonsSelection)
     dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
-    KinFitSel.Initialize()
+    LegacyVariables.Initialize()
 
-    #dfw.df.Define("tau1pt","httCand.leg_p4[0].pt()").Display("tau1pt").Print()
-    #dfw.df.Define("tau1dm","Tau_decayMode.at(httCand.leg_index[0])").Display("tau1dm").Print()
-    #dfw.df.Define("tau2pt","httCand.leg_p4[1].pt()").Display("tau2pt").Print()
-    #dfw.df.Define("tau2dm","Tau_decayMode.at(httCand.leg_index[1])").Display("tau2dm").Print()
     dfw.Apply(Baseline.RecoJetSelection)
     dfw.Apply(Baseline.RequestOnlyResolvedRecoJets)
     dfw.Apply(Baseline.ThirdLeptonVeto)
 
     dfw.Apply(Baseline.DefineHbbCand)
-    fitBranches = dfw.Apply(KinFitSel.GetKinFitConvergence)
-    dfw.colToSave.extend(fitBranches)
+    MT2Branches = dfw.Apply(LegacyVariables.GetMT2)
+    dfw.colToSave.extend(MT2Branches)
+    KinFitBranches = dfw.Apply(LegacyVariables.GetKinFit)
+    dfw.colToSave.extend(KinFitBranches)
+    SVFitBranches = dfw.Apply(LegacyVariables.GetSVFit)
+    dfw.colToSave.extend(SVFitBranches)
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, isData)
         dfw.colToSave.extend(hltBranches)

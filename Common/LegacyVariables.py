@@ -19,12 +19,15 @@ def Initialize():
     ROOT.gInterpreter.Declare(f'#include "{header_path_Lester_mt2_bisect}"')
     initialized = True
 
-
-def GetKinFitConvergence(df):
+def GetMT2(df):
     if not initialized:
-        raise RuntimeError("HH KinFit selection not initialised!")
+        raise RuntimeError("Legacy Variables not initialized!")
     df = df.Define('MT2', 'float(analysis::Calculate_MT2(httCand.leg_p4[0], httCand.leg_p4[1], HbbCandidate.leg_p4[0],HbbCandidate.leg_p4[1], MET_p4))')
+    return df,['MT2']
 
+def GetKinFit(df):
+    if not initialized:
+        raise RuntimeError("Legacy Variables not initialized!")
     df = df.Define("kinFit_result", f"""kin_fit::FitProducer::Fit(HbbCandidate.leg_p4[0],HbbCandidate.leg_p4[1],
                                                        httCand.leg_p4[0], httCand.leg_p4[1],
                                                        MET_p4, MET_covXX, MET_covXY, MET_covYY, Jet_ptRes.at(HbbCandidate.leg_index[0]),
@@ -32,11 +35,9 @@ def GetKinFitConvergence(df):
     df = df.Define('kinFit_convergence', 'kinFit_result.convergence')
     df = df.Define('kinFit_m', 'float(kinFit_result.mass)')
     df = df.Define('kinFit_chi2', 'float(kinFit_result.chi2)')
-    #df = df.Define("first_index", "httCand.leg_index[0]")
-    #df = df.Define("second_index", "httCand.leg_index[1]")
-    #df = df.Define("Tau_DecayMode_size", "Tau_decayMode.size()")
-    #df = df.Define("Tau_pt_size", "Tau_pt.size()")
-    #df.Display({"first_index","second_index","Tau_DecayMode_size","Tau_pt_size"}).Print()
+    return df,['kinFit_result','kinFit_convergence','kinFit_m','kinFit_chi2']
+
+def GetSVFit(df)
     for leg_idx in [0,1]:
         df=df.Define(f"Tau_dm_{leg_idx}", f"httCand.leg_type[{leg_idx}] == Leg::tau ? Tau_decayMode.at(httCand.leg_index[{leg_idx}]) : -1;")
     df = df.Define('SVfit_result',
@@ -55,7 +56,6 @@ def GetKinFitConvergence(df):
     df = df.Define('SVfit_m_error', 'float(SVfit_result.momentum_error.mass())')
     df = df.Define('SVfit_mt', 'float(SVfit_result.transverseMass)')
     df = df.Define('SVfit_mt_error', 'float(SVfit_result.transverseMass_error)')
-    cols_to_append=['MT2','kinFit_result','kinFit_convergence','kinFit_m','kinFit_chi2', 'SVfit_valid', 'SVfit_pt', 'SVfit_eta', 'SVfit_phi', 'SVfit_m', 'SVfit_pt_error', 'SVfit_eta_error', 'SVfit_phi_error', 'SVfit_m_error', 'SVfit_mt', 'SVfit_mt_error']
-    return df,cols_to_append
+    return df,['SVfit_valid', 'SVfit_pt', 'SVfit_eta', 'SVfit_phi', 'SVfit_m', 'SVfit_pt_error', 'SVfit_eta_error', 'SVfit_phi_error', 'SVfit_m_error', 'SVfit_mt', 'SVfit_mt_error']
 
 

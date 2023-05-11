@@ -5,12 +5,15 @@
 #include "TextIO.h"
 #include "RootExt.h"
 #include "HHKinFit2/interface/HHKinFitMasterHeavyHiggs.h"
-template<typename LVector>
-TLorentzVector ConvertVector(const LVector& v)
+
+
+namespace kin_fit {
+    template<typename LVector>
+    TLorentzVector ConvertVector(const LVector& v)
     {
         return TLorentzVector(v.Px(), v.Py(), v.Pz(), v.E());
     }
-namespace kin_fit {
+
     struct FitResults {
         double mass, chi2, probability;
         int convergence;

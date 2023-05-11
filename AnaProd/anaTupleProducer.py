@@ -125,7 +125,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         dfw.DefineAndAppend(f"b{leg_idx+1}_phi", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Phi())")
         dfw.DefineAndAppend(f"b{leg_idx+1}_mass", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].M())")
         if not isData:
-            dfw.df.Define(f"b{leg_idx+1}_genJet_idx", f"Jet_genJetIdx.at(HbbCandidate.leg_index[{leg_idx}])")
+            dfw.Define(f"b{leg_idx+1}_genJet_idx", f"Jet_genJetIdx.at(HbbCandidate.leg_index[{leg_idx}])")
             dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_pt", f"b{leg_idx+1}_genJet_idx>0? GenJet_p4.at(b{leg_idx+1}_genJet_idx).Pt():-1.f")
             dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_eta", f"b{leg_idx+1}_genJet_idx>0? GenJet_p4.at(b{leg_idx+1}_genJet_idx).Eta():-1.f")
             dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_phi", f"b{leg_idx+1}_genJet_idx>0? GenJet_p4.at(b{leg_idx+1}_genJet_idx).Phi():-1.f")

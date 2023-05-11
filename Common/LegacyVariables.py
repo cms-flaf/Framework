@@ -28,23 +28,25 @@ def GetMT2(df):
 def GetKinFit(df):
     if not initialized:
         raise RuntimeError("Legacy Variables not initialized!")
-    df = df.Define("kinFit_result", f"""kin_fit::FitProducer::Fit(HbbCandidate.leg_p4[0],HbbCandidate.leg_p4[1],
-                                                       httCand.leg_p4[0], httCand.leg_p4[1],
-                                                       MET_p4, MET_covXX, MET_covXY, MET_covYY, Jet_ptRes.at(HbbCandidate.leg_index[0]),
-                                                       Jet_ptRes.at(HbbCandidate.leg_index[1]), 0)""")
+    df = df.Define("bjet1_JER", "Jet_ptRes.at(HbbCandidate.leg_index[0])*Jet_p4.at(HbbCandidate.leg_index[0]).E()")
+    df = df.Define("bjet2_JER", "Jet_ptRes.at(HbbCandidate.leg_index[1])*Jet_p4.at(HbbCandidate.leg_index[1]).E()")
+    df = df.Define("kinFit_result", f"""kin_fit::FitProducer::Fit(httCand.leg_p4[0], httCand.leg_p4[1],
+                                                       Jet_p4.at(HbbCandidate.leg_index[0]),Jet_p4.at(HbbCandidate.leg_index[1]),
+                                                       MET_p4, MET_covXX, MET_covXY, MET_covYY,
+                                                       bjet1_JER,bjet2_JER, 0)""")
+
     df = df.Define('kinFit_convergence', 'kinFit_result.convergence')
     df = df.Define('kinFit_m', 'float(kinFit_result.mass)')
     df = df.Define('kinFit_chi2', 'float(kinFit_result.chi2)')
     return df,['kinFit_result','kinFit_convergence','kinFit_m','kinFit_chi2']
 
-def GetSVFit(df)
+def GetSVFit(df):
     for leg_idx in [0,1]:
         df=df.Define(f"Tau_dm_{leg_idx}", f"httCand.leg_type[{leg_idx}] == Leg::tau ? Tau_decayMode.at(httCand.leg_index[{leg_idx}]) : -1;")
     df = df.Define('SVfit_result',
                 """sv_fit::FitProducer::Fit(httCand.leg_p4[0], httCand.leg_type[0], Tau_dm_0,
                                             httCand.leg_p4[1], httCand.leg_type[1], Tau_dm_1,
                                             MET_p4, MET_covXX, MET_covXY, MET_covYY)""")
-
     df = df.Define('SVfit_valid', 'int(SVfit_result.has_valid_momentum)')
     df = df.Define('SVfit_pt', 'float(SVfit_result.momentum.pt())')
     df = df.Define('SVfit_eta', 'float(SVfit_result.momentum.eta())')

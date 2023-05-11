@@ -6,12 +6,11 @@
 #include "RootExt.h"
 #include "HHKinFit2/interface/HHKinFitMasterHeavyHiggs.h"
 template<typename LVector>
-
-namespace kin_fit {
-    TLorentzVector ConvertVector(const LVector& v)
+TLorentzVector ConvertVector(const LVector& v)
     {
         return TLorentzVector(v.Px(), v.Py(), v.Pz(), v.E());
     }
+namespace kin_fit {
     struct FitResults {
         double mass, chi2, probability;
         int convergence;
@@ -50,6 +49,7 @@ namespace kin_fit {
             HHKinFit2::HHKinFitMasterHeavyHiggs hh_kin_fit(jet1_p4, jet2_p4, lepton1_p4, lepton2_p4, met, met_cov,
                                                             resolution_1, resolution_2);
             hh_kin_fit.verbosity = verbosity;
+            hh_kin_fit.addHypo(125,125);
             hh_kin_fit.fit();
             result.convergence = hh_kin_fit.getConvergence();
             if(result.HasValidMass()) {

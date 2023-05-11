@@ -72,7 +72,7 @@ public:
         algo.integrate(measured_leptons, met_p4.Px(), met_p4.Py(), met_cov_t);
         FitResults result;
         if(algo.isValidSolution()) {
-            auto histoAdapter = dynamic_cast<classic_svFit::HistogramAdapterDiTau*>(algo.getHistogramAdapter());
+            auto histoAdapter = dynamic_cast<classic_svFit::DiTauSystemHistogramAdapter*>(algo.getHistogramAdapter());
             result.momentum = LorentzVectorM(histoAdapter->getPt(), histoAdapter->getEta(), histoAdapter->getPhi(), histoAdapter->getMass());
             result.momentum_error = LorentzVectorM(histoAdapter->getPtErr(), histoAdapter->getEtaErr(), histoAdapter->getPhiErr(), histoAdapter->getMassErr());
             result.transverseMass = histoAdapter->getTransverseMass();

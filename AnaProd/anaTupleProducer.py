@@ -42,11 +42,11 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Apply(Baseline.RecoLeptonsSelection)
     dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
     LegacyVariables.Initialize()
-
     dfw.Apply(Baseline.RecoJetSelection)
     dfw.Apply(Baseline.RequestOnlyResolvedRecoJets)
     dfw.Apply(Baseline.ThirdLeptonVeto)
-
+    if not isData:
+        dfw.Apply(Baseline.GenRecoJetMatching)
     dfw.Apply(Baseline.DefineHbbCand)
     MT2Branches = dfw.Apply(LegacyVariables.GetMT2)
     dfw.colToSave.extend(MT2Branches)
@@ -61,7 +61,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
     dfw.Define( f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
     dfw.DefineAndAppend("channelId","static_cast<int>(httCand.channel())")
-    #dfw.df.Display({"channelId"}).Print()
     channel_to_select = " || ".join(f"httCand.channel()==Channel::{ch}" for ch in config["GLOBAL"]["channelSelection"])
     dfw.Filter(channel_to_select, "select channels")
     jet_obs = JetObservables
@@ -78,6 +77,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         dfw.DefineAndAppend( f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
         dfw.DefineAndAppend(f"tau{leg_idx+1}_phi", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Phi())")
         dfw.DefineAndAppend(f"tau{leg_idx+1}_mass", f"static_cast<float>(httCand.leg_p4[{leg_idx}].M())")
+        dfw.DefineAndAppend(f"tau{leg_idx+1}_e", f"static_cast<float>(httCand.leg_p4[{leg_idx}].E())")
         dfw.DefineAndAppend(f"tau{leg_idx+1}_charge", f"httCand.leg_charge[{leg_idx}]")
         dfw.Define(f"tau{leg_idx+1}_idx", f"httCand.leg_index[{leg_idx}]")
         dfw.Define(f"tau{leg_idx+1}_genMatchIdx", f"httCand.leg_genMatchIdx[{leg_idx}]")
@@ -103,6 +103,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
                                                         -1.f;""")
             dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_vis_mass", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().M()) :
                                                     -1.f;""")
+            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_vis_e", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().E()) :
+                                                    -1.f;""")
             dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_nChHad", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).nChargedHadrons() : 0;""")
             dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_nNeutHad", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).nNeutralHadrons() : 0;""")
             dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_charge", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).charge() : -10;""")
@@ -119,12 +121,24 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
                                     f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? static_cast<float>(Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).Phi()) : -1.f;")
         dfw.DefineAndAppend( f"tau{leg_idx+1}_seedingJet_mass",
                                     f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? static_cast<float>(Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).M()) : -1.f;")
+        dfw.DefineAndAppend( f"tau{leg_idx+1}_seedingJet_e",
+                                    f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? static_cast<float>(Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).E()) : -1.f;")
 
 
+        dfw.DefineAndAppend(f"b{leg_idx+1}_idx", f"HbbCandidate.leg_index[{leg_idx}]")
         dfw.DefineAndAppend(f"b{leg_idx+1}_pt", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Pt())")
+        dfw.DefineAndAppend(f"b{leg_idx+1}_pt_raw", f"static_cast<float>(Jet_pt.at(HbbCandidate.leg_index[{leg_idx}]))")
         dfw.DefineAndAppend(f"b{leg_idx+1}_eta", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Eta())")
         dfw.DefineAndAppend(f"b{leg_idx+1}_phi", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Phi())")
         dfw.DefineAndAppend(f"b{leg_idx+1}_mass", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].M())")
+        dfw.DefineAndAppend(f"b{leg_idx+1}_e", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].E())")
+        if not isData:
+            dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_idx", f"Jet_genJetIdx_matched.at(HbbCandidate.leg_index[{leg_idx}])")
+            dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_pt", f"GenJet_p4.at(b{leg_idx+1}_genJet_idx).Pt()")
+            dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_eta", f"GenJet_p4.at(b{leg_idx+1}_genJet_idx).Eta()")
+            dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_phi", f"GenJet_p4.at(b{leg_idx+1}_genJet_idx).Phi()")
+            dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_mass", f"GenJet_p4.at(b{leg_idx+1}_genJet_idx).M()")
+            dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_e", f"GenJet_p4.at(b{leg_idx+1}_genJet_idx).E()")
 
         for jetVar in jet_obs:
             if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
@@ -155,7 +169,6 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
         df = df.Range(range)
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
-    #df.Display({"run", "luminosityBlock", "event"}).Print()
 
 
     df = Corrections.jet.getEnergyResolution(df)

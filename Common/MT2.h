@@ -1,5 +1,4 @@
-/*! Wrapper for MT2
-This file is part of https://github.com/hh-italian-group/hh-bbtautau. */
+/*! Wrapper for MT2 */
 
 #pragma once
 

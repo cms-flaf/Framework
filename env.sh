@@ -36,7 +36,7 @@ do_install_cmssw() {
         run_cmd ln -s "$this_dir/ClassicSVfit" TauAnalysis/ClassicSVfit
         run_cmd ln -s "$this_dir/SVfitTF" TauAnalysis/SVfitTF
         run_cmd mkdir -p HHKinFit2
-        run_cmd ln -s "$this_dir/HHKinFit2" HHKinFit2/
+        run_cmd ln -s "$this_dir/HHKinFit2" HHKinFit2/HHKinFit2
         run_cmd scram b -j8
         run_cmd touch "$this_dir/soft/CentOS$os_version/$CMSSW_VER/.installed"
     fi

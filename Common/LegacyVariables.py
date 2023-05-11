@@ -38,7 +38,7 @@ def GetKinFit(df):
     df = df.Define('kinFit_convergence', 'kinFit_result.convergence')
     df = df.Define('kinFit_m', 'float(kinFit_result.mass)')
     df = df.Define('kinFit_chi2', 'float(kinFit_result.chi2)')
-    return df,['kinFit_result','kinFit_convergence','kinFit_m','kinFit_chi2']
+    return df,['kinFit_convergence','kinFit_m','kinFit_chi2']
 
 def GetSVFit(df):
     for leg_idx in [0,1]:

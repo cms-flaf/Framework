@@ -45,8 +45,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Apply(Baseline.RecoJetSelection)
     dfw.Apply(Baseline.RequestOnlyResolvedRecoJets)
     dfw.Apply(Baseline.ThirdLeptonVeto)
-    if not isData:
-        dfw.Apply(Baseline.GenRecoJetMatching)
     dfw.Apply(Baseline.DefineHbbCand)
     MT2Branches = dfw.Apply(LegacyVariables.GetMT2)
     dfw.colToSave.extend(MT2Branches)
@@ -133,7 +131,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         dfw.DefineAndAppend(f"b{leg_idx+1}_mass", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].M())")
         dfw.DefineAndAppend(f"b{leg_idx+1}_e", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].E())")
         if not isData:
-            dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_idx", f"Jet_genJetIdx_matched.at(HbbCandidate.leg_index[{leg_idx}])")
+            dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_idx", f"Jet_genJetIdx.at(HbbCandidate.leg_index[{leg_idx}])")
             dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_pt", f"GenJet_p4.at(b{leg_idx+1}_genJet_idx).Pt()")
             dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_eta", f"GenJet_p4.at(b{leg_idx+1}_genJet_idx).Eta()")
             dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_phi", f"GenJet_p4.at(b{leg_idx+1}_genJet_idx).Phi()")

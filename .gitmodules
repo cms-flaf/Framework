@@ -13,3 +13,12 @@
 [submodule "SyncTool"]
 	path = SyncTool
 	url = git@github.com:cms-hh-bbtautau/SyncTool.git
+[submodule "ClassicSVfit"]
+	path = ClassicSVfit
+	url = git@github.com:cms-hh-bbtautau/ClassicSVfit.git
+[submodule "SVfitTF"]
+	path = SVfitTF
+	url = git@github.com:cms-hh-bbtautau/SVfitTF.git
+[submodule "HHKinFit2"]
+	path = HHKinFit2
+	url = git@github.com:cms-hh-bbtautau/HHKinFit2.git

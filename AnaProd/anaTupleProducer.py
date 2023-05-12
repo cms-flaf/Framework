@@ -14,7 +14,7 @@ import Common.ReportTools as ReportTools
 import Common.triggerSel as Triggers
 import Corrections.Corrections as Corrections
 from Corrections.lumi import LumiFilter
-
+import Common.LegacyVariables as LegacyVariables
 
 #ROOT.EnableImplicitMT(1)
 
@@ -41,15 +41,17 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
     dfw.Apply(Baseline.RecoLeptonsSelection)
     dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
-    #dfw.df.Define("tau1pt","httCand.leg_p4[0].pt()").Display("tau1pt").Print()
-    #dfw.df.Define("tau1dm","Tau_decayMode.at(httCand.leg_index[0])").Display("tau1dm").Print()
-    #dfw.df.Define("tau2pt","httCand.leg_p4[1].pt()").Display("tau2pt").Print()
-    #dfw.df.Define("tau2dm","Tau_decayMode.at(httCand.leg_index[1])").Display("tau2dm").Print()
+    LegacyVariables.Initialize()
     dfw.Apply(Baseline.RecoJetSelection)
     dfw.Apply(Baseline.RequestOnlyResolvedRecoJets)
     dfw.Apply(Baseline.ThirdLeptonVeto)
-
     dfw.Apply(Baseline.DefineHbbCand)
+    MT2Branches = dfw.Apply(LegacyVariables.GetMT2)
+    dfw.colToSave.extend(MT2Branches)
+    KinFitBranches = dfw.Apply(LegacyVariables.GetKinFit)
+    dfw.colToSave.extend(KinFitBranches)
+    SVFitBranches = dfw.Apply(LegacyVariables.GetSVFit)
+    dfw.colToSave.extend(SVFitBranches)
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, isData)
         dfw.colToSave.extend(hltBranches)
@@ -57,7 +59,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
     dfw.Define( f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
     dfw.DefineAndAppend("channelId","static_cast<int>(httCand.channel())")
-    #dfw.df.Display({"channelId"}).Print()
     channel_to_select = " || ".join(f"httCand.channel()==Channel::{ch}" for ch in config["GLOBAL"]["channelSelection"])
     dfw.Filter(channel_to_select, "select channels")
     jet_obs = JetObservables
@@ -69,6 +70,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.DefineAndAppend(f"met_phi_nano", f"static_cast<float>(MET_p4_nano.phi())")
     dfw.DefineAndAppend("met_pt", "static_cast<float>(MET_p4.pt())")
     dfw.DefineAndAppend("met_phi", "static_cast<float>(MET_p4.phi())")
+    dfw.Define(f"Jet_genJet_idx", f" FindMatching(Jet_p4,GenJet_p4,0.3)")
     for leg_idx in [0,1]:
         dfw.DefineAndAppend( f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
         dfw.DefineAndAppend( f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
@@ -117,16 +119,20 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
                                     f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? static_cast<float>(Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).M()) : -1.f;")
 
 
+        dfw.DefineAndAppend(f"b{leg_idx+1}_idx", f"HbbCandidate.leg_index[{leg_idx}]")
         dfw.DefineAndAppend(f"b{leg_idx+1}_pt", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Pt())")
+        dfw.DefineAndAppend(f"b{leg_idx+1}_pt_raw", f"static_cast<float>(Jet_pt.at(HbbCandidate.leg_index[{leg_idx}]))")
         dfw.DefineAndAppend(f"b{leg_idx+1}_eta", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Eta())")
         dfw.DefineAndAppend(f"b{leg_idx+1}_phi", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Phi())")
         dfw.DefineAndAppend(f"b{leg_idx+1}_mass", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].M())")
-
+        if not isData:
+            dfw.Define(f"b{leg_idx+1}_genJet_idx", f" Jet_genJet_idx.at(HbbCandidate.leg_index[{leg_idx}])")
+            for var in [ 'pt', 'eta', 'phi', 'mass' ]:
+                dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_{var}", f"b{leg_idx+1}_genJet_idx>=0 ? static_cast<float>(GenJet_p4.at(b{leg_idx+1}_genJet_idx).{var}()):-1.f")
         for jetVar in jet_obs:
             if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
             dfw.DefineAndAppend(f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")
         dfw.DefineAndAppend(f"b{leg_idx+1}_HHbtag", f"static_cast<float>(Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}]))")
-
 
 def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptions,range, evtIds,
                    store_noncentral, compute_unc_variations, print_cutflow):
@@ -151,7 +157,9 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
         df = df.Range(range)
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
-    #df.Display({"run", "luminosityBlock", "event"}).Print()
+
+
+    df = Corrections.jet.getEnergyResolution(df)
     if isData and 'lumiFile' in config['GLOBAL']:
         lumiFilter = LumiFilter(config['GLOBAL']['lumiFile'])
         df = lumiFilter.filter(df)
@@ -202,6 +210,7 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
     outputRootFile.WriteTObject(hist_time, f"runtime", "Overwrite")
     outputRootFile.Close()
 
+
 if __name__ == "__main__":
     import argparse
     import os
@@ -220,7 +229,6 @@ if __name__ == "__main__":
     parser.add_argument('--compute_unc_variations', type=bool, default=False)
     parser.add_argument('--print-cutflow', type=bool, default=False)
     parser.add_argument('--customisations', type=str, default="")
-
     args = parser.parse_args()
 
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])

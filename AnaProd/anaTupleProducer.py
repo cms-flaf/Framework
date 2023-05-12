@@ -70,9 +70,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.DefineAndAppend(f"met_phi_nano", f"static_cast<float>(MET_p4_nano.phi())")
     dfw.DefineAndAppend("met_pt", "static_cast<float>(MET_p4.pt())")
     dfw.DefineAndAppend("met_phi", "static_cast<float>(MET_p4.phi())")
-
-    dfw.Define("Jet_genJetIdx_size","Jet_genJetIdx.size()")
-    dfw.Define("GenJet_size","GenJet_p4.size()")
+    dfw.Define(f"Jet_genJet_idx", f" FindMatching(Jet_p4,GenJet_p4,0.3)")
     for leg_idx in [0,1]:
         dfw.DefineAndAppend( f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
         dfw.DefineAndAppend( f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
@@ -128,13 +126,9 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         dfw.DefineAndAppend(f"b{leg_idx+1}_phi", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Phi())")
         dfw.DefineAndAppend(f"b{leg_idx+1}_mass", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].M())")
         if not isData:
-            dfw.Define(f"b{leg_idx+1}_genJet_idx", f" FindMatching(Jet_p4,GenJet_p4,0.3).at(HbbCandidate.leg_index[{leg_idx}])")
-            condition = f"b{leg_idx+1}_genJet_idx>=0 && b{leg_idx+1}_genJet_idx<GenJet_p4.size()"
-            dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_pt", f"{condition} ? GenJet_p4.at(b{leg_idx+1}_genJet_idx).Pt():-1.f")
-            dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_eta", f"{condition} ? GenJet_p4.at(b{leg_idx+1}_genJet_idx).Eta():-1.f")
-            dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_phi", f"{condition} ? GenJet_p4.at(b{leg_idx+1}_genJet_idx).Phi():-1.f")
-            dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_mass", f"{condition} ? GenJet_p4.at(b{leg_idx+1}_genJet_idx).M():-1.f")
-
+            dfw.Define(f"b{leg_idx+1}_genJet_idx", f" Jet_genJet_idx.at(HbbCandidate.leg_index[{leg_idx}])")
+            for var in [ 'pt', 'eta', 'phi', 'mass' ]:
+                dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_{var}", f"b{leg_idx+1}_genJet_idx>=0 ? static_cast<float>(GenJet_p4.at(b{leg_idx+1}_genJet_idx).{var}()):-1.f")
         for jetVar in jet_obs:
             if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
             dfw.DefineAndAppend(f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")

@@ -158,7 +158,8 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
         df = df.Range(range)
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
-    df = Corrections.jet.getEnergyResolution(df)
+    if not isData:
+        df = Corrections.jet.getEnergyResolution(df)
     if isData and 'lumiFile' in config['GLOBAL']:
         lumiFilter = LumiFilter(config['GLOBAL']['lumiFile'])
         df = lumiFilter.filter(df)
@@ -181,9 +182,9 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
         is_central = syst_name in [ 'Central', 'nano' ]
         if not is_central and not compute_unc_variations: continue
         suffix = '' if is_central else f'_{syst_name}'
-        print(f"suffix is {suffix}")
+        #print(f"suffix is {suffix}")
         if len(suffix) and not store_noncentral: continue
-        print(f"going to compute the variables")
+        #print(f"going to compute the variables")
         dfw = Utilities.DataFrameWrapper(df_empty,defaultColToSave)
         addAllVariables(dfw, syst_name, isData, trigger_class)
         if not isData:
@@ -193,12 +194,12 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
             weight_branches.extend(dfw.Apply(Corrections.trg.getTrgSF, trigger_class.trigger_dict.keys(), is_central and compute_unc_variations))
             weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations))
             dfw.colToSave.extend(weight_branches)
-        print("going to evaluate the report")
+        #print("going to evaluate the report")
         report = dfw.df.Report()
         if print_cutflow:
             report.Print()
         varToSave = Utilities.ListToVector(dfw.colToSave)
-        print(f"saving the tree Events{suffix}")
+        #print(f"saving the tree Events{suffix}")
         dfw.df.Snapshot(f"Events{suffix}", outFile, varToSave, snapshotOptions)
         snapshotOptions.fMode = "UPDATE"
         histReport = ReportTools.SaveReport(report.GetValue(), reoprtName=f"Report{suffix}")

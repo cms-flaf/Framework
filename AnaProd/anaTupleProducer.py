@@ -41,7 +41,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
     dfw.Apply(Baseline.RecoLeptonsSelection)
     dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
-    LegacyVariables.Initialize()
     dfw.Apply(Baseline.RecoJetSelection)
     dfw.Apply(Baseline.RequestOnlyResolvedRecoJets)
     dfw.Apply(Baseline.ThirdLeptonVeto)
@@ -61,7 +60,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.DefineAndAppend("channelId","static_cast<int>(httCand.channel())")
     channel_to_select = " || ".join(f"httCand.channel()==Channel::{ch}" for ch in config["GLOBAL"]["channelSelection"])
     dfw.Filter(channel_to_select, "select channels")
-    jet_obs = JetObservables
+    jet_obs = []
+    jet_obs.extend(JetObservables)
     if not isData:
         jet_obs.extend(JetObservablesMC)
         if "LHE_HLT" in dfw.df.GetColumnNames():
@@ -143,6 +143,7 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
     isHH = True if mass > 0 else False
     isData = True if config[sample_name]['sampleType'] == 'data' else False
     Baseline.Initialize(True, True)
+    LegacyVariables.Initialize()
     if not isData:
         Corrections.Initialize(config=config['GLOBAL'])
     triggerFile = config['GLOBAL'].get('triggerFile')
@@ -157,13 +158,11 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
         df = df.Range(range)
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
-
-
-    df = Corrections.jet.getEnergyResolution(df)
+    if not isData:
+        df = Corrections.jet.getEnergyResolution(df)
     if isData and 'lumiFile' in config['GLOBAL']:
         lumiFilter = LumiFilter(config['GLOBAL']['lumiFile'])
         df = lumiFilter.filter(df)
-
     df = Baseline.applyMETFlags(df, config["GLOBAL"]["MET_flags"])
     df = df.Define("sample_type", f"static_cast<int>(SampleType::{config[sample_name]['sampleType']})")
     df = df.Define("sample_name", f"{zlib.crc32(sample_name.encode())}")
@@ -178,12 +177,15 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
         syst_dict = { 'nano' : 'Central' }
     else:
         df, syst_dict = Corrections.applyScaleUncertainties(df)
+    df_empty = df
     for syst_name, source_name in syst_dict.items():
         is_central = syst_name in [ 'Central', 'nano' ]
         if not is_central and not compute_unc_variations: continue
         suffix = '' if is_central else f'_{syst_name}'
+        #print(f"suffix is {suffix}")
         if len(suffix) and not store_noncentral: continue
-        dfw = Utilities.DataFrameWrapper(df,defaultColToSave)
+        #print(f"going to compute the variables")
+        dfw = Utilities.DataFrameWrapper(df_empty,defaultColToSave)
         addAllVariables(dfw, syst_name, isData, trigger_class)
         if not isData:
             weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name,
@@ -192,11 +194,12 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
             weight_branches.extend(dfw.Apply(Corrections.trg.getTrgSF, trigger_class.trigger_dict.keys(), is_central and compute_unc_variations))
             weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations))
             dfw.colToSave.extend(weight_branches)
-
+        #print("going to evaluate the report")
         report = dfw.df.Report()
         if print_cutflow:
             report.Print()
         varToSave = Utilities.ListToVector(dfw.colToSave)
+        #print(f"saving the tree Events{suffix}")
         dfw.df.Snapshot(f"Events{suffix}", outFile, varToSave, snapshotOptions)
         snapshotOptions.fMode = "UPDATE"
         histReport = ReportTools.SaveReport(report.GetValue(), reoprtName=f"Report{suffix}")

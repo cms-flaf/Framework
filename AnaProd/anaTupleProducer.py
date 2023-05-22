@@ -14,7 +14,6 @@ import Common.ReportTools as ReportTools
 import Common.triggerSel as Triggers
 import Corrections.Corrections as Corrections
 from Corrections.lumi import LumiFilter
-import Common.LegacyVariables as LegacyVariables
 
 #ROOT.EnableImplicitMT(1)
 
@@ -45,12 +44,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Apply(Baseline.RequestOnlyResolvedRecoJets)
     dfw.Apply(Baseline.ThirdLeptonVeto)
     dfw.Apply(Baseline.DefineHbbCand)
-    MT2Branches = dfw.Apply(LegacyVariables.GetMT2)
-    dfw.colToSave.extend(MT2Branches)
-    KinFitBranches = dfw.Apply(LegacyVariables.GetKinFit)
-    dfw.colToSave.extend(KinFitBranches)
-    SVFitBranches = dfw.Apply(LegacyVariables.GetSVFit)
-    dfw.colToSave.extend(SVFitBranches)
+    dfw.Apply(Corrections.jet.getEnergyResolution)
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, isData)
         dfw.colToSave.extend(hltBranches)
@@ -63,6 +57,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     jet_obs = []
     jet_obs.extend(JetObservables)
     if not isData:
+        dfw.Define(f"Jet_genJet_idx", f" FindMatching(Jet_p4,GenJet_p4,0.3)")
         jet_obs.extend(JetObservablesMC)
         if "LHE_HLT" in dfw.df.GetColumnNames():
             dfw.colToSave.append("LHE_HT")
@@ -77,7 +72,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         dfw.DefineAndAppend(f"tau{leg_idx+1}_mass", f"static_cast<float>(httCand.leg_p4[{leg_idx}].M())")
         dfw.DefineAndAppend(f"tau{leg_idx+1}_charge", f"httCand.leg_charge[{leg_idx}]")
         dfw.Define(f"tau{leg_idx+1}_idx", f"httCand.leg_index[{leg_idx}]")
-        dfw.Define(f"tau{leg_idx+1}_genMatchIdx", f"httCand.leg_genMatchIdx[{leg_idx}]")
+        dfw.DefineAndAppend(f"tau{leg_idx+1}_legType",f"""static_cast<int>(httCand.leg_type[{leg_idx}])""" )
         dfw.Define(f"tau{leg_idx+1}_recoJetMatchIdx", f"FindMatching(httCand.leg_p4[{leg_idx}], Jet_p4, 0.3)")
         dfw.DefineAndAppend( f"tau{leg_idx+1}_iso", f"httCand.leg_rawIso.at({leg_idx})")
         for deepTauScore in deepTauScores:
@@ -90,6 +85,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
             dfw.DefineAndAppend( f"tau{leg_idx+1}_{ele_obs}",
                                      f"httCand.leg_type[{leg_idx}] == Leg::e ? {ele_obs}.at(httCand.leg_index[{leg_idx}]) : -1;")
         if not isData:
+            dfw.Define(f"tau{leg_idx+1}_genMatchIdx", f"httCand.leg_genMatchIdx[{leg_idx}]")
             dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_kind", f"""tau{leg_idx+1}_genMatchIdx>=0 ? static_cast<int>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).kind()) :
                                               static_cast<int>(GenLeptonMatch::NoMatch);""")
             dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_vis_pt", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().Pt()) :
@@ -119,13 +115,13 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
 
 
         dfw.DefineAndAppend(f"b{leg_idx+1}_idx", f"HbbCandidate.leg_index[{leg_idx}]")
+        dfw.DefineAndAppend(f"b{leg_idx+1}_ptRes",f"static_cast<float>(Jet_ptRes.at({leg_idx}))")
         dfw.DefineAndAppend(f"b{leg_idx+1}_pt", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Pt())")
         dfw.DefineAndAppend(f"b{leg_idx+1}_pt_raw", f"static_cast<float>(Jet_pt.at(HbbCandidate.leg_index[{leg_idx}]))")
         dfw.DefineAndAppend(f"b{leg_idx+1}_eta", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Eta())")
         dfw.DefineAndAppend(f"b{leg_idx+1}_phi", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Phi())")
         dfw.DefineAndAppend(f"b{leg_idx+1}_mass", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].M())")
         if not isData:
-            dfw.Define(f"Jet_genJet_idx", f" FindMatching(Jet_p4,GenJet_p4,0.3)")
             dfw.Define(f"b{leg_idx+1}_genJet_idx", f" Jet_genJet_idx.at(HbbCandidate.leg_index[{leg_idx}])")
             for var in [ 'pt', 'eta', 'phi', 'mass' ]:
                 dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_{var}", f"b{leg_idx+1}_genJet_idx>=0 ? static_cast<float>(GenJet_p4.at(b{leg_idx+1}_genJet_idx).{var}()):-1.f")
@@ -143,9 +139,8 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
     isHH = True if mass > 0 else False
     isData = True if config[sample_name]['sampleType'] == 'data' else False
     Baseline.Initialize(True, True)
-    LegacyVariables.Initialize()
     #if not isData:
-    Corrections.Initialize(config=config['GLOBAL'],isData)
+    Corrections.Initialize(config=config['GLOBAL'],isData=isData)
     triggerFile = config['GLOBAL'].get('triggerFile')
     if triggerFile is not None:
         triggerFile = os.path.join(os.environ['ANALYSIS_PATH'], triggerFile)
@@ -159,7 +154,7 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
 
-    df = Corrections.jet.getEnergyResolution(df)
+
     if isData and 'lumiFile' in config['GLOBAL']:
         lumiFilter = LumiFilter(config['GLOBAL']['lumiFile'])
         df = lumiFilter.filter(df)

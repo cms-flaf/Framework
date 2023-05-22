@@ -6,9 +6,16 @@ initialized = False
 
 def Initialize():
     global initialized
+    global tau1_p4
+    global tau2_p4
+    global b1_p4
+    global b2_p4
+    global MET_p4
     if initialized:
         raise RuntimeError('HH KinFitSel already initialized')
     headers_dir = os.path.dirname(os.path.abspath(__file__))
+    header_path_AnalysisTools = os.path.join(headers_dir, "AnalysisTools.h")
+    ROOT.gInterpreter.Declare(f'#include "{header_path_AnalysisTools}"')
     header_path_HHKinFit = os.path.join(headers_dir, "KinFitInterface.h")
     ROOT.gInterpreter.Declare(f'#include "{header_path_HHKinFit}"')
     header_path_SVFit = os.path.join(headers_dir, "SVfitAnaInterface.h")
@@ -17,22 +24,26 @@ def Initialize():
     ROOT.gInterpreter.Declare(f'#include "{header_path_MT2}"')
     header_path_Lester_mt2_bisect = os.path.join(headers_dir, "Lester_mt2_bisect.cpp")
     ROOT.gInterpreter.Declare(f'#include "{header_path_Lester_mt2_bisect}"')
+    tau1_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(tau1_pt,tau1_eta,tau1_phi,tau1_mass)"
+    tau2_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(tau2_pt,tau2_eta,tau2_phi,tau2_mass)"
+    b1_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(b1_pt,b1_eta,b1_phi,b1_mass)"
+    b2_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(b2_pt,b2_eta,b2_phi,b2_mass)"
+    MET_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(met_pt, 0., met_phi, 0.)"
     initialized = True
 
 def GetMT2(df):
     if not initialized:
         raise RuntimeError("Legacy Variables not initialized!")
-    df = df.Define('MT2', 'float(analysis::Calculate_MT2(httCand.leg_p4[0], httCand.leg_p4[1], HbbCandidate.leg_p4[0],HbbCandidate.leg_p4[1], MET_p4))')
+    df = df.Define('MT2', f'float(analysis::Calculate_MT2({tau1_p4}, {tau2_p4}, {b1_p4},{b2_p4}, {MET_p4}))')
     return df,['MT2']
 
 def GetKinFit(df):
     if not initialized:
         raise RuntimeError("Legacy Variables not initialized!")
-    df = df.Define("bjet1_JER", "Jet_ptRes.at(HbbCandidate.leg_index[0])*Jet_p4.at(HbbCandidate.leg_index[0]).E()")
-    df = df.Define("bjet2_JER", "Jet_ptRes.at(HbbCandidate.leg_index[1])*Jet_p4.at(HbbCandidate.leg_index[1]).E()")
-    df = df.Define("kinFit_result", f"""kin_fit::FitProducer::Fit(httCand.leg_p4[0], httCand.leg_p4[1],
-                                                       Jet_p4.at(HbbCandidate.leg_index[0]),Jet_p4.at(HbbCandidate.leg_index[1]),
-                                                       MET_p4, MET_covXX, MET_covXY, MET_covYY,
+    df = df.Define("bjet1_JER", f"b1_ptRes*{b1_p4}.E()")
+    df = df.Define("bjet2_JER", f"b2_ptRes*{b2_p4}.E()")
+    df = df.Define("kinFit_result", f"""kin_fit::FitProducer::Fit({tau1_p4}, {tau2_p4},{b1_p4}, {b2_p4},
+                                                       {MET_p4}, MET_covXX, MET_covXY, MET_covYY,
                                                        bjet1_JER,bjet2_JER, 0)""")
 
     df = df.Define('kinFit_convergence', 'kinFit_result.convergence')
@@ -41,12 +52,9 @@ def GetKinFit(df):
     return df,['kinFit_convergence','kinFit_m','kinFit_chi2']
 
 def GetSVFit(df):
-    for leg_idx in [0,1]:
-        df=df.Define(f"Tau_dm_{leg_idx}", f"httCand.leg_type[{leg_idx}] == Leg::tau ? Tau_decayMode.at(httCand.leg_index[{leg_idx}]) : -1;")
-    df = df.Define('SVfit_result',
-                """sv_fit::FitProducer::Fit(httCand.leg_p4[0], httCand.leg_type[0], Tau_dm_0,
-                                            httCand.leg_p4[1], httCand.leg_type[1], Tau_dm_1,
-                                            MET_p4, MET_covXX, MET_covXY, MET_covYY)""")
+    df = df.Define('SVfit_result',f"""sv_fit::FitProducer::Fit({tau1_p4}, static_cast<Leg>(tau1_legType), tau1_decayMode,
+                                                {tau2_p4}, static_cast<Leg>(tau2_legType), tau2_decayMode,
+                                                {MET_p4}, MET_covXX, MET_covXY, MET_covYY)""")
     df = df.Define('SVfit_valid', 'int(SVfit_result.has_valid_momentum)')
     df = df.Define('SVfit_pt', 'float(SVfit_result.momentum.pt())')
     df = df.Define('SVfit_eta', 'float(SVfit_result.momentum.eta())')

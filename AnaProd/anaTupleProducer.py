@@ -202,12 +202,12 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
             os.remove(outFileName)
         snaps.append(dfw.df.Snapshot(f"Events", outFileName, varToSave, snapshotOptions))
     hist_time = ROOT.TH1D(f"time", f"time", 1, 0, 1)
-    end_time = datetime.datetime.now()
-    hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
     if snapshotOptions.fLazy == True:
         #print(f"rungraph is running now")
         ROOT.RDF.RunGraphs(snaps)
         #print(f"rungraph has finished running")
+    end_time = datetime.datetime.now()
+    hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
     for index,fileName in enumerate(outfilesNames):
         outputRootFile= ROOT.TFile(fileName, "UPDATE", "", compression_settings)
         rep = ReportTools.SaveReport(reports[index].GetValue(), reoprtName=f"Report")

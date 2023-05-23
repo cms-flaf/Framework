@@ -131,7 +131,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         dfw.DefineAndAppend(f"b{leg_idx+1}_HHbtag", f"static_cast<float>(Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}]))")
 
 def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOptions,range, evtIds,
-                   store_noncentral, compute_unc_variations, print_cutflow):
+                   store_noncentral, compute_unc_variations, uncertainties, print_cutflow):
     start_time = datetime.datetime.now()
     compression_settings = snapshotOptions.fCompressionAlgorithm * 100 + snapshotOptions.fCompressionLevel
     period = config["GLOBAL"]["era"]
@@ -172,12 +172,15 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         syst_dict = { 'nano' : 'Central' }
     else:
         df, syst_dict = Corrections.applyScaleUncertainties(df)
+    #print(syst_dict)
     df_empty = df
     snaps = []
     reports = []
     times = []
     outfilesNames = []
     for syst_name, source_name in syst_dict.items():
+        if source_name not in uncertainties: continue
+        #print(f"syst_name = {syst_name}, source_name = {source_name}")
         is_central = syst_name in [ 'Central', 'nano' ]
         if not is_central and not compute_unc_variations: continue
         suffix = '' if is_central else f'_{syst_name}'
@@ -195,7 +198,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
             dfw.colToSave.extend(weight_branches)
         reports.append(dfw.df.Report())
         varToSave = Utilities.ListToVector(dfw.colToSave)
-        print(f"snapshot flazy = {snapshotOptions.fLazy}")
+        #print(f"snapshot flazy = {snapshotOptions.fLazy}")
         outFileName = f"{outDir}Events{suffix}.root"
         outfilesNames.append(outFileName)
         if os.path.exists(outFileName):
@@ -206,9 +209,9 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
         times.append(hist_time)
     if snapshotOptions.fLazy == True:
-        print(f"rungraph is running now")
+        #print(f"rungraph is running now")
         ROOT.RDF.RunGraphs(snaps)
-        print(f"rungraph has finished running")
+        #print(f"rungraph has finished running")
     for index,fileName in enumerate(outfilesNames):
         outputRootFile= ROOT.TFile(fileName, "UPDATE", "", compression_settings)
         rep = ReportTools.SaveReport(reports[index].GetValue(), reoprtName=f"Report{suffix}")
@@ -217,7 +220,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         outputRootFile.Close()
         if print_cutflow:
             report.Print()
-    print(f"number of loops is {df_empty.GetNRuns()}")
+    #print(f"number of loops is {df_empty.GetNRuns()}")
 
 
 if __name__ == "__main__":
@@ -238,6 +241,7 @@ if __name__ == "__main__":
     parser.add_argument('--compute_unc_variations', type=bool, default=False)
     parser.add_argument('--print-cutflow', type=bool, default=False)
     parser.add_argument('--customisations', type=str, default="")
+    parser.add_argument('--uncertainties', type=str, default="")
     args = parser.parse_args()
 
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
@@ -257,6 +261,7 @@ if __name__ == "__main__":
         os.mkdir(args.outDir)
 
 
+
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=False
     snapshotOptions.fLazy = True
@@ -264,4 +269,4 @@ if __name__ == "__main__":
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
     createAnatuple(args.inFile, args.outDir, config, args.sample, anaCache, snapshotOptions, args.nEvents,
-                   args.evtIds, args.store_noncentral, args.compute_unc_variations, args.print_cutflow)
+                   args.evtIds, args.store_noncentral, args.compute_unc_variations, args.uncertainties.split(","), args.print_cutflow)

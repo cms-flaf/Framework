@@ -253,7 +253,7 @@ if __name__ == "__main__":
     if os.path.isdir(args.outDir):
         shutil.rmtree(args.outDir)
     os.makedirs(args.outDir, exist_ok=True)
-    print( args.uncertainties.split(","))
+    #print( args.uncertainties.split(","))
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=False
     snapshotOptions.fLazy = True

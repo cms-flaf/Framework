@@ -130,7 +130,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
             dfw.DefineAndAppend(f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")
         dfw.DefineAndAppend(f"b{leg_idx+1}_HHbtag", f"static_cast<float>(Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}]))")
 
-def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptions,range, evtIds,
+def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOptions,range, evtIds,
                    store_noncentral, compute_unc_variations, print_cutflow):
     start_time = datetime.datetime.now()
     compression_settings = snapshotOptions.fCompressionAlgorithm * 100 + snapshotOptions.fCompressionLevel
@@ -173,6 +173,10 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
     else:
         df, syst_dict = Corrections.applyScaleUncertainties(df)
     df_empty = df
+    snaps = []
+    reports = []
+    times = []
+    outfilesNames = []
     for syst_name, source_name in syst_dict.items():
         is_central = syst_name in [ 'Central', 'nano' ]
         if not is_central and not compute_unc_variations: continue
@@ -189,24 +193,31 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
             weight_branches.extend(dfw.Apply(Corrections.trg.getTrgSF, trigger_class.trigger_dict.keys(), is_central and compute_unc_variations))
             weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations))
             dfw.colToSave.extend(weight_branches)
-        #print("going to evaluate the report")
-        report = dfw.df.Report()
+        reports.append(dfw.df.Report())
+        varToSave = Utilities.ListToVector(dfw.colToSave)
+        print(f"snapshot flazy = {snapshotOptions.fLazy}")
+        outFileName = f"{outDir}Events{suffix}.root"
+        outfilesNames.append(outFileName)
+        if os.path.exists(outFileName):
+            os.remove(outFileName)
+        snaps.append(dfw.df.Snapshot(f"Events", outFileName, varToSave, snapshotOptions))
+        hist_time = ROOT.TH1D(f"time{suffix}", f"time{suffix}", 1, 0, 1)
+        end_time = datetime.datetime.now()
+        hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
+        times.append(hist_time)
+    if snapshotOptions.fLazy == True:
+        print(f"rungraph is running now")
+        ROOT.RDF.RunGraphs(snaps)
+        print(f"rungraph has finished running")
+    for index,fileName in enumerate(outfilesNames):
+        outputRootFile= ROOT.TFile(fileName, "UPDATE", "", compression_settings)
+        rep = ReportTools.SaveReport(reports[index].GetValue(), reoprtName=f"Report{suffix}")
+        outputRootFile.WriteTObject(rep, f"Report{suffix}", "Overwrite")
+        outputRootFile.WriteTObject(times[index], f"runtime", "Overwrite")
+        outputRootFile.Close()
         if print_cutflow:
             report.Print()
-        varToSave = Utilities.ListToVector(dfw.colToSave)
-        #print(f"saving the tree Events{suffix}")
-        dfw.df.Snapshot(f"Events{suffix}", outFile, varToSave, snapshotOptions)
-        snapshotOptions.fMode = "UPDATE"
-        histReport = ReportTools.SaveReport(report.GetValue(), reoprtName=f"Report{suffix}")
-        outputRootFile= ROOT.TFile(outFile, "UPDATE", "", compression_settings)
-        outputRootFile.WriteTObject(histReport, f"Report{suffix}", "Overwrite")
-        outputRootFile.Close()
-    outputRootFile= ROOT.TFile(outFile, "UPDATE", "", compression_settings)
-    hist_time = ROOT.TH1D("time", "time", 1, 0, 1)
-    end_time = datetime.datetime.now()
-    hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
-    outputRootFile.WriteTObject(hist_time, f"runtime", "Overwrite")
-    outputRootFile.Close()
+    print(f"number of loops is {df_empty.GetNRuns()}")
 
 
 if __name__ == "__main__":
@@ -216,7 +227,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', required=True, type=str)
     parser.add_argument('--inFile', required=True, type=str)
-    parser.add_argument('--outFile', required=True, type=str)
+    parser.add_argument('--outDir', required=True, type=str)
     parser.add_argument('--sample', required=True, type=str)
     parser.add_argument('--anaCache', required=True, type=str)
     parser.add_argument('--compressionLevel', type=int, default=9)
@@ -238,13 +249,19 @@ if __name__ == "__main__":
     with open(args.anaCache, 'r') as f:
         anaCache = yaml.safe_load(f)
 
-    if os.path.exists(args.outFile):
-        os.remove(args.outFile)
+    if os.path.isdir(args.outDir):
+        for filee in os.listdir(args.outDir):
+            os.remove(f"{args.outDir}/{filee}")
+        os.rmdir(args.outDir)
+    if not os.path.isdir(args.outDir):
+        os.mkdir(args.outDir)
+
 
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=False
+    snapshotOptions.fLazy = True
     snapshotOptions.fMode="RECREATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
-    createAnatuple(args.inFile, args.outFile, config, args.sample, anaCache, snapshotOptions, args.nEvents,
+    createAnatuple(args.inFile, args.outDir, config, args.sample, anaCache, snapshotOptions, args.nEvents,
                    args.evtIds, args.store_noncentral, args.compute_unc_variations, args.print_cutflow)

@@ -3,6 +3,7 @@ import datetime
 import os
 import sys
 import ROOT
+import shutil
 import zlib
 
 if __name__ == "__main__":
@@ -176,17 +177,14 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     df_empty = df
     snaps = []
     reports = []
-    times = []
     outfilesNames = []
     for syst_name, source_name in syst_dict.items():
-        if source_name not in uncertainties: continue
-        #print(f"syst_name = {syst_name}, source_name = {source_name}")
+        if source_name not in uncertainties and "all" not in uncertainties: continue
+        #print(f"source name is {source_name} and syst name is {syst_name}")
         is_central = syst_name in [ 'Central', 'nano' ]
         if not is_central and not compute_unc_variations: continue
         suffix = '' if is_central else f'_{syst_name}'
-        #print(f"suffix is {suffix}")
         if len(suffix) and not store_noncentral: continue
-        #print(f"going to compute the variables")
         dfw = Utilities.DataFrameWrapper(df_empty,defaultColToSave)
         addAllVariables(dfw, syst_name, isData, trigger_class)
         if not isData:
@@ -198,25 +196,24 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
             dfw.colToSave.extend(weight_branches)
         reports.append(dfw.df.Report())
         varToSave = Utilities.ListToVector(dfw.colToSave)
-        #print(f"snapshot flazy = {snapshotOptions.fLazy}")
         outFileName = f"{outDir}Events{suffix}.root"
         outfilesNames.append(outFileName)
         if os.path.exists(outFileName):
             os.remove(outFileName)
         snaps.append(dfw.df.Snapshot(f"Events", outFileName, varToSave, snapshotOptions))
-        hist_time = ROOT.TH1D(f"time{suffix}", f"time{suffix}", 1, 0, 1)
-        end_time = datetime.datetime.now()
-        hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
-        times.append(hist_time)
+    hist_time = ROOT.TH1D(f"time", f"time", 1, 0, 1)
+    end_time = datetime.datetime.now()
+    hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
     if snapshotOptions.fLazy == True:
         #print(f"rungraph is running now")
         ROOT.RDF.RunGraphs(snaps)
         #print(f"rungraph has finished running")
     for index,fileName in enumerate(outfilesNames):
         outputRootFile= ROOT.TFile(fileName, "UPDATE", "", compression_settings)
-        rep = ReportTools.SaveReport(reports[index].GetValue(), reoprtName=f"Report{suffix}")
-        outputRootFile.WriteTObject(rep, f"Report{suffix}", "Overwrite")
-        outputRootFile.WriteTObject(times[index], f"runtime", "Overwrite")
+        rep = ReportTools.SaveReport(reports[index].GetValue(), reoprtName=f"Report")
+        outputRootFile.WriteTObject(rep, f"Report", "Overwrite")
+        if index==0:
+            outputRootFile.WriteTObject(hist_time, f"runtime", "Overwrite")
         outputRootFile.Close()
         if print_cutflow:
             report.Print()
@@ -241,7 +238,7 @@ if __name__ == "__main__":
     parser.add_argument('--compute_unc_variations', type=bool, default=False)
     parser.add_argument('--print-cutflow', type=bool, default=False)
     parser.add_argument('--customisations', type=str, default="")
-    parser.add_argument('--uncertainties', type=str, default="")
+    parser.add_argument('--uncertainties', type=str, default="all")
     args = parser.parse_args()
 
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
@@ -254,14 +251,9 @@ if __name__ == "__main__":
         anaCache = yaml.safe_load(f)
 
     if os.path.isdir(args.outDir):
-        for filee in os.listdir(args.outDir):
-            os.remove(f"{args.outDir}/{filee}")
-        os.rmdir(args.outDir)
-    if not os.path.isdir(args.outDir):
-        os.mkdir(args.outDir)
-
-
-
+        shutil.rmtree(args.outDir)
+    os.makedirs(args.outDir, exist_ok=True)
+    print( args.uncertainties.split(","))
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=False
     snapshotOptions.fLazy = True

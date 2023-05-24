@@ -189,10 +189,10 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         addAllVariables(dfw, syst_name, isData, trigger_class)
         if not isData:
             weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name,
-                                        return_variations=is_central and compute_unc_variations,
+                                        return_variations=is_central and compute_unc_variations, isCentral=is_central,
                                         ana_cache=anaCache)
-            weight_branches.extend(dfw.Apply(Corrections.trg.getTrgSF, trigger_class.trigger_dict.keys(), is_central and compute_unc_variations))
-            weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations))
+            weight_branches.extend(dfw.Apply(Corrections.trg.getTrgSF, trigger_class.trigger_dict.keys(), is_central and compute_unc_variations, is_central))
+            weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations, is_central))
             dfw.colToSave.extend(weight_branches)
         reports.append(dfw.df.Report())
         varToSave = Utilities.ListToVector(dfw.colToSave)
@@ -201,11 +201,11 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         if os.path.exists(outFileName):
             os.remove(outFileName)
         snaps.append(dfw.df.Snapshot(f"Events", outFileName, varToSave, snapshotOptions))
-    hist_time = ROOT.TH1D(f"time", f"time", 1, 0, 1)
     if snapshotOptions.fLazy == True:
         #print(f"rungraph is running now")
         ROOT.RDF.RunGraphs(snaps)
         #print(f"rungraph has finished running")
+    hist_time = ROOT.TH1D(f"time", f"time", 1, 0, 1)
     end_time = datetime.datetime.now()
     hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
     for index,fileName in enumerate(outfilesNames):

@@ -31,7 +31,7 @@ JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"]
 JetObservablesMC = ["hadronFlavour","partonFlavour"]
 
-defaultColToSave = ["event","luminosityBlock","run", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
+defaultColToSave = ["rdfentry_","event","luminosityBlock","run", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
                 "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs" ]
 

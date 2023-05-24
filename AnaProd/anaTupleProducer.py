@@ -3,6 +3,7 @@ import datetime
 import os
 import sys
 import ROOT
+import shutil
 import zlib
 
 if __name__ == "__main__":
@@ -30,7 +31,7 @@ JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"]
 JetObservablesMC = ["hadronFlavour","partonFlavour"]
 
-defaultColToSave = ["event","luminosityBlock","run", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
+defaultColToSave = ["entryIndex","event","luminosityBlock","run", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
                 "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs" ]
 
@@ -130,8 +131,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
             dfw.DefineAndAppend(f"b{leg_idx+1}_{jetVar}", f"Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}])")
         dfw.DefineAndAppend(f"b{leg_idx+1}_HHbtag", f"static_cast<float>(Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}]))")
 
-def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptions,range, evtIds,
-                   store_noncentral, compute_unc_variations, print_cutflow):
+def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOptions,range, evtIds,
+                   store_noncentral, compute_unc_variations, uncertainties, print_cutflow):
     start_time = datetime.datetime.now()
     compression_settings = snapshotOptions.fCompressionAlgorithm * 100 + snapshotOptions.fCompressionLevel
     period = config["GLOBAL"]["era"]
@@ -163,6 +164,7 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
     df = df.Define("sample_name", f"{zlib.crc32(sample_name.encode())}")
     df = df.Define("period", f"static_cast<int>(Period::{period})")
     df = df.Define("X_mass", f"static_cast<int>({mass})")
+    df = df.Define("entryIndex", "rdfentry_")
     is_data = 'true' if isData else 'false'
     df = df.Define("isData", is_data)
 
@@ -172,41 +174,51 @@ def createAnatuple(inFile, outFile, config, sample_name, anaCache, snapshotOptio
         syst_dict = { 'nano' : 'Central' }
     else:
         df, syst_dict = Corrections.applyScaleUncertainties(df)
+    #print(syst_dict)
     df_empty = df
+    snaps = []
+    reports = []
+    outfilesNames = []
     for syst_name, source_name in syst_dict.items():
+        if source_name not in uncertainties and "all" not in uncertainties: continue
+        #print(f"source name is {source_name} and syst name is {syst_name}")
         is_central = syst_name in [ 'Central', 'nano' ]
         if not is_central and not compute_unc_variations: continue
         suffix = '' if is_central else f'_{syst_name}'
-        #print(f"suffix is {suffix}")
         if len(suffix) and not store_noncentral: continue
-        #print(f"going to compute the variables")
         dfw = Utilities.DataFrameWrapper(df_empty,defaultColToSave)
         addAllVariables(dfw, syst_name, isData, trigger_class)
         if not isData:
             weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name,
-                                        return_variations=is_central and compute_unc_variations,
+                                        return_variations=is_central and compute_unc_variations, isCentral=is_central,
                                         ana_cache=anaCache)
-            weight_branches.extend(dfw.Apply(Corrections.trg.getTrgSF, trigger_class.trigger_dict.keys(), is_central and compute_unc_variations))
-            weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations))
+            weight_branches.extend(dfw.Apply(Corrections.trg.getTrgSF, trigger_class.trigger_dict.keys(), is_central and compute_unc_variations, is_central))
+            weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations, is_central))
             dfw.colToSave.extend(weight_branches)
-        #print("going to evaluate the report")
-        report = dfw.df.Report()
-        if print_cutflow:
-            report.Print()
+        reports.append(dfw.df.Report())
         varToSave = Utilities.ListToVector(dfw.colToSave)
-        #print(f"saving the tree Events{suffix}")
-        dfw.df.Snapshot(f"Events{suffix}", outFile, varToSave, snapshotOptions)
-        snapshotOptions.fMode = "UPDATE"
-        histReport = ReportTools.SaveReport(report.GetValue(), reoprtName=f"Report{suffix}")
-        outputRootFile= ROOT.TFile(outFile, "UPDATE", "", compression_settings)
-        outputRootFile.WriteTObject(histReport, f"Report{suffix}", "Overwrite")
-        outputRootFile.Close()
-    outputRootFile= ROOT.TFile(outFile, "UPDATE", "", compression_settings)
-    hist_time = ROOT.TH1D("time", "time", 1, 0, 1)
+        outFileName = f"{outDir}Events{suffix}.root"
+        outfilesNames.append(outFileName)
+        if os.path.exists(outFileName):
+            os.remove(outFileName)
+        snaps.append(dfw.df.Snapshot(f"Events", outFileName, varToSave, snapshotOptions))
+    if snapshotOptions.fLazy == True:
+        #print(f"rungraph is running now")
+        ROOT.RDF.RunGraphs(snaps)
+        #print(f"rungraph has finished running")
+    hist_time = ROOT.TH1D(f"time", f"time", 1, 0, 1)
     end_time = datetime.datetime.now()
     hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
-    outputRootFile.WriteTObject(hist_time, f"runtime", "Overwrite")
-    outputRootFile.Close()
+    for index,fileName in enumerate(outfilesNames):
+        outputRootFile= ROOT.TFile(fileName, "UPDATE", "", compression_settings)
+        rep = ReportTools.SaveReport(reports[index].GetValue(), reoprtName=f"Report")
+        outputRootFile.WriteTObject(rep, f"Report", "Overwrite")
+        if index==0:
+            outputRootFile.WriteTObject(hist_time, f"runtime", "Overwrite")
+        outputRootFile.Close()
+        if print_cutflow:
+            report.Print()
+    #print(f"number of loops is {df_empty.GetNRuns()}")
 
 
 if __name__ == "__main__":
@@ -216,7 +228,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', required=True, type=str)
     parser.add_argument('--inFile', required=True, type=str)
-    parser.add_argument('--outFile', required=True, type=str)
+    parser.add_argument('--outDir', required=True, type=str)
     parser.add_argument('--sample', required=True, type=str)
     parser.add_argument('--anaCache', required=True, type=str)
     parser.add_argument('--compressionLevel', type=int, default=9)
@@ -227,6 +239,7 @@ if __name__ == "__main__":
     parser.add_argument('--compute_unc_variations', type=bool, default=False)
     parser.add_argument('--print-cutflow', type=bool, default=False)
     parser.add_argument('--customisations', type=str, default="")
+    parser.add_argument('--uncertainties', type=str, default="all")
     args = parser.parse_args()
 
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
@@ -238,13 +251,15 @@ if __name__ == "__main__":
     with open(args.anaCache, 'r') as f:
         anaCache = yaml.safe_load(f)
 
-    if os.path.exists(args.outFile):
-        os.remove(args.outFile)
-
+    if os.path.isdir(args.outDir):
+        shutil.rmtree(args.outDir)
+    os.makedirs(args.outDir, exist_ok=True)
+    #print( args.uncertainties.split(","))
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=False
+    snapshotOptions.fLazy = True
     snapshotOptions.fMode="RECREATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
-    createAnatuple(args.inFile, args.outFile, config, args.sample, anaCache, snapshotOptions, args.nEvents,
-                   args.evtIds, args.store_noncentral, args.compute_unc_variations, args.print_cutflow)
+    createAnatuple(args.inFile, args.outDir, config, args.sample, anaCache, snapshotOptions, args.nEvents,
+                   args.evtIds, args.store_noncentral, args.compute_unc_variations, args.uncertainties.split(","), args.print_cutflow)

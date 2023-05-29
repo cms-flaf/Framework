@@ -110,7 +110,6 @@ struct TupleMaker {
     /*
     df_out = df_out.Define("_entryCentral", [=](ULong64_t entryIndexShifted) {
       static Entry entry;
-      std::cout << "cacca " <<std::endl;
       while(!entry->valid || entry->ulong_values.at(0)<entryIndexShifted){
         entry = Entry();
         if (!queue.Pop(entry)) {

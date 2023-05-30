@@ -18,6 +18,8 @@ struct Entry {
   std::map<int, float> float_values;
   std::map<int, double> double_values; // to be removed
 
+
+
   void Add(int index, float value)
   {
     CheckIndex(index);
@@ -48,6 +50,7 @@ struct Entry {
     double_values[index] = value;
   }
 
+
 private:
 
   void CheckIndex(int index) const
@@ -64,12 +67,26 @@ inline void putEntry(Entry& entry, int index) {}
 
 template<typename T, typename ...Args>
 void putEntry(Entry& entry, int var_index,
-              const T& value, Args&& ...args)
+              T& value, Args&& ...args)
 {
   entry.Add(var_index, value);
-  std::cout << var_index << "\t " << value <<std::endl;
+  //std::cout << var_index << "\t " << value <<std::endl;
   putEntry(entry, var_index + 1, std::forward<Args>(args)...);
 }
+
+bool isDifferentEvent(Entry& entry1, Entry& entry2, int index){
+  return (entry1.int_values[index] != entry2.int_values[index] || entry1.bool_values[index]!=entry2.bool_values[index] || entry1.ulong_values[index]!=entry2.ulong_values[index] || entry1.float_values[index]!=entry2.float_values[index] || entry1.double_values[index]!=entry2.double_values[index] );
+};
+bool CompareEntries(Entry& entry_central, Entry& entry_shifted,int var_index)
+{
+  bool is_different_event = isDifferentEvent(entry_central, entry_shifted,var_index);
+  std::cout << "var_index " << var_index << std::endl;
+  std::cout<<"isDifferentEvent? " <<is_different_event << std::endl;
+  //CompareEntries(entry_central,entry_shifted,var_index+1);
+  return is_different_event;
+
+}
+
 
 } // namespace detail
 
@@ -86,18 +103,18 @@ struct TupleMaker {
   ROOT::RDF::RNode process(ROOT::RDF::RNode df_in, ROOT::RDF::RNode df_out, const std::vector<std::string>& var_names)
   {
     thread = std::make_unique<std::thread>([=]() {
-      std::cout << "TupleMaker::process: foreach started." << std::endl;
+      //std::cout << "TupleMaker::process: foreach started." << std::endl;
       try {
         ROOT::RDF::RNode df = df_in;
         df.Foreach([&](const Args& ...args) {
           Entry entry;
-          std::cout << "TupleMaker::process: running detail::putEntry." << std::endl;
+          //std::cout << "TupleMaker::process: running detail::putEntry." << std::endl;
           detail::putEntry(entry, 0, args...);
-          std::cout << "TupleMaker::process: push entry." << std::endl;
+          //std::cout << "TupleMaker::process: push entry." << std::endl;
           entry.valid = true;
-          std::cout << "push entry is "<< queue.Push(entry) << std::endl;
+          //std::cout << "push entry is "<< queue.Push(entry) << std::endl;
           if(!queue.Push(entry)) {
-            std::cout << "TupleMaker::process: queue is full." << std::endl;
+            //std::cout << "TupleMaker::process: queue is full." << std::endl;
             throw StopLoop();
           }
         }, var_names);
@@ -105,23 +122,46 @@ struct TupleMaker {
         //std::cout << "stop loop catched " << std::endl;
       }
       queue.SetAllDone();
-      std::cout << "TupleMaker::process: foreach done." << std::endl;
+      //std::cout << "TupleMaker::process: foreach done." << std::endl;
     });
-    /*
+    //std::cout << "starting defining entryCentral" << std::endl;
+
     df_out = df_out.Define("_entryCentral", [=](ULong64_t entryIndexShifted) {
       static Entry entry;
-      while(!entry->valid || entry->ulong_values.at(0)<entryIndexShifted){
+      while(!entry.valid || entry.ulong_values.at(0)<entryIndexShifted){
         entry = Entry();
+        //std::cout << "entry popped? " << queue.Pop(entry) << std::endl;
         if (!queue.Pop(entry)) {
-          std::cout << "entry popped " <<std::endl;
+          //std::cout << "entry popped " <<std::endl;
         }
       }
       Entry entryCentral;
-      if(entry->valid && entry->ulong_values.at(0)==entryIndexShifted){
+      if(entry.valid && entry.ulong_values.at(0)==entryIndexShifted){
         entryCentral=entry;
       }
       return entryCentral;
-    }, { "entryIndex" });*/
+    }, { "entryIndex" });
+    df_out = df_out.Define("compareEntries", [=](Entry entryCentralShiftedSame){
+      bool areCoincidentEvents = false;
+      static Entry entry;
+      while(!entry.valid){
+        entry = Entry();
+        //std::cout << "entry popped? " << queue.Pop(entry) << std::endl;
+        if (!queue.Pop(entry)) {
+          //std::cout << "entry popped " <<std::endl;
+        }
+      }
+      int idx=0;
+      while(entry.valid && idx < var_names.size()){
+        areCoincidentEvents = !(detail::CompareEntries(entry, entryCentralShiftedSame,idx));
+        idx+=1;
+        std::cout << "var_names size = " << var_names.size() << "\t idx = "<<idx << std::endl;
+      }
+      std::cout << "are coincident events?" << areCoincidentEvents<< std::endl;
+      return areCoincidentEvents;
+    },{"_entryCentral"});
+    std::cout << "finished defining entryCentral" << std::endl;
+
     return df_out;
   }
 

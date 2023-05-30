@@ -29,7 +29,7 @@ public:
       if(n_entries_ >= max_entries_)
         return false;
       cond_var_.wait(lock, [&] { return queue_.size() < max_size_; });
-      std::cout << "nEntries is "<<n_entries_ << std::endl;
+      //std::cout << "nEntries is "<<n_entries_ << std::endl;
       queue_.push(entry);
       ++n_entries_;
     }
@@ -58,7 +58,7 @@ public:
     {
       Lock lock(mutex_);
       all_done_ = value;
-      std::cout << "all done set "<< std::endl;
+      //std::cout << "all done set "<< std::endl;
     }
     cond_var_.notify_all();
   }

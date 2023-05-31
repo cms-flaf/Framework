@@ -1,90 +1,82 @@
 #pragma once
 
-#include <map>
-#include <vector>
+#include <any>
+#include <iostream>
+#include <tuple>
 #include <thread>
-#include <typeinfo>
+#include <string>
+#include <variant>
 
 #include "EntryQueue.h"
 
 namespace analysis {
-
+typedef std::variant<int,float,double,bool,unsigned long long, long, unsigned long, unsigned int> MultiType;
 struct Entry {
   bool valid{false};
   int index;
-  std::map<int, int> int_values;
-  std::map<int, bool> bool_values;
-  std::map<int,unsigned long long> ulong_values;
-  std::map<int, float> float_values;
-  std::map<int, double> double_values; // to be removed
+  std::vector<std::pair<std::string,MultiType>> var_values;
 
-
-
-  void Add(int index, float value)
-  {
-    CheckIndex(index);
-    float_values[index] = value;
+  void ResizeVarValues(size_t size){
+    var_values.resize(size);
   }
-
-  void Add(int index, int value)
+  template<typename T>
+  void Add(int index, T value, const std::string& var_name)
   {
+    //std::cout << index << "\t "<< std::to_string(value) <<std::endl;
     CheckIndex(index);
-    int_values[index] = value;
+    var_values.at(index)=std::make_pair(var_name, value);
   }
-
-  void Add(int index, unsigned long long value)
+  template<typename T>
+  T GetValue(int idx) const
   {
-    CheckIndex(index);
-    ulong_values[index] = value;
-  }
+  CheckIndex(idx);
+  auto var = var_values[idx].second;
+  using type = std::decay_t<decltype(var)>;
+  if constexpr(std::is_same_v<type,bool> || std::is_same_v<type,unsigned long long>
+          || std::is_same_v<type,unsigned long>
+          || std::is_same_v<type, long>
+          || std::is_same_v<type, unsigned int>
+          || std::is_same_v<type,  int>
+          || std::is_same_v<type,float>
+          || std::is_same_v<type,double>){
+    return var_values.at(idx).second;}
+  throw std::runtime_error("don't know the type");
+}
 
-  void Add(int index, bool value)
+  std::string GetValueName(int idx) const
   {
-    CheckIndex(index);
-    bool_values[index] = value;
-  }
-
-  void Add(int index, double value) // to be removed
-  {
-    CheckIndex(index);
-    double_values[index] = value;
-  }
+  CheckIndex(idx);
+  return var_values.at(idx).first;
+}
 
 
 private:
-
   void CheckIndex(int index) const
   {
-    if (int_values.count(index) || float_values.count(index) || ulong_values.count(index) || double_values.count(index) || bool_values.count(index) )
-      throw std::runtime_error("Entry::Add: index already exists");
+    if (index == this->index){
+      index++;
+      //std::cout<<index<<std::endl;
+      //throw std::runtime_error("Entry::Add: index already exists");
+    }
   }
 };
+
 
 struct StopLoop {};
 
 namespace detail {
-inline void putEntry(Entry& entry, int index) {}
+inline void putEntry(Entry& entry, int index, const std::vector<std::string> & var_names) {}
 
-template<typename T, typename ...Args>
-void putEntry(Entry& entry, int var_index,
-              T& value, Args&& ...args)
+template<typename T,typename ...Args>
+void putEntry(Entry& entry, int var_index, const std::vector<std::string> & var_names,
+              const T& value, Args&& ...args)
 {
-  entry.Add(var_index, value);
   //std::cout << var_index << "\t " << value <<std::endl;
-  putEntry(entry, var_index + 1, std::forward<Args>(args)...);
-}
-
-bool isDifferentEvent(Entry& entry1, Entry& entry2, int index){
-  return (entry1.int_values[index] != entry2.int_values[index] || entry1.bool_values[index]!=entry2.bool_values[index] || entry1.ulong_values[index]!=entry2.ulong_values[index] || entry1.float_values[index]!=entry2.float_values[index] || entry1.double_values[index]!=entry2.double_values[index] );
-};
-bool CompareEntries(Entry& entry_central, Entry& entry_shifted,int var_index)
-{
-  bool is_different_event = isDifferentEvent(entry_central, entry_shifted,var_index);
-  std::cout << "var_index " << var_index << std::endl;
-  std::cout<<"isDifferentEvent? " <<is_different_event << std::endl;
-  //CompareEntries(entry_central,entry_shifted,var_index+1);
-  return is_different_event;
-
+  entry.Add(var_index, value, var_names[var_index]);
+  //std::cout << "before incrementing " << var_index << std::endl;
+  var_index++;
+  //std::cout << "after incrementing " << var_index << std::endl;
+  putEntry(entry, var_index, var_names,std::forward<Args>(args)...);
 }
 
 
@@ -108,8 +100,11 @@ struct TupleMaker {
         ROOT::RDF::RNode df = df_in;
         df.Foreach([&](const Args& ...args) {
           Entry entry;
+          std::cout << var_names.size() << std::endl;
+          entry.ResizeVarValues(var_names.size());
           //std::cout << "TupleMaker::process: running detail::putEntry." << std::endl;
-          detail::putEntry(entry, 0, args...);
+          detail::putEntry(entry, 0, var_names,args...);
+          std::cout << entry.GetValueName(0) << std::endl;
           //std::cout << "TupleMaker::process: push entry." << std::endl;
           entry.valid = true;
           //std::cout << "push entry is "<< queue.Push(entry) << std::endl;
@@ -127,40 +122,26 @@ struct TupleMaker {
     //std::cout << "starting defining entryCentral" << std::endl;
 
     df_out = df_out.Define("_entryCentral", [=](ULong64_t entryIndexShifted) {
-      static Entry entry;
-      while(!entry.valid || entry.ulong_values.at(0)<entryIndexShifted){
-        entry = Entry();
-        //std::cout << "entry popped? " << queue.Pop(entry) << std::endl;
-        if (!queue.Pop(entry)) {
-          //std::cout << "entry popped " <<std::endl;
+
+      static Entry entryCentral;
+      try {
+        static Entry entry;
+        //entry.ResizeVarValues(var_names.size());
+        while(!entry.valid || entry.GetValue<unsigned long long>(0)<entryIndexShifted){
+          entry = Entry();
+          //std::cout << "entry popped? " << queue.Pop(entry) << std::endl;
+          if (!queue.Pop(entry)) {
+            //std::cout << "entry popped " <<std::endl;
+          }
         }
-      }
-      Entry entryCentral;
-      if(entry.valid && entry.ulong_values.at(0)==entryIndexShifted){
-        entryCentral=entry;
+        if(entry.valid && entry.GetValue<unsigned long long>(0)==entryIndexShifted){
+          entryCentral=entry;
+        }
+      } catch (const std::exception& e) {
+        std::cout << "Error: " << e.what() << std::endl;
       }
       return entryCentral;
     }, { "entryIndex" });
-    df_out = df_out.Define("compareEntries", [=](Entry entryCentralShiftedSame){
-      bool areCoincidentEvents = false;
-      static Entry entry;
-      while(!entry.valid){
-        entry = Entry();
-        //std::cout << "entry popped? " << queue.Pop(entry) << std::endl;
-        if (!queue.Pop(entry)) {
-          //std::cout << "entry popped " <<std::endl;
-        }
-      }
-      int idx=0;
-      while(entry.valid && idx < var_names.size()){
-        areCoincidentEvents = !(detail::CompareEntries(entry, entryCentralShiftedSame,idx));
-        idx+=1;
-        std::cout << "var_names size = " << var_names.size() << "\t idx = "<<idx << std::endl;
-      }
-      std::cout << "are coincident events?" << areCoincidentEvents<< std::endl;
-      return areCoincidentEvents;
-    },{"_entryCentral"});
-    std::cout << "finished defining entryCentral" << std::endl;
 
     return df_out;
   }

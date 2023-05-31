@@ -27,20 +27,26 @@ def make_df(inputFileCentral,inputFileShifted,output):
   entryIndexIdx = colNames.index("entryIndex")
   colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
   col_types = [str(df_in.GetColumnType(c)) for c in colNames]
-  col_types = col_types[:2]
-  colNames = colNames[:2]
+  #print(list(dict.fromkeys(col_types)))
+  #col_types = col_types[:100]
+  #colNames = colNames[:100]
 
   nEvents = 2
   df_in = df_in.Range(nEvents)
-  print(','.join(f'"{c}"' for c in colNames))
+  #print(','.join(f'"{c}"' for c in colNames))
   df_out = df_out.Range(nEvents)
-  print(df_out.Count().GetValue())
+  #print(df_out.Count().GetValue())
   colNames_v = Utilities.ListToVector(colNames)
-  print(colNames, col_types)
+  #print(colNames, col_types)
   tuple_maker = ROOT.analysis.TupleMaker(*col_types)(4)
 
   df_out = tuple_maker.process(ROOT.RDF.AsRNode(df_in), ROOT.RDF.AsRNode(df_out), colNames_v)
-  print(f"""number of valid entries is {df_out.Filter("compareEntries").Count().GetValue()}""")
+  #df_out = df_out.Define("isValyd", "_entryCentral.valid")
+  #df_out.Display({"isValyd"}).Print()
+  #df_unique = df_out.Filter("!_entryCentral.valid")
+  #print(df_unique.Count().GetValue())
+
+  #print(f"""number of valid entries is {df_out.Filter("compareEntries").Count().GetValue()}""")
   tuple_maker.join()
 
 if __name__ == "__main__":

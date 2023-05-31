@@ -42,9 +42,9 @@ GLOBAL:
     - tauTau
   sampleSelection:
     - drop ^.*$
-    - keep ^TTTo2L2Nu$
     #- keep ^TTTo2L2Nu$
-    #- keep ^GluGluToRadion*
+    #- keep ^TTTo2L2Nu$
+    - keep ^GluGluToRadion*
     #- keep ^GluGluToBulkGraviton*
     #- keep ^VBFToRadion*
     #- keep ^VBFToBulkGraviton*

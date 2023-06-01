@@ -108,7 +108,7 @@ struct TupleMaker {
 
     df_out = df_out.Define("_entryCentral", [=](ULong64_t entryIndexShifted) {
 
-      static Entry entryCentral;
+      Entry entryCentral;
       try {
         static Entry entry;
         //entry.ResizeVarValues(var_names.size());

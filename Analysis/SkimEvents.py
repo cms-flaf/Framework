@@ -32,27 +32,11 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
     os.remove(outFile)
   #os.mkfile(outFile, exist_ok=True)
   df_in = ROOT.RDataFrame('Events', inputFileCentral)
-
   df_out = ROOT.RDataFrame('Events', inputFileShifted)
-  colNames = [str(c) for c in df_in.GetColumnNames()]
+  colNames = [str(c) for c in df_out.GetColumnNames()]
   entryIndexIdx = colNames.index("entryIndex")
   colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
   col_types = [str(df_in.GetColumnType(c)) for c in colNames]
-  colNames_shifted = [str(c) for c in df_out.GetColumnNames()]
-  entryIndexIdx_shifted = colNames_shifted.index("entryIndex")
-
-  colNames_shifted[entryIndexIdx_shifted], colNames_shifted[0] = colNames_shifted[0], colNames_shifted[entryIndexIdx_shifted]
-  col_types_shifted = [str(df_out.GetColumnType(c)) for c in colNames_shifted]
-  common_columns = []
-  for col, col_shifted in zip(colNames, colNames_shifted):
-    if col != col_shifted:
-      #print(f"col name = {col}, col name shifted = {col_shifted}")
-      continue
-    common_columns.append(col)
-
-  #print(list(dict.fromkeys(col_types)))
-  #col_types = col_types[:100]
-  #colNames = colNames[:100]
 
   #nEvents = 100
   #df_in = df_in.Range(nEvents)
@@ -61,25 +45,24 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
   #print(df_in.Describe())
   #print(df_out.Count().GetValue())
   colNames_v = Utilities.ListToVector(colNames)
-  #print(colNames, col_types)
   tuple_maker = ROOT.analysis.TupleMaker(*col_types)(4)
   print("tuplemaker created")
   df_out = tuple_maker.process(ROOT.RDF.AsRNode(df_in), ROOT.RDF.AsRNode(df_out), colNames_v)
   print("tuplemaker proceassed")
-  df_out = df_out.Define("isValyd", "_entryCentral.valid")
-  print("defined isValyd entry")
-  #df_out.Display({"isValyd"}).Print()
-  df_unique = df_out.Filter("!isValyd")
+  df_out = df_out.Define("isValid", "_entryCentral.valid")
+  print("defined isValid entry")
+  #df_out.Display({"isValid"}).Print()
+  df_unique = df_out.Filter("!isValid")
   print("defined df_unique")
-  df_out_valid = df_out.Filter('isValyd')
+  df_out_valid = df_out.Filter('isValid')
   print("defined df_valid")
-
-  for var_idx,var_name in enumerate(colNames_shifted):
-    if colNames[var_idx]==var_name:
-      #df_out_valid= df_out.Filter('isValyd').Define(f"diff_{var_name}", f"""std::cout <<"isValyd \t entryCentral_idx = " << _entryCentral.GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}) << "\t entryShifted = " << {var_name} << std::endl; return _entryCentral.GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx})-{var_name}""")
+  colToSave_diff= []
+  for var_idx,var_name in enumerate(colNames):
+    if colNames[var_idx] in df_in.GetColumnNames():
+      #df_out_valid= df_out.Filter('isValid').Define(f"diff_{var_name}", f"""std::cout <<"isValid \t entryCentral_idx = " << _entryCentral.GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}) << "\t entryShifted = " << {var_name} << std::endl; return _entryCentral.GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx})-{var_name}""")
       df_out_valid=df_out_valid.Define(f"diff_{var_name}", f"""return _entryCentral.GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx})-{var_name}""")
-      #if var_idx<2:
-        #df_out_valid.Display({f"diff_{var_name}"}).Print()
+      colToSave_diff.append(f"diff_{var_name}")
+    colToSave_diff.append(var_name)
 
 
   snaps = []
@@ -90,10 +73,11 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
   snapshotOptions.fMode="RECREATE"
   snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + 'LZ4')
   snapshotOptions.fCompressionLevel = 5
-  snaps.append(df_out_valid.Snapshot(f"Events", outFile, df_out_valid.GetColumnNames(), snapshotOptions))
-  snaps.append(df_unique.Snapshot(f"Events_nonValid", f"output/prova_nonValid.root", df_unique.GetColumnNames(), snapshotOptions))
+  snaps.append(df_out_valid.Snapshot(f"Events", outFile, Utilities.ListToVector(colToSave_diff), snapshotOptions))
+  snaps.append(df_unique.Snapshot(f"Events_nonValid", f"output/prova_nonValid.root", {"entryIndex"}, snapshotOptions))
 
   ROOT.RDF.RunGraphs(snaps)
+  print("finished screenshot")
   tuple_maker.join()
 
 

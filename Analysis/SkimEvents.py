@@ -75,7 +75,7 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
   snapshotOptions.fCompressionLevel = 5
   colToSave_v = Utilities.ListToVector(colToSave_diff)
   snaps.append(df_out_valid.Snapshot(f"Events", outFile, colToSave_v, snapshotOptions))
-  snaps.append(df_unique.Snapshot(f"Events_nonValid", f"output/prova_nonValid.root", {"entryIndex"}, snapshotOptions))
+  snaps.append(df_unique.Snapshot(f"Events_nonValid", f"output/prova_nonValid.root", colNames_v, snapshotOptions))
 
   ROOT.RDF.RunGraphs(snaps)
   print("finished screenshot")

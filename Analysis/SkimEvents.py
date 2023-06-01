@@ -73,7 +73,8 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
   snapshotOptions.fMode="RECREATE"
   snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + 'LZ4')
   snapshotOptions.fCompressionLevel = 5
-  snaps.append(df_out_valid.Snapshot(f"Events", outFile, Utilities.ListToVector(colToSave_diff), snapshotOptions))
+  colToSave_v = Utilities.ListToVector(colToSave_diff)
+  snaps.append(df_out_valid.Snapshot(f"Events", outFile, colToSave_v, snapshotOptions))
   snaps.append(df_unique.Snapshot(f"Events_nonValid", f"output/prova_nonValid.root", {"entryIndex"}, snapshotOptions))
 
   ROOT.RDF.RunGraphs(snaps)

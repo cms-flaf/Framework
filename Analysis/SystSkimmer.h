@@ -6,77 +6,64 @@
 #include <thread>
 #include <string>
 #include <variant>
+#include <typeinfo>
+#include <typeindex>
 
 #include "EntryQueue.h"
 
 namespace analysis {
 typedef std::variant<int,float,double,bool,unsigned long long, long, unsigned long, unsigned int> MultiType;
+
 struct Entry {
   bool valid{false};
   int index;
-  std::vector<std::pair<std::string,MultiType>> var_values;
+  std::vector<MultiType> var_values;
 
   void ResizeVarValues(size_t size){
     var_values.resize(size);
   }
-  template<typename T>
-  void Add(int index, T value, const std::string& var_name)
+
+  template <typename T>
+  void Add(int index, T value)
   {
     //std::cout << index << "\t "<< std::to_string(value) <<std::endl;
-    CheckIndex(index);
-    var_values.at(index)=std::make_pair(var_name, value);
+    //CheckIndex(index);
+    var_values.at(index)= value;
   }
-  template<typename T>
+template<typename T>
   T GetValue(int idx) const
   {
-  CheckIndex(idx);
-  auto var = var_values[idx].second;
-  using type = std::decay_t<decltype(var)>;
-  if constexpr(std::is_same_v<type,bool> || std::is_same_v<type,unsigned long long>
-          || std::is_same_v<type,unsigned long>
-          || std::is_same_v<type, long>
-          || std::is_same_v<type, unsigned int>
-          || std::is_same_v<type,  int>
-          || std::is_same_v<type,float>
-          || std::is_same_v<type,double>){
-    return var_values.at(idx).second;}
-  throw std::runtime_error("don't know the type");
-}
+    return std::get<T>(var_values.at(idx));
+  }
 
-  std::string GetValueName(int idx) const
-  {
-  CheckIndex(idx);
-  return var_values.at(idx).first;
-}
-
-
+/*
 private:
   void CheckIndex(int index) const
   {
     if (index == this->index){
-      index++;
-      //std::cout<<index<<std::endl;
-      //throw std::runtime_error("Entry::Add: index already exists");
+      //index++;
+      std::cout<<index<<std::endl;
+      throw std::runtime_error("Entry::Add: index already exists");
     }
   }
+*/
 };
-
 
 struct StopLoop {};
 
 namespace detail {
-inline void putEntry(Entry& entry, int index, const std::vector<std::string> & var_names) {}
+inline void putEntry(Entry& entry, int index) {}
 
 template<typename T,typename ...Args>
-void putEntry(Entry& entry, int var_index, const std::vector<std::string> & var_names,
+void putEntry(Entry& entry, int var_index,
               const T& value, Args&& ...args)
 {
   //std::cout << var_index << "\t " << value <<std::endl;
-  entry.Add(var_index, value, var_names[var_index]);
+  entry.Add(var_index, value);
   //std::cout << "before incrementing " << var_index << std::endl;
-  var_index++;
+  //var_index++;
   //std::cout << "after incrementing " << var_index << std::endl;
-  putEntry(entry, var_index, var_names,std::forward<Args>(args)...);
+  putEntry(entry, var_index+1,std::forward<Args>(args)...);
 }
 
 
@@ -100,11 +87,9 @@ struct TupleMaker {
         ROOT::RDF::RNode df = df_in;
         df.Foreach([&](const Args& ...args) {
           Entry entry;
-          std::cout << var_names.size() << std::endl;
           entry.ResizeVarValues(var_names.size());
           //std::cout << "TupleMaker::process: running detail::putEntry." << std::endl;
-          detail::putEntry(entry, 0, var_names,args...);
-          std::cout << entry.GetValueName(0) << std::endl;
+          detail::putEntry(entry, 0,args...);
           //std::cout << "TupleMaker::process: push entry." << std::endl;
           entry.valid = true;
           //std::cout << "push entry is "<< queue.Push(entry) << std::endl;
@@ -134,9 +119,11 @@ struct TupleMaker {
             //std::cout << "entry popped " <<std::endl;
           }
         }
+        //std::cout << entryIndexShifted << "\t"<< entry.GetValue<unsigned long long>(0)<<std::endl;
         if(entry.valid && entry.GetValue<unsigned long long>(0)==entryIndexShifted){
           entryCentral=entry;
         }
+        //std::cout << "sono uguali "<< entryIndexShifted << "\t"<< entryCentral.GetValue<unsigned long long>(0)<<std::endl;
       } catch (const std::exception& e) {
         std::cout << "Error: " << e.what() << std::endl;
       }

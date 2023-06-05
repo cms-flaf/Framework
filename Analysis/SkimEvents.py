@@ -49,11 +49,12 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
   print("tuplemaker created")
   df_out = tuple_maker.process(ROOT.RDF.AsRNode(df_in), ROOT.RDF.AsRNode(df_out), colNames_v)
   print("tuplemaker proceassed")
-  df_out = df_out.Define("isValid", "_entryCentral.valid")
+  df_out = df_out.Define("isValid", "_entryCentral->valid")
   print("defined isValid entry")
+  '''
   #df_out.Display({"isValid"}).Print()
-  df_unique = df_out.Filter("!isValid")
-  print("defined df_unique")
+  #df_unique = df_out.Filter("!isValid")
+  #print("defined df_unique")
   df_out_valid = df_out.Filter('isValid')
   print("defined df_valid")
   colToSave_diff= []
@@ -69,16 +70,22 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
   print("start making screenshot")
   snapshotOptions = ROOT.RDF.RSnapshotOptions()
   snapshotOptions.fOverwriteIfExists=False
-  snapshotOptions.fLazy=True
+  snapshotOptions.fLazy=False
   snapshotOptions.fMode="RECREATE"
   snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + 'LZ4')
   snapshotOptions.fCompressionLevel = 5
   colToSave_v = Utilities.ListToVector(colToSave_diff)
-  snaps.append(df_out_valid.Snapshot(f"Events", outFile, colToSave_v, snapshotOptions))
-  snaps.append(df_unique.Snapshot(f"Events_nonValid", f"output/prova_nonValid.root", colNames_v, snapshotOptions))
+  print(colToSave_v.size())
+  print(colNames_v.size())
+  outFile_Valid = f"{outFile}.root"
+  df_out_valid.Snapshot(f"Events", outFile_Valid, colToSave_v, snapshotOptions)
+  #snaps.append(df_out_valid.Snapshot(f"Events", outFile_Valid, colToSave_v, snapshotOptions))
+  #outFile_nonValid = f"{outFile}_nonValid.root"
+  #snaps.append(df_unique.Snapshot(f"Events_nonValid", outFile_Valid, colNames_v, snapshotOptions))
 
-  ROOT.RDF.RunGraphs(snaps)
+  #ROOT.RDF.RunGraphs(snaps)
   print("finished screenshot")
+  '''
   tuple_maker.join()
 
 

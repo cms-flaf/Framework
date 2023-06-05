@@ -36,6 +36,7 @@ template<typename T>
 struct StopLoop {};
 
 namespace detail {
+  /*
 inline void putEntry(std::shared_ptr<Entry>& entry, int index) {}
 
 template<typename T,typename ...Args>
@@ -48,7 +49,19 @@ void putEntry(std::shared_ptr<Entry>& entry, int var_index,
   //std::cout << "after incrementing " << var_index << std::endl;
   putEntry(entry, var_index+1,std::forward<Args>(args)...);
 }
+*/
+template<typename T>
+void addEntry(Entry& entry, int index, T& value)
+{
+  entry.Add(index, value);
+}
 
+template<typename ...Args>
+void fillEntry(Entry& entry, Args&& ...args)
+{
+    int index = 0;
+    (void) std::initializer_list<int>{ (addEntry(entry, index++, std::forward<Args>(args)), 0)... };
+}
 
 } // namespace detail
 
@@ -71,7 +84,8 @@ struct TupleMaker {
         df.Foreach([&](const Args& ...args) {
           auto entry = std::make_shared<Entry>(var_names.size());
           //std::cout << "TupleMaker::process: running detail::putEntry->" << std::endl;
-          detail::putEntry(entry, 0,args...);
+          detail::fillEntry(*entry, args...);
+          //detail::putEntry(entry, 0,args...);
           //std::cout << "TupleMaker::process: push entry->" << std::endl;
           //std::cout << "push entry is "<< queue.Push(entry) << std::endl;
           if(!queue.Push(entry)) {

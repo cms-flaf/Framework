@@ -49,7 +49,7 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
   print("tuplemaker created")
   df_out = tuple_maker.process(ROOT.RDF.AsRNode(df_in), ROOT.RDF.AsRNode(df_out), colNames_v)
   print("tuplemaker proceassed")
-  df_out = df_out.Define("isValid", "_entryCentral->valid")
+  df_out = df_out.Define("isValid", "_entryCentral.use_count() > 0")
   print("defined isValid entry")
   #df_out.Display({"isValid"}).Print()
   df_unique = df_out.Filter("!isValid")

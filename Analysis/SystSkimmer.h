@@ -15,13 +15,9 @@ namespace analysis {
 typedef std::variant<int,float,double,bool,unsigned long long, long, unsigned long, unsigned int> MultiType;
 
 struct Entry {
-  bool valid{false};
-  int index;
   std::vector<MultiType> var_values;
 
-  void ResizeVarValues(size_t size){
-    var_values.resize(size);
-  }
+  explicit Entry(size_t size) : var_values(size) {}
 
   template <typename T>
   void Add(int index, T value)
@@ -86,12 +82,10 @@ struct TupleMaker {
       try {
         ROOT::RDF::RNode df = df_in;
         df.Foreach([&](const Args& ...args) {
-          std::shared_ptr<Entry> entry = std::make_shared<Entry>();
-          entry->ResizeVarValues(var_names.size());
+          auto entry = std::make_shared<Entry>(var_names.size());
           //std::cout << "TupleMaker::process: running detail::putEntry->" << std::endl;
           detail::putEntry(entry, 0,args...);
           //std::cout << "TupleMaker::process: push entry->" << std::endl;
-          entry->valid = true;
           //std::cout << "push entry is "<< queue.Push(entry) << std::endl;
           if(!queue.Push(entry)) {
             //std::cout << "TupleMaker::process: queue is full." << std::endl;
@@ -109,25 +103,25 @@ struct TupleMaker {
     df_out = df_out.Define("_entryCentral", [=](ULong64_t entryIndexShifted) {
 
 
-      std::shared_ptr<Entry> entryCentral = std::make_shared<Entry>();
+      std::shared_ptr<Entry> entryCentral;
+      //entryCentral->ResizeVarValues(var_names.size());
 
       try {
-        static std::shared_ptr<Entry> entry = std::make_shared<Entry>();
-        //entry.ResizeVarValues(var_names.size());
-        while(!entry->valid || entry->GetValue<unsigned long long>(0)<entryIndexShifted){
-          entry = std::make_shared<Entry>(Entry());
-          //std::cout << "entry popped? " << queue.Pop(entry) << std::endl;
+        static std::shared_ptr<Entry> entry;
+          while(!entry || entry->GetValue<unsigned long long>(0)<entryIndexShifted){
+          entry.reset();
           if (!queue.Pop(entry)) {
-            //std::cout << "entry popped " <<std::endl;
+            break;
           }
         }
         //std::cout << entryIndexShifted << "\t"<< entry->GetValue<unsigned long long>(0)<<std::endl;
-        if(entry->valid && entry->GetValue<unsigned long long>(0)==entryIndexShifted){
+        if(entry && entry->GetValue<unsigned long long>(0)==entryIndexShifted){
           entryCentral=entry;
         }
         //std::cout << "sono uguali "<< entryIndexShifted << "\t"<< entryCentral.GetValue<unsigned long long>(0)<<std::endl;
       } catch (const std::exception& e) {
         std::cout << "Error: " << e.what() << std::endl;
+        throw;
       }
       return entryCentral;
     }, { "entryIndex" });

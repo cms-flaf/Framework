@@ -52,14 +52,14 @@ private:
 struct StopLoop {};
 
 namespace detail {
-inline void putEntry(Entry& entry, int index) {}
+inline void putEntry(std::shared_ptr<Entry>& entry, int index) {}
 
 template<typename T,typename ...Args>
-void putEntry(Entry& entry, int var_index,
+void putEntry(std::shared_ptr<Entry>& entry, int var_index,
               const T& value, Args&& ...args)
 {
   //std::cout << var_index << "\t " << value <<std::endl;
-  entry.Add(var_index, value);
+  entry->Add(var_index, value);
   //std::cout << "before incrementing " << var_index << std::endl;
   //var_index++;
   //std::cout << "after incrementing " << var_index << std::endl;
@@ -86,14 +86,14 @@ struct TupleMaker {
       try {
         ROOT::RDF::RNode df = df_in;
         df.Foreach([&](const Args& ...args) {
-          Entry entry;
-          entry.ResizeVarValues(var_names.size());
+          std::shared_ptr<Entry> entry = std::make_shared<Entry>();
+          entry->ResizeVarValues(var_names.size());
           //std::cout << "TupleMaker::process: running detail::putEntry->" << std::endl;
           detail::putEntry(entry, 0,args...);
           //std::cout << "TupleMaker::process: push entry->" << std::endl;
-          entry.valid = true;
+          entry->valid = true;
           //std::cout << "push entry is "<< queue.Push(entry) << std::endl;
-          if(!queue.Push((std::make_shared<Entry>(entry)))) {
+          if(!queue.Push(entry)) {
             //std::cout << "TupleMaker::process: queue is full." << std::endl;
             throw StopLoop();
           }
@@ -108,9 +108,11 @@ struct TupleMaker {
 
     df_out = df_out.Define("_entryCentral", [=](ULong64_t entryIndexShifted) {
 
-      std::shared_ptr<Entry> entryCentral(new Entry);
+
+      std::shared_ptr<Entry> entryCentral = std::make_shared<Entry>();
+
       try {
-        static std::shared_ptr<Entry> entry;
+        static std::shared_ptr<Entry> entry = std::make_shared<Entry>();
         //entry.ResizeVarValues(var_names.size());
         while(!entry->valid || entry->GetValue<unsigned long long>(0)<entryIndexShifted){
           entry = std::make_shared<Entry>(Entry());

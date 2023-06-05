@@ -31,18 +31,6 @@ template<typename T>
   {
     return std::get<T>(var_values.at(idx));
   }
-
-/*
-private:
-  void CheckIndex(int index) const
-  {
-    if (index == this->index){
-      //index++;
-      std::cout<<index<<std::endl;
-      throw std::runtime_error("Entry::Add: index already exists");
-    }
-  }
-*/
 };
 
 struct StopLoop {};
@@ -57,7 +45,6 @@ void putEntry(std::shared_ptr<Entry>& entry, int var_index,
   //std::cout << var_index << "\t " << value <<std::endl;
   entry->Add(var_index, value);
   //std::cout << "before incrementing " << var_index << std::endl;
-  //var_index++;
   //std::cout << "after incrementing " << var_index << std::endl;
   putEntry(entry, var_index+1,std::forward<Args>(args)...);
 }
@@ -77,8 +64,8 @@ struct TupleMaker {
 
   ROOT::RDF::RNode process(ROOT::RDF::RNode df_in, ROOT::RDF::RNode df_out, const std::vector<std::string>& var_names)
   {
-    thread = std::make_unique<std::thread>([=]() {
-      //std::cout << "TupleMaker::process: foreach started." << std::endl;
+    thread = std::make_unique<std::thread>([df_in, this, var_names]() {
+      std::cout << "TupleMaker::process: foreach started." << std::endl;
       try {
         ROOT::RDF::RNode df = df_in;
         df.Foreach([&](const Args& ...args) {
@@ -91,14 +78,15 @@ struct TupleMaker {
             //std::cout << "TupleMaker::process: queue is full." << std::endl;
             throw StopLoop();
           }
+          //std::cout << "finished to push entry " << std::endl;
         }, var_names);
       } catch(StopLoop) {
         //std::cout << "stop loop catched " << std::endl;
       }
       queue.SetAllDone();
-      //std::cout << "TupleMaker::process: foreach done." << std::endl;
+      std::cout << "TupleMaker::process: foreach done." << std::endl;
     });
-    //std::cout << "starting defining entryCentral" << std::endl;
+    std::cout << "starting defining entryCentral" << std::endl;
 
     df_out = df_out.Define("_entryCentral", [=](ULong64_t entryIndexShifted) {
 
@@ -118,7 +106,7 @@ struct TupleMaker {
         if(entry && entry->GetValue<unsigned long long>(0)==entryIndexShifted){
           entryCentral=entry;
         }
-        //std::cout << "sono uguali "<< entryIndexShifted << "\t"<< entryCentral.GetValue<unsigned long long>(0)<<std::endl;
+        //std::cout << "sono uguali "<< entryIndexShifted << "\t"<< entryCentral->GetValue<unsigned long long>(0)<<std::endl;
       } catch (const std::exception& e) {
         std::cout << "Error: " << e.what() << std::endl;
         throw;

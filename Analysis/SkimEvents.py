@@ -1,5 +1,5 @@
 import ROOT
-import Common.Utilities as Utilities
+#import Common.Utilities as Utilities
 import os
 import shutil
 ROOT.gROOT.SetBatch(True)
@@ -15,7 +15,11 @@ ROOT.gInterpreter.Declare(
       return df_in;
     }
   """)
-
+def ListToVector(list, type="string"):
+	vec = ROOT.std.vector(type)()
+	for item in list:
+		vec.push_back(item)
+	return vec
 col_type_dict = {
   'ULong64_t':'unsigned long long',
   'Float_t':'float',
@@ -44,7 +48,7 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
   #df_out = df_out.Range(nEvents)
   #print(df_in.Describe())
   #print(df_out.Count().GetValue())
-  colNames_v = Utilities.ListToVector(colNames)
+  colNames_v = ListToVector(colNames)
   tuple_maker = ROOT.analysis.TupleMaker(*col_types)(4)
   print("tuplemaker created")
   df_out = tuple_maker.process(ROOT.RDF.AsRNode(df_in), ROOT.RDF.AsRNode(df_out), colNames_v)
@@ -73,7 +77,7 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
   snapshotOptions.fMode="RECREATE"
   snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + 'LZ4')
   snapshotOptions.fCompressionLevel = 5
-  colToSave_v = Utilities.ListToVector(colToSave_diff)
+  colToSave_v = ListToVector(colToSave_diff)
   print(colToSave_v.size())
   print(colNames_v.size())
   outFile_Valid = f"{outFile}.root"

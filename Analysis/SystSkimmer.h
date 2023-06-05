@@ -52,14 +52,14 @@ private:
 struct StopLoop {};
 
 namespace detail {
-inline void putEntry(std::shared_ptr<Entry>& entry, int index) {}
+inline void putEntry(Entry& entry, int index) {}
 
 template<typename T,typename ...Args>
-void putEntry(std::shared_ptr<Entry>& entry, int var_index,
+void putEntry(Entry& entry, int var_index,
               const T& value, Args&& ...args)
 {
   //std::cout << var_index << "\t " << value <<std::endl;
-  entry->Add(var_index, value);
+  entry.Add(var_index, value);
   //std::cout << "before incrementing " << var_index << std::endl;
   //var_index++;
   //std::cout << "after incrementing " << var_index << std::endl;
@@ -86,14 +86,14 @@ struct TupleMaker {
       try {
         ROOT::RDF::RNode df = df_in;
         df.Foreach([&](const Args& ...args) {
-          std::shared_ptr<Entry> entry;
-          entry->ResizeVarValues(var_names.size());
+          Entry entry;
+          entry.ResizeVarValues(var_names.size());
           //std::cout << "TupleMaker::process: running detail::putEntry->" << std::endl;
           detail::putEntry(entry, 0,args...);
           //std::cout << "TupleMaker::process: push entry->" << std::endl;
-          entry->valid = true;
+          entry.valid = true;
           //std::cout << "push entry is "<< queue.Push(entry) << std::endl;
-          if(!queue.Push(entry)) {
+          if(!queue.Push((std::make_shared<Entry>(entry)))) {
             //std::cout << "TupleMaker::process: queue is full." << std::endl;
             throw StopLoop();
           }

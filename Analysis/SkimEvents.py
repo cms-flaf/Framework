@@ -51,17 +51,16 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
   print("tuplemaker proceassed")
   df_out = df_out.Define("isValid", "_entryCentral->valid")
   print("defined isValid entry")
-  '''
   #df_out.Display({"isValid"}).Print()
-  #df_unique = df_out.Filter("!isValid")
-  #print("defined df_unique")
+  df_unique = df_out.Filter("!isValid")
+  print("defined df_unique")
   df_out_valid = df_out.Filter('isValid')
   print("defined df_valid")
   colToSave_diff= []
   for var_idx,var_name in enumerate(colNames):
     if colNames[var_idx] in df_in.GetColumnNames():
       #df_out_valid= df_out.Filter('isValid').Define(f"diff_{var_name}", f"""std::cout <<"isValid \t entryCentral_idx = " << _entryCentral.GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}) << "\t entryShifted = " << {var_name} << std::endl; return _entryCentral.GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx})-{var_name}""")
-      df_out_valid=df_out_valid.Define(f"diff_{var_name}", f"""return _entryCentral.GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx})-{var_name}""")
+      df_out_valid=df_out_valid.Define(f"diff_{var_name}", f"""return _entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx})-{var_name}""")
       colToSave_diff.append(f"diff_{var_name}")
     colToSave_diff.append(var_name)
 
@@ -85,7 +84,6 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
 
   #ROOT.RDF.RunGraphs(snaps)
   print("finished screenshot")
-  '''
   tuple_maker.join()
 
 

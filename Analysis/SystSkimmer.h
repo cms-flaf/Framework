@@ -61,14 +61,13 @@ struct TupleMaker {
   ROOT::RDF::RNode process(ROOT::RDF::RNode df_in, ROOT::RDF::RNode df_out, const std::vector<std::string>& var_names)
   {
     thread = std::make_unique<std::thread>([df_in, this, var_names]() {
-      std::cout << "TupleMaker::process: foreach started." << std::endl;
+      //std::cout << "TupleMaker::process: foreach started." << std::endl;
       try {
         ROOT::RDF::RNode df = df_in;
         df.Foreach([&](const Args& ...args) {
           auto entry = std::make_shared<Entry>(var_names.size());
           //std::cout << "TupleMaker::process: running detail::putEntry->" << std::endl;
           detail::fillEntry(*entry, args...);
-          //detail::putEntry(entry, 0,args...);
           //std::cout << "TupleMaker::process: push entry->" << std::endl;
           //std::cout << "push entry is "<< queue.Push(entry) << std::endl;
           if(!queue.Push(entry)) {
@@ -81,9 +80,9 @@ struct TupleMaker {
         //std::cout << "stop loop catched " << std::endl;
       }
       queue.SetAllDone();
-      std::cout << "TupleMaker::process: foreach done." << std::endl;
+      //std::cout << "TupleMaker::process: foreach done." << std::endl;
     });
-    std::cout << "starting defining entryCentral" << std::endl;
+    //std::cout << "starting defining entryCentral" << std::endl;
 
     df_out = df_out.Define("_entryCentral", [=](ULong64_t entryIndexShifted) {
 

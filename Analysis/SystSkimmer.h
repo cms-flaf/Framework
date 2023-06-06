@@ -23,7 +23,7 @@ struct Entry {
   explicit Entry(size_t size) : var_values(size) {}
 
   template <typename T>
-  void Add(int index, T& value)
+  void Add(int index, const T& value)
   {
       var_values.at(index)= value;
   }
@@ -42,65 +42,92 @@ namespace detail {
 template<typename ...Args>
 inline void fillEntry(Entry& entry, Args&& ...args)
 {
-    int index = 0;
-    (void) std::initializer_list<int>{ (entry.Add(index++, std::forward<Args>(args)), 0)... };
+  int index = 0;
+  (void) std::initializer_list<int>{ (entry.Add(index++, std::forward<Args>(args)), 0)... };
 }
 
 } // namespace detail
 
 template<typename ...Args>
 struct TupleMaker {
-  TupleMaker(size_t queue_size)
-    : queue(queue_size)
+  TupleMaker(const std::string& tree_name, const std::string& in_file, size_t queue_size)
+    : df_in(tree_name, in_file), queue(queue_size)
   {
   }
 
   TupleMaker(const TupleMaker&) = delete;
   TupleMaker& operator= (const TupleMaker&) = delete;
 
-  ROOT::RDF::RNode process(ROOT::RDF::RNode df_in, ROOT::RDF::RNode df_out, const std::vector<std::string>& var_names)
+  void processIn(const std::vector<std::string>& var_names)
   {
-    df_in = df_in.Define("_entry", [=](const Args& ...args) {
+    auto df_node = df_in.Define("_entry", [=](const Args& ...args) {
       auto entry = std::make_shared<Entry>(var_names.size());
-      detail::fillEntry(*entry, args...);
+      int index = 0;
+      (void) std::initializer_list<int>{ (entry->Add(index++, args), 0)... };
+
+      //detail::fillEntry(*entry, args...);
       return entry;
     }, var_names);
     thread = std::make_unique<std::thread>([=]() {
-      //std::cout << "TupleMaker::process: foreach started." << std::endl;
+      std::cout << "TupleMaker::processIn: thread started." << std::endl;
+      {
+        std::unique_lock<std::mutex> lock(mutex);
+        cond_var.wait(lock);
+      }
+      std::cout << "TupleMaker::processIn: starting foreach." << std::endl;
       try {
-        ROOT::RDF::RNode df = df_in;
+        ROOT::RDF::RNode df = df_node;
         df.Foreach([&](const std::shared_ptr<Entry>& entry) {
+          // std::cout << "Pushing" <<std::endl;
           if(!queue.Push(entry)) {
             throw StopLoop();
           }
+          // std::cout << "Pushed" <<std::endl;
         }, {"_entry"});
       } catch(StopLoop) {
+      } catch(std::exception& e) {
+        std::cout << "TupleMaker::processIn: exception: " << e.what() << std::endl;
+        throw;
       }
       queue.SetAllDone();
     });
-    //std::cout << "starting defining entryCentral" << std::endl;
+  }
 
+  ROOT::RDF::RNode processOut(ROOT::RDF::RNode df_out)
+  {
+    auto notify = [&]() {
+      std::cout << "TupleMaker::processOut: notifying" << std::endl;
+      std::unique_lock<std::mutex> lock(mutex);
+      cond_var.notify_all();
+      return true;
+    };
     df_out = df_out.Define("_entryCentral", [=](ULong64_t entryIndexShifted) {
-
-
       std::shared_ptr<Entry> entryCentral;
-      //entryCentral->ResizeVarValues(var_names.size());
-
       try {
+        static bool notified = notify();
         static std::shared_ptr<Entry> entry;
-          while(!entry || entry->GetValue<unsigned long long>(0)<entryIndexShifted){
-          entry.reset();
+        static std::set<unsigned long long> processedEntries;
+        if(processedEntries.count(entryIndexShifted))
+          throw std::runtime_error("Entry already processed");
+        // std::cout << "Poping" <<std::endl;
+        while(!entry || entry->GetValue<unsigned long long>(0)<entryIndexShifted){
+          if(entry){
+            processedEntries.insert(entry->GetValue<unsigned long long>(0));
+            entry.reset();
+          }
           if (!queue.Pop(entry)) {
             break;
           }
         }
+        // std::cout << "Poped" <<std::endl;
         //std::cout << entryIndexShifted << "\t"<< entry->GetValue<unsigned long long>(0)<<std::endl;
         if(entry && entry->GetValue<unsigned long long>(0)==entryIndexShifted){
           entryCentral=entry;
+          // std::cout << "Set" <<std::endl;
         }
         //std::cout << "sono uguali "<< entryIndexShifted << "\t"<< entryCentral->GetValue<unsigned long long>(0)<<std::endl;
       } catch (const std::exception& e) {
-        std::cout << "Error: " << e.what() << std::endl;
+        std::cout << "TupleMaker::processOut: exception: " << e.what() << std::endl;
         throw;
       }
       return entryCentral;
@@ -115,8 +142,11 @@ struct TupleMaker {
       thread->join();
   }
 
+  ROOT::RDataFrame df_in;
   EntryQueue<std::shared_ptr<Entry>> queue;
   std::unique_ptr<std::thread> thread;
+  std::mutex mutex;
+  std::condition_variable cond_var;
 };
 
 } // namespace analysis

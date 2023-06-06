@@ -22,27 +22,16 @@ struct Entry {
 
   explicit Entry(size_t size) : var_values(size) {}
 
-
-  void Add(int index, MultiType value)
+  template <typename T>
+  void Add(int index, T& value)
   {
-    using typ = std::decay_t<decltype(value)>;
-    if constexpr( std::is_same_v<typ,RVecF>  ||  std::is_same_v<typ,RVecI>  ||  std::is_same_v<typ,int>  ||  std::is_same_v<typ,float>
-    ||  std::is_same_v<typ,double> ||  std::is_same_v<typ,bool> ||  std::is_same_v<typ,unsigned long long> ||  std::is_same_v<typ,long>
-    ||  std::is_same_v<typ,unsigned int> ||  std::is_same_v<typ,unsigned long> ){
-        var_values.at(index)= value;
-    }
+      var_values.at(index)= value;
   }
 
 template<typename T>
   T GetValue(int idx) const
   {
-    using typ = std::decay_t<decltype(var_values.at(idx))>;
-    if  constexpr( std::is_same_v<typ,RVecF>  ||  std::is_same_v<typ,RVecI>  ||  std::is_same_v<typ,int>  ||  std::is_same_v<typ,float>
-    ||  std::is_same_v<typ,double> ||  std::is_same_v<typ,bool> ||  std::is_same_v<typ,unsigned long long> ||  std::is_same_v<typ,long>
-    ||  std::is_same_v<typ,unsigned int> ||  std::is_same_v<typ,unsigned long> ){
-      return std::get<T>(var_values.at(idx));
-    }
-  throw ;
+    return std::get<T>(var_values.at(idx));
   }
 };
 

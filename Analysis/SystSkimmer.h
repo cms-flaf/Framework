@@ -40,7 +40,7 @@ struct StopLoop {};
 namespace detail {
 
 template<typename ...Args>
-void fillEntry(Entry& entry, Args&& ...args)
+inline void fillEntry(Entry& entry, Args&& ...args)
 {
     int index = 0;
     (void) std::initializer_list<int>{ (entry.Add(index++, std::forward<Args>(args)), 0)... };
@@ -60,27 +60,23 @@ struct TupleMaker {
 
   ROOT::RDF::RNode process(ROOT::RDF::RNode df_in, ROOT::RDF::RNode df_out, const std::vector<std::string>& var_names)
   {
-    thread = std::make_unique<std::thread>([df_in, this, var_names]() {
+    df_in = df_in.Define("_entry", [=](const Args& ...args) {
+      auto entry = std::make_shared<Entry>(var_names.size());
+      detail::fillEntry(*entry, args...);
+      return entry;
+    }, var_names);
+    thread = std::make_unique<std::thread>([=]() {
       //std::cout << "TupleMaker::process: foreach started." << std::endl;
       try {
         ROOT::RDF::RNode df = df_in;
-        df.Foreach([&](const Args& ...args) {
-          auto entry = std::make_shared<Entry>(var_names.size());
-          //std::cout << "TupleMaker::process: running detail::putEntry->" << std::endl;
-          detail::fillEntry(*entry, args...);
-          //std::cout << "TupleMaker::process: push entry->" << std::endl;
-          //std::cout << "push entry is "<< queue.Push(entry) << std::endl;
+        df.Foreach([&](const std::shared_ptr<Entry>& entry) {
           if(!queue.Push(entry)) {
-            //std::cout << "TupleMaker::process: queue is full." << std::endl;
             throw StopLoop();
           }
-          //std::cout << "finished to push entry " << std::endl;
-        }, var_names);
+        }, {"_entry"});
       } catch(StopLoop) {
-        //std::cout << "stop loop catched " << std::endl;
       }
       queue.SetAllDone();
-      //std::cout << "TupleMaker::process: foreach done." << std::endl;
     });
     //std::cout << "starting defining entryCentral" << std::endl;
 

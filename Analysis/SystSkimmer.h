@@ -29,7 +29,7 @@ struct Entry {
   }
 
 template<typename T>
-  T GetValue(int idx) const
+  const T& GetValue(int idx) const
   {
     return std::get<T>(var_values.at(idx));
   }

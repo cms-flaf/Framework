@@ -11,56 +11,50 @@
 
 #include "EntryQueue.h"
 
+using RVecF = ROOT::VecOps::RVec<float>;
+using RVecI = ROOT::VecOps::RVec<int>;
+
 namespace analysis {
-typedef std::variant<int,float,double,bool,unsigned long long, long, unsigned long, unsigned int> MultiType;
+typedef std::variant<int,float,double,bool,unsigned long long, long, unsigned long, unsigned int, RVecI, RVecF> MultiType;
 
 struct Entry {
   std::vector<MultiType> var_values;
 
   explicit Entry(size_t size) : var_values(size) {}
 
-  template <typename T>
-  void Add(int index, T value)
+
+  void Add(int index, MultiType value)
   {
-    //std::cout << index << "\t "<< std::to_string(value) <<std::endl;
-    //CheckIndex(index);
-    var_values.at(index)= value;
+    using typ = std::decay_t<decltype(value)>;
+    if constexpr( std::is_same_v<typ,RVecF>  ||  std::is_same_v<typ,RVecI>  ||  std::is_same_v<typ,int>  ||  std::is_same_v<typ,float>
+    ||  std::is_same_v<typ,double> ||  std::is_same_v<typ,bool> ||  std::is_same_v<typ,unsigned long long> ||  std::is_same_v<typ,long>
+    ||  std::is_same_v<typ,unsigned int> ||  std::is_same_v<typ,unsigned long> ){
+        var_values.at(index)= value;
+    }
   }
+
 template<typename T>
   T GetValue(int idx) const
   {
-    return std::get<T>(var_values.at(idx));
+    using typ = std::decay_t<decltype(var_values.at(idx))>;
+    if  constexpr( std::is_same_v<typ,RVecF>  ||  std::is_same_v<typ,RVecI>  ||  std::is_same_v<typ,int>  ||  std::is_same_v<typ,float>
+    ||  std::is_same_v<typ,double> ||  std::is_same_v<typ,bool> ||  std::is_same_v<typ,unsigned long long> ||  std::is_same_v<typ,long>
+    ||  std::is_same_v<typ,unsigned int> ||  std::is_same_v<typ,unsigned long> ){
+      return std::get<T>(var_values.at(idx));
+    }
+  throw ;
   }
 };
 
 struct StopLoop {};
 
 namespace detail {
-  /*
-inline void putEntry(std::shared_ptr<Entry>& entry, int index) {}
-
-template<typename T,typename ...Args>
-void putEntry(std::shared_ptr<Entry>& entry, int var_index,
-              const T& value, Args&& ...args)
-{
-  //std::cout << var_index << "\t " << value <<std::endl;
-  entry->Add(var_index, value);
-  //std::cout << "before incrementing " << var_index << std::endl;
-  //std::cout << "after incrementing " << var_index << std::endl;
-  putEntry(entry, var_index+1,std::forward<Args>(args)...);
-}
-*/
-template<typename T>
-void addEntry(Entry& entry, int index, T& value)
-{
-  entry.Add(index, value);
-}
 
 template<typename ...Args>
 void fillEntry(Entry& entry, Args&& ...args)
 {
     int index = 0;
-    (void) std::initializer_list<int>{ (addEntry(entry, index++, std::forward<Args>(args)), 0)... };
+    (void) std::initializer_list<int>{ (entry.Add(index++, std::forward<Args>(args)), 0)... };
 }
 
 } // namespace detail

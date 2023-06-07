@@ -66,6 +66,12 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.DefineAndAppend(f"met_phi_nano", f"static_cast<float>(MET_p4_nano.phi())")
     dfw.DefineAndAppend("met_pt", "static_cast<float>(MET_p4.pt())")
     dfw.DefineAndAppend("met_phi", "static_cast<float>(MET_p4.phi())")
+    dfw.DefineAndAppend(f"nonOverlappingJets", "RemoveOverlaps(Jet_p4, Jet_bIncl,{{httCand.leg_p4[0], httCand.leg_p4[1],HbbCandidate.leg_p4[0],HbbCandidate.leg_p4[1]},}, 2, 0.5)")
+    dfw.DefineAndAppend(f"nonOverlappingJets_idx", f"Jet_idx[nonOverlappingJets]")
+    dfw.DefineAndAppend(f"nonOverlappingJets_pt", f"Jet_pt[nonOverlappingJets]")
+    dfw.DefineAndAppend(f"nonOverlappingJets_eta", f"Jet_eta[nonOverlappingJets]")
+    dfw.DefineAndAppend(f"nonOverlappingJets_phi", f"Jet_phi[nonOverlappingJets]")
+    dfw.DefineAndAppend(f"nonOverlappingJets_mass", f"Jet_mass[nonOverlappingJets]")
     for leg_idx in [0,1]:
         dfw.DefineAndAppend( f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
         dfw.DefineAndAppend( f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
@@ -122,6 +128,10 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         dfw.DefineAndAppend(f"b{leg_idx+1}_eta", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Eta())")
         dfw.DefineAndAppend(f"b{leg_idx+1}_phi", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Phi())")
         dfw.DefineAndAppend(f"b{leg_idx+1}_mass", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].M())")
+        #dfw.DefineAndAppend(f"nonOverlappingJets_pt", f"Jet_p4[nonOverlappingJets].Pt()")
+        #dfw.DefineAndAppend(f"nonOverlappingJets_eta", f"Jet_p4[nonOverlappingJets].Eta()")
+        #dfw.DefineAndAppend(f"nonOverlappingJets_phi", f"Jet_p4[nonOverlappingJets].Phi()")
+        #dfw.DefineAndAppend(f"nonOverlappingJets_mass", f"Jet_p4[nonOverlappingJets].M()")
         if not isData:
             dfw.Define(f"b{leg_idx+1}_genJet_idx", f" Jet_genJet_idx.at(HbbCandidate.leg_index[{leg_idx}])")
             for var in [ 'pt', 'eta', 'phi', 'mass' ]:

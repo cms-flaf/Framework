@@ -72,9 +72,13 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
 
 
   colToSave_noDiff= ["period","run", "sample_name", "sample_type", "channelId", "entryIndex", "event", "isData", "luminosityBlock"]
-  df_out_valid_noDiff = df_out_valid
-  for var_idx,var_name in enumerate(colToSave_diff):
-    df_out_valid_noDiff = df_out_valid_noDiff.Filter(f"{var_name}==0")
+  condition_noDiff = "==0 && ".join(colToSave_diff)
+  condition_noDiff+= "==0"
+  #print(condition_noDiff)
+  df_out_valid_noDiff = df_out_valid.Filter(condition_noDiff)
+  condition_Valid = "!=0 || ".join(colToSave_diff)
+  condition_Valid+="!=0"
+  df_out_valid = df_out_valid.Filter(condition_Valid)
   #print(df_out_valid_noDiff.Count().GetValue())
 
   snaps = []

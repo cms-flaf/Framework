@@ -12,10 +12,12 @@
 #include "EntryQueue.h"
 
 using RVecF = ROOT::VecOps::RVec<float>;
+using RVecB = ROOT::VecOps::RVec<bool>;
 using RVecI = ROOT::VecOps::RVec<int>;
+  using RVecUL = ROOT::VecOps::RVec<unsigned long>;
 
 namespace analysis {
-typedef std::variant<int,float,double,bool,unsigned long long, long, unsigned long, unsigned int, RVecI, RVecF> MultiType;
+typedef std::variant<int,float,double,bool,unsigned long long, long, unsigned long, unsigned int, RVecI, RVecF, RVecB, RVecUL> MultiType;
 
 struct Entry {
   std::vector<MultiType> var_values;
@@ -92,6 +94,9 @@ struct TupleMaker {
       queue.SetAllDone();
     });
   }
+
+
+
 
   ROOT::RDF::RNode processOut(ROOT::RDF::RNode df_out)
   {

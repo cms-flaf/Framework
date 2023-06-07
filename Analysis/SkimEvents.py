@@ -34,8 +34,7 @@ col_type_dict = {
   }
 
 def make_df(inputFileCentral,inputFileShifted,outFile):
-  if os.path.exists(outFile):
-    os.remove(outFile)
+
   #os.mkfile(outFile, exist_ok=True)
   # df_in = ROOT.RDataFrame('Events', inputFileCentral)
   df_out = ROOT.RDataFrame('Events', inputFileShifted)
@@ -48,24 +47,21 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
   colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
   #print(colNames)
   col_types = [str(df_out.GetColumnType(c)) for c in colNames]
-  #print(list(set(col_types)))
-  #nEvents = 2
-  #df_in = df_in.Range(nEvents)
   #print(','.join(f'"{c}"' for c in colNames))
+  #print(list(set(col_types)))
+  #nEvents = 10
+  #df_in = df_in.Range(nEvents)
   #df_out = df_out.Range(nEvents)
-  #print(df_in.Describe())
-  #print(df_out.Count().GetValue())
-  colNames_v = ListToVector(colNames)
   tuple_maker = ROOT.analysis.TupleMaker(*col_types)('Events', inputFileCentral, 4)
   print("tuplemaker created")
   df_out = tuple_maker.processOut(ROOT.RDF.AsRNode(df_out))
   print("tuplemaker processed")
   df_out = df_out.Define("isValid", "_entryCentral.use_count() > 0")
   print("defined isValid entry")
-  #df_out.Display({"isValid"}).Print()
   df_unique = df_out.Filter("!isValid")
   print("defined df_unique")
   df_out_valid = df_out.Filter('isValid')
+
   print("defined df_valid")
   colToSave_diff= []
   for var_idx,var_name in enumerate(colNames):
@@ -73,9 +69,13 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
       #df_out_valid= df_out.Filter('isValid').Define(f"diff_{var_name}", f"""std::cout <<"isValid \t entryCentral_idx = " << _entryCentral.GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}) << "\t entryShifted = " << {var_name} << std::endl; return _entryCentral.GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx})-{var_name}""")
     df_out_valid=df_out_valid.Define(f"diff_{var_name}", f"""return _entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx})-{var_name}""")
     colToSave_diff.append(f"diff_{var_name}")
-    #colToSave_diff.append(var_name)
 
 
+  colToSave_noDiff= ["period","run", "sample_name", "sample_type", "channelId", "entryIndex", "event", "isData", "luminosityBlock"]
+  df_out_valid_noDiff = df_out_valid
+  for var_idx,var_name in enumerate(colToSave_diff):
+    df_out_valid_noDiff = df_out_valid_noDiff.Filter(f"{var_name}==0")
+  #print(df_out_valid_noDiff.Count().GetValue())
 
   snaps = []
   print("start making screenshot")
@@ -85,20 +85,28 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
   snapshotOptions.fMode="RECREATE"
   snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + 'LZ4')
   snapshotOptions.fCompressionLevel = 5
-  colToSave_v = ListToVector(colToSave_diff)
-  print(colToSave_v.size())
+  colToSave_noDiff_v = ListToVector(colToSave_noDiff)
+  colToSave_diff_v = ListToVector(colToSave_diff)
+  colNames_v = ListToVector(colNames)
+  print(colToSave_diff_v.size())
   print(colNames_v.size())
   outFile_Valid = f"{outFile}.root"
-  #df_out_valid.Snapshot(f"Events", outFile_Valid, colToSave_v, snapshotOptions)
-  snaps.append(df_out_valid.Snapshot(f"Events", outFile_Valid, colToSave_v, snapshotOptions))
   outFile_nonValid = f"{outFile}_nonValid.root"
-  snaps.append(df_unique.Snapshot(f"Events_nonValid", outFile_Valid, colNames_v, snapshotOptions))
-
+  outFile_Valid_noDiff = f"{outFile}_noDiff.root"
+  if os.path.exists(outFile_Valid):
+    os.remove(outFile_Valid)
+  if os.path.exists(outFile_nonValid):
+    os.remove(outFile_nonValid)
+  if os.path.exists(outFile_Valid_noDiff):
+    os.remove(outFile_Valid_noDiff)
+  #df_out_valid.Snapshot(f"Events", outFile_Valid, colToSave_diff_v, snapshotOptions)
+  snaps.append(df_out_valid_noDiff.Snapshot(f"Events", outFile_Valid_noDiff, colToSave_noDiff_v, snapshotOptions))
+  snaps.append(df_out_valid.Snapshot(f"Events", outFile_Valid, colToSave_diff_v, snapshotOptions))
+  snaps.append(df_unique.Snapshot(f"Events", outFile_nonValid, colNames_v, snapshotOptions))
   tuple_maker.processIn(colNames_v)
   ROOT.RDF.RunGraphs(snaps)
   print("finished screenshot")
   tuple_maker.join()
-
 
 
 

@@ -8,74 +8,85 @@ ROOT.EnableThreadSafety()
 ROOT.gInterpreter.Declare(
   """
 
-  #include <iterator>
-  #include <vector>
-  #include <numeric>
-  using RVecF = ROOT::VecOps::RVec<float>;
-  using RVecI = ROOT::VecOps::RVec<int>;
-  using RVecUL = ROOT::VecOps::RVec<unsigned long>;
-  using RVecB = ROOT::VecOps::RVec<bool>;
+namespace detail {
+  template<typename T>
+  struct DeltaImpl {
+    static T Delta(const T& shifted, const T& central) {
+      return shifted - central;
+    }
+  };
 
-    ROOT::RDF::RNode processExample(ROOT::RDF::RNode df_in, const std::vector<std::string>& var_names)
+  template<typename T>
+  struct DeltaImpl<ROOT::VecOps::RVec<T>> {
+    static ROOT::VecOps::RVec<T> Delta(const ROOT::VecOps::RVec<T>& shifted, const ROOT::VecOps::RVec<T>& central)
     {
-      std::cout << "TupleMaker::process: foreach started." << std::endl;
-      ROOT::RDF::RNode df = df_in;
-      df.Foreach([&](unsigned long long i){ std::cout << i << std::endl;}, var_names);
-      return df_in;
+      ROOT::VecOps::RVec<T> delta = shifted;
+      size_t n_max = std::min(shifted.size(), central.size());
+      for(size_t n = 0; n < n_max; ++n)
+        delta[n] -= central[n];
+      return delta;
     }
+  };
 
-    template<typename T>
-    T GetDifference(const T& var_shifted, const T& var_central){
-      using T_var_shifted = std::decay_t<decltype(var_shifted)>;
-      if constexpr(std::is_same_v<T_var_shifted,RVecUL> || std::is_same_v<T_var_shifted,RVecI>
-      || std::is_same_v<T_var_shifted,RVecF> || std::is_same_v<T_var_shifted,RVecB>){
-        T diff ;
-        T var_shifted_v = var_shifted;
-        T var_central_v = var_central;
-        std::set_difference(var_shifted_v.begin(), var_shifted_v.end(), var_central_v.begin(), var_central_v.end(), std::inserter(diff, diff.begin()));
-        return diff;
-      }
-      else if constexpr(std::is_same_v<T_var_shifted,int> || std::is_same_v<T_var_shifted,float>
-      || std::is_same_v<T_var_shifted,double> || std::is_same_v<T_var_shifted,bool>
-      || std::is_same_v<T_var_shifted,unsigned long long> || std::is_same_v<T_var_shifted,long>
-      || std::is_same_v<T_var_shifted,unsigned long> || std::is_same_v<T_var_shifted, unsigned int>){
-        return var_shifted-var_central;
-      }
-      return var_shifted-var_central;
+  template<typename T>
+  struct IsSameImpl {
+    static bool IsSame(T shifted, T central) {
+      return shifted == central;
     }
+  };
 
-    template<typename T>
-    bool IsEqualToZero(const T& difference){
-      using T_difference = std::decay_t<decltype(difference)>;
-      if constexpr(std::is_same_v<T_difference,RVecUL> || std::is_same_v<T_difference,RVecI>
-      || std::is_same_v<T_difference,RVecF> || std::is_same_v<T_difference,RVecB>){
-        return accumulate(difference.begin(),difference.end(),0)==0;
-      }
-      else if constexpr(std::is_same_v<T_difference,int> || std::is_same_v<T_difference,float>
-      || std::is_same_v<T_difference,double> || std::is_same_v<T_difference,bool>
-      || std::is_same_v<T_difference,unsigned long long> || std::is_same_v<T_difference,long>
-      || std::is_same_v<T_difference,unsigned long> || std::is_same_v<T_difference, unsigned int>){
-        return difference==0;
-      }
-      return difference==0;
+  template<typename T>
+  struct IsSameImpl<ROOT::VecOps::RVec<T>> {
+    static bool IsSame(const ROOT::VecOps::RVec<T>& shifted, const ROOT::VecOps::RVec<T>& central)
+    {
+      const size_t n_shifted = shifted.size();
+      if(n_shifted != central.size())
+        return false;
+      for(size_t n = 0; n < n_shifted; ++n)
+        if(!IsSameImpl<T>::IsSame(shifted[n], central[n]))
+          return false;
+      return true;
     }
+  };
+}
 
-    template<typename T>
-    bool IsDifferentFromZero(const T& difference){
-      using T_difference = std::decay_t<decltype(difference)>;
-      if constexpr(std::is_same_v<T_difference,RVecUL> || std::is_same_v<T_difference,RVecI>
-      || std::is_same_v<T_difference,RVecF> || std::is_same_v<T_difference,RVecB>){
-        return accumulate(difference.begin(),difference.end(),0)!=0;
-      }
-      else if constexpr(std::is_same_v<T_difference,int> || std::is_same_v<T_difference,float>
-      || std::is_same_v<T_difference,double> || std::is_same_v<T_difference,bool>
-      || std::is_same_v<T_difference,unsigned long long> || std::is_same_v<T_difference,long>
-      || std::is_same_v<T_difference,unsigned long> || std::is_same_v<T_difference, unsigned int>){
-        return difference!=0;
-      }
-      return difference!=0;
-    }
+template<typename T>
+bool IsSame(const T& shifted, const T& central)
+{
+  return detail::IsSameImpl<T>::IsSame(shifted, central);
+}
+template<typename T>
+T Delta(const T& shifted, const T& central)
+{
+  return detail::DeltaImpl<T>::Delta(shifted, central);
+}
+
+
+
+  template<typename T>
+  T FromDelta(T delta, T central)
+  {
+    return central + delta;
+  }
+  /*
+  template<>
+  bool FromDelta<bool>(bool delta, bool central)
+  {
+    return delta ? !central : central;
+  }
+
+  template<typename T>
+  ROOT::VecOps::RVec<T> FromDelta<ROOT::VecOps::RVec<T>>(const ROOT::VecOps::RVec<T>& delta, const ROOT::VecOps::RVec<T>& central)
+  {
+    ROOT::VecOps::RVec<T> shifted = delta;
+    size_t n_max = std::min(shifted.size(), delta.size());
+    for(size_t n = 0; n < n_max; ++n)
+      shifted[n] += central[n];
+    return shifted;
+  }*/
   """)
+
+
 def ListToVector(list, type="string"):
 	vec = ROOT.std.vector(type)()
 	for item in list:
@@ -120,21 +131,23 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
 
   print("defined df_valid")
   colToSave_diff= []
+  condition_noDiff_list = []
+  condition_Valid_list = []
   for var_idx,var_name in enumerate(colNames):
     # if colNames[var_idx] in df_in.GetColumnNames():
       #df_out_valid= df_out.Filter('isValid').Define(f"diff_{var_name}", f"""std::cout <<"isValid \t entryCentral_idx = " << _entryCentral.GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}) << "\t entryShifted = " << {var_name} << std::endl; return _entryCentral.GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx})-{var_name}""")
-    df_out_valid=df_out_valid.Define(f"diff_{var_name}", f"""GetDifference(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})""")
+    df_out_valid=df_out_valid.Define(f"diff_{var_name}", f"""Delta(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})""")
     colToSave_diff.append(f"diff_{var_name}")
+    condition_noDiff_list.append(f"IsSame(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})")
+    condition_Valid_list.append(f"! IsSame(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})")
   df_out_valid_noDiff = df_out_valid
   colToSave_noDiff= ["period","run", "sample_name", "sample_type", "channelId", "entryIndex", "event", "isData", "luminosityBlock"]
-  condition_noDiff_list = [f"IsEqualToZero({c}) " for c in colToSave_diff]
   condition_noDiff = ' && '.join(condition_noDiff_list)
-  print(condition_noDiff)
+  # print(condition_noDiff)
   df_out_valid_noDiff = df_out_valid_noDiff.Define("condition_noDiff", condition_noDiff).Filter("condition_noDiff")
-  #condition_Valid_list = [f"IsDifferentFromZero({c}) " for c in colToSave_diff]
-  #condition_Valid = ' || '.join(condition_Valid_list)
+  condition_Valid = ' || '.join(condition_Valid_list)
   #print(condition_Valid)
-  #df_out_valid = df_out_valid.Define("condition_Valid", condition_Valid).Filter("condition_Valid")
+  df_out_valid = df_out_valid.Define("condition_Valid", condition_Valid).Filter("condition_Valid")
 
   snaps = []
   print("start making screenshot")
@@ -144,11 +157,9 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
   snapshotOptions.fMode="RECREATE"
   snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + 'LZ4')
   snapshotOptions.fCompressionLevel = 5
-  #colToSave_noDiff_v = ListToVector(colToSave_noDiff)
+  colToSave_noDiff_v = ListToVector(colToSave_noDiff)
   colToSave_diff_v = ListToVector(colToSave_diff)
   colNames_v = ListToVector(colNames)
-  print(colToSave_diff_v.size())
-  print(colNames_v.size())
   outFile_Valid = f"{outFile}.root"
   outFile_nonValid = f"{outFile}_nonValid.root"
   outFile_Valid_noDiff = f"{outFile}_noDiff.root"
@@ -159,7 +170,7 @@ def make_df(inputFileCentral,inputFileShifted,outFile):
   if os.path.exists(outFile_Valid_noDiff):
     os.remove(outFile_Valid_noDiff)
   #df_out_valid.Snapshot(f"Events", outFile_Valid, colToSave_diff_v, snapshotOptions)
-  #snaps.append(df_out_valid_noDiff.Snapshot(f"Events", outFile_Valid_noDiff, colToSave_noDiff_v, snapshotOptions))
+  snaps.append(df_out_valid_noDiff.Snapshot(f"Events", outFile_Valid_noDiff, colToSave_noDiff_v, snapshotOptions))
   snaps.append(df_out_valid.Snapshot(f"Events", outFile_Valid, colToSave_diff_v, snapshotOptions))
   snaps.append(df_unique.Snapshot(f"Events", outFile_nonValid, colNames_v, snapshotOptions))
   tuple_maker.processIn(colNames_v)

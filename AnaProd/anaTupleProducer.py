@@ -33,7 +33,7 @@ JetObservablesMC = ["hadronFlavour","partonFlavour"]
 
 defaultColToSave = ["entryIndex","luminosityBlock", "run", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
-                "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs" ]
+                "PV_npvs" ]
 
 
 
@@ -66,6 +66,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.DefineAndAppend(f"met_phi_nano", f"static_cast<float>(MET_p4_nano.phi())")
     dfw.DefineAndAppend("met_pt", "static_cast<float>(MET_p4.pt())")
     dfw.DefineAndAppend("met_phi", "static_cast<float>(MET_p4.phi())")
+    for var in ["covXX", "covXY", "covYY"]:
+        dfw.DefineAndAppend(f"met_{var}", f"static_cast<float>(MET_{var})")
 
     for leg_idx in [0,1]:
         dfw.DefineAndAppend( f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")

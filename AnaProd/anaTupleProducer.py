@@ -31,7 +31,7 @@ JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"]
 JetObservablesMC = ["hadronFlavour","partonFlavour"]
 
-defaultColToSave = ["entryIndex","event","luminosityBlock","run", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
+defaultColToSave = ["entryIndex","luminosityBlock", "run", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
                 "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs" ]
 
@@ -66,12 +66,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.DefineAndAppend(f"met_phi_nano", f"static_cast<float>(MET_p4_nano.phi())")
     dfw.DefineAndAppend("met_pt", "static_cast<float>(MET_p4.pt())")
     dfw.DefineAndAppend("met_phi", "static_cast<float>(MET_p4.phi())")
-    dfw.DefineAndAppend(f"nonOverlappingJets", "RemoveOverlaps(Jet_p4, Jet_bIncl,{{httCand.leg_p4[0], httCand.leg_p4[1],HbbCandidate.leg_p4[0],HbbCandidate.leg_p4[1]},}, 2, 0.5)")
-    dfw.DefineAndAppend(f"nonOverlappingJets_idx", f"Jet_idx[nonOverlappingJets]")
-    dfw.DefineAndAppend(f"nonOverlappingJets_pt", f"Jet_pt[nonOverlappingJets]")
-    dfw.DefineAndAppend(f"nonOverlappingJets_eta", f"Jet_eta[nonOverlappingJets]")
-    dfw.DefineAndAppend(f"nonOverlappingJets_phi", f"Jet_phi[nonOverlappingJets]")
-    dfw.DefineAndAppend(f"nonOverlappingJets_mass", f"Jet_mass[nonOverlappingJets]")
+
     for leg_idx in [0,1]:
         dfw.DefineAndAppend( f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
         dfw.DefineAndAppend( f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
@@ -103,8 +98,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
                                                         -1.f;""")
             dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_vis_mass", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().M()) :
                                                     -1.f;""")
-            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_nChHad", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).nChargedHadrons() : 0;""")
-            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_nNeutHad", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).nNeutralHadrons() : 0;""")
+            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_nChHad", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<int>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).nChargedHadrons()) : 0;""")
+            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_nNeutHad", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<int>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).nNeutralHadrons()) : 0;""")
             dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_charge", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).charge() : -10;""")
             dfw.DefineAndAppend( f"tau{leg_idx+1}_seedingJet_partonFlavour",
                                         f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_partonFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1;")
@@ -128,10 +123,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         dfw.DefineAndAppend(f"b{leg_idx+1}_eta", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Eta())")
         dfw.DefineAndAppend(f"b{leg_idx+1}_phi", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Phi())")
         dfw.DefineAndAppend(f"b{leg_idx+1}_mass", f"static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].M())")
-        #dfw.DefineAndAppend(f"nonOverlappingJets_pt", f"Jet_p4[nonOverlappingJets].Pt()")
-        #dfw.DefineAndAppend(f"nonOverlappingJets_eta", f"Jet_p4[nonOverlappingJets].Eta()")
-        #dfw.DefineAndAppend(f"nonOverlappingJets_phi", f"Jet_p4[nonOverlappingJets].Phi()")
-        #dfw.DefineAndAppend(f"nonOverlappingJets_mass", f"Jet_p4[nonOverlappingJets].M()")
         if not isData:
             dfw.Define(f"b{leg_idx+1}_genJet_idx", f" Jet_genJet_idx.at(HbbCandidate.leg_index[{leg_idx}])")
             for var in [ 'pt', 'eta', 'phi', 'mass' ]:
@@ -174,7 +165,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     df = df.Define("sample_name", f"{zlib.crc32(sample_name.encode())}")
     df = df.Define("period", f"static_cast<int>(Period::{period})")
     df = df.Define("X_mass", f"static_cast<int>({mass})")
-    df = df.Define("entryIndex", "rdfentry_")
+    df = df.Define("entryIndex", "static_cast<int>(rdfentry_)")
     is_data = 'true' if isData else 'false'
     df = df.Define("isData", is_data)
 
@@ -241,7 +232,7 @@ if __name__ == "__main__":
     parser.add_argument('--outDir', required=True, type=str)
     parser.add_argument('--sample', required=True, type=str)
     parser.add_argument('--anaCache', required=True, type=str)
-    parser.add_argument('--compressionLevel', type=int, default=5)
+    parser.add_argument('--compressionLevel', type=int, default=4)
     parser.add_argument('--compressionAlgo', type=str, default="LZ4")
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')

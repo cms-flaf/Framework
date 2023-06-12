@@ -12,12 +12,11 @@
 #include "EntryQueue.h"
 
 using RVecF = ROOT::VecOps::RVec<float>;
-using RVecB = ROOT::VecOps::RVec<bool>;
 using RVecI = ROOT::VecOps::RVec<int>;
-  using RVecUL = ROOT::VecOps::RVec<unsigned long>;
+
 
 namespace analysis {
-typedef std::variant<int,float,double,bool,unsigned long long, long, unsigned long, unsigned int, RVecI, RVecF, RVecB, RVecUL> MultiType;
+typedef std::variant<int,float,bool, unsigned long long,long,unsigned int, RVecI, RVecF> MultiType;
 
 struct Entry {
   std::vector<MultiType> var_values;
@@ -39,17 +38,6 @@ template<typename T>
 
 struct StopLoop {};
 
-namespace detail {
-
-template<typename ...Args>
-inline void fillEntry(Entry& entry, Args&& ...args)
-{
-  int index = 0;
-  (void) std::initializer_list<int>{ (entry.Add(index++, std::forward<Args>(args)), 0)... };
-}
-
-} // namespace detail
-
 template<typename ...Args>
 struct TupleMaker {
   TupleMaker(const std::string& tree_name, const std::string& in_file, size_t queue_size)
@@ -66,8 +54,6 @@ struct TupleMaker {
       auto entry = std::make_shared<Entry>(var_names.size());
       int index = 0;
       (void) std::initializer_list<int>{ (entry->Add(index++, args), 0)... };
-
-      //detail::fillEntry(*entry, args...);
       return entry;
     }, var_names);
     thread = std::make_unique<std::thread>([=]() {
@@ -80,11 +66,9 @@ struct TupleMaker {
       try {
         ROOT::RDF::RNode df = df_node;
         df.Foreach([&](const std::shared_ptr<Entry>& entry) {
-          // std::cout << "Pushing" <<std::endl;
           if(!queue.Push(entry)) {
             throw StopLoop();
           }
-          // std::cout << "Pushed" <<std::endl;
         }, {"_entry"});
       } catch(StopLoop) {
       } catch(std::exception& e) {
@@ -106,31 +90,26 @@ struct TupleMaker {
       cond_var.notify_all();
       return true;
     };
-    df_out = df_out.Define("_entryCentral", [=](ULong64_t entryIndexShifted) {
+    df_out = df_out.Define("_entryCentral", [=](Int_t entryIndexShifted) {
       std::shared_ptr<Entry> entryCentral;
       try {
         static bool notified = notify();
         static std::shared_ptr<Entry> entry;
-        static std::set<unsigned long long> processedEntries;
+        static std::set<int> processedEntries;
         if(processedEntries.count(entryIndexShifted))
           throw std::runtime_error("Entry already processed");
-        // std::cout << "Poping" <<std::endl;
-        while(!entry || entry->GetValue<unsigned long long>(0)<entryIndexShifted){
+        while(!entry || entry->GetValue<int>(0)<entryIndexShifted){
           if(entry){
-            processedEntries.insert(entry->GetValue<unsigned long long>(0));
+            processedEntries.insert(entry->GetValue<int>(0));
             entry.reset();
           }
           if (!queue.Pop(entry)) {
             break;
           }
         }
-        // std::cout << "Poped" <<std::endl;
-        //std::cout << entryIndexShifted << "\t"<< entry->GetValue<unsigned long long>(0)<<std::endl;
-        if(entry && entry->GetValue<unsigned long long>(0)==entryIndexShifted){
+        if(entry && entry->GetValue<int>(0)==entryIndexShifted){
           entryCentral=entry;
-          // std::cout << "Set" <<std::endl;
         }
-        //std::cout << "sono uguali "<< entryIndexShifted << "\t"<< entryCentral->GetValue<unsigned long long>(0)<<std::endl;
       } catch (const std::exception& e) {
         std::cout << "TupleMaker::processOut: exception: " << e.what() << std::endl;
         throw;
@@ -153,5 +132,66 @@ struct TupleMaker {
   std::mutex mutex;
   std::condition_variable cond_var;
 };
+
+namespace detail {
+  template<typename T>
+  struct DeltaImpl {
+    static T Delta(const T& shifted, const T& central) {
+      return shifted - central;
+    }
+  };
+
+  template<typename T>
+  struct DeltaImpl<ROOT::VecOps::RVec<T>> {
+    static ROOT::VecOps::RVec<T> Delta(const ROOT::VecOps::RVec<T>& shifted, const ROOT::VecOps::RVec<T>& central)
+    {
+      ROOT::VecOps::RVec<T> delta = shifted;
+      size_t n_max = std::min(shifted.size(), central.size());
+      for(size_t n = 0; n < n_max; ++n)
+        delta[n] -= central[n];
+      return delta;
+    }
+  };
+
+  template<typename T>
+  struct IsSameImpl {
+    static bool IsSame(T shifted, T central) {
+      return shifted == central;
+    }
+  };
+
+  template<typename T>
+  struct IsSameImpl<ROOT::VecOps::RVec<T>> {
+    static bool IsSame(const ROOT::VecOps::RVec<T>& shifted, const ROOT::VecOps::RVec<T>& central)
+    {
+      const size_t n_shifted = shifted.size();
+      if(n_shifted != central.size())
+        return false;
+      for(size_t n = 0; n < n_shifted; ++n)
+        if(!IsSameImpl<T>::IsSame(shifted[n], central[n]))
+          return false;
+      return true;
+    }
+  };
+}
+
+template<typename T>
+bool IsSame(const T& shifted, const T& central)
+{
+  return detail::IsSameImpl<T>::IsSame(shifted, central);
+}
+template<typename T>
+T Delta(const T& shifted, const T& central)
+{
+  return detail::DeltaImpl<T>::Delta(shifted, central);
+}
+
+
+
+  template<typename T>
+  T FromDelta(T delta, T central)
+  {
+    return central + delta;
+  }
 
 } // namespace analysis

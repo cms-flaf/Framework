@@ -22,3 +22,6 @@
 [submodule "HHKinFit2"]
 	path = HHKinFit2
 	url = git@github.com:cms-hh-bbtautau/HHKinFit2.git
+[submodule "StatInference"]
+	path = StatInference
+	url = git@github.com:cms-hh-bbtautau/StatInference.git

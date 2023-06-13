@@ -45,16 +45,15 @@ def make_df(inputFileCentral,inputFileShifted,outFile,treeName):
   for var_idx,var_name in enumerate(colNames):
     if var_name in colToNotToMakeDiff: continue
     condition_noDiff_list.append(f"analysis::IsSame(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})")
-    condition_Valid_list.append(f"! analysis::IsSame(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})")
+    #condition_Valid_list.append(f"! analysis::IsSame(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})")
 
-  df_out_valid_noDiff = df_out_valid
   condition_noDiff = ' && '.join(condition_noDiff_list)
-  df_out_valid_noDiff = df_out_valid_noDiff.Define("condition_noDiff", condition_noDiff).Filter("condition_noDiff")
-  condition_Valid = ' || '.join(condition_Valid_list)
-  df_out_valid = df_out_valid.Define("condition_Valid", condition_Valid).Filter("condition_Valid")
+  df_out_valid = df_out_valid.Define("isSame", condition_noDiff)
+  df_out_valid_noDiff = df_out_valid.Filter("isSame")
+  df_out_valid_diff = df_out_valid.Filter("!isSame")
   for var_idx,var_name in enumerate(colNames):
     if var_name in colToNotToMakeDiff: continue
-    df_out_valid=df_out_valid.Define(f"diff_{var_name}", f"""analysis::Delta(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})""")
+    df_out_valid_diff=df_out_valid_diff.Define(f"diff_{var_name}", f"""analysis::Delta(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})""")
     colToSave_diff.append(f"diff_{var_name}")
 
   snaps = []
@@ -64,7 +63,7 @@ def make_df(inputFileCentral,inputFileShifted,outFile,treeName):
   snapshotOptions.fLazy=True
   snapshotOptions.fMode="RECREATE"
   snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + 'LZMA')
-  snapshotOptions.fCompressionLevel = 9
+  snapshotOptions.fCompressionLevel = 5
   colToSave_noDiff_v = ListToVector(colToSave_noDiff)
   colToSave_diff_v = ListToVector(colToSave_diff)
   colNames_v = ListToVector(colNames)
@@ -78,7 +77,7 @@ def make_df(inputFileCentral,inputFileShifted,outFile,treeName):
   if os.path.exists(outFile_Valid_noDiff):
     os.remove(outFile_Valid_noDiff)
   snaps.append(df_out_valid_noDiff.Snapshot(f"{treeName}_Valid_noDiff", outFile_Valid_noDiff, colToSave_noDiff_v, snapshotOptions))
-  snaps.append(df_out_valid.Snapshot(f"{treeName}_Valid", outFile_Valid, colToSave_diff_v, snapshotOptions))
+  snaps.append(df_out_valid_diff.Snapshot(f"{treeName}_Valid", outFile_Valid, colToSave_diff_v, snapshotOptions))
   snaps.append(df_unique.Snapshot(f"{treeName}_nonValid", outFile_nonValid, colNames_v, snapshotOptions))
   tuple_maker.processIn(colNames_v)
   ROOT.RDF.RunGraphs(snaps)

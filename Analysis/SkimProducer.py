@@ -37,6 +37,7 @@ if __name__ == "__main__":
     inFileShiftedName = os.path.join(args.inputDir, systFile)
     treeName = systFile.strip('.root')
     cmd = f"""python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/SkimEvents.py --inFileCentral {inFileCentralName} --inFileShifted {inFileShiftedName} --outFile {outFileName} --treeName {treeName}"""
+    if args.test : print(cmd)
     sh_call(cmd, True)
   for file_syst in os.listdir(args.outputDir):
     syst_files_to_merge.append(f'{args.outputDir}/{file_syst}')
@@ -45,7 +46,7 @@ if __name__ == "__main__":
     os.remove(finalFile)
   hadd_str = f'hadd -k -fk {finalFile} '
   hadd_str += ' '.join(f for f in syst_files_to_merge)
-  print(hadd_str)
+  if args.test: print(hadd_str)
   sh_call([hadd_str], True)
   for syst_file in syst_files_to_merge:
     os.remove(syst_file)

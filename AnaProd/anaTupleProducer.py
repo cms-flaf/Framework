@@ -31,9 +31,9 @@ JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"]
 JetObservablesMC = ["hadronFlavour","partonFlavour"]
 
-defaultColToSave = ["entryIndex","event","luminosityBlock","run", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
+defaultColToSave = ["entryIndex","luminosityBlock", "run", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
-                "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs" ]
+                "PV_npvs" ]
 
 
 def addAllVariables(dfw, syst_name, isData, trigger_class, mode):
@@ -70,6 +70,9 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode):
     dfw.DefineAndAppend(f"met_phi_nano", f"static_cast<float>(MET_p4_nano.phi())")
     dfw.DefineAndAppend("met_pt", "static_cast<float>(MET_p4.pt())")
     dfw.DefineAndAppend("met_phi", "static_cast<float>(MET_p4.phi())")
+    for var in ["covXX", "covXY", "covYY"]:
+        dfw.DefineAndAppend(f"met_{var}", f"static_cast<float>(MET_{var})")
+
     n_legs = 2 if mode == "HH" else 4
     for leg_idx in range(n_legs):
         def LegVar(var_name, var_expr, var_type=None, var_cond=None, check_leg_type=True, default=0):
@@ -175,7 +178,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     df = df.Define("sample_name", f"{zlib.crc32(sample_name.encode())}")
     df = df.Define("period", f"static_cast<int>(Period::{period})")
     df = df.Define("X_mass", f"static_cast<int>({mass})")
-    df = df.Define("entryIndex", "rdfentry_")
+    df = df.Define("entryIndex", "static_cast<int>(rdfentry_)")
     is_data = 'true' if isData else 'false'
     df = df.Define("isData", is_data)
 
@@ -243,8 +246,8 @@ if __name__ == "__main__":
     parser.add_argument('--outDir', required=True, type=str)
     parser.add_argument('--sample', required=True, type=str)
     parser.add_argument('--anaCache', required=True, type=str)
-    parser.add_argument('--compressionLevel', type=int, default=9)
-    parser.add_argument('--compressionAlgo', type=str, default="LZMA")
+    parser.add_argument('--compressionLevel', type=int, default=4)
+    parser.add_argument('--compressionAlgo', type=str, default="LZ4")
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--store-noncentral', action="store_true", help="Store ES variations.")

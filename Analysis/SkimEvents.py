@@ -22,7 +22,7 @@ col_type_dict = {
   'ROOT::VecOps::RVec<int>':'ROOT::VecOps::RVec<int>'
   }
 
-def make_df(inputFileCentral,inputFileShifted,outFile,treeName):
+def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
   df_out = ROOT.RDataFrame('Events', inputFileShifted)
   colNames = [str(c) for c in df_out.GetColumnNames()]
   entryIndexIdx = colNames.index("entryIndex")
@@ -67,9 +67,9 @@ def make_df(inputFileCentral,inputFileShifted,outFile,treeName):
   colToSave_noDiff_v = ListToVector(colToSave_noDiff)
   colToSave_diff_v = ListToVector(colToSave_diff)
   colNames_v = ListToVector(colNames)
-  outFile_Valid = f"{outFile}_Diff.root"
-  outFile_nonValid = f"{outFile}_nonValid.root"
-  outFile_Valid_noDiff = f"{outFile}_noDiff.root"
+  outFile_Valid = f"{outDir}/{treeName}_Diff.root"
+  outFile_nonValid = f"{outDir}/{treeName}_nonValid.root"
+  outFile_Valid_noDiff = f"{outDir}/{treeName}_noDiff.root"
   if os.path.exists(outFile_Valid):
     os.remove(outFile_Valid)
   if os.path.exists(outFile_nonValid):
@@ -91,12 +91,12 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument('--inFileCentral', required=True, type=str)
   parser.add_argument('--inFileShifted', required=True, type=str)
-  parser.add_argument('--outFile', required=True, type=str)
+  parser.add_argument('--outDir', required=True, type=str)
   parser.add_argument('--treeName', required=True, type=str)
   args = parser.parse_args()
   headers_dir = os.path.dirname(os.path.abspath(__file__))
   ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
   header_path_Skimmer = os.path.join(headers_dir, "SystSkimmer.h")
   ROOT.gInterpreter.Declare(f'#include "{header_path_Skimmer}"')
-  make_df(args.inFileCentral,args.inFileShifted,args.outFile,args.treeName)
+  make_df(args.inFileCentral,args.inFileShifted,args.outDir,args.treeName)
 

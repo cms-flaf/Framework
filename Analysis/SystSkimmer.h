@@ -210,28 +210,8 @@ T FromDelta(const T& shifted, const T& central)
 template<>
 bool FromDelta<bool>(const bool& delta, const bool& central)
 {
-  return delta ? !central : central;
+  return delta ? central : !central ;
 }
 
-
-template<>
-ROOT::VecOps::RVec<bool> Delta(const ROOT::VecOps::RVec<bool>& shifted, const ROOT::VecOps::RVec<bool>& central)
-{
-  size_t n_max = std::min(shifted.size(), central.size());
-  ROOT::VecOps::RVec<bool> delta(n_max);
-  for(size_t n = 0; n < n_max; ++n)
-    delta[n] = (central[n]==shifted[n]);
-  return delta;
-}
-
-template<>
-ROOT::VecOps::RVec<bool> FromDelta(const ROOT::VecOps::RVec<bool>& delta, const ROOT::VecOps::RVec<bool>& central){
-  ROOT::VecOps::RVec<bool> fromDeltaVec = delta;
-  size_t n_max = std::min(delta.size(), central.size());
-  for (size_t n =0 ; n < n_max; ++n){
-    fromDeltaVec[n] = delta[n] ? !central[n] : central[n];
-  }
-  return fromDeltaVec;
-}
 
 } // namespace analysis

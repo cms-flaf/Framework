@@ -67,9 +67,9 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
   colToSave_noDiff_v = ListToVector(colToSave_noDiff)
   colToSave_diff_v = ListToVector(colToSave_diff)
   colNames_v = ListToVector(colNames)
-  outFile_Valid = f"{outDir}/{treeName}_Diff.root"
-  outFile_nonValid = f"{outDir}/{treeName}_nonValid.root"
-  outFile_Valid_noDiff = f"{outDir}/{treeName}_noDiff.root"
+  outFile_Valid = os.path.join(outDir, f"{treeName}_Diff.root")
+  outFile_nonValid = os.path.join(outDir, f"{treeName}_nonValid.root")
+  outFile_Valid_noDiff = os.path.join(outDir, f"{treeName}_noDiff.root")
   if os.path.exists(outFile_Valid):
     os.remove(outFile_Valid)
   if os.path.exists(outFile_nonValid):

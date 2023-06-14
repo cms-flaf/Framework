@@ -27,7 +27,6 @@ if __name__ == "__main__":
       shutil.rmtree(args.workingDir)
   if not os.path.isdir(args.workingDir):
     os.makedirs(args.workingDir)
-  #finalFile = os.path.join(args.outputFile, args.centralFile)
   if os.path.exists(args.outputFile):
     os.remove(args.outputFile)
   syst_files_to_merge = []
@@ -36,7 +35,6 @@ if __name__ == "__main__":
   for systFile in all_files:
     if args.test and k>2 : continue
     k+=1
-    #outFileName = os.path.join(args.outputFile, systFile.strip('.root'))
     inFileCentralName = os.path.join(args.inputDir, args.centralFile)
     if args.test: print(inFileCentralName)
     inFileShiftedName = os.path.join(args.inputDir, systFile)
@@ -52,5 +50,4 @@ if __name__ == "__main__":
   hadd_str += ' '.join(f for f in syst_files_to_merge)
   if args.test: print(hadd_str)
   sh_call([hadd_str], True)
-  for syst_file in syst_files_to_merge:
-    os.remove(syst_file)
+  shutil.rmtree(args.workingDir)

@@ -200,7 +200,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
             dfw.colToSave.extend(weight_branches)
         reports.append(dfw.df.Report())
         varToSave = Utilities.ListToVector(dfw.colToSave)
-        outFileName = f"{outDir}Events{suffix}.root"
+        outFileName = os.path.join(outDir, f"Events{suffix}.root")
         outfilesNames.append(outFileName)
         if os.path.exists(outFileName):
             os.remove(outFileName)

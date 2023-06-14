@@ -63,7 +63,7 @@ def make_df(inputFileCentral,inputFileShifted,outFile,treeName):
   snapshotOptions.fLazy=True
   snapshotOptions.fMode="RECREATE"
   snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + 'LZ4')
-  snapshotOptions.fCompressionLevel = 5
+  snapshotOptions.fCompressionLevel = 4
   colToSave_noDiff_v = ListToVector(colToSave_noDiff)
   colToSave_diff_v = ListToVector(colToSave_diff)
   colNames_v = ListToVector(colNames)

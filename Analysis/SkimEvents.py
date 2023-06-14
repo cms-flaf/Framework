@@ -53,8 +53,8 @@ def make_df(inputFileCentral,inputFileShifted,outFile,treeName):
   df_out_valid_diff = df_out_valid.Filter("!isSame")
   for var_idx,var_name in enumerate(colNames):
     if var_name in colToNotToMakeDiff: continue
-    df_out_valid_diff=df_out_valid_diff.Define(f"diff_{var_name}", f"""analysis::Delta(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})""")
-    colToSave_diff.append(f"diff_{var_name}")
+    df_out_valid_diff=df_out_valid_diff.Define(f"{var_name}Diff", f"""analysis::Delta(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})""")
+    colToSave_diff.append(f"{var_name}Diff")
 
   snaps = []
   print("start making screenshot")
@@ -62,7 +62,7 @@ def make_df(inputFileCentral,inputFileShifted,outFile,treeName):
   snapshotOptions.fOverwriteIfExists=False
   snapshotOptions.fLazy=True
   snapshotOptions.fMode="RECREATE"
-  snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + 'LZMA')
+  snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + 'LZ4')
   snapshotOptions.fCompressionLevel = 5
   colToSave_noDiff_v = ListToVector(colToSave_noDiff)
   colToSave_diff_v = ListToVector(colToSave_diff)

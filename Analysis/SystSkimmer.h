@@ -139,6 +139,10 @@ namespace detail {
     static T Delta(const T& shifted, const T& central) {
       return shifted - central;
     }
+    static T FromDelta(const T& delta, const T& central){
+      return delta + central;
+    }
+
   };
 
   template<typename T>
@@ -150,6 +154,14 @@ namespace detail {
       for(size_t n = 0; n < n_max; ++n)
         delta[n] -= central[n];
       return delta;
+    }
+    static ROOT::VecOps::RVec<T> FromDelta(const ROOT::VecOps::RVec<T>& delta, const ROOT::VecOps::RVec<T>& central){
+      ROOT::VecOps::RVec<T> fromDeltaVec = delta;
+      size_t n_max = std::min(delta.size(), central.size());
+      for (size_t n =0 ; n < n_max; ++n){
+        fromDeltaVec[n]+= central[n];
+      }
+      return fromDeltaVec;
     }
   };
 
@@ -185,13 +197,41 @@ T Delta(const T& shifted, const T& central)
 {
   return detail::DeltaImpl<T>::Delta(shifted, central);
 }
+template<>
+bool Delta<bool>(const bool& shifted, const bool& central)
+{
+  return shifted == central;
+}
+template<typename T>
+T FromDelta(const T& shifted, const T& central)
+{
+  return detail::DeltaImpl<T>::FromDelta(shifted, central);
+}
+template<>
+bool FromDelta<bool>(const bool& delta, const bool& central)
+{
+  return delta ? !central : central;
+}
 
 
+template<>
+ROOT::VecOps::RVec<bool> Delta(const ROOT::VecOps::RVec<bool>& shifted, const ROOT::VecOps::RVec<bool>& central)
+{
+  size_t n_max = std::min(shifted.size(), central.size());
+  ROOT::VecOps::RVec<bool> delta(n_max);
+  for(size_t n = 0; n < n_max; ++n)
+    delta[n] = (central[n]==shifted[n]);
+  return delta;
+}
 
-  template<typename T>
-  T FromDelta(T delta, T central)
-  {
-    return central + delta;
+template<>
+ROOT::VecOps::RVec<bool> FromDelta(const ROOT::VecOps::RVec<bool>& delta, const ROOT::VecOps::RVec<bool>& central){
+  ROOT::VecOps::RVec<bool> fromDeltaVec = delta;
+  size_t n_max = std::min(delta.size(), central.size());
+  for (size_t n =0 ; n < n_max; ++n){
+    fromDeltaVec[n] = delta[n] ? !central[n] : central[n];
   }
+  return fromDeltaVec;
+}
 
 } // namespace analysis

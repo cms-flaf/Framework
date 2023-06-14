@@ -31,9 +31,9 @@ JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"]
 JetObservablesMC = ["hadronFlavour","partonFlavour"]
 
-defaultColToSave = ["entryIndex","event","luminosityBlock","run", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
+defaultColToSave = ["entryIndex","luminosityBlock", "run", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
-                "MET_covXX", "MET_covXY", "MET_covYY", "PV_npvs" ]
+                "PV_npvs" ]
 
 
 
@@ -66,6 +66,9 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.DefineAndAppend(f"met_phi_nano", f"static_cast<float>(MET_p4_nano.phi())")
     dfw.DefineAndAppend("met_pt", "static_cast<float>(MET_p4.pt())")
     dfw.DefineAndAppend("met_phi", "static_cast<float>(MET_p4.phi())")
+    for var in ["covXX", "covXY", "covYY"]:
+        dfw.DefineAndAppend(f"met_{var}", f"static_cast<float>(MET_{var})")
+
     for leg_idx in [0,1]:
         dfw.DefineAndAppend( f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
         dfw.DefineAndAppend( f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
@@ -97,8 +100,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
                                                         -1.f;""")
             dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_vis_mass", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<float>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).visibleP4().M()) :
                                                     -1.f;""")
-            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_nChHad", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).nChargedHadrons() : 0;""")
-            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_nNeutHad", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).nNeutralHadrons() : 0;""")
+            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_nChHad", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<int>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).nChargedHadrons()) : 0;""")
+            dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_nNeutHad", f"""tau{leg_idx+1}_genMatchIdx>=0? static_cast<int>(genLeptons.at(tau{leg_idx+1}_genMatchIdx).nNeutralHadrons()) : 0;""")
             dfw.DefineAndAppend(f"tau{leg_idx+1}_gen_charge", f"""tau{leg_idx+1}_genMatchIdx>=0? genLeptons.at(tau{leg_idx+1}_genMatchIdx).charge() : -10;""")
             dfw.DefineAndAppend( f"tau{leg_idx+1}_seedingJet_partonFlavour",
                                         f"tau{leg_idx+1}_recoJetMatchIdx>=0 ? Jet_partonFlavour.at(tau{leg_idx+1}_recoJetMatchIdx) : -1;")
@@ -164,7 +167,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     df = df.Define("sample_name", f"{zlib.crc32(sample_name.encode())}")
     df = df.Define("period", f"static_cast<int>(Period::{period})")
     df = df.Define("X_mass", f"static_cast<int>({mass})")
-    df = df.Define("entryIndex", "rdfentry_")
+    df = df.Define("entryIndex", "static_cast<int>(rdfentry_)")
     is_data = 'true' if isData else 'false'
     df = df.Define("isData", is_data)
 
@@ -197,7 +200,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
             dfw.colToSave.extend(weight_branches)
         reports.append(dfw.df.Report())
         varToSave = Utilities.ListToVector(dfw.colToSave)
-        outFileName = f"{outDir}Events{suffix}.root"
+        outFileName = os.path.join(outDir, f"Events{suffix}.root")
         outfilesNames.append(outFileName)
         if os.path.exists(outFileName):
             os.remove(outFileName)
@@ -231,8 +234,8 @@ if __name__ == "__main__":
     parser.add_argument('--outDir', required=True, type=str)
     parser.add_argument('--sample', required=True, type=str)
     parser.add_argument('--anaCache', required=True, type=str)
-    parser.add_argument('--compressionLevel', type=int, default=9)
-    parser.add_argument('--compressionAlgo', type=str, default="LZMA")
+    parser.add_argument('--compressionLevel', type=int, default=4)
+    parser.add_argument('--compressionAlgo', type=str, default="LZ4")
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--store-noncentral', action="store_true", help="Store ES variations.")

@@ -36,7 +36,7 @@ defaultColToSave = ["entryIndex","luminosityBlock", "run", "sample_type", "sampl
                 "PV_npvs" ]
 
 
-def addAllVariables(dfw, syst_name, isData, trigger_class, mode):
+def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
     if mode == "HH":
         dfw.Apply(Baseline.RecoLeptonsSelection)
@@ -50,7 +50,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode):
         dfw.Apply(Baseline.RecoJetSelection_ttHH)
     dfw.Apply(Corrections.jet.getEnergyResolution)
     if trigger_class is not None:
-        hltBranches = dfw.Apply(trigger_class.ApplyTriggers, isData)
+        hltBranches = dfw.Apply(trigger_class.ApplyTriggers, nLegs, isData)
         dfw.colToSave.extend(hltBranches)
     dfw.Define(f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
     dfw.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
@@ -153,7 +153,10 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     mass = -1 if 'mass' not in config[sample_name] else config[sample_name]['mass']
     isHH = True if mass > 0 else False
     isData = True if config[sample_name]['sampleType'] == 'data' else False
-    Baseline.Initialize(True, True)
+    loadTF = mode == "HH"
+    loadHHBtag = mode == "HH"
+    nLegs = 4 if mode == "ttHH" else 2
+    Baseline.Initialize(loadTF, loadHHBtag)
     #if not isData:
     Corrections.Initialize(config=config['GLOBAL'],isData=isData)
     triggerFile = config['GLOBAL'].get('triggerFile')
@@ -202,14 +205,15 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         suffix = '' if is_central else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
         dfw = Utilities.DataFrameWrapper(df_empty,defaultColToSave)
-        addAllVariables(dfw, syst_name, isData, trigger_class, mode)
-        # if not isData:
-        #     weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name,
-        #                                 return_variations=is_central and compute_unc_variations, isCentral=is_central,
-        #                                 ana_cache=anaCache)
-        #     weight_branches.extend(dfw.Apply(Corrections.trg.getTrgSF, trigger_class.trigger_dict.keys(), is_central and compute_unc_variations, is_central))
-        #     weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations, is_central))
-        #     dfw.colToSave.extend(weight_branches)
+        addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs)
+        if not isData:
+            weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name, nLegs,
+                                        return_variations=is_central and compute_unc_variations, isCentral=is_central,
+                                        ana_cache=anaCache)
+            weight_branches.extend(dfw.Apply(Corrections.trg.getTrgSF, trigger_class.trigger_dict.keys(), nLegs,
+                                             is_central and compute_unc_variations, is_central))
+            weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations, is_central))
+            dfw.colToSave.extend(weight_branches)
         reports.append(dfw.df.Report())
         varToSave = Utilities.ListToVector(dfw.colToSave)
         outFileName = os.path.join(outDir, f"Events{suffix}.root")

@@ -330,14 +330,14 @@ def RecottHttCandidateSelection_ttHH(df):
            .Define("Tau_iso", "-Tau_rawDeepTau2018v2p5VSjet")
 
     df = df.Define("Electron_ttHH", f"""
-        v_ops::pt(Electron_p4) > 10 && abs(v_ops::eta(Electron_p4)) < 2.5
+        v_ops::pt(Electron_p4) > 20 && abs(v_ops::eta(Electron_p4)) < 2.5
         && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
         && Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all < 0.5
     """)
     df = df.Define("Electron_ttHH_tight", "Electron_ttHH && Electron_pfRelIso03_all < 0.15")
 
     df = df.Define("Muon_ttHH", f"""
-        v_ops::pt(Muon_p4) > 10 && abs(v_ops::eta(Muon_p4)) < 2.4
+        v_ops::pt(Muon_p4) > 20 && abs(v_ops::eta(Muon_p4)) < 2.4
         && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045
         && Muon_mediumId && Muon_pfRelIso04_all < 0.5
     """)
@@ -354,7 +354,7 @@ def RecottHttCandidateSelection_ttHH(df):
 
     cand_columns = []
     ttHH_exclueded_channels = [
-        # 'tauTauTauTau', 'muTauTauTau', 'eTauTauTau', 'tauTauTau',
+        'tauTauTauTau', 'muTauTauTau', 'eTauTauTau', 'tauTauTau',
     ]
     ttHH_channels = [
         'muMuMuMu', 'eMuMuMu', 'muMuMuTau', 'eEMuMu', 'eMuMuTau', 'muMuTauTau',
@@ -387,4 +387,4 @@ def RecoJetSelection_ttHH(df):
     df = df.Define("Jet_ttHH", "RemoveOverlaps(Jet_p4, Jet_ttHH_sel, httCand.getLegP4s(), 0.5)")
     df = df.Define("Jet_bCand", "Jet_ttHH && abs(v_ops::eta(Jet_p4)) < 2.5")
     df = df.Define("FatJet_ttHH", "RemoveOverlaps(FatJet_p4, FatJet_ttHH_sel, httCand.getLegP4s(), 0.5)")
-    return df.Filter("Jet_idx[Jet_ttHH].size() + FatJet_idx[FatJet_ttHH].size() * 2 >= 12 - 2 * httCand.nValidLegs()", "Reco jet candidates")
+    return df.Filter("Jet_idx[Jet_ttHH].size() + FatJet_idx[FatJet_ttHH].size() * 2 >= 4", "Reco jet candidates")

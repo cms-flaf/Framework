@@ -45,6 +45,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.Apply(Baseline.RequestOnlyResolvedRecoJets)
     dfw.Apply(Baseline.ThirdLeptonVeto)
     dfw.Apply(Baseline.DefineHbbCand)
+    dfw.Apply(Baseline.AdditionalRecoJetSelection)
     dfw.Apply(Corrections.jet.getEnergyResolution)
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, isData)
@@ -60,7 +61,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     if not isData:
         dfw.Define(f"Jet_genJet_idx", f" FindMatching(Jet_p4,GenJet_p4,0.3)")
         jet_obs.extend(JetObservablesMC)
-        if "LHE_HLT" in dfw.df.GetColumnNames():
+        if "LHE_HT" in dfw.df.GetColumnNames():
             dfw.colToSave.append("LHE_HT")
     dfw.DefineAndAppend(f"met_pt_nano", f"static_cast<float>(MET_p4_nano.pt())")
     dfw.DefineAndAppend(f"met_phi_nano", f"static_cast<float>(MET_p4_nano.phi())")
@@ -69,13 +70,23 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     for var in ["covXX", "covXY", "covYY"]:
         dfw.DefineAndAppend(f"met_{var}", f"static_cast<float>(MET_{var})")
 
+    dfw.Define(f"Additional_jet_p4", "Jet_p4[AdditionalJet_B1]")
+    dfw.DefineAndAppend(f"AdditionalJet_pt", f"Jet_pt[AdditionalJet_B1]")
+    dfw.DefineAndAppend(f"AdditionalJet_eta", f"Jet_eta[AdditionalJet_B1]")
+    dfw.DefineAndAppend(f"AdditionalJet_phi", f"Jet_phi[AdditionalJet_B1]")
+    dfw.DefineAndAppend(f"AdditionalJet_mass", f"Jet_mass[AdditionalJet_B1]")
+    dfw.DefineAndAppend(f"AdditionalJet_idx", f"Jet_idx[AdditionalJet_B1]")
+    dfw.DefineAndAppend(f"AdditionalJet_ptRes", f"Jet_ptRes[AdditionalJet_B1]")
+    for jetVar in jet_obs:
+        if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
+        dfw.DefineAndAppend(f"AdditionalJet_{jetVar}", f"Jet_{jetVar}[AdditionalJet_B1]")
+    dfw.DefineAndAppend(f"AdditionalJet_HHbtag", f"Jet_HHBtagScore[AdditionalJet_B1]")
     for leg_idx in [0,1]:
         dfw.DefineAndAppend( f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
         dfw.DefineAndAppend( f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
         dfw.DefineAndAppend(f"tau{leg_idx+1}_phi", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Phi())")
         dfw.DefineAndAppend(f"tau{leg_idx+1}_mass", f"static_cast<float>(httCand.leg_p4[{leg_idx}].M())")
         dfw.DefineAndAppend(f"tau{leg_idx+1}_charge", f"httCand.leg_charge[{leg_idx}]")
-        dfw.Define(f"tau{leg_idx+1}_idx", f"httCand.leg_index[{leg_idx}]")
         dfw.DefineAndAppend(f"tau{leg_idx+1}_legType",f"""static_cast<int>(httCand.leg_type[{leg_idx}])""" )
         dfw.Define(f"tau{leg_idx+1}_recoJetMatchIdx", f"FindMatching(httCand.leg_p4[{leg_idx}], Jet_p4, 0.3)")
         dfw.DefineAndAppend( f"tau{leg_idx+1}_iso", f"httCand.leg_rawIso.at({leg_idx})")

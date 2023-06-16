@@ -71,10 +71,10 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
         dfw.DefineAndAppend(f"met_{var}", f"static_cast<float>(MET_{var})")
 
     dfw.Define(f"Additional_jet_p4", "Jet_p4[AdditionalJet_B1]")
-    dfw.DefineAndAppend(f"AdditionalJet_pt", f"Jet_pt[AdditionalJet_B1]")
-    dfw.DefineAndAppend(f"AdditionalJet_eta", f"Jet_eta[AdditionalJet_B1]")
-    dfw.DefineAndAppend(f"AdditionalJet_phi", f"Jet_phi[AdditionalJet_B1]")
-    dfw.DefineAndAppend(f"AdditionalJet_mass", f"Jet_mass[AdditionalJet_B1]")
+    dfw.DefineAndAppend(f"AdditionalJet_pt", f"v_ops::pt(Jet_p4[AdditionalJet_B1])")
+    dfw.DefineAndAppend(f"AdditionalJet_eta", f"v_ops::eta(Jet_p4[AdditionalJet_B1])")
+    dfw.DefineAndAppend(f"AdditionalJet_phi", f"v_ops::phi(Jet_p4[AdditionalJet_B1])")
+    dfw.DefineAndAppend(f"AdditionalJet_mass", f"v_ops::mass(Jet_p4[AdditionalJet_B1])")
     dfw.DefineAndAppend(f"AdditionalJet_idx", f"Jet_idx[AdditionalJet_B1]")
     dfw.DefineAndAppend(f"AdditionalJet_ptRes", f"Jet_ptRes[AdditionalJet_B1]")
     for jetVar in jet_obs:
@@ -208,6 +208,14 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
                                         ana_cache=anaCache)
             weight_branches.extend(dfw.Apply(Corrections.trg.getTrgSF, trigger_class.trigger_dict.keys(), is_central and compute_unc_variations, is_central))
             weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations, is_central))
+            puIDbranches = ["weight_Jet_PUJetID_Central_tmp", "weight_Jet_PUJetID_effUp_rel_tmp", "weight_Jet_PUJetID_effDown_rel_tmp"]
+            for puIDbranch in puIDbranches:
+                if puIDbranch in dfw.df.GetColumnNames():
+                    new_branch_name= puIDbranch.strip("_tmp")
+                    dfw.DefineAndAppend(new_branch_name, f"{puIDbranch}[AdditionalJet_B1]")
+                    for bjet_idx in [1,2]:
+                        dfw.DefineAndAppend(f"{new_branch_name}_b{bjet_idx}", f"{puIDbranch}[b{bjet_idx}_idx]")
+                weight_branches.remove(puIDbranch)
             dfw.colToSave.extend(weight_branches)
         reports.append(dfw.df.Report())
         varToSave = Utilities.ListToVector(dfw.colToSave)

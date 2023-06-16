@@ -299,16 +299,14 @@ def RecoJetSelection(df):
     df = df.Define("FatJet_bbIncl", "FatJet_msoftdrop > 30 && abs(v_ops::eta(FatJet_p4)) < 2.5")
     df = df.Define("Jet_bCand", "RemoveOverlaps(Jet_p4, Jet_bIncl,{{httCand.leg_p4[0], httCand.leg_p4[1]},}, 2, 0.5)")
     df = df.Define("FatJet_bbCand", "RemoveOverlaps(FatJet_p4, FatJet_bbIncl, {{httCand.leg_p4[0], httCand.leg_p4[1]},}, 2, 0.5)")
-    #df.Define("JetBInclSize","Jet_idx[Jet_bIncl].size()").Define("JetbCandSize", "Jet_idx[Jet_bCand].size()").Display({"JetBInclSize", "JetbCandSize"}).Print()
     return df.Filter("Jet_idx[Jet_bCand].size()>=2 || FatJet_idx[FatJet_bbCand].size()>=1", "Reco bjet candidates")
 
 def AdditionalRecoJetSelection(df):
     df = df.Define("AdditionalJet_B0", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 5 && ( Jet_jetId & 2 ) && (Jet_puId>0 || v_ops::pt(Jet_p4)>50)")
-    df = df.Define("AdditionalFatJet_B0", "FatJet_msoftdrop > 30 && abs(v_ops::eta(FatJet_p4)) < 5")
+    df = df.Define("SelectedFatJet_B0", "FatJet_msoftdrop > 30 && abs(v_ops::eta(FatJet_p4)) < 5")
     df = df.Define(f"AdditionalJet_B1", "RemoveOverlaps(Jet_p4, AdditionalJet_B0,{{httCand.leg_p4[0], httCand.leg_p4[1],HbbCandidate.leg_p4[0],HbbCandidate.leg_p4[1]},}, 2, 0.5)")
-    df = df.Define(f"AdditionalFatJet_B1", "RemoveOverlaps(FatJet_p4, AdditionalJet_B0,{{httCand.leg_p4[0], httCand.leg_p4[1],HbbCandidate.leg_p4[0],HbbCandidate.leg_p4[1]},}, 2, 0.5)")
-    #df = df.Define(f"AdditionalJet_idx", f"Jet_idx[AdditionalJet_B1]")
-    df = df.Define(f"AdditionalFatJet_idx", f"Jet_idx[AdditionalFatJet_B1]")
+    df = df.Define(f"SelectedFatJet_B1", "RemoveOverlaps(FatJet_p4, AdditionalJet_B0,{{httCand.leg_p4[0], httCand.leg_p4[1]},}, 2, 0.5)")
+    df = df.Define(f"SelectedFatJet_idx", f"Jet_idx[SelectedFatJet_B1]")
     return df
 
 

@@ -305,8 +305,7 @@ def AdditionalRecoJetSelection(df):
     df = df.Define("AdditionalJet_B0", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 5 && ( Jet_jetId & 2 ) && (Jet_puId>0 || v_ops::pt(Jet_p4)>50)")
     df = df.Define("SelectedFatJet_B0", "FatJet_msoftdrop > 30 && abs(v_ops::eta(FatJet_p4)) < 5")
     df = df.Define(f"AdditionalJet_B1", "RemoveOverlaps(Jet_p4, AdditionalJet_B0,{{httCand.leg_p4[0], httCand.leg_p4[1],HbbCandidate.leg_p4[0],HbbCandidate.leg_p4[1]},}, 2, 0.5)")
-    df = df.Define(f"SelectedFatJet_B1", "RemoveOverlaps(FatJet_p4, AdditionalJet_B0,{{httCand.leg_p4[0], httCand.leg_p4[1]},}, 2, 0.5)")
-    df = df.Define(f"SelectedFatJet_idx", f"Jet_idx[SelectedFatJet_B1]")
+    df = df.Define(f"SelectedFatJet_B1", "RemoveOverlaps(FatJet_p4, SelectedFatJet_B0,{{httCand.leg_p4[0], httCand.leg_p4[1]},}, 2, 0.5)")
     return df
 
 

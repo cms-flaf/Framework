@@ -70,17 +70,25 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     for var in ["covXX", "covXY", "covYY"]:
         dfw.DefineAndAppend(f"met_{var}", f"static_cast<float>(MET_{var})")
 
-    dfw.Define(f"Additional_jet_p4", "Jet_p4[AdditionalJet_B1]")
     dfw.DefineAndAppend(f"AdditionalJet_pt", f"v_ops::pt(Jet_p4[AdditionalJet_B1])")
     dfw.DefineAndAppend(f"AdditionalJet_eta", f"v_ops::eta(Jet_p4[AdditionalJet_B1])")
     dfw.DefineAndAppend(f"AdditionalJet_phi", f"v_ops::phi(Jet_p4[AdditionalJet_B1])")
     dfw.DefineAndAppend(f"AdditionalJet_mass", f"v_ops::mass(Jet_p4[AdditionalJet_B1])")
-    dfw.DefineAndAppend(f"AdditionalJet_idx", f"Jet_idx[AdditionalJet_B1]")
     dfw.DefineAndAppend(f"AdditionalJet_ptRes", f"Jet_ptRes[AdditionalJet_B1]")
+
+    dfw.DefineAndAppend(f"SelectedFatJet_pt", f"v_ops::pt(FatJet_p4[SelectedFatJet_B1])")
+    dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[SelectedFatJet_B1])")
+    dfw.DefineAndAppend(f"SelectedFatJet_phi", f"v_ops::phi(FatJet_p4[SelectedFatJet_B1])")
+    dfw.DefineAndAppend(f"SelectedFatJet_mass", f"v_ops::mass(FatJet_p4[SelectedFatJet_B1])")
+    #dfw.DefineAndAppend(f"SelectedFatJet_ptRes", f"Jet_ptRes[SelectedFatJet_B1]")
     for jetVar in jet_obs:
         if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
         dfw.DefineAndAppend(f"AdditionalJet_{jetVar}", f"Jet_{jetVar}[AdditionalJet_B1]")
     dfw.DefineAndAppend(f"AdditionalJet_HHbtag", f"Jet_HHBtagScore[AdditionalJet_B1]")
+    for fatjetVar in jet_obs:
+        if(f"FatJet_{jetVar}" not in dfw.df.GetColumnNames()): continue
+        dfw.DefineAndAppend(f"SelectedFatJet_{jetVar}", f"FatJet_{jetVar}[SelectedFatJet_B1]")
+    #dfw.DefineAndAppend(f"SelectedFatJet_HHbtag", f"FatJet_HHBtagScore[SelectedFatJet_B1]")
     for leg_idx in [0,1]:
         dfw.DefineAndAppend( f"tau{leg_idx+1}_pt", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Pt())")
         dfw.DefineAndAppend( f"tau{leg_idx+1}_eta", f"static_cast<float>(httCand.leg_p4[{leg_idx}].Eta())")
@@ -239,7 +247,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
             outputRootFile.WriteTObject(hist_time, f"runtime", "Overwrite")
         outputRootFile.Close()
         if print_cutflow:
-            report.Print()
+            reports[index].Print()
     #print(f"number of loops is {df_empty.GetNRuns()}")
 
 

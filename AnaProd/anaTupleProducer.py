@@ -215,7 +215,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
                     dfw.DefineAndAppend(new_branch_name, f"{puIDbranch}[AdditionalJet_B1]")
                     for bjet_idx in [1,2]:
                         dfw.DefineAndAppend(f"{new_branch_name}_b{bjet_idx}", f"{puIDbranch}[b{bjet_idx}_idx]")
-                weight_branches.remove(puIDbranch)
+                if puIDbranch in weight_branches: weight_branches.remove(puIDbranch)
             dfw.colToSave.extend(weight_branches)
         reports.append(dfw.df.Report())
         varToSave = Utilities.ListToVector(dfw.colToSave)

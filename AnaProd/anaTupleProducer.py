@@ -31,7 +31,7 @@ JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"]
 JetObservablesMC = ["hadronFlavour","partonFlavour"]
 
-defaultColToSave = ["entryIndex","luminosityBlock", "run", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
+defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
                 "PV_npvs" ]
 
@@ -70,11 +70,11 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     for var in ["covXX", "covXY", "covYY"]:
         dfw.DefineAndAppend(f"met_{var}", f"static_cast<float>(MET_{var})")
 
-    dfw.DefineAndAppend(f"AdditionalJet_pt", f"v_ops::pt(Jet_p4[AdditionalJet_B1])")
-    dfw.DefineAndAppend(f"AdditionalJet_eta", f"v_ops::eta(Jet_p4[AdditionalJet_B1])")
-    dfw.DefineAndAppend(f"AdditionalJet_phi", f"v_ops::phi(Jet_p4[AdditionalJet_B1])")
-    dfw.DefineAndAppend(f"AdditionalJet_mass", f"v_ops::mass(Jet_p4[AdditionalJet_B1])")
-    dfw.DefineAndAppend(f"AdditionalJet_ptRes", f"Jet_ptRes[AdditionalJet_B1]")
+    dfw.DefineAndAppend(f"ExtraJet_pt", f"v_ops::pt(Jet_p4[ExtraJet_B1])")
+    dfw.DefineAndAppend(f"ExtraJet_eta", f"v_ops::eta(Jet_p4[ExtraJet_B1])")
+    dfw.DefineAndAppend(f"ExtraJet_phi", f"v_ops::phi(Jet_p4[ExtraJet_B1])")
+    dfw.DefineAndAppend(f"ExtraJet_mass", f"v_ops::mass(Jet_p4[ExtraJet_B1])")
+    dfw.DefineAndAppend(f"ExtraJet_ptRes", f"Jet_ptRes[ExtraJet_B1]")
 
     dfw.DefineAndAppend(f"SelectedFatJet_pt", f"v_ops::pt(FatJet_p4[SelectedFatJet_B1])")
     dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[SelectedFatJet_B1])")
@@ -83,8 +83,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     #dfw.DefineAndAppend(f"SelectedFatJet_ptRes", f"Jet_ptRes[SelectedFatJet_B1]")
     for jetVar in jet_obs:
         if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
-        dfw.DefineAndAppend(f"AdditionalJet_{jetVar}", f"Jet_{jetVar}[AdditionalJet_B1]")
-    dfw.DefineAndAppend(f"AdditionalJet_HHbtag", f"Jet_HHBtagScore[AdditionalJet_B1]")
+        dfw.DefineAndAppend(f"ExtraJet_{jetVar}", f"Jet_{jetVar}[ExtraJet_B1]")
+    dfw.DefineAndAppend(f"ExtraJet_HHbtag", f"Jet_HHBtagScore[ExtraJet_B1]")
     for fatjetVar in jet_obs:
         if(f"FatJet_{jetVar}" not in dfw.df.GetColumnNames()): continue
         dfw.DefineAndAppend(f"SelectedFatJet_{jetVar}", f"FatJet_{jetVar}[SelectedFatJet_B1]")
@@ -220,7 +220,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
             for puIDbranch in puIDbranches:
                 if puIDbranch in dfw.df.GetColumnNames():
                     new_branch_name= puIDbranch.strip("_tmp")
-                    dfw.DefineAndAppend(new_branch_name, f"{puIDbranch}[AdditionalJet_B1]")
+                    dfw.DefineAndAppend(new_branch_name, f"{puIDbranch}[ExtraJet_B1]")
                     for bjet_idx in [1,2]:
                         dfw.DefineAndAppend(f"{new_branch_name}_b{bjet_idx}", f"{puIDbranch}[b{bjet_idx}_idx]")
                 if puIDbranch in weight_branches: weight_branches.remove(puIDbranch)

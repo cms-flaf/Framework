@@ -4,7 +4,7 @@ from .Utilities import *
 
 initialized = False
 
-ana_reco_object_collections = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau", "MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune"]
+ana_reco_object_collections = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau", "MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune","SubJet"]
 
 def Initialize(loadTF=False, loadHHBtag=False):
     global initialized
@@ -299,18 +299,16 @@ def RecoJetSelection(df):
     df = df.Define("FatJet_bbIncl", "FatJet_msoftdrop > 30 && abs(v_ops::eta(FatJet_p4)) < 2.5")
     df = df.Define("Jet_bCand", "RemoveOverlaps(Jet_p4, Jet_bIncl,{{httCand.leg_p4[0], httCand.leg_p4[1]},}, 2, 0.5)")
     df = df.Define("FatJet_bbCand", "RemoveOverlaps(FatJet_p4, FatJet_bbIncl, {{httCand.leg_p4[0], httCand.leg_p4[1]},}, 2, 0.5)")
-    return df.Filter("Jet_idx[Jet_bCand].size()>=2 || FatJet_idx[FatJet_bbCand].size()>=1", "Reco bjet candidates")
+    return df
 
-def AdditionalRecoJetSelection(df):
+def ExtraRecoJetSelection(df):
     df = df.Define("ExtraJet_B0", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 5 && ( Jet_jetId & 2 ) && (Jet_puId>0 || v_ops::pt(Jet_p4)>50)")
-    df = df.Define("SelectedFatJet_B0", "FatJet_msoftdrop > 30 && abs(v_ops::eta(FatJet_p4)) < 5")
     df = df.Define(f"ExtraJet_B1", "RemoveOverlaps(Jet_p4, ExtraJet_B0,{{httCand.leg_p4[0], httCand.leg_p4[1],HbbCandidate.leg_p4[0],HbbCandidate.leg_p4[1]},}, 2, 0.5)")
-    df = df.Define(f"SelectedFatJet_B1", "RemoveOverlaps(FatJet_p4, SelectedFatJet_B0,{{httCand.leg_p4[0], httCand.leg_p4[1]},}, 2, 0.5)")
     return df
 
 
-def RequestOnlyResolvedRecoJets(df):
-    return df.Filter("Jet_idx[Jet_bCand].size()>=2", "Reco resolved bjet candidates")
+def ApplyJetSelection(df):
+    return df.Filter("Jet_idx[Jet_bCand].size()>=2 || FatJet_idx[FatJet_bbCand].size()>=1", "Reco bjet candidates")
 
 
 def GenRecoJetMatching(df):

@@ -35,12 +35,13 @@ FatJetObservables = ["area", "btagCSVV2", "btagDDBvLV2", "btagDeepB", "btagHbb",
                      "deepTagMD_ZHbbvsQCD", "deepTagMD_ZbbvsQCD", "deepTagMD_bbvsLight", "deepTag_H",
                      "jetId", "msoftdrop", "nBHadrons", "nCHadrons",
                      "nConstituents", "particleNetMD_QCD", "particleNetMD_Xbb", "particleNet_HbbvsQCD",
-                     "particleNet_mass", "rawFactor" ]
+                     "particleNet_mass", "rawFactor", "subJetIdx1", "subJetIdx2" ]
 
 
 FatJetObservablesMC = ["hadronFlavour","partonFlavour"]
 
 SubJetObservables = ["btagDeepB", "eta", "hadronFlavour", "mass", "phi", "pt", "rawFactor"]
+SubJetObservablesMC = ["hadronFlavour","partonFlavour"]
 
 defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
@@ -93,21 +94,28 @@ def addAllVariables(dfw, syst_name, isData, trigger_class):
     dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_phi", f"v_ops::phi(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_mass", f"v_ops::mass(FatJet_p4[FatJet_bbCand])")
-    dfw.DefineAndAppend(f"FatJet_subJetIndex1", f"FindMatching(FatJet_p4[FatJet_bbCand],SubJet_p4,0.3)")
-    dfw.DefineAndAppend(f"FatJet_subJetIndex2", f"FindMatching(FatJet_p4[FatJet_bbCand],SubJet_p4[SubJet_idx!=FatJet_subJetIndex1],0.3)")
     for fatjetVar in fatjet_obs:
         if(f"FatJet_{fatjetVar}" not in dfw.df.GetColumnNames()): continue
         dfw.DefineAndAppend(f"SelectedFatJet_{fatjetVar}", f"FatJet_{fatjetVar}[FatJet_bbCand]")
     subjet_obs = []
     subjet_obs.extend(SubJetObservables)
     if not isData:
-        FatJet_subJetIndex1
-        dfw.Define(f"SubJet1_genJet_idx", f" FindMatching(SubJet_p4[FatJet_subJetIndex1],SubGenJetAK8_p4,0.3)")
-        dfw.Define(f"SubJet2_genJet_idx", f" FindMatching(SubJet_p4[FatJet_subJetIndex2],SubGenJetAK8_p4,0.3)")
+        dfw.Define(f"SubJet1_genJet_idx", f" FindMatching(SubJet_p4[FatJet_subJetIdx1],SubGenJetAK8_p4,0.3)")
+        dfw.Define(f"SubJet2_genJet_idx", f" FindMatching(SubJet_p4[FatJet_subJetIdx2],SubGenJetAK8_p4,0.3)")
         fatjet_obs.extend(SubJetObservablesMC)
     for subJetVar in subjet_obs:
         for subJetIdx in [1,2]:
-            dfw.DefineAndAppend(f"SubJet{subJetIdx}_{subJetVar}", f"SubJet_{subJetVar}[FatJet_subJetIndex{subJetIdx}]")
+            dfw.DefineAndAppend(f"SubJet{subJetIdx}_{subJetVar}", f"""
+                                RVecF subjet_var;
+                                for(size_t fj_idx; fj_idx<SelectedFatJet_pt.size(); fj_idx++){{
+                                    for (size_t sj_idx; sj_idx<SubJet_{subJetVar}.size(); sj_idx++){{
+                                            if(sj_idx == SelectedFatJet_subJetIdx{subJetIdx}.at(fj_idx)){{
+                                                subjet_var.push_back(SubJet_{subJetVar}.at(sj_idx));
+                                            }}
+                                        }}
+                                    }}
+                                return subjet_var;
+                                """)
 
 
 

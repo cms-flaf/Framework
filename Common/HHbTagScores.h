@@ -63,7 +63,7 @@ struct HHBtagWrapper{
 
 
 RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& jet_p4,const RVecF& Jet_deepFlavour, const float& met_pt, const float& met_phi,
-                            const HTTCand& HTT_Cand, const int& period, int event){
+                            const HTTCand<2>& HTT_Cand, const int& period, int event){
     const ULong64_t parity = event % 2;
     int channelId = ChannelToHHbTagInput(HTT_Cand.channel());
     RVecF all_scores(Jet_idx.size(), -1.);

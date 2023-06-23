@@ -101,7 +101,9 @@
 			"typeindex": "cpp",
 			"any": "cpp",
 			"span": "cpp",
-			"*.icc": "cpp"
+			"*.icc": "cpp",
+			"forward_list": "cpp",
+			"regex": "cpp"
 		},
 		"git.ignoreLimitWarning": true
 	}

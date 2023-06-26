@@ -277,7 +277,7 @@ def RecoHttCandidateSelection(df, config):
         leg1, leg2 = getChannelLegs(ch)
         cand_column = f"httCands_{ch}"
         df = df.Define(cand_column, f"""
-            GetHTTCandidates(Channel::{ch}, 0.5, {leg1}_B2_{ch}_1, {leg1}_p4, {leg1}_iso, {leg1}_charge, {leg1}_genMatchIdx,
+            GetHTTCandidates<2>(Channel::{ch}, 0.5, {leg1}_B2_{ch}_1, {leg1}_p4, {leg1}_iso, {leg1}_charge, {leg1}_genMatchIdx,
                                                  {leg2}_B2_{ch}_2, {leg2}_p4, {leg2}_iso, {leg2}_charge, {leg2}_genMatchIdx)
         """)
         cand_columns.append(cand_column)
@@ -287,7 +287,7 @@ def RecoHttCandidateSelection(df, config):
     #    df.Display({f"candSize_{c}"}).Print()
     df = df.Filter(" || ".join(cand_filters), "Reco Baseline 2")
     cand_list_str = ', '.join([ '&' + c for c in cand_columns])
-    return df.Define('httCand', f'GetBestHTTCandidate({{ {cand_list_str} }}, event)')
+    return df.Define('httCand', f'GetBestHTTCandidate<2>({{ {cand_list_str} }}, event)')
 
 def ThirdLeptonVeto(df):
     df = df.Define("Electron_vetoSel",

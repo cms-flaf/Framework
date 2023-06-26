@@ -54,12 +54,12 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
         dfw.Apply(Baseline.RecoLeptonsSelection)
         dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
         dfw.Apply(Baseline.RecoJetSelection)
-        dfw.Apply(Baseline.RequestOnlyResolvedRecoJets)
         dfw.Apply(Baseline.ThirdLeptonVeto)
         dfw.Apply(Baseline.DefineHbbCand)
     elif mode == 'ttHH':
         dfw.Apply(Baseline.RecottHttCandidateSelection_ttHH)
         dfw.Apply(Baseline.RecoJetSelection_ttHH)
+    dfw.Apply(Baseline.ExtraRecoJetSelection)
     dfw.Apply(Corrections.jet.getEnergyResolution)
     dfw.DefineAndAppend(f"ExtraJet_pt", f"v_ops::pt(Jet_p4[ExtraJet_B1])")
     dfw.DefineAndAppend(f"ExtraJet_eta", f"v_ops::eta(Jet_p4[ExtraJet_B1])")
@@ -183,8 +183,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
         for var in [ 'pt', 'eta', 'phi', 'mass' ]:
             LegVar(f'seedingJet_{var}', f"Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).{var}()",
                    var_type='float', var_cond=f"tau{leg_idx+1}_recoJetMatchIdx>=0", default='-1.f')
-
-        dfw.DefineAndAppend(f"b{leg_idx+1}_isValid","Jet_idx[Jet_bCand].size()>=2 ? true : false" )        if mode == "HH":
+        if mode == "HH":
+            dfw.DefineAndAppend(f"b{leg_idx+1}_isValid","Jet_idx[Jet_bCand].size()>=2 ? true : false" )
             dfw.DefineAndAppend(f"b{leg_idx+1}_idx", f"b{leg_idx+1}_isValid ? HbbCandidate.leg_index[{leg_idx}] : -100")
             dfw.DefineAndAppend(f"b{leg_idx+1}_ptRes",f"b{leg_idx+1}_isValid ? static_cast<float>(Jet_ptRes.at(HbbCandidate.leg_index[{leg_idx}])) : -100.f")
             dfw.DefineAndAppend(f"b{leg_idx+1}_pt", f"b{leg_idx+1}_isValid ? static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Pt()) : -100.f")

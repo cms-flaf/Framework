@@ -87,9 +87,9 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     dfw.Define(f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
     dfw.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
     dfw.Define( f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
-    dfw.DefineAndAppend("channelId","static_cast<int>(httCand.channel())")
+    dfw.DefineAndAppend("channelId","static_cast<int>(HttCandidate.channel())")
     if mode == "HH":
-        channel_to_select = " || ".join(f"httCand.channel()==Channel::{ch}" for ch in config["GLOBAL"]["channelSelection"])
+        channel_to_select = " || ".join(f"HttCandidate.channel()==Channel::{ch}" for ch in config["GLOBAL"]["channelSelection"])
         dfw.Filter(channel_to_select, "select channels")
 
     fatjet_obs = []
@@ -138,34 +138,34 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
         def LegVar(var_name, var_expr, var_type=None, var_cond=None, check_leg_type=True, default=0):
             cond = var_cond
             if check_leg_type:
-                type_cond = f"httCand.leg_type[{leg_idx}] != Leg::none"
+                type_cond = f"HttCandidate.leg_type[{leg_idx}] != Leg::none"
                 cond = f"{type_cond} && ({cond})" if cond else type_cond
             define_expr = f'static_cast<{var_type}>({var_expr})' if var_type else var_expr
             if cond:
                 define_expr = f'{cond} ? ({define_expr}) : {default}'
             dfw.DefineAndAppend( f"tau{leg_idx+1}_{var_name}", define_expr)
 
-        LegVar('legType', f"httCand.leg_type[{leg_idx}]", var_type='int', check_leg_type=False)
+        LegVar('legType', f"HttCandidate.leg_type[{leg_idx}]", var_type='int', check_leg_type=False)
         for var in [ 'pt', 'eta', 'phi', 'mass' ]:
-            LegVar(var, f'httCand.leg_p4[{leg_idx}].{var}()', var_type='float', default='-1.f')
-        LegVar('charge', f'httCand.leg_charge[{leg_idx}]', var_type='int')
+            LegVar(var, f'HttCandidate.leg_p4[{leg_idx}].{var}()', var_type='float', default='-1.f')
+        LegVar('charge', f'HttCandidate.leg_charge[{leg_idx}]', var_type='int')
 
-        dfw.Define(f"tau{leg_idx+1}_recoJetMatchIdx", f"""httCand.leg_type[{leg_idx}] != Leg::none
-                                                          ? FindMatching(httCand.leg_p4[{leg_idx}], Jet_p4, 0.3)
+        dfw.Define(f"tau{leg_idx+1}_recoJetMatchIdx", f"""HttCandidate.leg_type[{leg_idx}] != Leg::none
+                                                          ? FindMatching(HttCandidate.leg_p4[{leg_idx}], Jet_p4, 0.3)
                                                           : -1""")
-        LegVar('iso', f"httCand.leg_rawIso.at({leg_idx})")
+        LegVar('iso', f"HttCandidate.leg_rawIso.at({leg_idx})")
         for deepTauScore in deepTauScores:
-            LegVar(deepTauScore, f"Tau_{deepTauScore}.at(httCand.leg_index[{leg_idx}])",
-                   var_cond=f"httCand.leg_type[{leg_idx}] == Leg::tau", default='-1.f')
+            LegVar(deepTauScore, f"Tau_{deepTauScore}.at(HttCandidate.leg_index[{leg_idx}])",
+                   var_cond=f"HttCandidate.leg_type[{leg_idx}] == Leg::tau", default='-1.f')
         for muon_obs in Muon_observables:
-            LegVar(muon_obs, f"{muon_obs}.at(httCand.leg_index[{leg_idx}])",
-                   var_cond=f"httCand.leg_type[{leg_idx}] == Leg::mu", default='-1')
+            LegVar(muon_obs, f"{muon_obs}.at(HttCandidate.leg_index[{leg_idx}])",
+                   var_cond=f"HttCandidate.leg_type[{leg_idx}] == Leg::mu", default='-1')
         for ele_obs in Electron_observables:
-            LegVar(ele_obs, f"{ele_obs}.at(httCand.leg_index[{leg_idx}])",
-                   var_cond=f"httCand.leg_type[{leg_idx}] == Leg::e", default='-1')
+            LegVar(ele_obs, f"{ele_obs}.at(HttCandidate.leg_index[{leg_idx}])",
+                   var_cond=f"HttCandidate.leg_type[{leg_idx}] == Leg::e", default='-1')
         if not isData:
             dfw.Define(f"tau{leg_idx+1}_genMatchIdx",
-                       f"httCand.leg_type[{leg_idx}] != Leg::none ? httCand.leg_genMatchIdx[{leg_idx}] : -1")
+                       f"HttCandidate.leg_type[{leg_idx}] != Leg::none ? HttCandidate.leg_genMatchIdx[{leg_idx}] : -1")
             LegVar('gen_kind', f'genLeptons.at(tau{leg_idx+1}_genMatchIdx).kind()',
                    var_type='int', var_cond=f"tau{leg_idx+1}_genMatchIdx>=0",
                    default='static_cast<int>(GenLeptonMatch::NoMatch)')

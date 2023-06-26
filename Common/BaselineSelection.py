@@ -79,7 +79,7 @@ def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125., p4_suff
     return df
 
 def PassGenAcceptance(df):
-    df = df.Filter("genHttCand", "GenHttCand present")
+    df = df.Filter("genHttCand.get() != nullptr", "GenHttCand present")
     return df.Filter("PassGenAcceptance(*genHttCand)", "GenHttCand Acceptance")
 
 def GenJetSelection(df):

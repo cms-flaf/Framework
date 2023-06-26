@@ -7,7 +7,7 @@ class Triggers():
             self.trigger_dict= yaml.safe_load(stream)
         self.deltaR_matching = deltaR_matching
 
-    def ApplyTriggers(self, df, isData = False):
+    def ApplyTriggers(self, df, nOfflineLegs, isData = False):
         hltBranches = []
         matchedObjectsBranches= []
         for path, path_dict in self.trigger_dict.items():
@@ -58,9 +58,7 @@ class Triggers():
             legVector = f'{{ { ", ".join(total_objects_matched)} }}'
             df = df.Define(f'hasOOMatching_{path}_details', f'HasOOMatching({legVector} )')
             df = df.Define(f'hasOOMatching_{path}', f'hasOOMatching_{path}_details.first')
-            for offline_leg_id in range(2):
-                if leg_dict_offline["type"].startswith('MET'):
-                    continue
+            for offline_leg_id in range(nOfflineLegs):
                 matching_var_bool = f'tau{offline_leg_id+1}_HasMatching_{path}'
                 df = df.Define(matching_var_bool,
                                f'hasOOMatching_{path}_details.second.count(LegIndexPair(httCand.leg_type.at({offline_leg_id}), httCand.leg_index.at({offline_leg_id}) ) ) > 0')

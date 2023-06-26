@@ -5,7 +5,7 @@
 #include "TextIO.h"
 #include "HHCore.h"
 
-std::shared_ptr<HTTCand> GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
+std::shared_ptr<HTTCand<2>> GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
                                             const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
                                             const RVecF& GenPart_pt, const RVecF& GenPart_eta,
                                             const RVecF& GenPart_phi, const RVecF& GenPart_mass,
@@ -31,7 +31,7 @@ std::shared_ptr<HTTCand> GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
     if(htt_indices.size() != 1)
         throw analysis::exception("Multiple H->tautau candidates.");
     const int htt_index = *htt_indices.begin();
-    HTTCand htt_cand;
+    HTTCand<2> htt_cand;
     int leg_idx = 0;
     for(int tau_idx : GenPart_daughters.at(htt_index)) {
         if(std::abs(GenPart_pdgId.at(tau_idx)) != PdG::tau()) continue;
@@ -75,11 +75,11 @@ std::shared_ptr<HTTCand> GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
                                                 GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
     }
 
-    return std::make_shared<HTTCand>(htt_cand);
+    return std::make_shared<HTTCand<2>>(htt_cand);
   } catch(analysis::exception& e) {
     if(throw_error_if_not_found)
       throw analysis::exception("GetGenHTTCandidate (event=%1%): %2%") % evt % e.message();
-    return std::make_shared<HTTCand>();
+    return std::make_shared<HTTCand<2>>();
   }
 }
 
@@ -115,7 +115,7 @@ int GetGenHBBIndex(int evt, const RVecI& GenPart_pdgId,
 
 
 
-bool PassGenAcceptance(const HTTCand& HTT_Cand){
+bool PassGenAcceptance(const HTTCand<2>& HTT_Cand){
     for(size_t i = 0; i < HTT_Cand.leg_p4.size(); ++i){
         if(!(HTT_Cand.leg_p4.at(i).pt()>20 && std::abs(HTT_Cand.leg_p4.at(i).eta())<2.3 )){
             return false;

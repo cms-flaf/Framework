@@ -55,10 +55,13 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
         dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
         dfw.Apply(Baseline.RecoJetSelection)
         dfw.Apply(Baseline.ThirdLeptonVeto)
-        dfw.Apply(Baseline.DefineHbbCand)
     elif mode == 'ttHH':
         dfw.Apply(Baseline.RecottHttCandidateSelection_ttHH)
         dfw.Apply(Baseline.RecoJetSelection_ttHH)
+
+
+    dfw.Apply(Baseline.DefineHbbCand)
+    dfw.DefineAndAppend("Hbb_isValid" , "HbbCandidate.has_value()")
     dfw.Apply(Baseline.ExtraRecoJetSelection)
     dfw.Apply(Corrections.jet.getEnergyResolution)
     dfw.DefineAndAppend(f"ExtraJet_pt", f"v_ops::pt(Jet_p4[ExtraJet_B1])")
@@ -68,6 +71,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     dfw.DefineAndAppend(f"ExtraJet_ptRes", f"Jet_ptRes[ExtraJet_B1]")
     jet_obs = []
     jet_obs.extend(JetObservables)
+    dfw.Apply(Baseline.ApplyJetSelection)
     if not isData:
         dfw.Define(f"Jet_genJet_idx", f" FindMatching(Jet_p4,GenJet_p4,0.3)")
         jet_obs.extend(JetObservablesMC)
@@ -77,7 +81,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
         if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
         dfw.DefineAndAppend(f"ExtraJet_{jetVar}", f"Jet_{jetVar}[ExtraJet_B1]")
     dfw.DefineAndAppend(f"ExtraJet_HHbtag", f"Jet_HHBtagScore[ExtraJet_B1]")
-    dfw.Apply(Baseline.ApplyJetSelection)
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, nLegs, isData)
         dfw.colToSave.extend(hltBranches)
@@ -184,23 +187,21 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
             LegVar(f'seedingJet_{var}', f"Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).{var}()",
                    var_type='float', var_cond=f"tau{leg_idx+1}_recoJetMatchIdx>=0", default='-1.f')
         if mode == "HH":
-            dfw.DefineAndAppend(f"b{leg_idx+1}_isValid","Jet_idx[Jet_bCand].size()>=2 ? true : false" )
-            dfw.DefineAndAppend(f"b{leg_idx+1}_idx", f"b{leg_idx+1}_isValid ? HbbCandidate.leg_index[{leg_idx}] : -100")
-            dfw.DefineAndAppend(f"b{leg_idx+1}_ptRes",f"b{leg_idx+1}_isValid ? static_cast<float>(Jet_ptRes.at(HbbCandidate.leg_index[{leg_idx}])) : -100.f")
-            dfw.DefineAndAppend(f"b{leg_idx+1}_pt", f"b{leg_idx+1}_isValid ? static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Pt()) : -100.f")
-            dfw.DefineAndAppend(f"b{leg_idx+1}_pt_raw", f"b{leg_idx+1}_isValid ? static_cast<float>(Jet_pt.at(HbbCandidate.leg_index[{leg_idx}])) : - 100.f")
-            dfw.DefineAndAppend(f"b{leg_idx+1}_eta", f"b{leg_idx+1}_isValid ? static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Eta()) : -100.f")
-            dfw.DefineAndAppend(f"b{leg_idx+1}_phi", f"b{leg_idx+1}_isValid ? static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].Phi()) : -100.f")
-            dfw.DefineAndAppend(f"b{leg_idx+1}_mass", f"b{leg_idx+1}_isValid ? static_cast<float>(HbbCandidate.leg_p4[{leg_idx}].M()) : -100.f")
+            dfw.DefineAndAppend(f"b{leg_idx+1}_idx", f"Hbb_isValid ? HbbCandidate->leg_index[{leg_idx}] : -100")
+            dfw.DefineAndAppend(f"b{leg_idx+1}_ptRes",f"Hbb_isValid ? static_cast<float>(Jet_ptRes.at(HbbCandidate->leg_index[{leg_idx}])) : -100.f")
+            dfw.DefineAndAppend(f"b{leg_idx+1}_pt", f"Hbb_isValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].Pt()) : -100.f")
+            dfw.DefineAndAppend(f"b{leg_idx+1}_pt_raw", f"Hbb_isValid ? static_cast<float>(Jet_pt.at(HbbCandidate->leg_index[{leg_idx}])) : - 100.f")
+            dfw.DefineAndAppend(f"b{leg_idx+1}_eta", f"Hbb_isValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].Eta()) : -100.f")
+            dfw.DefineAndAppend(f"b{leg_idx+1}_phi", f"Hbb_isValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].Phi()) : -100.f")
+            dfw.DefineAndAppend(f"b{leg_idx+1}_mass", f"Hbb_isValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].M()) : -100.f")
             if not isData:
-                dfw.Define(f"b{leg_idx+1}_genJet_idx", f" b{leg_idx+1}_isValid ?  Jet_genJet_idx.at(HbbCandidate.leg_index[{leg_idx}]) : -100")
+                dfw.Define(f"b{leg_idx+1}_genJet_idx", f" Hbb_isValid ?  Jet_genJet_idx.at(HbbCandidate->leg_index[{leg_idx}]) : -100")
                 for var in [ 'pt', 'eta', 'phi', 'mass' ]:
-                    dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_{var}", f"b{leg_idx+1}_isValid && b{leg_idx+1}_genJet_idx>=0 ? static_cast<float>(GenJet_p4.at(b{leg_idx+1}_genJet_idx).{var}()) : -100.f")
+                    dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_{var}", f"Hbb_isValid && b{leg_idx+1}_genJet_idx>=0 ? static_cast<float>(GenJet_p4.at(b{leg_idx+1}_genJet_idx).{var}()) : -100.f")
             for jetVar in jet_obs:
                 if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
-                dfw.DefineAndAppend(f"b{leg_idx+1}_{jetVar}", f"b{leg_idx+1}_isValid ? Jet_{jetVar}.at(HbbCandidate.leg_index[{leg_idx}]) : -100")
-
-            dfw.DefineAndAppend(f"b{leg_idx+1}_HHbtag", f"b{leg_idx+1}_isValid ?  static_cast<float>(Jet_HHBtagScore.at(HbbCandidate.leg_index[{leg_idx}])) : -100.f")
+                dfw.DefineAndAppend(f"b{leg_idx+1}_{jetVar}", f"Hbb_isValid ? Jet_{jetVar}.at(HbbCandidate->leg_index[{leg_idx}]) : -100")
+            dfw.DefineAndAppend(f"b{leg_idx+1}_HHbtag", f"Hbb_isValid ?  static_cast<float>(Jet_HHBtagScore.at(HbbCandidate->leg_index[{leg_idx}])) : -100.f")
 
 def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOptions,range, evtIds,
                    store_noncentral, compute_unc_variations, uncertainties, print_cutflow, mode):
@@ -276,7 +277,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
                     new_branch_name= puIDbranch.strip("_tmp")
                     dfw.DefineAndAppend(new_branch_name, f"{puIDbranch}[ExtraJet_B1]")
                     for bjet_idx in [1,2]:
-                        dfw.DefineAndAppend(f"{new_branch_name}_b{bjet_idx}", f"{puIDbranch}[b{bjet_idx}_idx]")
+                        dfw.DefineAndAppend(f"{new_branch_name}_b{bjet_idx}", f"Hbb_isValid ? {puIDbranch}[b{bjet_idx}_idx] : -100.f")
                 if puIDbranch in weight_branches: weight_branches.remove(puIDbranch)
             dfw.colToSave.extend(weight_branches)
         reports.append(dfw.df.Report())

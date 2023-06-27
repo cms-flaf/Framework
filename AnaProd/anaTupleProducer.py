@@ -111,16 +111,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
         dfw.Define(f"SubJet2_genJet_idx", f" FindMatching(SubJet_p4[FatJet_subJetIdx2],SubGenJetAK8_p4,0.3)")
         fatjet_obs.extend(SubJetObservablesMC)
     for subJetIdx in [1,2]:
-        dfw.DefineAndAppend(f"SubJet{subJetIdx}_isValid", f"""
-                                RVecB subjet_isValid(SelectedFatJet_pt.size(), false);
-                                for(size_t fj_idx = 0; fj_idx<SelectedFatJet_pt.size(); fj_idx++) {{
-                                    auto sj_idx = SelectedFatJet_subJetIdx{subJetIdx}.at(fj_idx);
-                                    if(sj_idx >= 0 && sj_idx < SubJet_pt.size()){{
-                                        subjet_isValid[fj_idx] = true;
-                                    }}
-                                }}
-                                return subjet_isValid;
-                                """)
+        dfw.Define(f"FatJet_SubJet{subJetIdx}_isValid", f" FatJet_subJetIdx{subJetIdx} >=0 && FatJet_subJetIdx{subJetIdx} < nSubJet")
+        dfw.DefineAndAppend(f"SelectedFatJet_SubJet{subJetIdx}_isValid", f"FatJet_SubJet{subJetIdx}_isValid[FatJet_bbCand]")
         for subJetVar in subjet_obs:
             dfw.DefineAndAppend(f"SubJet{subJetIdx}_{subJetVar}", f"""
                                 RVecF subjet_var(SelectedFatJet_pt.size(), 0.f);

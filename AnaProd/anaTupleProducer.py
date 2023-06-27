@@ -40,7 +40,7 @@ FatJetObservables = ["area", "btagCSVV2", "btagDDBvLV2", "btagDeepB", "btagHbb",
 
 FatJetObservablesMC = ["hadronFlavour","partonFlavour"]
 
-SubJetObservables = ["btagDeepB", "eta", "hadronFlavour", "mass", "phi", "pt", "rawFactor"]
+SubJetObservables = ["btagDeepB", "eta", "mass", "phi", "pt", "rawFactor"]
 SubJetObservablesMC = ["hadronFlavour","partonFlavour"]
 
 defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
@@ -101,7 +101,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_phi", f"v_ops::phi(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_mass", f"v_ops::mass(FatJet_p4[FatJet_bbCand])")
-    for fatjetVar in fatjet_obs:
+    for fatjetVar in fatjet_obs:deepTagMD_ZbbvsQCD
         if(f"FatJet_{fatjetVar}" not in dfw.df.GetColumnNames()): continue
         dfw.DefineAndAppend(f"SelectedFatJet_{fatjetVar}", f"FatJet_{fatjetVar}[FatJet_bbCand]")
     subjet_obs = []

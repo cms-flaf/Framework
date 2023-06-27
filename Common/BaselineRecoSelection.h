@@ -167,56 +167,25 @@ RVecI GenRecoJetMatching(int event,const RVecI& Jet_idx, const RVecI& GenJet_idx
 std::optional<HbbCand> GetHbbCandidate(const RVecF& HHbTagScores, const RVecB& JetSel, const RVecLV& Jet_p4, const RVecI& Jet_idx)
 {
   RVecI JetIdxOrdered = ReorderObjects(HHbTagScores, Jet_idx);
-  std::optional<HbbCand> HbbCandidate = std::nullopt;  // Inizializza come opzionale senza valore
-
-
+  HbbCand HbbCandidate ;
+  for(int j = 0; j < HbbCandidate.n_legs; j++){
+    HbbCandidate.leg_index[j]=-1;
+  }
   int leg_idx = 0;
-  RVecI already_taken_idx;
   for(int i = 0; i < Jet_idx.size(); i++){
     int jet_idx = JetIdxOrdered[i];
     if(!JetSel[jet_idx]) continue;
-    if(std::find(already_taken_idx.begin(), already_taken_idx.end(), jet_idx) != already_taken_idx.end()) continue;
-    HbbCandidate->leg_index[leg_idx] = jet_idx;
-    HbbCandidate->leg_p4[leg_idx] = Jet_p4.at(jet_idx);
-    already_taken_idx.push_back(jet_idx);
-    leg_idx++;
-    if(leg_idx == HbbCandidate->n_legs) break;
-  }
-
-  return HbbCandidate;
-}
-
-
-/*
-HbbCand GetHbbCandidate(const RVecF& HHbTagScores, const RVecB& JetSel,  const RVecLV& Jet_p4, const RVecI& Jet_idx)
-{
-  RVecI JetIdxOrdered = ReorderObjects(HHbTagScores, Jet_idx);
-  HbbCand HbbCandidate;
-  for(int j=0;j<HbbCandidate.n_legs;j++){
-    HbbCandidate.leg_index[j] = -1;
-  }
-
-  int leg_idx = 0;
-  RVecI already_taken_idx;
-  for(int i=0; i<Jet_idx.size(); i++){
-    int jet_idx = JetIdxOrdered[i];
-    if(!JetSel[jet_idx]) continue;
-    if(std::find(already_taken_idx.begin(), already_taken_idx.end(),jet_idx)!=already_taken_idx.end()) continue;
-    HbbCandidate.leg_index[leg_idx] =  jet_idx;
+    HbbCandidate.leg_index[leg_idx] = jet_idx;
     HbbCandidate.leg_p4[leg_idx] = Jet_p4.at(jet_idx);
-    already_taken_idx.push_back(jet_idx);
-    //std::cout << "leg_idx = " << leg_idx << std::endl;
-    //std::cout << "Jet_idx = " << jet_idx << std::endl;
     leg_idx++;
     if(leg_idx == HbbCandidate.n_legs) break;
   }
-  //for(int j=0;j<HbbCandidate.n_legs;j++){
-    //std::cout << "jet associated to the " << j << " leg is "<< HbbCandidate.leg_index[j] << std::endl;
-  //}
-  //std::cout<<std::endl;
-  return HbbCandidate;
+  if(HbbCandidate.leg_index[0]>=0 && HbbCandidate.leg_index[1]>=0){
+    return HbbCandidate;
+  }
+  return std::nullopt;
 }
-*/
+
 
 using LegIndexPair = std::pair<Leg, size_t>;
 using LegMatching = std::pair<Leg, RVecSetInt>;

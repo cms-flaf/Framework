@@ -318,6 +318,7 @@ def ExtraRecoJetSelection(df):
 
 def ApplyJetSelection(df):
     return df.Filter("Jet_idx[Jet_bCand].size()>=2 || FatJet_idx[FatJet_bbCand].size()>=1", "Reco bjet candidates")
+    #return df.Filter("Jet_idx[Jet_bCand].size()<2 ", "Reco bjet candidates")
 
 def GenRecoJetMatching(df):
     df = df.Define("Jet_genJetIdx_matched", "GenRecoJetMatching(event,Jet_idx, GenJet_idx, Jet_bCand, GenJet_B2, GenJet_p4, Jet_p4 , 0.3)")

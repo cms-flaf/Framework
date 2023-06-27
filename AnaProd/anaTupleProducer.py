@@ -97,6 +97,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     if not isData:
         dfw.Define(f"FatJet_genJet_idx", f" FindMatching(FatJet_p4[FatJet_bbCand],GenJetAK8_p4,0.3)")
         fatjet_obs.extend(JetObservablesMC)
+    dfw.DefineAndAppend(f"SelectedFatJet_isValid", "v_ops::pt(FatJet_p4[FatJet_bbCand]).size()>0")
     dfw.DefineAndAppend(f"SelectedFatJet_pt", f"v_ops::pt(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_phi", f"v_ops::phi(FatJet_p4[FatJet_bbCand])")
@@ -110,22 +111,19 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
         dfw.Define(f"SubJet1_genJet_idx", f" FindMatching(SubJet_p4[FatJet_subJetIdx1],SubGenJetAK8_p4,0.3)")
         dfw.Define(f"SubJet2_genJet_idx", f" FindMatching(SubJet_p4[FatJet_subJetIdx2],SubGenJetAK8_p4,0.3)")
         fatjet_obs.extend(SubJetObservablesMC)
-    for subJetVar in subjet_obs:
-        for subJetIdx in [1,2]:
+    for subJetIdx in [1,2]:
+        dfw.DefineAndAppend(f"SubJet{subJetIdx}_isValid", f"FatJet_subJetIdx{subJetIdx}[FatJet_bbCand].size()>0")
+        for subJetVar in subjet_obs:
             dfw.DefineAndAppend(f"SubJet{subJetIdx}_{subJetVar}", f"""
-                                RVecF subjet_var;
-                                for(size_t fj_idx; fj_idx<SelectedFatJet_pt.size(); fj_idx++){{
-                                    for (size_t sj_idx; sj_idx<SubJet_{subJetVar}.size(); sj_idx++){{
-                                            if(sj_idx == SelectedFatJet_subJetIdx{subJetIdx}.at(fj_idx)){{
-                                                subjet_var.push_back(SubJet_{subJetVar}.at(sj_idx));
-                                            }}
-                                        }}
+                                RVecF subjet_var(SelectedFatJet_pt.size(), 0.f);
+                                for(size_t fj_idx = 0; fj_idx<SelectedFatJet_pt.size(); fj_idx++) {{
+                                    auto sj_idx = SelectedFatJet_subJetIdx{subJetIdx}.at(fj_idx);
+                                    if(sj_idx >= 0 && sj_idx < SubJet_{subJetVar}.size()){{
+                                        subjet_var[fj_idx] = SubJet_{subJetVar}.at(sj_idx);
                                     }}
+                                }}
                                 return subjet_var;
                                 """)
-
-
-
     dfw.DefineAndAppend(f"met_pt_nano", f"static_cast<float>(MET_p4_nano.pt())")
     dfw.DefineAndAppend(f"met_phi_nano", f"static_cast<float>(MET_p4_nano.phi())")
     dfw.DefineAndAppend("met_pt", "static_cast<float>(MET_p4.pt())")
@@ -187,7 +185,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
             LegVar(f'seedingJet_{var}', f"Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).{var}()",
                    var_type='float', var_cond=f"tau{leg_idx+1}_recoJetMatchIdx>=0", default='-1.f')
         if mode == "HH":
-            dfw.DefineAndAppend(f"b{leg_idx+1}_idx", f"Hbb_isValid ? HbbCandidate->leg_index[{leg_idx}] : -100")
+            dfw.Define(f"b{leg_idx+1}_idx", f"Hbb_isValid ? HbbCandidate->leg_index[{leg_idx}] : -100")
             dfw.DefineAndAppend(f"b{leg_idx+1}_ptRes",f"Hbb_isValid ? static_cast<float>(Jet_ptRes.at(HbbCandidate->leg_index[{leg_idx}])) : -100.f")
             dfw.DefineAndAppend(f"b{leg_idx+1}_pt", f"Hbb_isValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].Pt()) : -100.f")
             dfw.DefineAndAppend(f"b{leg_idx+1}_pt_raw", f"Hbb_isValid ? static_cast<float>(Jet_pt.at(HbbCandidate->leg_index[{leg_idx}])) : - 100.f")

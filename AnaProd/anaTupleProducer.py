@@ -97,7 +97,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     if not isData:
         dfw.Define(f"FatJet_genJet_idx", f" FindMatching(FatJet_p4[FatJet_bbCand],GenJetAK8_p4,0.3)")
         fatjet_obs.extend(JetObservablesMC)
-    dfw.DefineAndAppend(f"SelectedFatJet_isValid", "v_ops::pt(FatJet_p4[FatJet_bbCand]).size()>0")
     dfw.DefineAndAppend(f"SelectedFatJet_pt", f"v_ops::pt(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_phi", f"v_ops::phi(FatJet_p4[FatJet_bbCand])")
@@ -112,7 +111,16 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
         dfw.Define(f"SubJet2_genJet_idx", f" FindMatching(SubJet_p4[FatJet_subJetIdx2],SubGenJetAK8_p4,0.3)")
         fatjet_obs.extend(SubJetObservablesMC)
     for subJetIdx in [1,2]:
-        dfw.DefineAndAppend(f"SubJet{subJetIdx}_isValid", f"FatJet_subJetIdx{subJetIdx}[FatJet_bbCand].size()>0")
+        dfw.DefineAndAppend(f"SubJet{subJetIdx}_isValid", f"""
+                                RVecB subjet_isValid(SelectedFatJet_pt.size(), false);
+                                for(size_t fj_idx = 0; fj_idx<SelectedFatJet_pt.size(); fj_idx++) {{
+                                    auto sj_idx = SelectedFatJet_subJetIdx{subJetIdx}.at(fj_idx);
+                                    if(sj_idx >= 0 && sj_idx < SubJet_pt.size()){{
+                                        subjet_isValid[fj_idx] = true;
+                                    }}
+                                }}
+                                return subjet_isValid;
+                                """)
         for subJetVar in subjet_obs:
             dfw.DefineAndAppend(f"SubJet{subJetIdx}_{subJetVar}", f"""
                                 RVecF subjet_var(SelectedFatJet_pt.size(), 0.f);

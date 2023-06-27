@@ -1,22 +1,23 @@
 #pragma once
 #include "AnalysisTools.h"
 #include "HHCore.h"
+#include <optional>
 
 
 template<size_t N>
-void FillHTTCandidates(Channel refChannel, ROOT::VecOps::RVec<HTTCand<N>>& httCands, const HTTCand<N>& refHttCand,
+void FillHTTCandidates(Channel refChannel, ROOT::VecOps::RVec<HTTCand<N>>& HttCandidates, const HTTCand<N>& refHttCand,
                        double dR2_thr, const std::vector<Leg>& leg_types,
                        const std::map<Leg, std::set<size_t>>& otherLegs, const RVecLV& otherLegs_p4,
                        size_t leg_index)
 {
   if(refHttCand.channel() != refChannel)
-    throw analysis::exception("ERROR: FillHTTCandidates: httCand has an unexpected channel: %1% != %2%")
+    throw analysis::exception("ERROR: FillHTTCandidates: HttCandidate has an unexpected channel: %1% != %2%")
           % static_cast<int>(refHttCand.channel()) % static_cast<int>(refChannel);
-  httCands.push_back(refHttCand);
+  HttCandidates.push_back(refHttCand);
 }
 
 template<size_t N, typename ...Args>
-void FillHTTCandidates(Channel refChannel, ROOT::VecOps::RVec<HTTCand<N>>& httCands, const HTTCand<N>& refHttCand,
+void FillHTTCandidates(Channel refChannel, ROOT::VecOps::RVec<HTTCand<N>>& HttCandidates, const HTTCand<N>& refHttCand,
                        double dR2_thr, const std::vector<Leg>& leg_types,
                        const std::map<Leg, std::set<size_t>>& otherLegs, const RVecLV& otherLegs_p4, size_t leg_index,
                        const RVecB& leg_sel, const RVecLV& leg_p4, const RVecF& leg_rawIso, const RVecI& leg_charge,
@@ -51,7 +52,7 @@ void FillHTTCandidates(Channel refChannel, ROOT::VecOps::RVec<HTTCand<N>>& httCa
     auto newOtherLegs_p4 = otherLegs_p4;
     newOtherLegs_p4.push_back(leg_p4.at(leg_idx));
 
-    FillHTTCandidates(refChannel, httCands, newHttCand, dR2_thr, leg_types, newOtherLegs, newOtherLegs_p4,
+    FillHTTCandidates(refChannel, HttCandidates, newHttCand, dR2_thr, leg_types, newOtherLegs, newOtherLegs_p4,
                       leg_index + 1, std::forward<Args>(leg_info)...);
   }
 }
@@ -61,7 +62,7 @@ template<size_t N, typename ...Args>
 ROOT::VecOps::RVec<HTTCand<N>> GetHTTCandidates(Channel channel, double dR_thr, Args&&... leg_info)
 {
   const double dR2_thr = std::pow(dR_thr, 2);
-  ROOT::VecOps::RVec<HTTCand<N>> httCands;
+  ROOT::VecOps::RVec<HTTCand<N>> HttCandidates;
   const auto leg_types = ChannelToLegs(channel);
   if(leg_types.empty())
     throw analysis::exception("ERROR: no legs are expected for channel %1%") % static_cast<int>(channel);
@@ -69,7 +70,7 @@ ROOT::VecOps::RVec<HTTCand<N>> GetHTTCandidates(Channel channel, double dR_thr, 
   std::map<Leg, std::set<size_t>> otherLegs;
   RVecLV otherLegs_p4;
   try {
-    FillHTTCandidates(channel, httCands, refHttCand, dR2_thr, leg_types, otherLegs, otherLegs_p4, 0,
+    FillHTTCandidates(channel, HttCandidates, refHttCand, dR2_thr, leg_types, otherLegs, otherLegs_p4, 0,
                       std::forward<Args>(leg_info)...);
   } catch(analysis::exception& e) {
     std::cerr << "ERROR: GetHTTCandidates: target channel = " << static_cast<int>(channel) << '\n'
@@ -84,11 +85,11 @@ ROOT::VecOps::RVec<HTTCand<N>> GetHTTCandidates(Channel channel, double dR_thr, 
               << e.what() << std::endl;
     throw;
   }
-  return httCands;
+  return HttCandidates;
 }
 
 template<size_t N>
-HTTCand<N> GetBestHTTCandidate(const std::vector<const ROOT::VecOps::RVec<HTTCand<N>>*> httCands,
+HTTCand<N> GetBestHTTCandidate(const std::vector<const ROOT::VecOps::RVec<HTTCand<N>>*> HttCandidates,
                                unsigned long long event)
 {
   const auto& comparitor = [&](const HTTCand<N>& cand1, const HTTCand<N>& cand2) -> bool {
@@ -111,7 +112,7 @@ HTTCand<N> GetBestHTTCandidate(const std::vector<const ROOT::VecOps::RVec<HTTCan
     % static_cast<int>(cand1.channel()) % event ;
   };
 
-  for(auto cands : httCands) {
+  for(auto cands : HttCandidates) {
     if(!cands->empty())
       return *std::min_element(cands->begin(), cands->end(), comparitor);
   }
@@ -163,22 +164,26 @@ RVecI GenRecoJetMatching(int event,const RVecI& Jet_idx, const RVecI& GenJet_idx
 }
 
 
-HbbCand GetHbbCandidate(const RVecF& HHbTagScores, const RVecB& JetSel,  const RVecLV& Jet_p4, const RVecI& Jet_idx)
+std::optional<HbbCand> GetHbbCandidate(const RVecF& HHbTagScores, const RVecB& JetSel, const RVecLV& Jet_p4, const RVecI& Jet_idx)
 {
   RVecI JetIdxOrdered = ReorderObjects(HHbTagScores, Jet_idx);
-  HbbCand HbbCandidate;
-
+  HbbCand HbbCandidate ;
+  for(int j = 0; j < HbbCandidate.n_legs; j++){
+    HbbCandidate.leg_index[j]=-1;
+  }
   int leg_idx = 0;
-  for(int i=0; i<Jet_idx.size(); i++){
+  for(int i = 0; i < Jet_idx.size(); i++){
     int jet_idx = JetIdxOrdered[i];
     if(!JetSel[jet_idx]) continue;
-    HbbCandidate.leg_index[leg_idx] =  jet_idx;
+    HbbCandidate.leg_index[leg_idx] = jet_idx;
     HbbCandidate.leg_p4[leg_idx] = Jet_p4.at(jet_idx);
     leg_idx++;
     if(leg_idx == HbbCandidate.n_legs) break;
   }
-
-  return HbbCandidate;
+  if(HbbCandidate.leg_index[0]>=0 && HbbCandidate.leg_index[1]>=0){
+    return HbbCandidate;
+  }
+  return std::nullopt;
 }
 
 

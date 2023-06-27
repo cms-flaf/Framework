@@ -38,7 +38,7 @@ class Triggers():
                         var_name_offline = f'{leg_dict_offline["type"]}_idx[{var_name_offline}].size()>0'
                     additional_conditions.append(var_name_offline)
                 else:
-                    df = df.Define(f'{type_name_offline}_{var_name_offline}_sel', f'httCand.isLeg({type_name_offline}_idx, {self.dict_legtypes[type_name_offline]}) && ({var_name_offline})')
+                    df = df.Define(f'{type_name_offline}_{var_name_offline}_sel', f'HttCandidate.isLeg({type_name_offline}_idx, {self.dict_legtypes[type_name_offline]}) && ({var_name_offline})')
                     leg_dict_online= leg_tuple["online_obj"]
                     var_name_online =  f'{leg_dict_offline["type"]}_onlineCut_{leg_id+1}_{path}'
                     cut_vars = []
@@ -61,7 +61,7 @@ class Triggers():
             for offline_leg_id in range(nOfflineLegs):
                 matching_var_bool = f'tau{offline_leg_id+1}_HasMatching_{path}'
                 df = df.Define(matching_var_bool,
-                               f'hasOOMatching_{path}_details.second.count(LegIndexPair(httCand.leg_type.at({offline_leg_id}), httCand.leg_index.at({offline_leg_id}) ) ) > 0')
+                               f'hasOOMatching_{path}_details.second.count(LegIndexPair(HttCandidate.leg_type.at({offline_leg_id}), HttCandidate.leg_index.at({offline_leg_id}) ) ) > 0')
                 matchedObjectsBranches.append(matching_var_bool)
             fullPathSelection = f'{or_paths} &&  hasOOMatching_{path}'
             fullPathSelection += ' && '.join(additional_conditions)

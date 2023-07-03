@@ -1,64 +1,118 @@
 #pragma once
 #include "AnalysisTools.h"
 #include "HHCore.h"
+#include <optional>
 
-ROOT::VecOps::RVec<HTTCand> GetHTTCandidates(Channel channel, double dR_thr,
-                                             const RVecB& leg1_sel, const RVecLV& leg1_p4,
-                                             const RVecF& leg1_rawIso, const RVecI& leg1_charge,
-                                             const RVecI& leg1_genMatchIdx,
-                                             const RVecB& leg2_sel, const RVecLV& leg2_p4,
-                                             const RVecF& leg2_rawIso, const RVecI& leg2_charge,
-                                             const RVecI& leg2_genMatchIdx)
+
+template<size_t N>
+void FillHTTCandidates(Channel refChannel, ROOT::VecOps::RVec<HTTCand<N>>& HttCandidates, const HTTCand<N>& refHttCand,
+                       double dR2_thr, const std::vector<Leg>& leg_types,
+                       const std::map<Leg, std::set<size_t>>& otherLegs, const RVecLV& otherLegs_p4,
+                       size_t leg_index)
 {
-  const double dR2_thr = std::pow(dR_thr, 2);
-  ROOT::VecOps::RVec<HTTCand> httCands;
-  const auto [leg1_type, leg2_type] = ChannelToLegs(channel);
-  for(size_t leg1_idx = 0; leg1_idx < leg1_sel.size(); ++leg1_idx) {
-    if(!leg1_sel[leg1_idx]) continue;
-    for(size_t leg2_idx = 0; leg2_idx < leg2_sel.size(); ++leg2_idx) {
-      if(!(leg2_sel[leg2_idx] && (leg1_type != leg2_type || leg1_idx != leg2_idx))) continue;
-      const double dR2 = ROOT::Math::VectorUtil::DeltaR2(leg1_p4.at(leg1_idx), leg2_p4.at(leg2_idx));
-      if(dR2 > dR2_thr) {
-        HTTCand cand;
-        cand.leg_type[0] = leg1_type;
-        cand.leg_type[1] = leg2_type;
-        cand.leg_index[0] = leg1_idx;
-        cand.leg_index[1] = leg2_idx;
-        cand.leg_p4[0] = leg1_p4.at(leg1_idx);
-        cand.leg_p4[1] = leg2_p4.at(leg2_idx);
-        cand.leg_charge[0] = leg1_charge.at(leg1_idx);
-        cand.leg_charge[1] = leg2_charge.at(leg2_idx);
-        cand.leg_rawIso[0] = leg1_rawIso.at(leg1_idx);
-        cand.leg_rawIso[1] = leg2_rawIso.at(leg2_idx);
-        cand.leg_genMatchIdx[0] = leg1_genMatchIdx.at(leg1_idx);
-        cand.leg_genMatchIdx[1] = leg2_genMatchIdx.at(leg2_idx);
-        httCands.push_back(cand);
-      }
-    }
-  }
-
-  return httCands;
+  if(refHttCand.channel() != refChannel)
+    throw analysis::exception("ERROR: FillHTTCandidates: HttCandidate has an unexpected channel: %1% != %2%")
+          % static_cast<int>(refHttCand.channel()) % static_cast<int>(refChannel);
+  HttCandidates.push_back(refHttCand);
 }
 
-HTTCand GetBestHTTCandidate(const std::vector<const ROOT::VecOps::RVec<HTTCand>*> httCands, unsigned long long event)
+template<size_t N, typename ...Args>
+void FillHTTCandidates(Channel refChannel, ROOT::VecOps::RVec<HTTCand<N>>& HttCandidates, const HTTCand<N>& refHttCand,
+                       double dR2_thr, const std::vector<Leg>& leg_types,
+                       const std::map<Leg, std::set<size_t>>& otherLegs, const RVecLV& otherLegs_p4, size_t leg_index,
+                       const RVecB& leg_sel, const RVecLV& leg_p4, const RVecF& leg_rawIso, const RVecI& leg_charge,
+                       const RVecI& leg_genMatchIdx, Args&&... leg_info)
 {
-  const auto& comparitor = [&](const HTTCand& cand1, const HTTCand& cand2) -> bool {
+  if(leg_index >= leg_types.size())
+    throw analysis::exception("ERROR: FillHTTCandidates: too many arguments for channel %1%.")
+          % static_cast<int>(refChannel);
+  const Leg leg_type = leg_types.at(leg_index);
+  for(size_t leg_idx = 0; leg_idx < leg_sel.size(); ++leg_idx) {
+    if(!leg_sel[leg_idx] || (otherLegs.count(leg_type) && otherLegs.at(leg_type).count(leg_idx))) continue;
+    bool pass_dR = true;
+    for(size_t other_idx = 0; other_idx < otherLegs_p4.size(); ++other_idx) {
+      if(ROOT::Math::VectorUtil::DeltaR2(leg_p4.at(leg_idx), otherLegs_p4.at(other_idx)) <= dR2_thr) {
+        pass_dR = false;
+        break;
+      }
+    }
+    if(!pass_dR) continue;
+
+    auto newHttCand = refHttCand;
+    newHttCand.leg_type[leg_index] = leg_type;
+    newHttCand.leg_index[leg_index] = leg_idx;
+    newHttCand.leg_p4[leg_index] = leg_p4.at(leg_idx);
+    newHttCand.leg_charge[leg_index] = leg_charge.at(leg_idx);
+    newHttCand.leg_rawIso[leg_index] = leg_rawIso.at(leg_idx);
+    newHttCand.leg_genMatchIdx[leg_index] = leg_genMatchIdx.at(leg_idx);
+
+    auto newOtherLegs = otherLegs;
+    newOtherLegs[leg_type].insert(leg_idx);
+
+    auto newOtherLegs_p4 = otherLegs_p4;
+    newOtherLegs_p4.push_back(leg_p4.at(leg_idx));
+
+    FillHTTCandidates(refChannel, HttCandidates, newHttCand, dR2_thr, leg_types, newOtherLegs, newOtherLegs_p4,
+                      leg_index + 1, std::forward<Args>(leg_info)...);
+  }
+}
+
+
+template<size_t N, typename ...Args>
+ROOT::VecOps::RVec<HTTCand<N>> GetHTTCandidates(Channel channel, double dR_thr, Args&&... leg_info)
+{
+  const double dR2_thr = std::pow(dR_thr, 2);
+  ROOT::VecOps::RVec<HTTCand<N>> HttCandidates;
+  const auto leg_types = ChannelToLegs(channel);
+  if(leg_types.empty())
+    throw analysis::exception("ERROR: no legs are expected for channel %1%") % static_cast<int>(channel);
+  HTTCand<N> refHttCand;
+  std::map<Leg, std::set<size_t>> otherLegs;
+  RVecLV otherLegs_p4;
+  try {
+    FillHTTCandidates(channel, HttCandidates, refHttCand, dR2_thr, leg_types, otherLegs, otherLegs_p4, 0,
+                      std::forward<Args>(leg_info)...);
+  } catch(analysis::exception& e) {
+    std::cerr << "ERROR: GetHTTCandidates: target channel = " << static_cast<int>(channel) << '\n'
+              << e.what() << std::endl;
+    std::cerr << "Expected leg types: ";
+    for(auto leg : leg_types)
+      std::cerr << static_cast<int>(leg) << ' ';
+    std::cerr << std::endl;
+    throw;
+  } catch(std::out_of_range& e) {
+    std::cerr << "ERROR: GetHTTCandidates: target channel = " << static_cast<int>(channel) << '\n'
+              << e.what() << std::endl;
+    throw;
+  }
+  return HttCandidates;
+}
+
+template<size_t N>
+HTTCand<N> GetBestHTTCandidate(const std::vector<const ROOT::VecOps::RVec<HTTCand<N>>*> HttCandidates,
+                               unsigned long long event)
+{
+  const auto& comparitor = [&](const HTTCand<N>& cand1, const HTTCand<N>& cand2) -> bool {
     if(cand1 == cand2) return false;
     if(cand1.channel() != cand2.channel()) {
       throw analysis::exception("ERROR: different channels considered for HTT candiate choice!! %1% VS %2%")
       % static_cast<int>(cand1.channel()) % static_cast<int>(cand2.channel());
     }
     for(size_t idx = 0; idx < cand1.leg_index.size(); ++idx) {
+      if(cand1.leg_type[idx] != cand2.leg_type[idx]) {
+        throw analysis::exception("ERROR: different leg types considered for HTT candiate choice!! %1% VS %2%")
+        % static_cast<int>(cand1.leg_type[idx]) % static_cast<int>(cand2.leg_type[idx]);
+      }
+      if(cand1.leg_type[idx] == Leg::none) continue;
       if(cand1.leg_rawIso[idx] != cand2.leg_rawIso[idx]) return cand1.leg_rawIso[idx] < cand2.leg_rawIso[idx];
       if(cand1.leg_p4[idx].pt() != cand2.leg_p4[idx].pt()) return cand1.leg_p4[idx].pt() > cand2.leg_p4[idx].pt();
       if(std::abs(cand1.leg_p4[idx].eta()) != std::abs(cand2.leg_p4[idx].eta())) return std::abs(cand1.leg_p4[idx].eta()) < std::abs(cand2.leg_p4[idx].eta());
-
     }
     throw analysis::exception("ERROR: criteria for best tau pair selection is not found in channel %1% and event %2%" )
     % static_cast<int>(cand1.channel()) % event ;
   };
 
-  for(auto cands : httCands) {
+  for(auto cands : HttCandidates) {
     if(!cands->empty())
       return *std::min_element(cands->begin(), cands->end(), comparitor);
   }
@@ -66,6 +120,7 @@ HTTCand GetBestHTTCandidate(const std::vector<const ROOT::VecOps::RVec<HTTCand>*
   throw analysis::exception("ERROR: no siutable HTT candidate ");
 }
 
+/*
 bool GenRecoMatching(const HTTCand& genHttCand, const HTTCand& recoHttCand, double dR_thr)
 {
   const double dR2_thr = std::pow(dR_thr, 2);
@@ -82,7 +137,7 @@ bool GenRecoMatching(const HTTCand& genHttCand, const HTTCand& recoHttCand, doub
   }
   return (matching[0] && matching[3]) || (matching[1] && matching[2]);
 }
-
+*/
 
 RVecI GenRecoJetMatching(int event,const RVecI& Jet_idx, const RVecI& GenJet_idx,  const RVecB& Jet_sel, const RVecB& GenJet_sel,   const RVecLV& GenJet_p4, const RVecLV& Jet_p4 , float DeltaR_thr)
 {
@@ -109,22 +164,26 @@ RVecI GenRecoJetMatching(int event,const RVecI& Jet_idx, const RVecI& GenJet_idx
 }
 
 
-HbbCand GetHbbCandidate(const RVecF& HHbTagScores, const RVecB& JetSel,  const RVecLV& Jet_p4, const RVecI& Jet_idx)
+std::optional<HbbCand> GetHbbCandidate(const RVecF& HHbTagScores, const RVecB& JetSel, const RVecLV& Jet_p4, const RVecI& Jet_idx)
 {
   RVecI JetIdxOrdered = ReorderObjects(HHbTagScores, Jet_idx);
-  HbbCand HbbCandidate;
-
+  HbbCand HbbCandidate ;
+  for(int j = 0; j < HbbCandidate.n_legs; j++){
+    HbbCandidate.leg_index[j]=-1;
+  }
   int leg_idx = 0;
-  for(int i=0; i<Jet_idx.size(); i++){
+  for(int i = 0; i < Jet_idx.size(); i++){
     int jet_idx = JetIdxOrdered[i];
     if(!JetSel[jet_idx]) continue;
-    HbbCandidate.leg_index[leg_idx] =  jet_idx;
+    HbbCandidate.leg_index[leg_idx] = jet_idx;
     HbbCandidate.leg_p4[leg_idx] = Jet_p4.at(jet_idx);
     leg_idx++;
     if(leg_idx == HbbCandidate.n_legs) break;
   }
-
-  return HbbCandidate;
+  if(HbbCandidate.leg_index[0]>=0 && HbbCandidate.leg_index[1]>=0){
+    return HbbCandidate;
+  }
+  return std::nullopt;
 }
 
 

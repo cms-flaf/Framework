@@ -17,6 +17,7 @@ using RVecLV = ROOT::VecOps::RVec<LorentzVectorM>;
 using RVecSetInt = ROOT::VecOps::RVec<std::set<int>>;
 
 enum class Leg : int {
+  none = 0,
   e = 1,
   mu = 2,
   tau = 3,
@@ -58,7 +59,6 @@ enum class SampleType : int {
   QCD = 26,
 };
 
-
 enum class GenLeptonMatch : int {
   Electron = 1,
   Muon = 2,
@@ -68,28 +68,80 @@ enum class GenLeptonMatch : int {
   NoMatch = 6
 };
 
+constexpr inline std::pair<int, int> _LegsToInt(Leg leg)
+{
+  const int factor = leg == Leg::none ? 1 : 10;
+  return std::make_pair(static_cast<int>(leg), factor);
+}
+
+template<typename... Legs>
+constexpr inline std::pair<int, int> _LegsToInt(Leg leg, Legs... legs)
+{
+  const auto [sum, factor] = _LegsToInt(legs...);
+  const int new_factor = leg == Leg::none ? factor : factor * 10;
+  const int result = sum + static_cast<int>(leg) * factor;
+  return std::make_pair(result, new_factor);
+}
+
+template<typename... Legs>
+constexpr inline int LegsToInt(Legs... legs)
+{
+  return _LegsToInt(legs...).first;
+}
+
 enum class Channel : int {
-  eTau = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::tau),
-  muTau = static_cast<int>(Leg::mu) * 10 + static_cast<int>(Leg::tau),
-  tauTau = static_cast<int>(Leg::tau) * 10 + static_cast<int>(Leg::tau),
-  eMu = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::mu),
-  eE = static_cast<int>(Leg::e) * 10 + static_cast<int>(Leg::e),
-  muMu = static_cast<int>(Leg::mu) * 10 + static_cast<int>(Leg::mu)
+  eE = LegsToInt(Leg::e, Leg::e),
+  eMu = LegsToInt(Leg::e, Leg::mu),
+  eTau = LegsToInt(Leg::e, Leg::tau),
+  muMu = LegsToInt(Leg::mu, Leg::mu),
+  muTau = LegsToInt(Leg::mu, Leg::tau),
+  tauTau = LegsToInt(Leg::tau, Leg::tau),
+
+  eEE = LegsToInt(Leg::e, Leg::e, Leg::e),
+  eEMu = LegsToInt(Leg::e, Leg::e, Leg::mu),
+  eETau = LegsToInt(Leg::e, Leg::e, Leg::tau),
+  eMuMu = LegsToInt(Leg::e, Leg::mu, Leg::mu),
+  eMuTau = LegsToInt(Leg::e, Leg::mu, Leg::tau),
+  eTauTau = LegsToInt(Leg::e, Leg::tau, Leg::tau),
+  muMuMu = LegsToInt(Leg::mu, Leg::mu, Leg::mu),
+  muMuTau = LegsToInt(Leg::mu, Leg::mu, Leg::tau),
+  muTauTau = LegsToInt(Leg::mu, Leg::tau, Leg::tau),
+  tauTauTau = LegsToInt(Leg::tau, Leg::tau, Leg::tau),
+
+  eEEE = LegsToInt(Leg::e, Leg::e, Leg::e, Leg::e),
+  eEEMu = LegsToInt(Leg::e, Leg::e, Leg::e, Leg::mu),
+  eEETau = LegsToInt(Leg::e, Leg::e, Leg::e, Leg::tau),
+  eEMuMu = LegsToInt(Leg::e, Leg::e, Leg::mu, Leg::mu),
+  eEMuTau = LegsToInt(Leg::e, Leg::e, Leg::mu, Leg::tau),
+  eETauTau = LegsToInt(Leg::e, Leg::e, Leg::tau, Leg::tau),
+  eMuMuMu = LegsToInt(Leg::e, Leg::mu, Leg::mu, Leg::mu),
+  eMuMuTau = LegsToInt(Leg::e, Leg::mu, Leg::mu, Leg::tau),
+  eMuTauTau = LegsToInt(Leg::e, Leg::mu, Leg::tau, Leg::tau),
+  eTauTauTau = LegsToInt(Leg::e, Leg::tau, Leg::tau, Leg::tau),
+  muMuMuMu = LegsToInt(Leg::mu, Leg::mu, Leg::mu, Leg::mu),
+  muMuMuTau = LegsToInt(Leg::mu, Leg::mu, Leg::mu, Leg::tau),
+  muMuTauTau = LegsToInt(Leg::mu, Leg::mu, Leg::tau, Leg::tau),
+  muTauTauTau = LegsToInt(Leg::mu, Leg::tau, Leg::tau, Leg::tau),
+  tauTauTauTau = LegsToInt(Leg::tau, Leg::tau, Leg::tau, Leg::tau),
 };
 
-inline Channel LegsToChannel(Leg leg1, Leg leg2)
+template<typename... Legs>
+constexpr inline Channel LegsToChannel(Legs ...legs)
 {
-  return static_cast<Channel>(static_cast<int>(leg1) * 10 + static_cast<int>(leg2));
+  return static_cast<Channel>(LegsToInt(legs...));
 }
 
-inline std::pair<Leg, Leg> ChannelToLegs(Channel channel)
+inline std::vector<Leg> ChannelToLegs(Channel channel)
 {
-  const int c = static_cast<int>(channel);
-  const Leg leg1 = static_cast<Leg>(c / 10);
-  const Leg leg2 = static_cast<Leg>(c % 10);
-  return std::make_pair(leg1, leg2);
+  std::vector<Leg> legs;
+  int c = static_cast<int>(channel);
+  size_t n = 0;
+  for(; c > 0; ++n) {
+    legs.push_back(static_cast<Leg>(c % 10));
+    c /= 10;
+  }
+  return std::vector<Leg>(legs.rbegin(), legs.rend());
 }
-
 
 RVecS CreateIndexes(size_t vecSize){
   RVecS i(vecSize);
@@ -150,6 +202,26 @@ RVecB RemoveOverlaps(const RVecLV& obj_p4, const RVecB& pre_sel, const std::vect
 
   for(size_t obj_idx = 0; obj_idx < obj_p4.size(); ++obj_idx) {
     result[obj_idx] = pre_sel[obj_idx] && hasMinNumberOfNonOverlaps(obj_p4.at(obj_idx));
+  }
+  return result;
+}
+
+RVecB RemoveOverlaps(const RVecLV& obj_p4, const RVecB& pre_sel, const RVecLV& other_objects, double min_deltaR)
+{
+  RVecB result(pre_sel);
+  const double min_deltaR2 = std::pow(min_deltaR, 2);
+
+  const auto hasOverlaps = [&](const LorentzVectorM& p4) {
+    for(const auto& other_obj_p4 : other_objects) {
+      const double dR2 = ROOT::Math::VectorUtil::DeltaR2(p4, other_obj_p4);
+      if(dR2 <= min_deltaR2)
+        return true;
+    }
+    return false;
+  };
+
+  for(size_t obj_idx = 0; obj_idx < obj_p4.size(); ++obj_idx) {
+    result[obj_idx] = pre_sel[obj_idx] && !hasOverlaps(obj_p4.at(obj_idx));
   }
   return result;
 }

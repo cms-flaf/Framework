@@ -42,8 +42,10 @@ GLOBAL:
     - tauTau
   sampleSelection:
     - drop ^.*$
-    - keep ^GluGluToRadionToHHTo2B2Tau_M-600
+    - keep ^TTToSemiLeptonic
+    #- keep ^GluGluToRadionToHHTo2B2Tau_M-600
     #- keep ^TTTo2L2Nu$
+    #- keep ^TTToHadronic$
     #- keep ^TTTo2L2Nu$
     #- keep ^GluGluToRadion*
     #- keep ^GluGluToBulkGraviton*

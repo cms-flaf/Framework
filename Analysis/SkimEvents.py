@@ -19,9 +19,10 @@ col_type_dict = {
   'Long_t' :'long',
   'UInt_t' :'unsigned int',
   'ROOT::VecOps::RVec<float>':'ROOT::VecOps::RVec<float>',
-  'ROOT::VecOps::RVec<int>':'ROOT::VecOps::RVec<int>'
+  'ROOT::VecOps::RVec<int>':'ROOT::VecOps::RVec<int>',
+  'ROOT::VecOps::RVec<unsigned char>':'ROOT::VecOps::RVec<unsigned char>'
   }
-
+#ciao
 def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
   df_out = ROOT.RDataFrame('Events', inputFileShifted)
   colNames = [str(c) for c in df_out.GetColumnNames()]
@@ -44,6 +45,8 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
 
   for var_idx,var_name in enumerate(colNames):
     if var_name in colToNotToMakeDiff: continue
+    #print(var_name)
+    #print(col_types[var_idx])
     condition_noDiff_list.append(f"analysis::IsSame(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})")
     #condition_Valid_list.append(f"! analysis::IsSame(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})")
 
@@ -53,6 +56,7 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
   df_out_valid_diff = df_out_valid.Filter("!isSame")
   for var_idx,var_name in enumerate(colNames):
     if var_name in colToNotToMakeDiff: continue
+    #print(var_name)
     df_out_valid_diff=df_out_valid_diff.Define(f"{var_name}Diff", f"""analysis::Delta(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})""")
     colToSave_diff.append(f"{var_name}Diff")
 
@@ -99,4 +103,3 @@ if __name__ == "__main__":
   header_path_Skimmer = os.path.join(headers_dir, "SystSkimmer.h")
   ROOT.gInterpreter.Declare(f'#include "{header_path_Skimmer}"')
   make_df(args.inFileCentral,args.inFileShifted,args.outDir,args.treeName)
-

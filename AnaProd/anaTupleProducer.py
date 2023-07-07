@@ -28,14 +28,14 @@ Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all"]
 Electron_observables = ["Electron_mvaNoIso_WP90", "Electron_mvaIso_WP90", "Electron_pfRelIso03_all"]
 JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",
-                "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"]
+                "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL", "bRegCorr", "bRegRes"]
 JetObservablesMC = ["hadronFlavour","partonFlavour"]
 
 FatJetObservables = ["area", "btagCSVV2", "btagDDBvLV2", "btagDeepB", "btagHbb", "deepTagMD_HbbvsQCD",
                      "deepTagMD_ZHbbvsQCD", "deepTagMD_ZbbvsQCD", "deepTagMD_bbvsLight", "deepTag_H",
                      "jetId", "msoftdrop", "nBHadrons", "nCHadrons",
                      "nConstituents", "particleNetMD_QCD", "particleNetMD_Xbb", "particleNet_HbbvsQCD",
-                     "particleNet_mass", "rawFactor", "subJetIdx1", "subJetIdx2" ]
+                     "particleNet_mass", "rawFactor" ]
 
 
 FatJetObservablesMC = ["hadronFlavour","partonFlavour"]
@@ -101,6 +101,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_phi", f"v_ops::phi(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_mass", f"v_ops::mass(FatJet_p4[FatJet_bbCand])")
+
     for fatjetVar in fatjet_obs:
         if(f"FatJet_{fatjetVar}" not in dfw.df.GetColumnNames()): continue
         dfw.DefineAndAppend(f"SelectedFatJet_{fatjetVar}", f"FatJet_{fatjetVar}[FatJet_bbCand]")
@@ -111,10 +112,11 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
         dfw.Define(f"SubJet2_genJet_idx", f" FindMatching(SubJet_p4[FatJet_subJetIdx2],SubGenJetAK8_p4,0.3)")
         fatjet_obs.extend(SubJetObservablesMC)
     for subJetIdx in [1,2]:
+        dfw.Define(f"SelectedFatJet_subJetIdx{subJetIdx}", f"FatJet_subJetIdx{subJetIdx}[FatJet_bbCand]")
         dfw.Define(f"FatJet_SubJet{subJetIdx}_isValid", f" FatJet_subJetIdx{subJetIdx} >=0 && FatJet_subJetIdx{subJetIdx} < nSubJet")
         dfw.DefineAndAppend(f"SelectedFatJet_SubJet{subJetIdx}_isValid", f"FatJet_SubJet{subJetIdx}_isValid[FatJet_bbCand]")
         for subJetVar in subjet_obs:
-            dfw.DefineAndAppend(f"SubJet{subJetIdx}_{subJetVar}", f"""
+            dfw.DefineAndAppend(f"SelectedFatJet_SubJet{subJetIdx}_{subJetVar}", f"""
                                 RVecF subjet_var(SelectedFatJet_pt.size(), 0.f);
                                 for(size_t fj_idx = 0; fj_idx<SelectedFatJet_pt.size(); fj_idx++) {{
                                     auto sj_idx = SelectedFatJet_subJetIdx{subJetIdx}.at(fj_idx);
@@ -203,6 +205,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
 
 def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOptions,range, evtIds,
                    store_noncentral, compute_unc_variations, uncertainties, print_cutflow, mode):
+    #print(f"infile = {inFile}, outdir = {outDir}, anaCache = {anaCache}")
     start_time = datetime.datetime.now()
     compression_settings = snapshotOptions.fCompressionAlgorithm * 100 + snapshotOptions.fCompressionLevel
     period = config["GLOBAL"]["era"]
@@ -282,6 +285,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         varToSave = Utilities.ListToVector(dfw.colToSave)
         outFileName = os.path.join(outDir, f"Events{suffix}.root")
         outfilesNames.append(outFileName)
+        #print(f"outFileName = {outFileName}")
         if os.path.exists(outFileName):
             os.remove(outFileName)
         snaps.append(dfw.df.Snapshot(f"Events", outFileName, varToSave, snapshotOptions))
@@ -292,6 +296,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     hist_time = ROOT.TH1D(f"time", f"time", 1, 0, 1)
     end_time = datetime.datetime.now()
     hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
+    #print(outfilesNames)
     for index,fileName in enumerate(outfilesNames):
         outputRootFile= ROOT.TFile(fileName, "UPDATE", "", compression_settings)
         rep = ReportTools.SaveReport(reports[index].GetValue(), reoprtName=f"Report")
@@ -315,7 +320,7 @@ if __name__ == "__main__":
     parser.add_argument('--sample', required=True, type=str)
     parser.add_argument('--anaCache', required=True, type=str)
     parser.add_argument('--compressionLevel', type=int, default=4)
-    parser.add_argument('--compressionAlgo', type=str, default="LZ4")
+    parser.add_argument('--compressionAlgo', type=str, default="ZLIB")
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--store-noncentral', action="store_true", help="Store ES variations.")
@@ -343,7 +348,7 @@ if __name__ == "__main__":
     snapshotOptions.fOverwriteIfExists=False
     snapshotOptions.fLazy = True
     snapshotOptions.fMode="RECREATE"
-    snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
+    #snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
     createAnatuple(args.inFile, args.outDir, config, args.sample, anaCache, snapshotOptions, args.nEvents,
                    args.evtIds, args.store_noncentral, args.compute_unc_variations, args.uncertainties.split(","), args.print_cutflow, args.mode)

@@ -66,12 +66,12 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
   snapshotOptions.fOverwriteIfExists=False
   snapshotOptions.fLazy=True
   snapshotOptions.fMode="RECREATE"
-  snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + 'LZ4')
+  snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + 'ZLIB')
   snapshotOptions.fCompressionLevel = 4
   colToSave_noDiff_v = ListToVector(colToSave_noDiff)
   colToSave_diff_v = ListToVector(colToSave_diff)
   colNames_v = ListToVector(colNames)
-  outFile_Valid = os.path.join(outDir, f"{treeName}_Diff.root")
+  outFile_Valid = os.path.join(outDir, f"{treeName}_Valid.root")
   outFile_nonValid = os.path.join(outDir, f"{treeName}_nonValid.root")
   outFile_Valid_noDiff = os.path.join(outDir, f"{treeName}_noDiff.root")
   if os.path.exists(outFile_Valid):
@@ -80,7 +80,7 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
     os.remove(outFile_nonValid)
   if os.path.exists(outFile_Valid_noDiff):
     os.remove(outFile_Valid_noDiff)
-  snaps.append(df_out_valid_noDiff.Snapshot(f"{treeName}_Valid_noDiff", outFile_Valid_noDiff, colToSave_noDiff_v, snapshotOptions))
+  snaps.append(df_out_valid_noDiff.Snapshot(f"{treeName}_noDiff", outFile_Valid_noDiff, colToSave_noDiff_v, snapshotOptions))
   snaps.append(df_out_valid_diff.Snapshot(f"{treeName}_Valid", outFile_Valid, colToSave_diff_v, snapshotOptions))
   snaps.append(df_unique.Snapshot(f"{treeName}_nonValid", outFile_nonValid, colNames_v, snapshotOptions))
   tuple_maker.processIn(colNames_v)

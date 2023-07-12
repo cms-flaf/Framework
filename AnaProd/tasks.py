@@ -41,7 +41,7 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         print(f'anaCache for sample {sample_name} is created in {self.output().path}')
 
 class AnaTuplePreTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 12.0)
     max_files_per_job = luigi.IntParameter(default=1, description="maximum number of input files per job")
 
     def law_job_home(self):

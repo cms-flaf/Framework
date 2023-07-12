@@ -43,7 +43,7 @@ FatJetObservablesMC = ["hadronFlavour","partonFlavour"]
 SubJetObservables = ["btagDeepB", "eta", "mass", "phi", "pt", "rawFactor"]
 SubJetObservablesMC = ["hadronFlavour","partonFlavour"]
 
-defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
+defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "X_spin", "isData","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
                 "PV_npvs" ]
 
@@ -64,23 +64,25 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     dfw.DefineAndAppend("Hbb_isValid" , "HbbCandidate.has_value()")
     dfw.Apply(Baseline.ExtraRecoJetSelection)
     dfw.Apply(Corrections.jet.getEnergyResolution)
-    dfw.DefineAndAppend(f"ExtraJet_pt", f"v_ops::pt(Jet_p4[ExtraJet_B1])")
-    dfw.DefineAndAppend(f"ExtraJet_eta", f"v_ops::eta(Jet_p4[ExtraJet_B1])")
-    dfw.DefineAndAppend(f"ExtraJet_phi", f"v_ops::phi(Jet_p4[ExtraJet_B1])")
-    dfw.DefineAndAppend(f"ExtraJet_mass", f"v_ops::mass(Jet_p4[ExtraJet_B1])")
-    dfw.DefineAndAppend(f"ExtraJet_ptRes", f"Jet_ptRes[ExtraJet_B1]")
+    #dfw.DefineAndAppend(f"ExtraJet_pt", f"v_ops::pt(Jet_p4[ExtraJet_B1])")
+    #dfw.DefineAndAppend(f"ExtraJet_eta", f"v_ops::eta(Jet_p4[ExtraJet_B1])")
+    #dfw.DefineAndAppend(f"ExtraJet_phi", f"v_ops::phi(Jet_p4[ExtraJet_B1])")
+    #dfw.DefineAndAppend(f"ExtraJet_mass", f"v_ops::mass(Jet_p4[ExtraJet_B1])")
+    #dfw.DefineAndAppend(f"ExtraJet_ptRes", f"Jet_ptRes[ExtraJet_B1]")
     jet_obs = []
     jet_obs.extend(JetObservables)
     dfw.Apply(Baseline.ApplyJetSelection)
     if not isData:
         dfw.Define(f"Jet_genJet_idx", f" FindMatching(Jet_p4,GenJet_p4,0.3)")
         jet_obs.extend(JetObservablesMC)
-        if "LHE_HT" in dfw.df.GetColumnNames():
-            dfw.colToSave.append("LHE_HT")
+        #if "LHE_HT" in dfw.df.GetColumnNames():
+        #    dfw.colToSave.append("LHE_HT")
+    '''
     for jetVar in jet_obs:
         if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
         dfw.DefineAndAppend(f"ExtraJet_{jetVar}", f"Jet_{jetVar}[ExtraJet_B1]")
     dfw.DefineAndAppend(f"ExtraJet_HHbtag", f"Jet_HHBtagScore[ExtraJet_B1]")
+    '''
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, nLegs, isData)
         dfw.colToSave.extend(hltBranches)
@@ -91,7 +93,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     if mode == "HH":
         channel_to_select = " || ".join(f"HttCandidate.channel()==Channel::{ch}" for ch in config["GLOBAL"]["channelSelection"])
         dfw.Filter(channel_to_select, "select channels")
-
     fatjet_obs = []
     fatjet_obs.extend(FatJetObservables)
     if not isData:
@@ -210,6 +211,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     compression_settings = snapshotOptions.fCompressionAlgorithm * 100 + snapshotOptions.fCompressionLevel
     period = config["GLOBAL"]["era"]
     mass = -1 if 'mass' not in config[sample_name] else config[sample_name]['mass']
+    spin = -100 if 'spin' not in config[sample_name] else config[sample_name]['spin']
     isHH = True if mass > 0 else False
     isData = True if config[sample_name]['sampleType'] == 'data' else False
     loadTF = mode == "HH"
@@ -240,6 +242,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     df = df.Define("sample_name", f"{zlib.crc32(sample_name.encode())}")
     df = df.Define("period", f"static_cast<int>(Period::{period})")
     df = df.Define("X_mass", f"static_cast<int>({mass})")
+    df = df.Define("X_spin", f"static_cast<int>({spin})")
     df = df.Define("entryIndex", "static_cast<int>(rdfentry_)")
     is_data = 'true' if isData else 'false'
     df = df.Define("isData", is_data)
@@ -256,6 +259,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     snaps = []
     reports = []
     outfilesNames = []
+    k=0
     for syst_name, source_name in syst_dict.items():
         if source_name not in uncertainties and "all" not in uncertainties: continue
         #print(f"source name is {source_name} and syst name is {syst_name}")
@@ -276,7 +280,8 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
             for puIDbranch in puIDbranches:
                 if puIDbranch in dfw.df.GetColumnNames():
                     new_branch_name= puIDbranch.strip("_tmp")
-                    dfw.DefineAndAppend(new_branch_name, f"{puIDbranch}[ExtraJet_B1]")
+                    #dfw.DefineAndAppend(new_branch_name, f"{puIDbranch}[ExtraJet_B1]")
+                    dfw.Define(new_branch_name, f"{puIDbranch}[ExtraJet_B1]")
                     for bjet_idx in [1,2]:
                         dfw.DefineAndAppend(f"{new_branch_name}_b{bjet_idx}", f"Hbb_isValid ? {puIDbranch}[b{bjet_idx}_idx] : -100.f")
                 if puIDbranch in weight_branches: weight_branches.remove(puIDbranch)

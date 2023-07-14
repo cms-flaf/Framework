@@ -40,6 +40,7 @@ GLOBAL:
     - eTau
     - muTau
     - tauTau
+  storeExtraJets: False
   sampleSelection:
     - drop ^.*$
     - keep ^TTToSemiLeptonic
@@ -615,173 +616,170 @@ VBFToBulkGravitonToHHTo2B2Tau_M-250:
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-250_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 250
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-260:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-260_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-260_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 260
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-270:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-270_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-270_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 270
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-280:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-280_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-280_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 280
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-300:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-300_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-300_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 300
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-320:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-320_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-320_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 320
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-350:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-350_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-350_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 350
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-400:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-400_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-400_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 400
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-450:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-450_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-450_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 450
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-500:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-500_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-500_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 500
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-550:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-550_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: VBFToBulkGraviton
   mass: 550
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-600:
-spin: 2
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-600_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-600_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 600
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-650:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-650_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-650_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 650
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-700:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-700_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: VBFToBulkGraviton
   mass: 700
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-750:
-spin: 2
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-750_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-750_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 750
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-800:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-800_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-800_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 800
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-850:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-850_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-850_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 850
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-900:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-900_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-900_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 900
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-1000:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-1000_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-1000_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 1000
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-1250:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-1250_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-1250_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 1250
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-1500:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-1500_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: VBFToBulkGraviton
   mass: 1500
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-1750:
-spin: 2
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-1750_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-1750_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 1750
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-2000:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-2000_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-2000_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 2000
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-2500:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-2500_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-2500_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 2500
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-3000:
   miniAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-3000_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   nanoAOD: /VBFToBulkGravitonToHHTo2B2Tau_M-3000_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM
   sampleType: VBFToBulkGraviton
   mass: 3000
-  crossSection: 1pb
   spin: 2
+  crossSection: 1pb
 DYJetsToLL_M-50:
   miniAOD: /DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: DY

@@ -36,15 +36,13 @@ if __name__ == "__main__":
   syst_trees = []
   k=0
   for systFile in all_files:
-
     if args.test and k>=1 :
-      #print(systFile)
       continue
     inFileShiftedName = os.path.join(args.inputDir, systFile)
     if args.test: print('shifted file = ', inFileShiftedName)
     if args.test: print('index = ', k)
     treeName = systFile.strip('.root')
-    cmd = f"""python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/SkimEvents.py --inFileCentral {inFileCentralName} --inFileShifted {inFileShiftedName} --outDir {args.workingDir} --treeName {treeName}"""
+    cmd = f"""python3 Analysis/SkimEvents.py --inFileCentral {inFileCentralName} --inFileShifted {inFileShiftedName} --outDir {args.workingDir} --treeName {treeName}"""
     if args.test : print(cmd)
     sh_call(cmd, True)
     k+=1
@@ -52,12 +50,10 @@ if __name__ == "__main__":
     if file_syst == inFileCentralName:
       outFileCentralName = os.path.join(args.workingDir, args.centralFile)
       shutil.copy(inFileCentralName, outFileCentralName)
-      #print(file_syst)
-      UprootFile, UprootFileName = ConvertUproot.toUproot(args.workingDir, args.centralFile)
+      UprootFileName = ConvertUproot.toUproot(args.workingDir, args.centralFile)
       syst_files_to_merge.append(UprootFileName)
       continue
-    #print(file_syst)
-    UprootFile, UprootFileName = ConvertUproot.toUproot(args.workingDir, file_syst)
+    UprootFileName = ConvertUproot.toUproot(args.workingDir, file_syst)
     syst_files_to_merge.append(UprootFileName)
   if args.test: print(f for f in syst_files_to_merge)
   outFileName = os.path.join(args.workingDir, args.outputFile)
@@ -68,4 +64,3 @@ if __name__ == "__main__":
   for file_syst in syst_files_to_merge:
     if args.test: break
     os.remove(file_syst)
-  #shutil.rmtree(args.workingDir)

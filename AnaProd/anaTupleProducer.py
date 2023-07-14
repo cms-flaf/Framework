@@ -28,7 +28,7 @@ Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all"]
 Electron_observables = ["Electron_mvaNoIso_WP90", "Electron_mvaIso_WP90", "Electron_pfRelIso03_all"]
 JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",
-                "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL", "bRegCorr", "bRegRes"]
+                "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL", "bRegCorr", "bRegRes", "idbtagDeepFlavB"]
 JetObservablesMC = ["hadronFlavour","partonFlavour"]
 
 FatJetObservables = ["area", "btagCSVV2", "btagDDBvLV2", "btagDeepB", "btagHbb", "deepTagMD_HbbvsQCD",
@@ -64,25 +64,25 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     dfw.DefineAndAppend("Hbb_isValid" , "HbbCandidate.has_value()")
     dfw.Apply(Baseline.ExtraRecoJetSelection)
     dfw.Apply(Corrections.jet.getEnergyResolution)
-    #dfw.DefineAndAppend(f"ExtraJet_pt", f"v_ops::pt(Jet_p4[ExtraJet_B1])")
-    #dfw.DefineAndAppend(f"ExtraJet_eta", f"v_ops::eta(Jet_p4[ExtraJet_B1])")
-    #dfw.DefineAndAppend(f"ExtraJet_phi", f"v_ops::phi(Jet_p4[ExtraJet_B1])")
-    #dfw.DefineAndAppend(f"ExtraJet_mass", f"v_ops::mass(Jet_p4[ExtraJet_B1])")
-    #dfw.DefineAndAppend(f"ExtraJet_ptRes", f"Jet_ptRes[ExtraJet_B1]")
+    dfw.Apply(Corrections.btag.getWPid)
     jet_obs = []
     jet_obs.extend(JetObservables)
     dfw.Apply(Baseline.ApplyJetSelection)
     if not isData:
         dfw.Define(f"Jet_genJet_idx", f" FindMatching(Jet_p4,GenJet_p4,0.3)")
         jet_obs.extend(JetObservablesMC)
-        #if "LHE_HT" in dfw.df.GetColumnNames():
-        #    dfw.colToSave.append("LHE_HT")
-    '''
-    for jetVar in jet_obs:
-        if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
-        dfw.DefineAndAppend(f"ExtraJet_{jetVar}", f"Jet_{jetVar}[ExtraJet_B1]")
-    dfw.DefineAndAppend(f"ExtraJet_HHbtag", f"Jet_HHBtagScore[ExtraJet_B1]")
-    '''
+
+    if config["GLOBAL"]["storeExtraJets"]:
+        dfw.DefineAndAppend(f"ExtraJet_pt", f"v_ops::pt(Jet_p4[ExtraJet_B1])")
+        dfw.DefineAndAppend(f"ExtraJet_eta", f"v_ops::eta(Jet_p4[ExtraJet_B1])")
+        dfw.DefineAndAppend(f"ExtraJet_phi", f"v_ops::phi(Jet_p4[ExtraJet_B1])")
+        dfw.DefineAndAppend(f"ExtraJet_mass", f"v_ops::mass(Jet_p4[ExtraJet_B1])")
+        dfw.DefineAndAppend(f"ExtraJet_ptRes", f"Jet_ptRes[ExtraJet_B1]")
+        for jetVar in jet_obs:
+            if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
+            dfw.DefineAndAppend(f"ExtraJet_{jetVar}", f"Jet_{jetVar}[ExtraJet_B1]")
+        dfw.DefineAndAppend(f"ExtraJet_HHbtag", f"Jet_HHBtagScore[ExtraJet_B1]")
+
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, nLegs, isData)
         dfw.colToSave.extend(hltBranches)
@@ -206,7 +206,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
 
 def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOptions,range, evtIds,
                    store_noncentral, compute_unc_variations, uncertainties, print_cutflow, mode):
-    #print(f"infile = {inFile}, outdir = {outDir}, anaCache = {anaCache}")
     start_time = datetime.datetime.now()
     compression_settings = snapshotOptions.fCompressionAlgorithm * 100 + snapshotOptions.fCompressionLevel
     period = config["GLOBAL"]["era"]
@@ -253,8 +252,6 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         syst_dict = { 'nano' : 'Central' }
     else:
         df, syst_dict = Corrections.applyScaleUncertainties(df)
-    # syst_dict = { 'nano' : 'Central' }
-    #print(syst_dict)
     df_empty = df
     snaps = []
     reports = []
@@ -262,13 +259,14 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     k=0
     for syst_name, source_name in syst_dict.items():
         if source_name not in uncertainties and "all" not in uncertainties: continue
-        #print(f"source name is {source_name} and syst name is {syst_name}")
         is_central = syst_name in [ 'Central', 'nano' ]
         if not is_central and not compute_unc_variations: continue
         suffix = '' if is_central else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
         dfw = Utilities.DataFrameWrapper(df_empty,defaultColToSave)
+
         addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs)
+        #dfw.colToSave.append(bTag_branch)
         if not isData:
             weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name, nLegs,
                                         return_variations=is_central and compute_unc_variations, isCentral=is_central,
@@ -290,18 +288,14 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         varToSave = Utilities.ListToVector(dfw.colToSave)
         outFileName = os.path.join(outDir, f"Events{suffix}.root")
         outfilesNames.append(outFileName)
-        #print(f"outFileName = {outFileName}")
         if os.path.exists(outFileName):
             os.remove(outFileName)
         snaps.append(dfw.df.Snapshot(f"Events", outFileName, varToSave, snapshotOptions))
     if snapshotOptions.fLazy == True:
-        #print(f"rungraph is running now")
         ROOT.RDF.RunGraphs(snaps)
-        #print(f"rungraph has finished running")
     hist_time = ROOT.TH1D(f"time", f"time", 1, 0, 1)
     end_time = datetime.datetime.now()
     hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
-    #print(outfilesNames)
     for index,fileName in enumerate(outfilesNames):
         outputRootFile= ROOT.TFile(fileName, "UPDATE", "", compression_settings)
         rep = ReportTools.SaveReport(reports[index].GetValue(), reoprtName=f"Report")
@@ -348,12 +342,11 @@ if __name__ == "__main__":
     if os.path.isdir(args.outDir):
         shutil.rmtree(args.outDir)
     os.makedirs(args.outDir, exist_ok=True)
-    #print( args.uncertainties.split(","))
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=False
     snapshotOptions.fLazy = True
     snapshotOptions.fMode="RECREATE"
-    #snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
+    snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
     createAnatuple(args.inFile, args.outDir, config, args.sample, anaCache, snapshotOptions, args.nEvents,
                    args.evtIds, args.store_noncentral, args.compute_unc_variations, args.uncertainties.split(","), args.print_cutflow, args.mode)

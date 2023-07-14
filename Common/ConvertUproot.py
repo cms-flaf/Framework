@@ -8,7 +8,7 @@ def saveFile(outFile, out_tree, treeName):
     with uproot.recreate(outFile, compression=uproot.LZMA(9)) as out_file:
       out_file[treeName] = out_tree
       out_file.close()
-    return out_file,outFile
+    return outFile
 
 def toUproot(workingDir, fileName):
   inFile = os.path.join(workingDir, fileName)
@@ -19,8 +19,11 @@ def toUproot(workingDir, fileName):
   outFile=f"{os.path.join(workingDir, treeName)}.root"
   out_tree = {}
   if not keys:
-    out_tree = {"noneCol":np.array([-1,-1,-1,-1])}
-    return saveFile(outFile, out_tree, treeName)
+    with uproot.recreate(outFile, compression=uproot.LZMA(9)) as out_file:
+      out_file.close()
+    return outFile
+    #out_tree = {"noneCol":np.array([-1,-1,-1,-1])}
+    #return saveFile(outFile, out_tree, treeName)
   df = input_tree.arrays()
   collections = {}
   other_columns = []
@@ -39,9 +42,5 @@ def toUproot(workingDir, fileName):
 
   for column in other_columns:
     out_tree[column] = df[column]
-
-  #print(out_tree['weight'])
-
-  #print(outFile)
   return saveFile(outFile, out_tree, treeName)
 

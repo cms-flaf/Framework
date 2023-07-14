@@ -22,8 +22,6 @@ def toUproot(workingDir, fileName):
     with uproot.recreate(outFile, compression=uproot.LZMA(9)) as out_file:
       out_file.close()
     return outFile
-    #out_tree = {"noneCol":np.array([-1,-1,-1,-1])}
-    #return saveFile(outFile, out_tree, treeName)
   df = input_tree.arrays()
   collections = {}
   other_columns = []

@@ -42,7 +42,8 @@ if __name__ == "__main__":
     if args.test: print('shifted file = ', inFileShiftedName)
     if args.test: print('index = ', k)
     treeName = systFile.strip('.root')
-    cmd = f"""python3 Analysis/SkimEvents.py --inFileCentral {inFileCentralName} --inFileShifted {inFileShiftedName} --outDir {args.workingDir} --treeName {treeName}"""
+    skimEventsPython = os.path.join(os.environ['ANALYSIS_PATH'], "Analysis/SkimEvents.py")
+    cmd = f"""python3 {skimEventsPython} --inFileCentral {inFileCentralName} --inFileShifted {inFileShiftedName} --outDir {args.workingDir} --treeName {treeName}"""
     if args.test : print(cmd)
     sh_call(cmd, True)
     k+=1

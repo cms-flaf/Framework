@@ -40,7 +40,7 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     '--outFile', self.output().path, '--customisations', self.customisations ], env=self.cmssw_env())
         print(f'anaCache for sample {sample_name} is created in {self.output().path}')
 
-class AnaTuplePreTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 12.0)
     max_files_per_job = luigi.IntParameter(default=1, description="maximum number of input files per job")
 
@@ -59,7 +59,7 @@ class AnaTuplePreTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def create_branch_map(self):
         self.load_sample_configs()
-        return AnaTuplePreTask.getBranches(self.samples, self.central_nanoAOD_path(), self.max_files_per_job)
+        return AnaTupleTask.getBranches(self.samples, self.central_nanoAOD_path(), self.max_files_per_job)
 
     def output(self, force_pre_output=False):
         sample_id, sample_name, sample_type, split_idx, input_files = self.branch_data
@@ -77,8 +77,7 @@ class AnaTuplePreTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                   self.customisations, '--compute_unc_variations', 'True', '--store-noncentral', '--nEvents', '100'], env=self.cmssw_env())
         producer_skimtuples = os.path.join(self.ana_path(), 'Analysis', 'SkimProducer.py')
         outdir_skimtuples = os.path.join(job_home, 'skim', sample_name)
-        print([ 'python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--workingDir', outdir_skimtuples, '--outputFile', 'skim.root'])
-        sh_call([ 'python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--workingDir', outdir_skimtuples, '--outputFile', 'skim.root'])
+        sh_call([ 'python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--workingDir', outdir_skimtuples, '--outputFile', 'skim.root'],verbose=1)
         outdir_final = self.output().path
         print(os.listdir(outdir_skimtuples))
         shutil.move(outdir_skimtuples, outdir_final)
@@ -98,16 +97,16 @@ class AnaTuplePreTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     @staticmethod
     def getOutputDir(central_anaTuples_path, sample_name):
-        return os.path.join(central_anaTuples_path, '_pre', sample_name)
+        return os.path.join(central_anaTuples_path, sample_name)
 
     @staticmethod
     def getBranches(samples, central_nanoAOD_path, max_files_per_job):
         n = 0
         branches = {}
         for sample_id, sample_name in enumerate(sorted(samples.keys())):
-            input_files = AnaTuplePreTask.getInputFiles(central_nanoAOD_path, sample_name)
+            input_files = AnaTupleTask.getInputFiles(central_nanoAOD_path, sample_name)
             if len(input_files) == 0:
-                raise RuntimeError(f"AnaTuplePreTask: no input files found for {sample_name}")
+                raise RuntimeError(f"AnaTupleTask: no input files found for {sample_name}")
             split_idx = 0
             while True:
                 start_idx, stop_idx = split_idx * max_files_per_job, (split_idx + 1) * max_files_per_job

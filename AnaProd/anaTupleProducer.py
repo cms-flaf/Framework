@@ -78,6 +78,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
         dfw.DefineAndAppend(f"ExtraJet_phi", f"v_ops::phi(Jet_p4[ExtraJet_B1])")
         dfw.DefineAndAppend(f"ExtraJet_mass", f"v_ops::mass(Jet_p4[ExtraJet_B1])")
         dfw.DefineAndAppend(f"ExtraJet_ptRes", f"Jet_ptRes[ExtraJet_B1]")
+        dfw.DefineAndAppend(new_branch_name, f"{puIDbranch}[ExtraJet_B1]")
         for jetVar in jet_obs:
             if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
             dfw.DefineAndAppend(f"ExtraJet_{jetVar}", f"Jet_{jetVar}[ExtraJet_B1]")
@@ -217,7 +218,6 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     loadHHBtag = mode == "HH"
     nLegs = 4 if mode == "ttHH" else 2
     Baseline.Initialize(loadTF, loadHHBtag)
-    #if not isData:
     Corrections.Initialize(config=config['GLOBAL'],isData=isData)
     triggerFile = config['GLOBAL'].get('triggerFile')
     if triggerFile is not None:
@@ -266,7 +266,6 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         dfw = Utilities.DataFrameWrapper(df_empty,defaultColToSave)
 
         addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs)
-        #dfw.colToSave.append(bTag_branch)
         if not isData:
             weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name, nLegs,
                                         return_variations=is_central and compute_unc_variations, isCentral=is_central,
@@ -278,7 +277,6 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
             for puIDbranch in puIDbranches:
                 if puIDbranch in dfw.df.GetColumnNames():
                     new_branch_name= puIDbranch.strip("_tmp")
-                    #dfw.DefineAndAppend(new_branch_name, f"{puIDbranch}[ExtraJet_B1]")
                     dfw.Define(new_branch_name, f"{puIDbranch}[ExtraJet_B1]")
                     for bjet_idx in [1,2]:
                         dfw.DefineAndAppend(f"{new_branch_name}_b{bjet_idx}", f"Hbb_isValid ? {puIDbranch}[b{bjet_idx}_idx] : -100.f")

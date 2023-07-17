@@ -2,12 +2,12 @@ import os
 import shutil
 import ROOT
 import sys
-from RunKit.sh_tools import sh_call
-
 
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
+from RunKit.sh_tools import sh_call
+import Common.ConvertUproot as ConvertUproot
 
 if __name__ == "__main__":
   import argparse
@@ -22,6 +22,9 @@ if __name__ == "__main__":
   all_files = os.listdir(args.inputDir)
   central_idx = all_files.index(args.centralFile)
   other_files = all_files.pop(central_idx)
+
+  inFileCentralName = os.path.join(args.inputDir, args.centralFile)
+  if args.test: print('CentralFile = ', inFileCentralName)
   if args.recreateOutDir:
     if os.path.exists(args.workingDir):
       shutil.rmtree(args.workingDir)
@@ -33,21 +36,32 @@ if __name__ == "__main__":
   syst_trees = []
   k=0
   for systFile in all_files:
-    if args.test and k>2 : continue
-    k+=1
-    inFileCentralName = os.path.join(args.inputDir, args.centralFile)
-    if args.test: print(inFileCentralName)
+    if args.test and k>=1 :
+      continue
     inFileShiftedName = os.path.join(args.inputDir, systFile)
-    if args.test: print(inFileShiftedName)
+    if args.test: print('shifted file = ', inFileShiftedName)
+    if args.test: print('index = ', k)
     treeName = systFile.strip('.root')
-    cmd = f"""python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/SkimEvents.py --inFileCentral {inFileCentralName} --inFileShifted {inFileShiftedName} --outDir {args.workingDir} --treeName {treeName}"""
+    skimEventsPython = os.path.join(os.environ['ANALYSIS_PATH'], "Analysis/SkimEvents.py")
+    cmd = f"""python3 {skimEventsPython} --inFileCentral {inFileCentralName} --inFileShifted {inFileShiftedName} --outDir {args.workingDir} --treeName {treeName}"""
     if args.test : print(cmd)
     sh_call(cmd, True)
-  for file_syst in os.listdir(args.workingDir):
-    syst_files_to_merge.append(f'{args.workingDir}/{file_syst}')
+    k+=1
+  for file_syst in os.listdir(args.workingDir) + [inFileCentralName]:
+    if file_syst == inFileCentralName:
+      outFileCentralName = os.path.join(args.workingDir, args.centralFile)
+      shutil.copy(inFileCentralName, outFileCentralName)
+      UprootFileName = ConvertUproot.toUproot(args.workingDir, args.centralFile)
+      syst_files_to_merge.append(UprootFileName)
+      continue
+    UprootFileName = ConvertUproot.toUproot(args.workingDir, file_syst)
+    syst_files_to_merge.append(UprootFileName)
   if args.test: print(f for f in syst_files_to_merge)
-  hadd_str = f'hadd -f209 -j -O {args.outputFile} '
+  outFileName = os.path.join(args.workingDir, args.outputFile)
+  hadd_str = f'hadd -f209 -j -O {outFileName} '
   hadd_str += ' '.join(f for f in syst_files_to_merge)
   if args.test: print(hadd_str)
   sh_call([hadd_str], True)
-  shutil.rmtree(args.workingDir)
+  for file_syst in syst_files_to_merge:
+    if args.test: break
+    os.remove(file_syst)

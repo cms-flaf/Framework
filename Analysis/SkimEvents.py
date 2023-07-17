@@ -19,9 +19,9 @@ col_type_dict = {
   'Long_t' :'long',
   'UInt_t' :'unsigned int',
   'ROOT::VecOps::RVec<float>':'ROOT::VecOps::RVec<float>',
-  'ROOT::VecOps::RVec<int>':'ROOT::VecOps::RVec<int>'
+  'ROOT::VecOps::RVec<int>':'ROOT::VecOps::RVec<int>',
+  'ROOT::VecOps::RVec<unsigned char>':'ROOT::VecOps::RVec<unsigned char>'
   }
-
 def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
   df_out = ROOT.RDataFrame('Events', inputFileShifted)
   colNames = [str(c) for c in df_out.GetColumnNames()]
@@ -36,7 +36,7 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
   df_unique = df_out.Filter("!isValid")
   df_out_valid = df_out.Filter('isValid')
   colToSave_diff= []
-  colToNotToMakeDiff=  ["period","run", "sample_name", "sample_type", "channelId", "entryIndex", "event", "isData", "luminosityBlock"]
+  colToNotToMakeDiff=  ["period","run", "sample_name", "sample_type", "channelId", "entryIndex", "event", "isData", "luminosityBlock", "X_mass", "X_spin"]
   colToSave_noDiff= [ "entryIndex"]
 
   condition_noDiff_list = []
@@ -45,7 +45,6 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
   for var_idx,var_name in enumerate(colNames):
     if var_name in colToNotToMakeDiff: continue
     condition_noDiff_list.append(f"analysis::IsSame(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})")
-    #condition_Valid_list.append(f"! analysis::IsSame(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})")
 
   condition_noDiff = ' && '.join(condition_noDiff_list)
   df_out_valid = df_out_valid.Define("isSame", condition_noDiff)
@@ -62,12 +61,12 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
   snapshotOptions.fOverwriteIfExists=False
   snapshotOptions.fLazy=True
   snapshotOptions.fMode="RECREATE"
-  snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + 'LZ4')
+  snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + 'ZLIB')
   snapshotOptions.fCompressionLevel = 4
   colToSave_noDiff_v = ListToVector(colToSave_noDiff)
   colToSave_diff_v = ListToVector(colToSave_diff)
   colNames_v = ListToVector(colNames)
-  outFile_Valid = os.path.join(outDir, f"{treeName}_Diff.root")
+  outFile_Valid = os.path.join(outDir, f"{treeName}_Valid.root")
   outFile_nonValid = os.path.join(outDir, f"{treeName}_nonValid.root")
   outFile_Valid_noDiff = os.path.join(outDir, f"{treeName}_noDiff.root")
   if os.path.exists(outFile_Valid):
@@ -76,7 +75,7 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
     os.remove(outFile_nonValid)
   if os.path.exists(outFile_Valid_noDiff):
     os.remove(outFile_Valid_noDiff)
-  snaps.append(df_out_valid_noDiff.Snapshot(f"{treeName}_Valid_noDiff", outFile_Valid_noDiff, colToSave_noDiff_v, snapshotOptions))
+  snaps.append(df_out_valid_noDiff.Snapshot(f"{treeName}_noDiff", outFile_Valid_noDiff, colToSave_noDiff_v, snapshotOptions))
   snaps.append(df_out_valid_diff.Snapshot(f"{treeName}_Valid", outFile_Valid, colToSave_diff_v, snapshotOptions))
   snaps.append(df_unique.Snapshot(f"{treeName}_nonValid", outFile_nonValid, colNames_v, snapshotOptions))
   tuple_maker.processIn(colNames_v)
@@ -99,4 +98,3 @@ if __name__ == "__main__":
   header_path_Skimmer = os.path.join(headers_dir, "SystSkimmer.h")
   ROOT.gInterpreter.Declare(f'#include "{header_path_Skimmer}"')
   make_df(args.inFileCentral,args.inFileShifted,args.outDir,args.treeName)
-

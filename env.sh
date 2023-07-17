@@ -152,8 +152,9 @@ action() {
         autoload bashcompinit
         bashcompinit
     fi
-    source /cvmfs/sft.cern.ch/lcg/views/setupViews.sh LCG_102 x86_64-centos${os_version}-gcc11-opt
-    source /afs/cern.ch/user/m/mrieger/public/law_sw/setup.sh
+    export MAMBA_ROOT_PREFIX=/afs/cern.ch/work/k/kandroso/micromamba
+    eval "$($MAMBA_ROOT_PREFIX/micromamba shell hook -s posix)"
+    micromamba activate hh
     source "$( law completion )"
 
     alias cmsEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY CENTRAL_STORAGE=$CENTRAL_STORAGE ANALYSIS_BIG_DATA_PATH=$ANALYSIS_BIG_DATA_PATH DEFAULT_CMSSW_BASE=$DEFAULT_CMSSW_BASE $ANALYSIS_PATH/RunKit/cmsEnv.sh"

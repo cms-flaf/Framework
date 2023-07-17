@@ -28,7 +28,7 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
   entryIndexIdx = colNames.index("entryIndex")
   colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
   col_types = [str(df_out.GetColumnType(c)) for c in colNames]
-  tuple_maker = ROOT.analysis.TupleMaker(*col_types)('Events', inputFileCentral, 4)
+  tuple_maker = ROOT.analysis.TupleMaker(*col_types)(ROOT.RDataFrame('Events',inputFileCentral), 4)
   print("tuplemaker created")
   df_out = tuple_maker.processOut(ROOT.RDF.AsRNode(df_out))
   print("tuplemaker processed")
@@ -64,7 +64,7 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
   snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + 'ZLIB')
   snapshotOptions.fCompressionLevel = 4
   colToSave_noDiff_v = ListToVector(colToSave_noDiff)
-  colToSave_diff_v = ListToVector(colToSave_diff)
+  colToSave_diff_v = ListToVector(colToSave_diff+["entryIndex"])
   colNames_v = ListToVector(colNames)
   outFile_Valid = os.path.join(outDir, f"{treeName}_Valid.root")
   outFile_nonValid = os.path.join(outDir, f"{treeName}_nonValid.root")

@@ -40,8 +40,12 @@ struct StopLoop {};
 
 template<typename ...Args>
 struct TupleMaker {
-  TupleMaker(const std::string& tree_name, const std::string& in_file, size_t queue_size)
-    : df_in(tree_name, in_file), queue(queue_size)
+  //TupleMaker(const std::string& tree_name, const std::string& in_file, size_t queue_size)
+  //  : df_in(tree_name, in_file), queue(queue_size)
+  //{
+  //}
+  TupleMaker(const ROOT::RDataFrame& df_in_, size_t queue_size)
+    : df_in(df_in_), queue(queue_size)
   {
   }
 
@@ -136,10 +140,10 @@ struct TupleMaker {
 namespace detail {
   template<typename T>
   struct DeltaImpl {
-    static T Delta(const T& shifted, const T& central) {
+    static T Delta(const T& central, const T& shifted) {
       return shifted - central;
     }
-    static T FromDelta(const T& delta, const T& central){
+    static T FromDelta(const T& central,const T& delta){
       return delta + central;
     }
 
@@ -147,7 +151,7 @@ namespace detail {
 
   template<typename T>
   struct DeltaImpl<ROOT::VecOps::RVec<T>> {
-    static ROOT::VecOps::RVec<T> Delta(const ROOT::VecOps::RVec<T>& shifted, const ROOT::VecOps::RVec<T>& central)
+    static ROOT::VecOps::RVec<T> Delta(const ROOT::VecOps::RVec<T>& central,const ROOT::VecOps::RVec<T>& shifted)
     {
       ROOT::VecOps::RVec<T> delta = shifted;
       size_t n_max = std::min(shifted.size(), central.size());
@@ -155,7 +159,7 @@ namespace detail {
         delta[n] -= central[n];
       return delta;
     }
-    static ROOT::VecOps::RVec<T> FromDelta(const ROOT::VecOps::RVec<T>& delta, const ROOT::VecOps::RVec<T>& central){
+    static ROOT::VecOps::RVec<T> FromDelta(const ROOT::VecOps::RVec<T>& central,const ROOT::VecOps::RVec<T>& delta){
       ROOT::VecOps::RVec<T> fromDeltaVec = delta;
       size_t n_max = std::min(delta.size(), central.size());
       for (size_t n =0 ; n < n_max; ++n){
@@ -167,20 +171,20 @@ namespace detail {
 
   template<typename T>
   struct IsSameImpl {
-    static bool IsSame(T shifted, T central) {
+    static bool IsSame(T central,T shifted) {
       return shifted == central;
     }
   };
 
   template<typename T>
   struct IsSameImpl<ROOT::VecOps::RVec<T>> {
-    static bool IsSame(const ROOT::VecOps::RVec<T>& shifted, const ROOT::VecOps::RVec<T>& central)
+    static bool IsSame(const ROOT::VecOps::RVec<T>& central, const ROOT::VecOps::RVec<T>& shifted)
     {
       const size_t n_shifted = shifted.size();
       if(n_shifted != central.size())
         return false;
       for(size_t n = 0; n < n_shifted; ++n)
-        if(!IsSameImpl<T>::IsSame(shifted[n], central[n]))
+        if(!IsSameImpl<T>::IsSame(central[n], shifted[n]))
           return false;
       return true;
     }
@@ -188,27 +192,27 @@ namespace detail {
 }
 
 template<typename T>
-bool IsSame(const T& shifted, const T& central)
+bool IsSame(const T& central, const T& shifted)
 {
-  return detail::IsSameImpl<T>::IsSame(shifted, central);
+  return detail::IsSameImpl<T>::IsSame(central, shifted);
 }
 template<typename T>
-T Delta(const T& shifted, const T& central)
+T Delta(const T& central, const T& shifted)
 {
-  return detail::DeltaImpl<T>::Delta(shifted, central);
+  return detail::DeltaImpl<T>::Delta(central, shifted);
 }
 template<>
-bool Delta<bool>(const bool& shifted, const bool& central)
+bool Delta<bool>(const bool& central, const bool& shifted)
 {
   return shifted == central;
 }
 template<typename T>
-T FromDelta(const T& shifted, const T& central)
+T FromDelta(const T& central, const T& shifted)
 {
-  return detail::DeltaImpl<T>::FromDelta(shifted, central);
+  return detail::DeltaImpl<T>::FromDelta(central, shifted);
 }
 template<>
-bool FromDelta<bool>(const bool& delta, const bool& central)
+bool FromDelta<bool>(const bool& central, const bool& delta)
 {
   return delta ? central : !central ;
 }

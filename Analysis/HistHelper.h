@@ -39,19 +39,23 @@ template<typename T>
 struct StopLoop {};
 
 template<typename ...Args>
-struct TupleMaker {
-  //TupleMaker(const std::string& tree_name, const std::string& in_file, size_t queue_size)
+struct MapCreator {
+  //MapCreator(const std::string& tree_name, const std::string& in_file, size_t queue_size)
   //  : df_in(tree_name, in_file), queue(queue_size)
   //{
   //}
-  static std::map<int, std::shared_ptr<Entry>> entries;
-  TupleMaker(const ROOT::RDataFrame& df_in_)
+  MapCreator(const ROOT::RDataFrame& df_in_)
     : df_in(df_in_)
   {
   }
 
-  TupleMaker(const TupleMaker&) = delete;
-  TupleMaker& operator= (const TupleMaker&) = delete;
+  MapCreator(const MapCreator&) = delete;
+  MapCreator& operator= (const MapCreator&) = delete;
+
+    static std::map<int, std::shared_ptr<Entry>>& GetEntriesMap(){
+      static std::map<int, std::shared_ptr<Entry>> entries;
+      return entries;
+    }
 
     void processCentral(const std::vector<std::string>& var_names)
     {
@@ -63,16 +67,17 @@ struct TupleMaker {
             }, var_names);
 
 
+
         ROOT::RDF::RNode df = df_node;
         df.Foreach([&](const std::shared_ptr<Entry>& entry) {
             const auto idx = entry->GetValue<int>(0);
-            if(entries.count(idx)) {
+            //auto map = GetEntriesMap();
+            if(GetEntriesMap().count(idx)) {
                 throw std::runtime_error("Duplicate entry for index " + std::to_string(idx));
             }
-            entries[idx] = entry;
+            GetEntriesMap()[idx] = entry;
             }, {"_entry"});
 
-        //return entries;
     }
 
 

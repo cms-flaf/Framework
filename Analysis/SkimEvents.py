@@ -5,6 +5,13 @@ ROOT.gROOT.SetBatch(True)
 ROOT.EnableThreadSafety()
 
 
+if __name__ == "__main__":
+    sys.path.append(os.environ['ANALYSIS_PATH'])
+
+import Common.Utilities as Utilities
+from Common.HistHelper import *
+
+
 def ListToVector(list, type="string"):
 	vec = ROOT.std.vector(type)()
 	for item in list:

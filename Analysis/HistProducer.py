@@ -8,7 +8,6 @@ if __name__ == "__main__":
 
 import Common.Utilities as Utilities
 from Common.HistHelper import *
-#, ROOT::VecOps::RVec<Int_t>, ROOT::VecOps::RVec<Float_t>,ROOT::VecOps::RVec<UChar_t>
 
 
 # 1. apply selection
@@ -47,26 +46,46 @@ class DataFrameBuilder:
     def selectTrigger(self, trigger='HLT_ditau'):
         self.df = self.df.Filter(trigger)
 
-    def __init__(self, df, df_central,central_columns, central_col_types, deepTauVersion='v2p1'):
+    def __init__(self, df, colNames, colTypes, deepTauVersion='v2p1'):
         self.df = df
+        self.colNames=colNames
+        self.colTypes=colTypes
         self.deepTauVersion = deepTauVersion
-        tuple_maker = ROOT.analysis.MapCreator(*central_col_types)(df_central)
-        #self.CentralMap = tuple_maker.processCentral(Utilities.ListToVector(central_columns))
-        tuple_maker.processCentral(Utilities.ListToVector(central_columns))
         self.bTagWP = 2
         self.var_list = []
 
-    def CreateFromDelta(self,var_list,colNames, colTypes):
-        for var_idx,var_name in enumerate(colNames):
+    def CreateFromDelta(self,var_list, df_central, central_columns, central_col_types):
+        tuple_maker = ROOT.analysis.MapCreator(*central_col_types)(df_central)
+        tuple_maker.processCentral(Utilities.ListToVector(central_columns))
+        for var_idx,var_name in enumerate(self.colNames):
             if not var_name.endswith("Diff"): continue
             var_name_forDelta = var_name.split("Diff")[0]
-            #print(var_name_forDelta)
-            #print(self.CentralMap)
-            #print(type(self.CentralMap))
-            self.df = self.df.Define(f"{var_name_forDelta}", f"""analysis::FromDelta({var_name}, ::analysis::MapCreator::GetEntriesMap()[entryIndex][{var_idx}])""")
-            print(f"{var_name_forDelta} in colNames ? {var_name_forDelta in df_Diff.GetColumnNames()}")
+            self.df = self.df.Define(f"{var_name_forDelta}", f"""analysis::FromDelta({var_name},
+                                     analysis::GetEntriesMap()[entryIndex]->GetValue<{col_type_dict[self.colTypes[var_idx]]}>({var_idx}) )""")
             var_list.append(f"{var_name_forDelta}")
 
+    def GetWeightDict(self):
+        weight_variables = []
+        for var in self.colNames:
+            if var.split('_')[0] == 'weight':
+                weight_variables.append(var)
+        all_weights = {}
+        relative_weights = []
+        options = ['Central', 'Up','Down', 'total']
+        #variations = ['Up','Down']
+        for opt in options:
+            for weightName in weight_variables:
+                if opt not in all_weights.keys():
+                    all_weights[opt] = []
+                if opt in weightName:
+                    all_weights[opt].append(weightName)
+            weight_variables=list(set(weight_variables)-set(all_weights[opt]))
+        print(weight_variables)
+        for opt in options:
+            print(opt)
+            print(all_weights[opt])
+    #def CreateShiftDfForNormWeights(self, dataframe, var):
+    #    dataframe = dataframe.Vary(var, f"""RVecF{{ {var}*{weight_variables[0]}}}""", [''])
 
 
 
@@ -111,22 +130,33 @@ if __name__ == "__main__":
 
     histograms = {}
 
+    # first for df_central
+
     df_central = ROOT.RDataFrame('Events', args.inFile)
     central_colNames = [str(c) for c in df_central.GetColumnNames()]
     entryIndexIdx = central_colNames.index("entryIndex")
     central_colNames[entryIndexIdx], central_colNames[0] = central_colNames[0], central_colNames[entryIndexIdx]
-    central_col_types = [str(df_central.GetColumnType(c)) for c in central_colNames]
+    central_colTypes = [str(df_central.GetColumnType(c)) for c in central_colNames]
 
+    dfWrapped = DataFrameBuilder(df_central, central_colNames, central_colTypes)
+    dfWrapped.defineQCDRegions()
+    dfWrapped.defineSelectionRegions()
+    dfWrapped.GetWeightDict()
+
+    # then for one shifted df
+    '''
     df_shifted = ROOT.RDataFrame(trees_Diff[0], args.inFile)
     colNames = [str(c) for c in df_shifted.GetColumnNames()]
     entryIndexIdx = colNames.index("entryIndex")
     colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
-    col_types = [str(df_shifted.GetColumnType(c)) for c in colNames]
+    colTypes = [str(df_shifted.GetColumnType(c)) for c in colNames]
     # for the moment:
-    dfWrapped = DataFrameBuilder(df_shifted, df_central, central_colNames,central_col_types)
+    dfWrapped = DataFrameBuilder(df_shifted,colNames, colTypes)
     var_list = []
-    dfWrapped.CreateFromDelta(var_list,colNames, col_types)
-    print(var_list)
-    print(dfWrapped.df.GetColumnNames())
-    #dfWrapped.defineQCDRegions()
-    #dfWrapped.defineSelectionRegions()
+    dfWrapped.CreateFromDelta(var_list, df_central, central_columns, central_col_types)
+    #print(var_list)
+    #print(dfWrapped.df.GetColumnNames())
+    dfWrapped.defineQCDRegions()
+    dfWrapped.defineSelectionRegions()
+    dfWrapped.CreateShiftDfForNormWeights(df_central, 'b1_pt')
+    '''

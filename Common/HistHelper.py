@@ -5,6 +5,21 @@ regions = ['region_A','region_B','region_C','region_D']
 cuts = ['cut_2b1t', 'cut_2b2t', 'noCut']
 
 
+col_type_dict = {
+  'Float_t':'float',
+  'Bool_t':'bool',
+  'Int_t' :'int',
+  'ULong64_t' :'unsigned long long',
+  'Long_t' :'long',
+  'UInt_t' :'unsigned int',
+  'Char_t' : 'char',
+  'ROOT::VecOps::RVec<Float_t>':'ROOT::VecOps::RVec<float>',
+  'ROOT::VecOps::RVec<Int_t>':'ROOT::VecOps::RVec<int>',
+  'ROOT::VecOps::RVec<UChar_t>':'ROOT::VecOps::RVec<unsigned char>',
+  'ROOT::VecOps::RVec<float>':'ROOT::VecOps::RVec<float>',
+  'ROOT::VecOps::RVec<int>':'ROOT::VecOps::RVec<int>',
+  'ROOT::VecOps::RVec<unsigned char>':'ROOT::VecOps::RVec<unsigned char>'
+  }
 def defineP4(df, name):
     df = df.Define(f"{name}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({name}_pt,{name}_eta,{name}_phi,{name}_mass)")
     return df

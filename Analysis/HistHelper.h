@@ -37,6 +37,10 @@ template<typename T>
 };
 
 struct StopLoop {};
+static std::map<int, std::shared_ptr<Entry>>& GetEntriesMap(){
+      static std::map<int, std::shared_ptr<Entry>> entries;
+      return entries;
+    }
 
 template<typename ...Args>
 struct MapCreator {
@@ -52,10 +56,6 @@ struct MapCreator {
   MapCreator(const MapCreator&) = delete;
   MapCreator& operator= (const MapCreator&) = delete;
 
-    static std::map<int, std::shared_ptr<Entry>>& GetEntriesMap(){
-      static std::map<int, std::shared_ptr<Entry>> entries;
-      return entries;
-    }
 
     void processCentral(const std::vector<std::string>& var_names)
     {

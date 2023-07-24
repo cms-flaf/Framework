@@ -1,0 +1,389 @@
+Central:
+  weight_total:
+    name : weight_central_total
+    expression : weight_TauID_Central * weight_total
+
+TauID:
+  weight_TauID_stat1_dm0Up_rel:
+    name: weight_TauID_stat1_dm0Up
+    expression: weight_TauID_stat1_dm0Up_rel * weight_central_tota
+  weight_TauID_syst_allerasUp_rel:
+    name: weight_TauID_syst_allerasUp
+    expression: weight_TauID_syst_allerasUp_rel  * weight_central_total
+  weight_TauID_syst_yearUp_rel:
+    name: weight_TauID_syst_yearUp
+    expression: weight_TauID_syst_yearUp_rel * weight_central_total
+  weight_TauID_stat1_dm1Up_rel:
+    name: weight_TauID_stat1_dm1Up
+    expression: weight_TauID_stat1_dm1Up_rel * weight_central_total
+  weight_TauID_syst_year_dm1Up_rel:
+    name: weight_TauID_syst_year_dm1Up
+    expression: weight_TauID_syst_year_dm1Up_rel * weight_central_total
+  weight_TauID_TauID_genuineMuon_eta1p2to1p7Up_rel:
+    name: weight_TauID_TauID_genuineMuon_eta1p2to1p7Up
+    expression: weight_TauID_TauID_genuineMuon_eta1p2to1p7Up_rel * weight_central_total
+  weight_TauID_stat2_dm10Up_rel:
+    name: weight_TauID_stat2_dm10Up
+    expression: weight_TauID_stat2_dm10Up_rel * weight_central_total
+  weight_TauID_stat1_dm11Up_rel:
+    name: weight_TauID_stat1_dm11Up
+    expression: weight_TauID_stat1_dm11Up_rel * weight_central_total
+  weight_TauID_syst_year_dm10Up_rel:
+    name: weight_TauID_syst_year_dm10Up
+    expression: weight_TauID_syst_year_dm10Up_rel * weight_central_total
+  weight_TauID_syst_year_dm11Up_rel:
+    name: weight_TauID_syst_year_dm11Up
+    expression: weight_TauID_syst_year_dm11Up_rel * weight_central_total
+  weight_TauID_TauID_genuineMuon_eta0p8to1p2Up_rel:
+    name: weight_TauID_TauID_genuineMuon_eta0p8to1p2Up
+    expression: weight_TauID_TauID_genuineMuon_eta0p8to1p2Up_rel * weight_central_total
+  weight_TauID_stat2_dm0Up_rel:
+    name: weight_TauID_stat2_dm0Up
+    expression: weight_TauID_stat2_dm0Up_rel * weight_central_total
+  weight_TauID_stat2_dm11Up_rel:
+    name: weight_TauID_stat2_dm11Up
+    expression: weight_TauID_stat2_dm11Up_rel * weight_central_total
+  weight_TauID_TauID_genuineMuon_etaGt1p7Up_rel:
+    name: weight_TauID_TauID_genuineMuon_etaGt1p7Up
+    expression: weight_TauID_TauID_genuineMuon_etaGt1p7Up_rel * weight_central_total
+  weight_TauID_TauID_genuineElectron_endcapsUp_rel:
+    name: weight_TauID_TauID_genuineElectron_endcapsUp
+    expression: weight_TauID_TauID_genuineElectron_endcapsUp_rel * weight_central_total
+  weight_TauID_stat2_dm1Up_rel:
+    name: weight_TauID_stat2_dm1Up
+    expression: weight_TauID_stat2_dm1Up_rel * weight_central_total
+  weight_TauID_stat1_dm10Up_rel:
+    name: weight_TauID_stat1_dm10Up
+    expression: weight_TauID_stat1_dm10Up_rel * weight_central_total
+  weight_TauID_TauID_genuineElectron_barrelUp_rel:
+    name: weight_TauID_TauID_genuineElectron_barrelUp
+    expression: weight_TauID_TauID_genuineElectron_barrelUp_rel * weight_central_total
+  weight_TauID_totalUp_rel:
+    name: weight_TauID_totalUp
+    expression: weight_TauID_totalUp_rel * weight_central_total
+  weight_TauID_TauID_genuineMuon_etaLt0p4Up_rel:
+    name: weight_TauID_TauID_genuineMuon_etaLt0p4Up
+    expression: weight_TauID_TauID_genuineMuon_etaLt0p4Up_rel * weight_central_total
+  weight_TauID_syst_year_dm0Up_rel:
+    name: weight_TauID_syst_year_dm0Up
+    expression: weight_TauID_syst_year_dm0Up_rel * weight_central_total
+  weight_TauID_TauID_genuineMuon_eta0p4to0p8Up_rel:
+    name: weight_TauID_TauID_genuineMuon_eta0p4to0p8Up
+    expression: weight_TauID_TauID_genuineMuon_eta0p4to0p8Up_rel * weight_central_total
+  weight_TauID_stat1_dm0Down_rel:
+    name: weight_TauID_stat1_dm0Down
+    expression: weight_TauID_stat1_dm0Down_rel * weight_central_tota
+  weight_TauID_syst_allerasDown_rel:
+    name: weight_TauID_syst_allerasDown
+    expression: weight_TauID_syst_allerasDown_rel  * weight_central_total
+  weight_TauID_syst_yearDown_rel:
+    name: weight_TauID_syst_yearDown
+    expression: weight_TauID_syst_yearDown_rel * weight_central_total
+  weight_TauID_stat1_dm1Down_rel:
+    name: weight_TauID_stat1_dm1Down
+    expression: weight_TauID_stat1_dm1Down_rel * weight_central_total
+  weight_TauID_syst_year_dm1Down_rel:
+    name: weight_TauID_syst_year_dm1Down
+    expression: weight_TauID_syst_year_dm1Down_rel * weight_central_total
+  weight_TauID_TauID_genuineMuon_eta1p2to1p7Down_rel:
+    name: weight_TauID_TauID_genuineMuon_eta1p2to1p7Down
+    expression: weight_TauID_TauID_genuineMuon_eta1p2to1p7Down_rel * weight_central_total
+  weight_TauID_stat2_dm10Down_rel:
+    name: weight_TauID_stat2_dm10Down
+    expression: weight_TauID_stat2_dm10Down_rel * weight_central_total
+  weight_TauID_stat1_dm11Down_rel:
+    name: weight_TauID_stat1_dm11Down
+    expression: weight_TauID_stat1_dm11Down_rel * weight_central_total
+  weight_TauID_syst_year_dm10Down_rel:
+    name: weight_TauID_syst_year_dm10Down
+    expression: weight_TauID_syst_year_dm10Down_rel * weight_central_total
+  weight_TauID_syst_year_dm11Down_rel:
+    name: weight_TauID_syst_year_dm11Down
+    expression: weight_TauID_syst_year_dm11Down_rel * weight_central_total
+  weight_TauID_TauID_genuineMuon_eta0p8to1p2Down_rel:
+    name: weight_TauID_TauID_genuineMuon_eta0p8to1p2Down
+    expression: weight_TauID_TauID_genuineMuon_eta0p8to1p2Down_rel * weight_central_total
+  weight_TauID_stat2_dm0Down_rel:
+    name: weight_TauID_stat2_dm0Down
+    expression: weight_TauID_stat2_dm0Down_rel * weight_central_total
+  weight_TauID_stat2_dm11Down_rel:
+    name: weight_TauID_stat2_dm11Down
+    expression: weight_TauID_stat2_dm11Down_rel * weight_central_total
+  weight_TauID_TauID_genuineMuon_etaGt1p7Down_rel:
+    name: weight_TauID_TauID_genuineMuon_etaGt1p7Down
+    expression: weight_TauID_TauID_genuineMuon_etaGt1p7Down_rel * weight_central_total
+  weight_TauID_TauID_genuineElectron_endcapsDown_rel:
+    name: weight_TauID_TauID_genuineElectron_endcapsDown
+    expression: weight_TauID_TauID_genuineElectron_endcapsDown_rel * weight_central_total
+  weight_TauID_stat2_dm1Down_rel:
+    name: weight_TauID_stat2_dm1Down
+    expression: weight_TauID_stat2_dm1Down_rel * weight_central_total
+  weight_TauID_stat1_dm10Down_rel:
+    name: weight_TauID_stat1_dm10Down
+    expression: weight_TauID_stat1_dm10Down_rel * weight_central_total
+  weight_TauID_TauID_genuineElectron_barrelDown_rel:
+    name: weight_TauID_TauID_genuineElectron_barrelDown
+    expression: weight_TauID_TauID_genuineElectron_barrelDown_rel * weight_central_total
+  weight_TauID_totalDown_rel:
+    name: weight_TauID_totalDown
+    expression: weight_TauID_totalDown_rel * weight_central_total
+  weight_TauID_TauID_genuineMuon_etaLt0p4Down_rel:
+    name: weight_TauID_TauID_genuineMuon_etaLt0p4Down
+    expression: weight_TauID_TauID_genuineMuon_etaLt0p4Down_rel * weight_central_total
+  weight_TauID_syst_year_dm0Down_rel:
+    name: weight_TauID_syst_year_dm0Down
+    expression: weight_TauID_syst_year_dm0Down_rel * weight_central_total
+  weight_TauID_TauID_genuineMuon_eta0p4to0p8Down_rel:
+    name: weight_TauID_TauID_genuineMuon_eta0p4to0p8Down
+    expression: weight_TauID_TauID_genuineMuon_eta0p4to0p8Down_rel * weight_central_total
+
+bTag:
+  weight_bTagSF_Loose_btagSFbc_correlatedUp_rel:
+    name: weight_bTagSF_Loose_btagSFbc_correlatedUp
+    expression: weight_bTagSF_Loose_btagSFbc_correlatedUp_rel * weight_bTagSF_Loose_Central
+    working_point: Loose
+  weight_bTagSF_Loose_btagSFlight_uncorrelatedUp_rel:
+    name: weight_bTagSF_Loose_btagSFlight_uncorrelatedUp
+    expression: weight_bTagSF_Loose_btagSFlight_uncorrelatedUp_rel * weight_bTagSF_Loose_Central
+    working_point: Loose
+  weight_bTagSF_Loose_btagSFlight_correlatedUp_rel:
+    name: weight_bTagSF_Loose_btagSFlight_correlatedUp
+    expression: weight_bTagSF_Loose_btagSFlight_correlatedUp_rel * weight_bTagSF_Loose_Central
+    working_point: Loose
+  weight_bTagSF_Loose_btagSFbc_uncorrelatedUp_rel:
+    name: weight_bTagSF_Loose_btagSFbc_uncorrelatedUp
+    expression: weight_bTagSF_Loose_btagSFbc_uncorrelatedUp_rel * weight_bTagSF_Loose_Central
+    working_point: Loose
+  weight_bTagSF_Loose_btagSFbc_uncorrelatedDown_rel:
+    name: weight_bTagSF_Loose_btagSFbc_uncorrelatedDown
+    expression: weight_bTagSF_Loose_btagSFbc_uncorrelatedDown_rel * weight_bTagSF_Loose_Central
+    working_point: Loose
+  weight_bTagSF_Loose_btagSFlight_uncorrelatedDown_rel:
+    name: weight_bTagSF_Loose_btagSFlight_uncorrelatedDown
+    expression: weight_bTagSF_Loose_btagSFlight_uncorrelatedDown_rel * weight_bTagSF_Loose_Central
+    working_point: Loose
+  weight_bTagSF_Loose_btagSFlight_correlatedDown_rel:
+    name: weight_bTagSF_Loose_btagSFlight_correlatedDown
+    expression: weight_bTagSF_Loose_btagSFlight_correlatedDown_rel * weight_bTagSF_Loose_Central
+    working_point: Loose
+  weight_bTagSF_Loose_btagSFbc_uncorrelatedDown_rel:
+    name: weight_bTagSF_Loose_btagSFbc_uncorrelatedDown
+    expression: weight_bTagSF_Loose_btagSFbc_uncorrelatedDown_rel * weight_bTagSF_Loose_Central
+    working_point: Loose
+  weight_bTagSF_Medium_btagSFbc_correlatedUp_rel:
+    name: weight_bTagSF_Medium_btagSFbc_correlatedUp
+    expression: weight_bTagSF_Medium_btagSFbc_correlatedUp_rel * weight_bTagSF_Medium_Central
+    working_point: Medium
+  weight_bTagSF_Medium_btagSFlight_uncorrelatedUp_rel:
+    name: weight_bTagSF_Medium_btagSFlight_uncorrelatedUp
+    expression: weight_bTagSF_Medium_btagSFlight_uncorrelatedUp_rel * weight_bTagSF_Medium_Central
+    working_point: Medium
+  weight_bTagSF_Medium_btagSFlight_correlatedUp_rel:
+    name: weight_bTagSF_Medium_btagSFlight_correlatedUp
+    expression: weight_bTagSF_Medium_btagSFlight_correlatedUp_rel * weight_bTagSF_Medium_Central
+    working_point: Medium
+  weight_bTagSF_Medium_btagSFbc_uncorrelatedUp_rel:
+    name: weight_bTagSF_Medium_btagSFbc_uncorrelatedUp
+    expression: weight_bTagSF_Medium_btagSFbc_uncorrelatedUp_rel * weight_bTagSF_Medium_Central
+    working_point: Medium
+  weight_bTagSF_Medium_btagSFbc_uncorrelatedDown_rel:
+    name: weight_bTagSF_Medium_btagSFbc_uncorrelatedDown
+    expression: weight_bTagSF_Medium_btagSFbc_uncorrelatedDown_rel * weight_bTagSF_Medium_Central
+    working_point: Medium
+  weight_bTagSF_Medium_btagSFlight_uncorrelatedDown_rel:
+    name: weight_bTagSF_Medium_btagSFlight_uncorrelatedDown
+    expression: weight_bTagSF_Medium_btagSFlight_uncorrelatedDown_rel * weight_bTagSF_Medium_Central
+    working_point: Medium
+  weight_bTagSF_Medium_btagSFlight_correlatedDown_rel:
+    name: weight_bTagSF_Medium_btagSFlight_correlatedDown
+    expression: weight_bTagSF_Medium_btagSFlight_correlatedDown_rel * weight_bTagSF_Medium_Central
+    working_point: Medium
+  weight_bTagSF_Medium_btagSFbc_uncorrelatedDown_rel:
+    name: weight_bTagSF_Medium_btagSFbc_uncorrelatedDown
+    expression: weight_bTagSF_Medium_btagSFbc_uncorrelatedDown_rel * weight_bTagSF_Medium_Central
+    working_point: Medium
+  weight_bTagSF_Tight_btagSFbc_correlatedUp_rel:
+    name: weight_bTagSF_Tight_btagSFbc_correlatedUp
+    expression: weight_bTagSF_Tight_btagSFbc_correlatedUp_rel * weight_bTagSF_Tight_Central
+    working_point: Tight
+  weight_bTagSF_Tight_btagSFlight_uncorrelatedUp_rel:
+    name: weight_bTagSF_Tight_btagSFlight_uncorrelatedUp
+    expression: weight_bTagSF_Tight_btagSFlight_uncorrelatedUp_rel * weight_bTagSF_Tight_Central
+    working_point: Tight
+  weight_bTagSF_Tight_btagSFlight_correlatedUp_rel:
+    name: weight_bTagSF_Tight_btagSFlight_correlatedUp
+    expression: weight_bTagSF_Tight_btagSFlight_correlatedUp_rel * weight_bTagSF_Tight_Central
+    working_point: Tight
+  weight_bTagSF_Tight_btagSFbc_uncorrelatedUp_rel:
+    name: weight_bTagSF_Tight_btagSFbc_uncorrelatedUp
+    expression: weight_bTagSF_Tight_btagSFbc_uncorrelatedUp_rel * weight_bTagSF_Tight_Central
+    working_point: Tight
+  weight_bTagSF_Tight_btagSFbc_uncorrelatedDown_rel:
+    name: weight_bTagSF_Tight_btagSFbc_uncorrelatedDown
+    expression: weight_bTagSF_Tight_btagSFbc_uncorrelatedDown_rel * weight_bTagSF_Tight_Central
+    working_point: Tight
+  weight_bTagSF_Tight_btagSFlight_uncorrelatedDown_rel:
+    name: weight_bTagSF_Tight_btagSFlight_uncorrelatedDown
+    expression: weight_bTagSF_Tight_btagSFlight_uncorrelatedDown_rel * weight_bTagSF_Tight_Central
+    working_point: Tight
+  weight_bTagSF_Tight_btagSFlight_correlatedDown_rel:
+    name: weight_bTagSF_Tight_btagSFlight_correlatedDown
+    expression: weight_bTagSF_Tight_btagSFlight_correlatedDown_rel * weight_bTagSF_Tight_Central
+    working_point: Tight
+  weight_bTagSF_Tight_btagSFbc_uncorrelatedDown_rel:
+    name: weight_bTagSF_Tight_btagSFbc_uncorrelatedDown
+    expression: weight_bTagSF_Tight_btagSFbc_uncorrelatedDown_rel * weight_bTagSF_Tight_Central
+    working_point: Tight
+
+PUJetID:
+  weight_Jet_PUJetID_rel_b1:
+    name: weight_Jet_PUJetID_b1
+    expression: weight_Jet_PUJetID_rel_b1 * weight_Jet_PUJetID_Central_b1
+    leg: b1
+  weight_Jet_PUJetID_rel_b2:
+    name: weight_Jet_PUJetID_b2
+    expression: weight_Jet_PUJetID_rel_b2 * weight_Jet_PUJetID_Central_b2
+    leg: b2
+
+PU:
+  weight_puUp_rel:
+    name: weight_puUp
+    expression: weight_puUp_rel * weight_total
+  weight_puDown_rel:
+    name: weight_puDown
+    expression: weight_puDown_rel * weight_total
+
+lepID:
+  weight_tau1_EleidSF_Up_rel:
+    name: weight_tau1_EleidSF_Up
+    expression: weight_tau1_EleidSF_Up_rel * weight_tau1_EleidSF_Central
+    leg: tau1
+  weight_tau2_EleidSF_Up_rel:
+    name: weight_tau2_EleidSF_Up
+    expression: weight_tau2_EleidSF_Up_rel * weight_tau2_EleidSF_Central
+    leg: tau2
+  weight_tau1_MuidSF_TightRelIsoUp_rel:
+    name: weight_tau1_MuidSF_TightRelIsoUp
+    expression: weight_tau1_MuidSF_TightRelIsoUp_rel * weight_tau1_MuidSF_Central
+    leg: tau1
+  weight_tau2_MuidSF_TightRelIsoUp_rel:
+    name: weight_tau2_MuidSF_TightRelIsoUp
+    expression: weight_tau2_MuidSF_TightRelIsoUp_rel * weight_tau2_MuidSF_Central
+    leg: tau2
+  weight_tau1_MuidSF_TightIDUp_rel:
+    name: weight_tau1_MuidSF_TightIDUp
+    expression: weight_tau1_MuidSF_TightIDUp_rel * weight_tau1_MuidSF_Central
+    leg: tau1
+  weight_tau2_MuidSF_TightIDUp_rel:
+    name: weight_tau2_MuidSF_TightIDUp
+    expression: weight_tau2_MuidSF_TightIDUp_rel * weight_tau2_MuidSF_Central
+    leg: tau2
+
+weight_tau1_EleidSF_Down_rel:
+    name: weight_tau1_EleidSF_Down
+    expression: weight_tau1_EleidSF_Down_rel * weight_tau1_EleidSF_Central
+    leg: tau1
+  weight_tau2_EleidSF_Down_rel:
+    name: weight_tau2_EleidSF_Down
+    expression: weight_tau2_EleidSF_Down_rel * weight_tau2_EleidSF_Central
+    leg: tau2
+  weight_tau1_MuidSF_TightRelIsoDown_rel:
+    name: weight_tau1_MuidSF_TightRelIsoDown
+    expression: weight_tau1_MuidSF_TightRelIsoDown_rel * weight_tau1_MuidSF_Central
+    leg: tau1
+  weight_tau2_MuidSF_TightRelIsoDown_rel:
+    name: weight_tau2_MuidSF_TightRelIsoDown
+    expression: weight_tau2_MuidSF_TightRelIsoDown_rel * weight_tau2_MuidSF_Central
+    leg: tau2
+  weight_tau1_MuidSF_TightIDDown_rel:
+    name: weight_tau1_MuidSF_TightIDDown
+    expression: weight_tau1_MuidSF_TightIDDown_rel * weight_tau1_MuidSF_Central
+    leg: tau1
+  weight_tau2_MuidSF_TightIDDown_rel:
+    name: weight_tau2_MuidSF_TightIDDown
+    expression: weight_tau2_MuidSF_TightIDDown_rel * weight_tau2_MuidSF_Central
+    leg: tau2
+
+
+
+Trg:
+  weight_tau1_TrgSF_ditau_DM0Up_rel:
+    name: weight_tau1_TrgSF_ditau_DM0Up
+    expression: weight_tau1_TrgSF_ditau_DM0Up_rel*weight_tau1_TrgSF_ditau_Central
+    leg: tau1
+  weight_tau2_TrgSF_ditau_DM0Up_rel:
+    name: weight_tau2_TrgSF_ditau_DM0Up
+    expression: weight_tau2_TrgSF_ditau_DM0Up_rel*weight_tau2_TrgSF_ditau_Central
+    leg: tau2
+  weight_tau1_TrgSF_ditau_3ProngUp_rel:
+    name: weight_tau1_TrgSF_ditau_3ProngUp
+    expression: weight_tau1_TrgSF_ditau_3ProngUp_rel*weight_tau1_TrgSF_ditau_Central
+    leg: tau1
+  weight_tau2_TrgSF_ditau_3ProngUp_rel:
+    name: weight_tau2_TrgSF_ditau_3ProngUp
+    expression: weight_tau2_TrgSF_ditau_3ProngUp_rel*weight_tau2_TrgSF_ditau_Central
+    leg: tau2
+  weight_tau1_TrgSF_ditau_DM1Up_rel:
+    name: weight_tau1_TrgSF_ditau_DM1Up
+    expression: weight_tau1_TrgSF_ditau_DM1Up_rel*weight_tau1_TrgSF_ditau_Central
+    leg: tau1
+  weight_tau2_TrgSF_ditau_DM1Up_rel:
+    name: weight_tau2_TrgSF_ditau_DM1Up
+    expression: weight_tau2_TrgSF_ditau_DM1Up_rel*weight_tau2_TrgSF_ditau_Central
+    leg: tau2
+  weight_tau1_TrgSF_singleEleUp_rel:
+    name: weight_tau1_TrgSF_singleEleUp
+    expression: weight_tau1_TrgSF_singleEleUp_rel*weight_tau1_TrgSF_singleEle_Central
+    leg: tau1
+  weight_tau2_TrgSF_singleEleUp_rel:
+    name: weight_tau2_TrgSF_singleEleUp
+    expression: weight_tau2_TrgSF_singleEleUp_rel*weight_tau2_TrgSF_singleEle_Central
+    leg: tau2
+  weight_tau1_TrgSF_singleMuUp_rel:
+    name: weight_tau1_TrgSF_singleMuUp
+    expression: weight_tau1_TrgSF_singleMuUp_rel*weight_tau1_TrgSF_singleMu_Central
+    leg: tau1
+  weight_tau2_TrgSF_singleMuUp_rel:
+    name: weight_tau2_TrgSF_singleMuUp
+    expression: weight_tau2_TrgSF_singleMuUp_rel*weight_tau2_TrgSF_singleMu_Central
+    leg: tau2
+  weight_tau1_TrgSF_ditau_DM0Down_rel:
+    name: weight_tau1_TrgSF_ditau_DM0Down
+    expression: weight_tau1_TrgSF_ditau_DM0Down_rel*weight_tau1_TrgSF_ditau_Central
+    leg: tau1
+  weight_tau2_TrgSF_ditau_DM0Down_rel:
+    name: weight_tau2_TrgSF_ditau_DM0Down
+    expression: weight_tau2_TrgSF_ditau_DM0Down_rel*weight_tau2_TrgSF_ditau_Central
+    leg: tau2
+  weight_tau1_TrgSF_ditau_3ProngDown_rel:
+    name: weight_tau1_TrgSF_ditau_3ProngDown
+    expression: weight_tau1_TrgSF_ditau_3ProngDown_rel*weight_tau1_TrgSF_ditau_Central
+    leg: tau1
+  weight_tau2_TrgSF_ditau_3ProngDown_rel:
+    name: weight_tau2_TrgSF_ditau_3ProngDown
+    expression: weight_tau2_TrgSF_ditau_3ProngDown_rel*weight_tau2_TrgSF_ditau_Central
+    leg: tau2
+  weight_tau1_TrgSF_ditau_DM1Down_rel:
+    name: weight_tau1_TrgSF_ditau_DM1Down
+    expression: weight_tau1_TrgSF_ditau_DM1Down_rel*weight_tau1_TrgSF_ditau_Central
+    leg: tau1
+  weight_tau2_TrgSF_ditau_DM1Down_rel:
+    name: weight_tau2_TrgSF_ditau_DM1Down
+    expression: weight_tau2_TrgSF_ditau_DM1Down_rel*weight_tau2_TrgSF_ditau_Central
+    leg: tau2
+  weight_tau1_TrgSF_singleEleDown_rel:
+    name: weight_tau1_TrgSF_singleEleDown
+    expression: weight_tau1_TrgSF_singleEleDown_rel*weight_tau1_TrgSF_singleEle_Central
+    leg: tau1
+  weight_tau2_TrgSF_singleEleDown_rel:
+    name: weight_tau2_TrgSF_singleEleDown
+    expression: weight_tau2_TrgSF_singleEleDown_rel*weight_tau2_TrgSF_singleEle_Central
+    leg: tau2
+  weight_tau1_TrgSF_singleMuDown_rel:
+    name: weight_tau1_TrgSF_singleMuDown
+    expression: weight_tau1_TrgSF_singleMuDown_rel*weight_tau1_TrgSF_singleMu_Central
+    leg: tau1
+  weight_tau2_TrgSF_singleMuDown_rel:
+    name: weight_tau2_TrgSF_singleMuDown
+    expression: weight_tau2_TrgSF_singleMuDown_rel*weight_tau2_TrgSF_singleMu_Central
+    leg: tau2

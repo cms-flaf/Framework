@@ -53,9 +53,6 @@ class DataFrameBuilder:
         tuple_maker = ROOT.analysis.MapCreator(*central_col_types)(df_central)
         #self.CentralMap = tuple_maker.processCentral(Utilities.ListToVector(central_columns))
         tuple_maker.processCentral(Utilities.ListToVector(central_columns))
-        self.mappa = tuple_maker.GetEntriesMap()
-        print(self.mappa)
-        #self.df = self.df.Define("centralMap", f"{entryMap}")
         self.bTagWP = 2
         self.var_list = []
 
@@ -64,9 +61,9 @@ class DataFrameBuilder:
             if not var_name.endswith("Diff"): continue
             var_name_forDelta = var_name.split("Diff")[0]
             #print(var_name_forDelta)
-            self.df = self.df.Define('centralMap', self.mappa)
-            self.df.Display({'centralMap'}).Print()
-            #self.df = self.df.Define(f"{var_name_forDelta}", f"""analysis::FromDelta({var_name}, centralMap[entryIndex][{var_idx}])""")
+            #print(self.CentralMap)
+            #print(type(self.CentralMap))
+            self.df = self.df.Define(f"{var_name_forDelta}", f"""analysis::FromDelta({var_name}, ::analysis::MapCreator::GetEntriesMap()[entryIndex][{var_idx}])""")
             print(f"{var_name_forDelta} in colNames ? {var_name_forDelta in df_Diff.GetColumnNames()}")
             var_list.append(f"{var_name_forDelta}")
 

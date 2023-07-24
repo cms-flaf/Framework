@@ -1,5 +1,9 @@
 import Common.Utilities as Utilities
 
+deepTauYears = {'v2p1':'2017','v2p5':'2018'}
+regions = ['region_A','region_B','region_C','region_D']
+cuts = ['cut_2b1t', 'cut_2b2t', 'noCut']
+
 
 def defineP4(df, name):
     df = df.Define(f"{name}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({name}_pt,{name}_eta,{name}_phi,{name}_mass)")

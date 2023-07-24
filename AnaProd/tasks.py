@@ -74,7 +74,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         outdir_anatuples = os.path.join(job_home, 'anaTuples', sample_name)
         sh_call([ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', ','.join(input_files),
                   '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations',
-                  self.customisations, '--compute_unc_variations', 'True', '--store-noncentral', '--nEvents', '100'], env=self.cmssw_env())
+                  self.customisations, '--compute_unc_variations', 'True', '--store-noncentral'], env=self.cmssw_env())
         producer_skimtuples = os.path.join(self.ana_path(), 'Analysis', 'SkimProducer.py')
         outdir_skimtuples = os.path.join(job_home, 'skim', sample_name)
         sh_call([ 'python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--workingDir', outdir_skimtuples, '--outputFile', 'skim.root'],verbose=1)

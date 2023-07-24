@@ -35,6 +35,7 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
   df_out = df_out.Define("isValid", "_entryCentral.use_count() > 0")
   df_unique = df_out.Filter("!isValid")
   df_out_valid = df_out.Filter('isValid')
+
   colToSave_diff= []
   colToNotToMakeDiff=  ["period","run", "sample_name", "sample_type", "channelId", "entryIndex", "event", "isData", "luminosityBlock", "X_mass", "X_spin"]
   colToSave_noDiff= [ "entryIndex"]

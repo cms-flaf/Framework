@@ -1,7 +1,7 @@
 import Common.Utilities as Utilities
 
 deepTauYears = {'v2p1':'2017','v2p5':'2018'}
-regions = ['region_A','region_B','region_C','region_D']
+QCDregions = ['region_A','region_B','region_C','region_D']
 cuts = ['cut_2b1t', 'cut_2b2t', 'noCut']
 
 
@@ -29,6 +29,13 @@ def defineAllP4(df):
         df = defineP4(df, f"tau{idx+1}")
         df = defineP4(df, f"b{idx+1}")
         #df = defineP4(df, f"tau{idx+1}_seedingJet")
+    return df
+
+def createInvMass(df):
+    df = df.Define("tautau_m_vis", "(tau1_p4+tau2_p4).M()")
+    df = df.Define("bb_m_vis", "(b1_p4+b2_p4).M()")
+    df = df.Define("bbtautau_mass", "(b1_p4+b2_p4+tau1_p4+tau2_p4).M()")
+    df = df.Define("dR_tautau", 'ROOT::Math::VectorUtil::DeltaR(tau1_p4, tau2_p4)')
     return df
 
 def defineWeights(df_dict, use_new_weights=False, deepTauVersion='v2p1'):
@@ -130,7 +137,7 @@ def createHistograms(df_dict, var):
         model = ROOT.RDF.TH1DModel("", "",int(n_bins), float(start), float(stop))
     for sample in df_dict.keys():
         hists[sample] = {}
-        for region in regions:
+        for region in QCDregions:
             hists[sample][f"region_{region}"] = df_dict[sample].Filter(f"region_{region}").Histo1D(model,var, "weight")
     return hists
 
@@ -138,6 +145,6 @@ def createSums(df_dict):
     sums = {}
     for sample in df_dict.keys():
         sums[sample] = {}
-        for region in regions:
+        for region in QCDregions:
             sums[sample][f"region_{region}"] = df_dict[sample].Filter(f"region_{region}").Sum("weight")
     return sums

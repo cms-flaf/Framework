@@ -27,8 +27,8 @@ To minimise the amout of readout, I suggest to read central tree only once for a
 Also, it would be convinient to have function that takes as an input df and outputs dict of histograms. Like this selection code can be reused for 1-4.
 '''
 
-#def SaveHistograms():
 class DataFrameBuilder:
+
     def defineSelectionRegions(self):
         self.df = self.df.Define("cut_2b1t", f"(b1_idbtagDeepFlavB >= {self.bTagWP} || b2_idbtagDeepFlavB >= {self.bTagWP}) && !(b1_idbtagDeepFlavB >= {self.bTagWP} && b2_idbtagDeepFlavB >= {self.bTagWP}) ")
         self.df = self.df.Define("cut_2b2t", f"b1_idbtagDeepFlavB >= {self.bTagWP} && b2_idbtagDeepFlavB >= {self.bTagWP}")
@@ -46,22 +46,40 @@ class DataFrameBuilder:
     def selectTrigger(self, trigger='HLT_ditau'):
         self.df = self.df.Filter(trigger)
 
-    def __init__(self, df, colNames, colTypes, deepTauVersion='v2p1'):
+    def CreateColumnTypes(self):
+        colNames = [str(c) for c in self.df.GetColumnNames()]
+        entryIndexIdx = colNames.index("entryIndex")
+        colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
+        self.colNames = colNames
+        self.colTypes = [str(self.df.GetColumnType(c)) for c in self.colNames]
+
+    def __init__(self, df, deepTauVersion='v2p1'):
         self.df = df
-        self.colNames=colNames
-        self.colTypes=colTypes
+        self.colNames=[]
+        self.colTypes=[]
         self.deepTauVersion = deepTauVersion
         self.bTagWP = 2
         self.var_list = []
+        self.CreateColumnTypes()
 
-    def CreateFromDelta(self,var_list, df_central, central_columns, central_col_types):
-        tuple_maker = ROOT.analysis.MapCreator(*central_col_types)(df_central)
-        tuple_maker.processCentral(Utilities.ListToVector(central_columns))
+
+    def GetEventsFromShifted(self):
+        df_final = df_central.Filter(""" if( std::find ( analysis::GetEntriesVec().begin(), analysis::GetEntriesVec().end(),
+                                     entryIndex ) != analysis::GetEntriesVec().end() ) {return true;}
+                                     return false;
+                                     """)
+        self.df=df_final
+
+    def CreateFromDelta(self,var_list,central_columns):
         for var_idx,var_name in enumerate(self.colNames):
             if not var_name.endswith("Diff"): continue
             var_name_forDelta = var_name.split("Diff")[0]
+            central_col_idx = central_columns.index(var_name_forDelta)
+            #print(central_columns[central_col_idx], var_name_forDelta)
+            if central_columns[central_col_idx]!=var_name_forDelta:
+                print("ERRORE!")
             self.df = self.df.Define(f"{var_name_forDelta}", f"""analysis::FromDelta({var_name},
-                                     analysis::GetEntriesMap()[entryIndex]->GetValue<{col_type_dict[self.colTypes[var_idx]]}>({var_idx}) )""")
+                                     analysis::GetEntriesMap()[entryIndex]->GetValue<{col_type_dict[self.colTypes[var_idx]]}>({central_col_idx}) )""")
             var_list.append(f"{var_name_forDelta}")
 
     def GetWeightDict(self):
@@ -87,6 +105,62 @@ class DataFrameBuilder:
     #def CreateShiftDfForNormWeights(self, dataframe, var):
     #    dataframe = dataframe.Vary(var, f"""RVecF{{ {var}*{weight_variables[0]}}}""", [''])
 
+def createModel(hist_cfg, var):
+    hists = {}
+    x_bins = hist_cfg[var]['x_bins']
+    if type(hist_cfg[var]['x_bins'])==list:
+        x_bins_vec = Utilities.ListToVector(x_bins, "double")
+        model = ROOT.RDF.TH1DModel("", "", x_bins_vec.size()-1, x_bins_vec.data())
+    else:
+        n_bins, bin_range = x_bins.split('|')
+        start,stop = bin_range.split(':')
+        model = ROOT.RDF.TH1DModel("", "",int(n_bins), float(start), float(stop))
+    return model
+
+def GetValues(collection):
+    for key, value in collection.items():
+        if isinstance(value, dict):
+            GetValues(value)
+        else:
+            collection[key] = value.GetValue()
+    return collection
+
+def GetKeyNames(filee, dir = "" ):
+        filee.cd(dir)
+        return [key.GetName() for key in ROOT.gDirectory.GetListOfKeys()]
+
+def SaveHisto(outFile, directories_names, current_path=None):
+    if current_path is None:
+        current_path = []
+    for key, value in directories_names.items():
+        current_path.append(key)
+        if isinstance(value, dict):
+            subdir = outFile.GetDirectory("/".join(current_path))
+            if not subdir:
+                subdir = outFile.mkdir("/".join(current_path))
+            SaveHisto(outFile, value, current_path)
+        elif isinstance(value, list):
+            subdir = outFile.GetDirectory("/".join(current_path))
+            if not subdir:
+                subdir = outFile.mkdir("/".join(current_path))
+            outFile.cd("/".join(current_path))
+            for val in value:
+                val.Write()
+        current_path.pop()
+
+def PrepareDfWrapped(dfWrapped):
+    dfWrapped.df = defineAllP4(dfWrapped.df)
+    dfWrapped.df = createInvMass(dfWrapped.df)
+    dfWrapped.defineQCDRegions()
+    dfWrapped.defineSelectionRegions()
+    return dfWrapped
+
+def createCentralQuantities(df_central, central_col_types, central_columns):
+    tuple_maker = ROOT.analysis.MapCreator(*central_col_types)(df_central)
+    #tuple_maker.CleanCentral()
+    tuple_maker.processCentral(Utilities.ListToVector(central_columns))
+    #tuple_maker.CleanCentralVec()
+    tuple_maker.getEventIdxFromShifted()
 
 
 if __name__ == "__main__":
@@ -103,60 +177,57 @@ if __name__ == "__main__":
     header_path_Skimmer = os.path.join(headers_dir, "HistHelper.h")
     ROOT.gInterpreter.Declare(f'#include "{header_path_Skimmer}"')
 
+    fileToOpen = ROOT.TFile(args.inFile, 'READ')
+    keys= [key.GetName() for key in fileToOpen.GetListOfKeys()]
+    fileToOpen.Close()
+    keys.remove('Events')
+    dfWrapped_central = DataFrameBuilder(ROOT.RDataFrame('Events', args.inFile))
+    createCentralQuantities(dfWrapped_central.df, dfWrapped_central.colTypes, dfWrapped_central.colNames)
+    all_dataframes={}
+    for key in keys:
+        dfWrapped_key = DataFrameBuilder(ROOT.RDataFrame(key, args.inFile))
+        if(key.endswith('_noDiff')):
+            dfWrapped_key.GetEventsFromShifted()
+        elif(key.endswith('_Valid')):
+            var_list = []
+            dfWrapped_key.CreateFromDelta(var_list, dfWrapped_central.colNames)
+        elif(key.endswith('_nonValid')):
+            pass
+        else:
+            print(key)
+        keys.remove(key)
+        treeName = key.strip('Events_')
+        all_dataframes[treeName]= PrepareDfWrapped(dfWrapped_key).df
+    all_dataframes['Central'] = PrepareDfWrapped(dfWrapped_central).df
+
+    # create hist dict
     hist_cfg_dict = {}
     hist_cfg = "config/plot/histograms.yaml"
     with open(hist_cfg, 'r') as f:
         hist_cfg_dict = yaml.safe_load(f)
     vars_to_plot = list(hist_cfg_dict.keys())
-
-    trees_noDiff=[]
-    trees_Diff=[]
-    trees_nonValid=[]
-    fileToOpen = ROOT.TFile(args.inFile, 'READ')
-    keys= [key.GetName() for key in fileToOpen.GetListOfKeys()]
-    fileToOpen.Close()
-    keys.remove('Events')
-    #print(keys)
-    for key in keys:
-        if(key.endswith('_noDiff')):
-            trees_noDiff.append(key)
-        elif(key.endswith('_Valid')):
-            trees_Diff.append(key)
-        elif(key.endswith('_nonValid')):
-            trees_nonValid.append(key)
-        else:
-            print(key)
-        keys.remove(key)
-
     histograms = {}
+    for var in hist_cfg_dict.keys():
+        if not var in all_dataframes['Central'].GetColumnNames() : continue
+        histograms[var]={}
+        for qcdRegion in QCDregions:
+            histograms[var][qcdRegion]={}
+            for cut in cuts :
+                histograms[var][qcdRegion][cut]= []
 
-    # first for df_central
-
-    df_central = ROOT.RDataFrame('Events', args.inFile)
-    central_colNames = [str(c) for c in df_central.GetColumnNames()]
-    entryIndexIdx = central_colNames.index("entryIndex")
-    central_colNames[entryIndexIdx], central_colNames[0] = central_colNames[0], central_colNames[entryIndexIdx]
-    central_colTypes = [str(df_central.GetColumnType(c)) for c in central_colNames]
-
-    dfWrapped = DataFrameBuilder(df_central, central_colNames, central_colTypes)
-    dfWrapped.defineQCDRegions()
-    dfWrapped.defineSelectionRegions()
-    dfWrapped.GetWeightDict()
-
-    # then for one shifted df
-    '''
-    df_shifted = ROOT.RDataFrame(trees_Diff[0], args.inFile)
-    colNames = [str(c) for c in df_shifted.GetColumnNames()]
-    entryIndexIdx = colNames.index("entryIndex")
-    colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
-    colTypes = [str(df_shifted.GetColumnType(c)) for c in colNames]
-    # for the moment:
-    dfWrapped = DataFrameBuilder(df_shifted,colNames, colTypes)
-    var_list = []
-    dfWrapped.CreateFromDelta(var_list, df_central, central_columns, central_col_types)
-    #print(var_list)
-    #print(dfWrapped.df.GetColumnNames())
-    dfWrapped.defineQCDRegions()
-    dfWrapped.defineSelectionRegions()
-    dfWrapped.CreateShiftDfForNormWeights(df_central, 'b1_pt')
-    '''
+    for name in all_dataframes.keys():
+        histName = f"{args.dataset}_{name}" if name!='Central' else args.dataset
+        for var in hist_cfg_dict.keys():
+            for qcdRegion in QCDregions:
+                df_qcd = all_dataframes[name].Filter(qcdRegion)
+                for cut in cuts :
+                    df_cut = df_qcd if cut=='noCut' else df_qcd.Filter(cut)
+                    model = createModel(hist_cfg_dict, var)
+                    hist = df_cut.Histo1D(model, var).GetValue()
+                    hist.GetXaxis().SetTitle()
+                    hist.SetName(histName)
+                    hist.SetTitle(var)
+                    histograms[var][qcdRegion][cut].append(hist)
+    finalFile = ROOT.TFile(f'output/outFiles/tmp_{args.dataset}/histograms_{args.dataset}.root','RECREATE')
+    SaveHisto(finalFile, histograms, current_path=None)
+    finalFile.Close()

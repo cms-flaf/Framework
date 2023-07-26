@@ -42,6 +42,11 @@ static std::map<int, std::shared_ptr<Entry>>& GetEntriesMap(){
       return entries;
     }
 
+static std::vector<int>& GetEntriesVec(){
+      static std::vector<int> eventVec;
+      return eventVec;
+    }
+
 template<typename ...Args>
 struct MapCreator {
   //MapCreator(const std::string& tree_name, const std::string& in_file, size_t queue_size)
@@ -56,7 +61,9 @@ struct MapCreator {
   MapCreator(const MapCreator&) = delete;
   MapCreator& operator= (const MapCreator&) = delete;
 
-
+    void CleanCentral(){
+      GetEntriesMap() = {};
+    }
     void processCentral(const std::vector<std::string>& var_names)
     {
         auto df_node = df_in.Define("_entry", [=](const Args& ...args) {
@@ -71,7 +78,6 @@ struct MapCreator {
         ROOT::RDF::RNode df = df_node;
         df.Foreach([&](const std::shared_ptr<Entry>& entry) {
             const auto idx = entry->GetValue<int>(0);
-            //auto map = GetEntriesMap();
             if(GetEntriesMap().count(idx)) {
                 throw std::runtime_error("Duplicate entry for index " + std::to_string(idx));
             }
@@ -80,10 +86,25 @@ struct MapCreator {
 
     }
 
+    void getEventIdxFromShifted(){
+      df_in.Foreach([=](Int_t entryIndex) {
+            //auto map = GetEntriesMap();
+            if(std::find(GetEntriesVec().begin(), GetEntriesVec().end(), entryIndex) != GetEntriesVec().end()) {
+                throw std::runtime_error("Duplicate entry for index " + std::to_string(entryIndex));
+            }
+            GetEntriesVec().push_back(entryIndex);
+            }, {"entryIndex"});
+    }
+    void CleanCentralVec(){
+      GetEntriesVec() = {};
+    }
 
 
   ROOT::RDataFrame df_in;
 };
+
+
+
 
 namespace detail {
   template<typename T>

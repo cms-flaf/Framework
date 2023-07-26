@@ -63,7 +63,7 @@ class DataFrameBuilder:
         self.CreateColumnTypes()
 
 
-    def GetEventsFromShifted(self):
+    def GetEventsFromShifted(self, df_central):
         df_final = df_central.Filter(""" if( std::find ( analysis::GetEntriesVec().begin(), analysis::GetEntriesVec().end(),
                                      entryIndex ) != analysis::GetEntriesVec().end() ) {return true;}
                                      return false;
@@ -187,7 +187,7 @@ if __name__ == "__main__":
     for key in keys:
         dfWrapped_key = DataFrameBuilder(ROOT.RDataFrame(key, args.inFile))
         if(key.endswith('_noDiff')):
-            dfWrapped_key.GetEventsFromShifted()
+            dfWrapped_key.GetEventsFromShifted(dfWrapped_central.df)
         elif(key.endswith('_Valid')):
             var_list = []
             dfWrapped_key.CreateFromDelta(var_list, dfWrapped_central.colNames)
@@ -216,6 +216,7 @@ if __name__ == "__main__":
                 histograms[var][qcdRegion][cut]= []
 
     for name in all_dataframes.keys():
+        print(name)
         histName = f"{args.dataset}_{name}" if name!='Central' else args.dataset
         for var in hist_cfg_dict.keys():
             for qcdRegion in QCDregions:

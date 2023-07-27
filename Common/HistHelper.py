@@ -1,8 +1,8 @@
 import Common.Utilities as Utilities
 
 deepTauYears = {'v2p1':'2017','v2p5':'2018'}
-QCDregions = ['region_A','region_B','region_C','region_D']
-cuts = ['cut_2b1t', 'cut_2b2t', 'noCut']
+QCDregions = ['OS_Iso', 'SS_Iso', 'OS_AntiIso', 'SS_AntiIso']
+cuts = ['res2b', 'res1b', 'inclusive', 'boosted']
 
 
 col_type_dict = {

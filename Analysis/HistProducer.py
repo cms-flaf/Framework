@@ -30,15 +30,15 @@ Also, it would be convinient to have function that takes as an input df and outp
 class DataFrameBuilder:
 
     def defineSelectionRegions(self):
-        self.df = self.df.Define("cut_2b1t", f"(b1_idbtagDeepFlavB >= {self.bTagWP} || b2_idbtagDeepFlavB >= {self.bTagWP}) && !(b1_idbtagDeepFlavB >= {self.bTagWP} && b2_idbtagDeepFlavB >= {self.bTagWP}) ")
-        self.df = self.df.Define("cut_2b2t", f"b1_idbtagDeepFlavB >= {self.bTagWP} && b2_idbtagDeepFlavB >= {self.bTagWP}")
+        self.df = self.df.Define("res1b", f"(b1_idbtagDeepFlavB >= {self.bTagWP} || b2_idbtagDeepFlavB >= {self.bTagWP}) && !(b1_idbtagDeepFlavB >= {self.bTagWP} && b2_idbtagDeepFlavB >= {self.bTagWP}) ")
+        self.df = self.df.Define("res2b", f"b1_idbtagDeepFlavB >= {self.bTagWP} && b2_idbtagDeepFlavB >= {self.bTagWP}")
 
     def defineQCDRegions(self):
         tau2_iso_var = f"tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet"
-        self.df = self.df.Define("region_A", f"tau1_charge*tau2_charge < 0 && {tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
-        self.df = self.df.Define("region_B", f"tau1_charge*tau2_charge > 0 && {tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
-        self.df = self.df.Define("region_C", f"tau1_charge*tau2_charge < 0 && {tau2_iso_var} < {Utilities.WorkingPointsTauVSjet.Medium.value} && {tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value}")
-        self.df = self.df.Define("region_D", f"tau1_charge*tau2_charge > 0 && {tau2_iso_var} < {Utilities.WorkingPointsTauVSjet.Medium.value} && {tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value}")
+        self.df = self.df.Define("OS_Iso", f"tau1_charge*tau2_charge < 0 && {tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
+        self.df = self.df.Define("SS_Iso", f"tau1_charge*tau2_charge > 0 && {tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
+        self.df = self.df.Define("OS_AntiIso", f"tau1_charge*tau2_charge < 0 && {tau2_iso_var} < {Utilities.WorkingPointsTauVSjet.Medium.value} && {tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value}")
+        self.df = self.df.Define("SS_AntiIso", f"tau1_charge*tau2_charge > 0 && {tau2_iso_var} < {Utilities.WorkingPointsTauVSjet.Medium.value} && {tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value}")
 
     def deepTauYear(self):
         return deepTauYears[self.deepTauVersion]
@@ -129,6 +129,36 @@ def GetKeyNames(filee, dir = "" ):
         filee.cd(dir)
         return [key.GetName() for key in ROOT.gDirectory.GetListOfKeys()]
 
+def merge_sameNameHistos(hist_list):
+    uncName = ""
+    newHist = ROOT.TH1F()
+    new_histList = []
+    titlesList = {}
+    for hist in hist_list:
+        current_uncName = hist.GetTitle()
+        current_uncName_splitted = current_uncName.split("_")
+        current_uncName_noSuffixNoPrefix_splitted = uncName.split("_")[1:len(current_uncName_splitted)-1]
+        current_uncName_noSuffix = '_'.join(p for p in current_uncName_splitted[0:len(current_uncName_splitted)-1])
+        current_uncName_noPrefix = '_'.join(p for p in current_uncName_splitted[1:])
+        current_uncName_noSuffixNoPrefix = '_'.join(p for p in current_uncName_splitted[1:len(current_uncName_splitted)-1])
+        hist.SetTitle(current_uncName_noSuffix)
+        hist.SetName(current_uncName_noSuffix)
+        #print(current_uncName)
+        if current_uncName_noSuffix in titlesList.keys():
+            titlesList[current_uncName_noSuffix].Add(hist)
+            #print(f"entries are now {titlesList[current_uncName_noSuffix].GetEntries()}")
+        else:
+            if current_uncName_noSuffix!="":
+                titlesList[current_uncName_noSuffix]= hist
+                #print(f"for {current_uncName_noSuffix} entries are {titlesList[current_uncName_noSuffix].GetEntries()}")
+            else:
+                pass
+    #print(titlesList)
+    for hist_name,hist_key in titlesList.items():
+        new_histList.append(hist_key)
+    return new_histList
+
+
 def SaveHisto(outFile, directories_names, current_path=None):
     if current_path is None:
         current_path = []
@@ -144,7 +174,8 @@ def SaveHisto(outFile, directories_names, current_path=None):
             if not subdir:
                 subdir = outFile.mkdir("/".join(current_path))
             outFile.cd("/".join(current_path))
-            for val in value:
+            new_values = merge_sameNameHistos(value)
+            for val in new_values:
                 val.Write()
         current_path.pop()
 
@@ -196,7 +227,8 @@ if __name__ == "__main__":
         else:
             print(key)
         keys.remove(key)
-        treeName = key.strip('Events_')
+        keyName_split = key.split("_")[1:]
+        treeName = '_'.join(keyName_split)
         all_dataframes[treeName]= PrepareDfWrapped(dfWrapped_key).df
     all_dataframes['Central'] = PrepareDfWrapped(dfWrapped_central).df
 
@@ -211,23 +243,25 @@ if __name__ == "__main__":
         if not var in all_dataframes['Central'].GetColumnNames() : continue
         histograms[var]={}
         for qcdRegion in QCDregions:
+            if not qcdRegion in all_dataframes['Central'].GetColumnNames() : continue
             histograms[var][qcdRegion]={}
             for cut in cuts :
+                if cut != 'inclusive' and cut not in all_dataframes['Central'].GetColumnNames() : continue
                 histograms[var][qcdRegion][cut]= []
 
     for name in all_dataframes.keys():
-        print(name)
-        histName = f"{args.dataset}_{name}" if name!='Central' else args.dataset
+        histName = f"{args.dataset}_{name}"
         for var in hist_cfg_dict.keys():
             for qcdRegion in QCDregions:
                 df_qcd = all_dataframes[name].Filter(qcdRegion)
                 for cut in cuts :
-                    df_cut = df_qcd if cut=='noCut' else df_qcd.Filter(cut)
+                    if cut != 'inclusive' and cut not in df_qcd.GetColumnNames() : continue
+                    df_cut = df_qcd if cut=='inclusive' else df_qcd.Filter(cut)
                     model = createModel(hist_cfg_dict, var)
                     hist = df_cut.Histo1D(model, var).GetValue()
                     hist.GetXaxis().SetTitle()
                     hist.SetName(histName)
-                    hist.SetTitle(var)
+                    hist.SetTitle(histName)
                     histograms[var][qcdRegion][cut].append(hist)
     finalFile = ROOT.TFile(f'output/outFiles/tmp_{args.dataset}/histograms_{args.dataset}.root','RECREATE')
     SaveHisto(finalFile, histograms, current_path=None)

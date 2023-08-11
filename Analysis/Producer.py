@@ -118,7 +118,7 @@ def FixNegativeContributions(histogram):
     RenormalizeHistogram(histogram, original_Integral, True)
     return True, ss_debug, ss_negative
 
-def GetValues(collectio):
+def GetValues(collection):
     for key, value in collection.items():
         if isinstance(value, dict):
             GetValues(value)

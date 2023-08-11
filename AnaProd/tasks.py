@@ -55,7 +55,7 @@ class InputFileTask(Task, law.LocalWorkflow):
 
     def output(self):
         sample_name = self.branch_data
-        sample_out = os.path.join(self.central_anaCache_path(), sample_name, 'input_files.txt')
+        sample_out = os.path.join(local_path(sample_name, "input_files.txt"))
         return law.LocalFileTarget(sample_out)
 
     def run(self):
@@ -63,10 +63,6 @@ class InputFileTask(Task, law.LocalWorkflow):
         print(f'Creating anaCache for sample {sample_name} into {self.output().path}')
         os.makedirs(os.path.join(self.local_path(),sample_name), exist_ok=True)
         txtFile_tmp = os.path.join(self.local_path(), sample_name, "tmp.txt")
-        if os.path.exists(txtFile_tmp):
-            os.remove(txtFile_tmp)
-        with open(txtFile_tmp, 'a'):
-            os.utime(txtFile_tmp)
         inDir = os.path.join(self.central_nanoAOD_path(), sample_name)
         input_files = []
         for root, dirs, files in os.walk(inDir):
@@ -74,18 +70,14 @@ class InputFileTask(Task, law.LocalWorkflow):
                 if file.endswith('.root') and not file.startswith('.'):
                     if os.path.join(root, file) not in input_files:
                         input_files.append(os.path.join(root, file))
-        with open(txtFile_tmp, 'r') as inputFileTxt:
-            input_lines = inputFileTxt.read().splitlines()
+        input_lines = []
+        with open(txtFile_tmp, 'w') as inputFileTxt:
+
+            #input_lines = inputFileTxt.read().splitlines()
             for input_line in input_files:
-                if input_line + '\n' in input_lines:
-                    continue
-                input_lines.append(input_line + '\n')
-        with open(txtFile_tmp, 'a') as inputtxtFile:
-            inputtxtFile.writelines(input_lines)
+                inputFileTxt.write(input_line)
         finalFile = self.output().path
-        if os.path.exists(txtFile_tmp):
-            shutil.move(txtFile_tmp,finalFile)
-            #os.remove(txtFile_tmp)
+        shutil.move(txtFile_tmp,finalFile)
         print(f'inputFile for sample {sample_name} is created in {self.output().path}')
 
 
@@ -96,11 +88,11 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 
     def workflow_requires(self):
-        return { "anaCache" : AnaCacheTask.req(self), "inputFile": InputFileTask.req(self) }
+        return { "anaCache" : AnaCacheTask.req(self), "inputFile": InputFileTask.req(self,workflow='local') }
 
     def requires(self):
         sample_id, sample_name, sample_type, split_idx, input_files = self.branch_data
-        return [ AnaCacheTask.req(self, branch=sample_id, max_runtime=AnaCacheTask.max_runtime._default), InputFileTask.req(self, branch=sample_id) ]
+        return [ AnaCacheTask.req(self, branch=sample_id, max_runtime=AnaCacheTask.max_runtime._default), InputFileTask.req(self, branch=sample_id, workflow='local') ]
 
     def create_branch_map(self):
         self.load_sample_configs()

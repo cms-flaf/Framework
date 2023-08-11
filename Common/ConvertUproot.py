@@ -13,7 +13,6 @@ def saveFile(outFile, out_tree_dict, histograms):
       out_file[hist] = histograms[hist]
     for out_tree_key in out_tree_dict.keys():
       out_file[out_tree_key] = out_tree_dict[out_tree_key]
-  out_file.close()
   return
 
 def toUproot(inFile, outFile):

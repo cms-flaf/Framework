@@ -9,6 +9,19 @@ if __name__ == "__main__":
 from RunKit.sh_tools import sh_call
 import Common.ConvertUproot as ConvertUproot
 
+
+def getTreeName(systFile):
+  treeName_elements = systFile.split('.')[0].split('_')
+  good_treeName = []
+  for element in treeName_elements:
+    if element == 'nano' or element == 'Events' or element in [str(k) for k in range(0,10000)]: continue
+    good_treeName.append(element)
+  if args.test : print(f"good_treename elements are {good_treeName}")
+  treeName = 'Events_'
+  if len(good_treeName):
+    treeName += '_'.join(good_treeName)
+  return treeName
+
 if __name__ == "__main__":
   import argparse
   parser = argparse.ArgumentParser()
@@ -37,32 +50,40 @@ if __name__ == "__main__":
   k=0
   for systFile in all_files:
     if args.test and k>=1 :
+      print(systFile)
       continue
     inFileShiftedName = os.path.join(args.inputDir, systFile)
     if args.test: print('shifted file = ', inFileShiftedName)
     if args.test: print('index = ', k)
-    treeName = systFile.strip('.root')
+    treeName = getTreeName(systFile)
+    if args.test : print(f"final TreeName is {treeName}")
     skimEventsPython = os.path.join(os.environ['ANALYSIS_PATH'], "Analysis/SkimEvents.py")
-    cmd = f"""python3 {skimEventsPython} --inFileCentral {inFileCentralName} --inFileShifted {inFileShiftedName} --outDir {args.workingDir} --treeName {treeName}"""
-    print(cmd)
+    cmd = f"""python3 {skimEventsPython} --inFileCentral {inFileCentralName} --inFileShifted {inFileShiftedName} --outDir {args.workingDir} --treeName_out {treeName}"""
     if args.test : print(cmd)
     sh_call(cmd, True)
     k+=1
   for file_syst in os.listdir(args.workingDir) + [inFileCentralName]:
+    if args.test : print(f"file_syst name is {file_syst}")
+    inFileUproot = os.path.join(args.workingDir, file_syst)
+    outFileUproot = os.path.join(args.workingDir, f'uproot_{file_syst}')
     if file_syst == inFileCentralName:
-      outFileCentralName = os.path.join(args.workingDir, args.centralFile)
-      shutil.copy(inFileCentralName, outFileCentralName)
-      UprootFileName = ConvertUproot.toUproot(args.workingDir, args.centralFile)
-      syst_files_to_merge.append(UprootFileName)
-      continue
-    UprootFileName = ConvertUproot.toUproot(args.workingDir, file_syst)
-    syst_files_to_merge.append(UprootFileName)
-  if args.test: print(f for f in syst_files_to_merge)
+      inFileUproot = inFileCentralName
+      outFileUproot = os.path.join(args.workingDir, f'uproot_{args.centralFile}')
+    ConvertUproot.toUproot(inFileUproot,outFileUproot)
+    if args.test : print(f"UprootFileName name is {outFileUproot}")
+    syst_files_to_merge.append(outFileUproot)
+  if args.test:
+    for f in syst_files_to_merge:
+      print(f)
   outFileName = os.path.join(args.workingDir, args.outputFile)
+  if args.test : print(f'outFileName is {outFileName}')
   hadd_str = f'hadd -f209 -j -O {outFileName} '
   hadd_str += ' '.join(f for f in syst_files_to_merge)
-  if args.test: print(hadd_str)
+  if args.test : print(f'hadd_str is {hadd_str}')
   sh_call([hadd_str], True)
-  for file_syst in syst_files_to_merge:
-    if args.test: break
-    os.remove(file_syst)
+  print(outFileName)
+  if os.path.exists(outFileName):
+    for file_syst in syst_files_to_merge:# + [outFileCentralName]:
+      print(file_syst)
+      if file_syst == outFileName: continue
+      os.remove(file_syst)

@@ -30,13 +30,13 @@ col_type_dict = {
   'ROOT::VecOps::RVec<int>':'ROOT::VecOps::RVec<int>',
   'ROOT::VecOps::RVec<unsigned char>':'ROOT::VecOps::RVec<unsigned char>'
   }
-def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
-  df_out = ROOT.RDataFrame('Events', inputFileShifted)
+def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Events',treeName_central='Events'):
+  df_out = ROOT.RDataFrame(treeName_in, inputFileShifted)
   colNames = [str(c) for c in df_out.GetColumnNames()]
   entryIndexIdx = colNames.index("entryIndex")
   colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
   col_types = [str(df_out.GetColumnType(c)) for c in colNames]
-  tuple_maker = ROOT.analysis.TupleMaker(*col_types)(ROOT.RDataFrame('Events',inputFileCentral), 4)
+  tuple_maker = ROOT.analysis.TupleMaker(*col_types)(ROOT.RDataFrame(treeName_central,inputFileCentral), 4)
   print("tuplemaker created")
   df_out = tuple_maker.processOut(ROOT.RDF.AsRNode(df_out))
   print("tuplemaker processed")
@@ -90,6 +90,7 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName):
   tuple_maker.processIn(colNames_v)
   ROOT.RDF.RunGraphs(snaps)
 
+
   tuple_maker.join()
 
 
@@ -100,10 +101,13 @@ if __name__ == "__main__":
   parser.add_argument('--inFileCentral', required=True, type=str)
   parser.add_argument('--inFileShifted', required=True, type=str)
   parser.add_argument('--outDir', required=True, type=str)
-  parser.add_argument('--treeName', required=True, type=str)
+  parser.add_argument('--treeName_out', required=True, type=str)
+  parser.add_argument('--treeName_in', required=False, type=str, default='Events')
+  parser.add_argument('--treeName_central', required=False, type=str, default='Events')
   args = parser.parse_args()
   headers_dir = os.path.dirname(os.path.abspath(__file__))
   ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
   header_path_Skimmer = os.path.join(headers_dir, "SystSkimmer.h")
   ROOT.gInterpreter.Declare(f'#include "{header_path_Skimmer}"')
-  make_df(args.inFileCentral,args.inFileShifted,args.outDir,args.treeName)
+  make_df(args.inFileCentral,args.inFileShifted,args.outDir,args.treeName_out,args.treeName_in,args.treeName_central)
+

@@ -9,24 +9,6 @@ if __name__ == "__main__":
 import Common.Utilities as Utilities
 from Common.HistHelper import *
 
-
-# 1. apply selection
-# 2. QCD regions
-# 3. Split in categories (2bTag, 1bTag)
-# 4. save as rootfile with the process name (TT, DY,..)
-# the subdirectories will be: var_name (pt, mass .. ) -> regions, cuts (2b1t,  QCD,...) -> histogram with datasetName_systName_varName
-
-'''
-1. Central tree: produce central histogram and up/down variations for weights. This can be done with df.Vary
-2. shifted unique tree: the same as central, but no need to vary
-3. shifted same tree: select events from central tree and produce hist
-4. shifted delta tree: apply deltas and produce hists
-
-2-4 should be repeated for each shift.
-To minimise the amout of readout, I suggest to read central tree only once for all 3-4 into a map. This mean that you don't need to have queue&threads - just fill the map in the same thread.
-Also, it would be convinient to have function that takes as an input df and outputs dict of histograms. Like this selection code can be reused for 1-4.
-'''
-
 class DataFrameBuilder:
 
     def defineSelectionRegions(self):
@@ -75,7 +57,6 @@ class DataFrameBuilder:
             if not var_name.endswith("Diff"): continue
             var_name_forDelta = var_name.split("Diff")[0]
             central_col_idx = central_columns.index(var_name_forDelta)
-            #print(central_columns[central_col_idx], var_name_forDelta)
             if central_columns[central_col_idx]!=var_name_forDelta:
                 print("ERRORE!")
             self.df = self.df.Define(f"{var_name_forDelta}", f"""analysis::FromDelta({var_name},
@@ -143,17 +124,13 @@ def merge_sameNameHistos(hist_list):
         current_uncName_noSuffixNoPrefix = '_'.join(p for p in current_uncName_splitted[1:len(current_uncName_splitted)-1])
         hist.SetTitle(current_uncName_noSuffix)
         hist.SetName(current_uncName_noSuffix)
-        #print(current_uncName)
         if current_uncName_noSuffix in titlesList.keys():
             titlesList[current_uncName_noSuffix].Add(hist)
-            #print(f"entries are now {titlesList[current_uncName_noSuffix].GetEntries()}")
         else:
             if current_uncName_noSuffix!="":
                 titlesList[current_uncName_noSuffix]= hist
-                #print(f"for {current_uncName_noSuffix} entries are {titlesList[current_uncName_noSuffix].GetEntries()}")
             else:
                 pass
-    #print(titlesList)
     for hist_name,hist_key in titlesList.items():
         new_histList.append(hist_key)
     return new_histList
@@ -200,6 +177,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--inFile', required=True, type=str)
     parser.add_argument('--dataset', required=False, type=str, default='TTTo2L2Nu')
+    parser.add_argument('--outDir', required=False, type=str)
     parser.add_argument('--test', required=False, type=bool, default=False)
     args = parser.parse_args()
 
@@ -248,10 +226,12 @@ if __name__ == "__main__":
             for cut in cuts :
                 if cut != 'inclusive' and cut not in all_dataframes['Central'].GetColumnNames() : continue
                 histograms[var][qcdRegion][cut]= []
+    if not os.path.isdir(args.outDir):
+        os.makedirs(args.outDir)
 
-    for name in all_dataframes.keys():
-        histName = f"{args.dataset}_{name}"
-        for var in hist_cfg_dict.keys():
+    for var in hist_cfg_dict.keys():
+        for name in all_dataframes.keys():
+            histName = f"{args.dataset}_{name}"
             for qcdRegion in QCDregions:
                 df_qcd = all_dataframes[name].Filter(qcdRegion)
                 for cut in cuts :
@@ -263,6 +243,9 @@ if __name__ == "__main__":
                     hist.SetName(histName)
                     hist.SetTitle(histName)
                     histograms[var][qcdRegion][cut].append(hist)
-    finalFile = ROOT.TFile(f'output/outFiles/tmp_{args.dataset}/histograms_{args.dataset}.root','RECREATE')
-    SaveHisto(finalFile, histograms, current_path=None)
-    finalFile.Close()
+        finalDir = os.path.join(args.outDir, var)
+        if not os.path.isdir(finalDir):
+            os.makedirs(finalDir)
+        finalFile = ROOT.TFile(f'{finalDir}/tmp_{args.dataset}.root','RECREATE')
+        SaveHisto(finalFile, histograms[var], current_path=None)
+        finalFile.Close()

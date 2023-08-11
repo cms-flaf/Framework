@@ -16,7 +16,7 @@ import Common.triggerSel as Triggers
 import Corrections.Corrections as Corrections
 from Corrections.lumi import LumiFilter
 
-#ROOT.EnableImplicitMT(1)
+ROOT.EnableImplicitMT(1)
 
 deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
             "rawDeepTau2017v2p1VSjet", "rawDeepTau2018v2p5VSe", "rawDeepTau2018v2p5VSmu",
@@ -285,7 +285,9 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
             dfw.colToSave.extend(weight_branches)
         reports.append(dfw.df.Report())
         varToSave = Utilities.ListToVector(dfw.colToSave)
-        outFileName = os.path.join(outDir, f"Events{suffix}.root")
+        outfile_prefix = inFiles[0].split('/')[-1]
+        outfile_prefix = outfile_prefix.split('.')[0]
+        outFileName = os.path.join(outDir, f"{outfile_prefix}{suffix}.root")
         outfilesNames.append(outFileName)
         if os.path.exists(outFileName):
             os.remove(outFileName)

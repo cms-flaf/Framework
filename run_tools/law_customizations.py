@@ -5,6 +5,7 @@ import math
 import os
 import re
 import yaml
+import tempfile
 
 from RunKit.envToJson import get_cmsenv
 
@@ -134,6 +135,12 @@ class Task(law.Task):
                 if var in os.environ:
                     self.cmssw_env_[var] = os.environ[var]
         return self.cmssw_env_
+
+    def law_job_home(self):
+        if 'LAW_JOB_HOME' in os.environ:
+            return os.environ['LAW_JOB_HOME'], False
+        os.makedirs(self.local_path(), exist_ok=True)
+        return tempfile.mkdtemp(dir=self.local_path()), True
 
 
 class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):

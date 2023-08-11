@@ -16,7 +16,8 @@ import Common.triggerSel as Triggers
 import Corrections.Corrections as Corrections
 from Corrections.lumi import LumiFilter
 
-ROOT.EnableImplicitMT(1)
+#ROOT.EnableImplicitMT(1)
+ROOT.EnableThreadSafety()
 
 deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
             "rawDeepTau2017v2p1VSjet", "rawDeepTau2018v2p5VSe", "rawDeepTau2018v2p5VSmu",

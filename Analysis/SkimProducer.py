@@ -2,7 +2,7 @@ import os
 import shutil
 import ROOT
 import sys
-
+ROOT.EnableThreadSafety()
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 

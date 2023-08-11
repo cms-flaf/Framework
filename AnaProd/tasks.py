@@ -55,7 +55,7 @@ class InputFileTask(Task, law.LocalWorkflow):
 
     def output(self):
         sample_name = self.branch_data
-        sample_out = os.path.join(local_path(sample_name, "input_files.txt"))
+        sample_out = os.path.join(self.path(sample_name, "input_files.txt"))
         return law.LocalFileTarget(sample_out)
 
     def run(self):

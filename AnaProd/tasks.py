@@ -116,7 +116,6 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         job_home, remove_job_home = self.law_job_home()
         sample_id, sample_name, sample_type, split_idx, input_files = self.branch_data
         print(sample_id, sample_name, sample_type, split_idx, input_files)
-        '''
         producer_anatuples = os.path.join(self.ana_path(), 'AnaProd', 'anaTupleProducer.py')
         anaCache = os.path.join(self.central_anaCache_path(), sample_name, 'anaCache.yaml')
         outdir_anatuples = os.path.join(job_home, 'anaTuples', sample_name)
@@ -145,7 +144,6 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         if remove_job_home:
             shutil.rmtree(job_home)
         print(f'anaTuple for sample {sample_name}  split_idx={split_idx} is created in {outdir_final}')
-        '''
 
 
     @staticmethod

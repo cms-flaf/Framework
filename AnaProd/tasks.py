@@ -68,7 +68,6 @@ class InputFileTask(Task, law.LocalWorkflow):
                 if file.endswith('.root') and not file.startswith('.'):
                     if os.path.join(root, file) not in input_files:
                         input_files.append(os.path.join(root, file))
-        input_lines = []
         with open(txtFile_tmp, 'w') as inputFileTxt:
             for input_line in input_files:
                 inputFileTxt.write(input_line)

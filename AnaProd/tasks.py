@@ -103,27 +103,36 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def run(self):
         job_home, remove_job_home = self.law_job_home()
         sample_id, sample_name, sample_type, split_idx, input_file = self.branch_data
-        print(sample_id, sample_name, sample_type, split_idx, input_file)
+        if self.test: print(f"sample_id= {sample_id}\nsample_name = {sample_name}\nsample_type = {sample_type}\nsplit_idx = {split_idx}\ninput_file = {input_file}")
         producer_anatuples = os.path.join(self.ana_path(), 'AnaProd', 'anaTupleProducer.py')
         anaCache = os.path.join(self.central_anaCache_path(), sample_name, 'anaCache.yaml')
         outdir_anatuples = os.path.join(job_home, 'anaTuples', sample_name)
-        sh_call([ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', ','.join(input_file),
-                  '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations',
-                  #self.customisations, '--compute_unc_variations', 'True', '--store-noncentral', '--nEvents', '10'], env=self.cmssw_env(),verbose=1)
+        if self.test:
+            sh_call([ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', input_file,
+                    '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations',
+                    self.customisations, '--compute_unc_variations', 'True', '--store-noncentral', '--nEvents', '10'], env=self.cmssw_env(),verbose=1)
+        else:
+            sh_call([ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', input_file,
+                    '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations',
                   self.customisations, '--compute_unc_variations', 'True', '--store-noncentral'], env=self.cmssw_env(),verbose=1)
         producer_skimtuples = os.path.join(self.ana_path(), 'Analysis', 'SkimProducer.py')
         outdir_skimtuples = os.path.join(job_home, 'skim', sample_name)
-        outFileName = input_file[0].split('/')[-1]
+        outFileName = os.path.basename(input_file)
+        if self.test: print(f"outFileName is {outFileName}")
         if sample_type!='data':
-            sh_call([ 'python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--centralFile',outFileName, '--workingDir', outdir_skimtuples,
+            if self.test:
+                sh_call([ 'python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--centralFile',outFileName, '--workingDir', outdir_skimtuples,
+                        '--outputFile', outFileName , '--test' , 'True'],verbose=1)
+            else:
+                sh_call([ 'python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--centralFile',outFileName, '--workingDir', outdir_skimtuples,
                      '--outputFile', outFileName],verbose=1)
-                     #'--outputFile', outFileName , '--test' , 'True'],verbose=1)
         tmpFile = os.path.join(outdir_skimtuples, outFileName)
         if sample_type=='data':
             tmpFile = os.path.join(outdir_anatuples, outFileName)
         outdir_final = os.path.join(self.central_anaTuples_path(), sample_name)
         os.makedirs(outdir_final, exist_ok=True)
         finalFile = self.output().path
+        if self.test: print(f"finalFile is {finalFile}")
         shutil.copy(tmpFile, finalFile)
         if os.path.exists(finalFile):
             os.remove(tmpFile)
@@ -150,12 +159,11 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 raise RuntimeError(f"AnaTupleTask: no input files found for {sample_name}")
             split_idx = 0
             while True:
-                start_idx, stop_idx = split_idx, (split_idx + 1)
                 branches[n] = (sample_id, sample_name, samples[sample_name]['sampleType'], split_idx,
-                               input_files[start_idx:stop_idx])
+                               input_files[split_idx])
                 split_idx += 1
                 n += 1
-                if stop_idx >= len(input_files):
+                if split_idx >= len(input_files):
                     break
         return branches
 

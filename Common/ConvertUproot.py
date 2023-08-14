@@ -30,7 +30,7 @@ def toUproot(inFile, outFile):
     else :
       print (f"oggetto di tipo {obj.classname}")
 
-  if len(dfNames)>1: print(f"len of dfNames is {len(dfNames)}")
+  #if len(dfNames)>1: print(f"len of dfNames is {len(dfNames)}")
   out_trees = {}
   for dfName in dfNames:
     print(dfName)
@@ -60,6 +60,6 @@ def toUproot(inFile, outFile):
     for column in other_columns:
       out_tree[column] = df[column]
     out_trees[dfName] = out_tree
-  print(histograms)
-  print(out_trees)
+  #print(histograms)
+  #print(out_trees)
   return saveFile(outFile, out_trees, histograms)

@@ -72,6 +72,7 @@ class Task(law.Task):
     version = luigi.Parameter()
     period = luigi.Parameter()
     customisations =luigi.Parameter(default="")
+    test = luigi.BoolParameter(default=False)
 
     def __init__(self, *args, **kwargs):
         super(Task, self).__init__(*args, **kwargs)
@@ -93,7 +94,7 @@ class Task(law.Task):
         self.samples = { key : samples[key] for key in selected_samples }
 
     def store_parts(self):
-        return (self.__class__.__name__, self.version, self.period)
+        return (self.__class__.__name__, self.period, self.version)
 
     def ana_path(self):
         return os.getenv("ANALYSIS_PATH")

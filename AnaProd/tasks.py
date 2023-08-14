@@ -110,7 +110,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         if self.test:
             sh_call([ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', input_file,
                     '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations',
-                    self.customisations, '--compute_unc_variations', 'True', '--store-noncentral', '--nEvents', '10'], env=self.cmssw_env(),verbose=1)
+                    self.customisations, '--compute_unc_variations', 'True', '--store-noncentral', '--nEvents', '100'], env=self.cmssw_env(),verbose=1)
         else:
             sh_call([ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', input_file,
                     '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations',

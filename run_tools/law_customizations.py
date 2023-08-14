@@ -93,7 +93,7 @@ class Task(law.Task):
         self.samples = { key : samples[key] for key in selected_samples }
 
     def store_parts(self):
-        return (self.__class__.__name__, self.version)
+        return (self.__class__.__name__, self.version, self.period)
 
     def ana_path(self):
         return os.getenv("ANALYSIS_PATH")

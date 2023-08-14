@@ -86,7 +86,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return { "anaCache" : AnaCacheTask.req(self), "inputFile": InputFileTask.req(self,workflow='local') }
 
     def requires(self):
-        sample_id, sample_name, sample_type, split_idx, input_file = self.branch_data
+        sample_id, sample_name, sample_type, input_file = self.branch_data
         return [ AnaCacheTask.req(self, branch=sample_id, max_runtime=AnaCacheTask.max_runtime._default), InputFileTask.req(self, branch=sample_id, workflow='local') ]
 
     def create_branch_map(self):
@@ -94,37 +94,34 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return AnaTupleTask.getBranches(self.samples, self.central_anaCache_path())
 
     def output(self, force_pre_output=False):
-        sample_id, sample_name, sample_type, split_idx, input_file = self.branch_data
+        sample_id, sample_name, sample_type, input_file = self.branch_data
         outFileName = input_file[0].split('/')[-1]#.strip('.root')
         out = os.path.join(self.central_anaTuples_path(), sample_name,outFileName)
         return law.LocalFileTarget(out)
 
     def run(self):
         job_home, remove_job_home = self.law_job_home()
-        sample_id, sample_name, sample_type, split_idx, input_file = self.branch_data
-        if self.test: print(f"sample_id= {sample_id}\nsample_name = {sample_name}\nsample_type = {sample_type}\nsplit_idx = {split_idx}\ninput_file = {input_file}")
+        sample_id, sample_name, sample_type, input_file = self.branch_data
+        if self.test: print(f"sample_id= {sample_id}\nsample_name = {sample_name}\nsample_type = {sample_type}\ninput_file = {input_file}")
         producer_anatuples = os.path.join(self.ana_path(), 'AnaProd', 'anaTupleProducer.py')
         anaCache = os.path.join(self.central_anaCache_path(), sample_name, 'anaCache.yaml')
         outdir_anatuples = os.path.join(job_home, 'anaTuples', sample_name)
+        anatuple_cmd = [ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', input_file,
+                    '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations',
+                    self.customisations, '--compute_unc_variations', 'True', '--store-noncentral']
         if self.test:
-            sh_call([ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', input_file,
-                    '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations',
-                    self.customisations, '--compute_unc_variations', 'True', '--store-noncentral', '--nEvents', '100'], env=self.cmssw_env(),verbose=1)
-        else:
-            sh_call([ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', input_file,
-                    '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations',
-                  self.customisations, '--compute_unc_variations', 'True', '--store-noncentral'], env=self.cmssw_env(),verbose=1)
+            anatuple_cmd.extend(['--nEvents', '100'])
+        sh_call(anatuple_cmd, env=self.cmssw_env(),verbose=1)
         producer_skimtuples = os.path.join(self.ana_path(), 'Analysis', 'SkimProducer.py')
         outdir_skimtuples = os.path.join(job_home, 'skim', sample_name)
         outFileName = os.path.basename(input_file)
         if self.test: print(f"outFileName is {outFileName}")
         if sample_type!='data':
+            skimtuple_cmd = ['python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--centralFile',outFileName, '--workingDir', outdir_skimtuples,
+                     '--outputFile', outFileName]
             if self.test:
-                sh_call([ 'python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--centralFile',outFileName, '--workingDir', outdir_skimtuples,
-                        '--outputFile', outFileName , '--test' , 'True'],verbose=1)
-            else:
-                sh_call([ 'python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--centralFile',outFileName, '--workingDir', outdir_skimtuples,
-                     '--outputFile', outFileName],verbose=1)
+                skimtuple_cmd.extend(['--test' , 'True'])
+            sh_call(skimtuple_cmd,verbose=1)
         tmpFile = os.path.join(outdir_skimtuples, outFileName)
         if sample_type=='data':
             tmpFile = os.path.join(outdir_anatuples, outFileName)
@@ -139,7 +136,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             raise RuntimeError(f"file {tmpFile} was not copied in {finalFile} ")
         if remove_job_home:
             shutil.rmtree(job_home)
-        print(f'anaTuple for sample {sample_name}  split_idx={split_idx} is created in {outdir_final}')
+        print(f'anaTuple for sample {sample_name} is created in {outdir_final}')
 
 
     @staticmethod
@@ -156,13 +153,10 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 input_files = inputtxtFile.read().splitlines()
             if len(input_files) == 0:
                 raise RuntimeError(f"AnaTupleTask: no input files found for {sample_name}")
-            split_idx = 0
-            while True:
-                branches[n] = (sample_id, sample_name, samples[sample_name]['sampleType'], split_idx,
-                               input_files[split_idx])
-                split_idx += 1
+            for input_file in input_files:
+                branches[n] = (sample_id, sample_name, samples[sample_name]['sampleType'], input_file)
                 n += 1
-                if split_idx >= len(input_files):
+                if n >= len(input_files):
                     break
         return branches
 

@@ -80,8 +80,6 @@ class InputFileTask(Task, law.LocalWorkflow):
 class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 20.0)
 
-
-
     def workflow_requires(self):
         return { "anaCache" : AnaCacheTask.req(self), "inputFile": InputFileTask.req(self,workflow='local') }
 
@@ -95,7 +93,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self, force_pre_output=False):
         sample_id, sample_name, sample_type, input_file = self.branch_data
-        outFileName = input_file[0].split('/')[-1]#.strip('.root')
+        outFileName = os.path.basename(input_file)# input_file[0].split('/')[-1]#.strip('.root')
         out = os.path.join(self.central_anaTuples_path(), sample_name,outFileName)
         return law.LocalFileTarget(out)
 
@@ -156,7 +154,5 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             for input_file in input_files:
                 branches[n] = (sample_id, sample_name, samples[sample_name]['sampleType'], input_file)
                 n += 1
-                if n >= len(input_files):
-                    break
         return branches
 

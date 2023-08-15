@@ -5,6 +5,7 @@ import math
 import os
 import re
 import yaml
+import tempfile
 
 from RunKit.envToJson import get_cmsenv
 
@@ -71,6 +72,7 @@ class Task(law.Task):
     version = luigi.Parameter()
     period = luigi.Parameter()
     customisations =luigi.Parameter(default="")
+    test = luigi.BoolParameter(default=False)
 
     def __init__(self, *args, **kwargs):
         super(Task, self).__init__(*args, **kwargs)
@@ -92,7 +94,7 @@ class Task(law.Task):
         self.samples = { key : samples[key] for key in selected_samples }
 
     def store_parts(self):
-        return (self.__class__.__name__, self.version)
+        return (self.__class__.__name__, self.period, self.version)
 
     def ana_path(self):
         return os.getenv("ANALYSIS_PATH")
@@ -134,6 +136,12 @@ class Task(law.Task):
                 if var in os.environ:
                     self.cmssw_env_[var] = os.environ[var]
         return self.cmssw_env_
+
+    def law_job_home(self):
+        if 'LAW_JOB_HOME' in os.environ:
+            return os.environ['LAW_JOB_HOME'], False
+        os.makedirs(self.local_path(), exist_ok=True)
+        return tempfile.mkdtemp(dir=self.local_path()), True
 
 
 class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):

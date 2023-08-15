@@ -40,8 +40,12 @@ struct StopLoop {};
 
 template<typename ...Args>
 struct TupleMaker {
-  TupleMaker(const std::string& tree_name, const std::string& in_file, size_t queue_size)
-    : df_in(tree_name, in_file), queue(queue_size)
+  //TupleMaker(const std::string& tree_name, const std::string& in_file, size_t queue_size)
+  //  : df_in(tree_name, in_file), queue(queue_size)
+  //{
+  //}
+  TupleMaker(const ROOT::RDataFrame& df_in_, size_t queue_size)
+    : df_in(df_in_), queue(queue_size)
   {
   }
 
@@ -65,7 +69,7 @@ struct TupleMaker {
       std::cout << "TupleMaker::processIn: starting foreach." << std::endl;
       try {
         ROOT::RDF::RNode df = df_node;
-        df.Foreach([&](const std::shared_ptr<Entry>& entry) {
+        df.Foreach([&](const std::shared_ptr<Entry>& entry)  {
           if(!queue.Push(entry)) {
             throw StopLoop();
           }
@@ -78,6 +82,7 @@ struct TupleMaker {
       queue.SetAllDone();
     });
   }
+
 
 
 

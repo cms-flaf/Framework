@@ -43,17 +43,14 @@ GLOBAL:
   storeExtraJets: False
   sampleSelection:
     - drop ^.*$
-    - keep ^TTToSemiLeptonic
-    #- keep ^GluGluToRadionToHHTo2B2Tau_M-600
-    #- keep ^TTTo2L2Nu$
-    #- keep ^TTToHadronic$
-    #- keep ^TTTo2L2Nu$
     #- keep ^GluGluToRadion*
     #- keep ^GluGluToBulkGraviton*
     #- keep ^VBFToRadion*
     #- keep ^VBFToBulkGraviton*
-    #- keep ^TTTo(2L2Nu|SemiLeptonic)$
-    #- keep ^TTTo(hadrons)$
+    #- keep ^TTTo*
+    - keep ^TTToSemiLeptonic$
+    ##- keep ^TTTo2L2Nu$
+    ##- keep ^TTTo(Hadronic)$
     #- keep ^DYJetsToLL_M-50$
     #- keep ^DYJetsToLL_[0-2]J$
     #- keep ^DYJetsToLL_LHEFilterPtZ*

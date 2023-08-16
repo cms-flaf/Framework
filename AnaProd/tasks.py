@@ -70,7 +70,7 @@ class InputFileTask(Task, law.LocalWorkflow):
                         input_files.append(os.path.join(root, file))
         with open(txtFile_tmp, 'w') as inputFileTxt:
             for input_line in input_files:
-                inputFileTxt.write(input_line)
+                inputFileTxt.write(input_line+'\n')
         finalFile = self.output().path
         shutil.move(txtFile_tmp,finalFile)
         print(f'inputFile for sample {sample_name} is created in {self.output().path}')
@@ -81,15 +81,26 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 20.0)
 
     def workflow_requires(self):
-        return { "anaCache" : AnaCacheTask.req(self), "inputFile": InputFileTask.req(self,workflow='local') }
+        return { "anaCache" : AnaCacheTask.req(self, branches=None), "inputFile": InputFileTask.req(self,workflow='local', branches=None) }
 
     def requires(self):
         sample_id, sample_name, sample_type, input_file = self.branch_data
-        return [ AnaCacheTask.req(self, branch=sample_id, max_runtime=AnaCacheTask.max_runtime._default), InputFileTask.req(self, branch=sample_id, workflow='local') ]
+        return [ AnaCacheTask.req(self, branch=sample_id, max_runtime=AnaCacheTask.max_runtime._default, branches=None), InputFileTask.req(self, branch=sample_id, workflow='local', branches=None) ]
 
     def create_branch_map(self):
         self.load_sample_configs()
-        return AnaTupleTask.getBranches(self.samples, self.central_anaCache_path())
+        n = 0
+        branches = {}
+        for sample_id, sample_name in enumerate(sorted(self.samples.keys())):
+            inputFileTxt = InputFileTask.req(self, branch=sample_id,workflow='local', branches=None).output().path
+            with open(inputFileTxt, 'r') as inputtxtFile:
+                input_files = inputtxtFile.read().splitlines()
+            if len(input_files) == 0:
+                raise RuntimeError(f"AnaTupleTask: no input files found for {sample_name}")
+            for input_file in input_files:
+                branches[n] = (sample_id, sample_name, self.samples[sample_name]['sampleType'], input_file)
+                n += 1
+        return branches
 
     def output(self, force_pre_output=False):
         sample_id, sample_name, sample_type, input_file = self.branch_data
@@ -140,19 +151,3 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     @staticmethod
     def getOutputDir(central_anaTuples_path, sample_name):
         return os.path.join(central_anaTuples_path, sample_name)
-
-    @staticmethod
-    def getBranches(samples, central_anacache_path):
-        n = 0
-        branches = {}
-        for sample_id, sample_name in enumerate(sorted(samples.keys())):
-            inputFileTxt = os.path.join(central_anacache_path, sample_name, 'input_files.txt')
-            with open(inputFileTxt, 'r') as inputtxtFile:
-                input_files = inputtxtFile.read().splitlines()
-            if len(input_files) == 0:
-                raise RuntimeError(f"AnaTupleTask: no input files found for {sample_name}")
-            for input_file in input_files:
-                branches[n] = (sample_id, sample_name, samples[sample_name]['sampleType'], input_file)
-                n += 1
-        return branches
-

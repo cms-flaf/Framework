@@ -69,8 +69,8 @@ GLOBAL:
     - keep ^GluGluToHHTo2B2Tau_node_SM$
     - keep ^SingleMuon_2018*
     - keep ^EGamma_2018*
-    #- keep ^MET_2018*
-    #- keep ^JetHT_2018*
+    - keep ^MET_2018*
+    - keep ^JetHT_2018*
     - keep ^Tau_2018*
     - keep ^T{2,3}?
     - drop ^TT[G*]

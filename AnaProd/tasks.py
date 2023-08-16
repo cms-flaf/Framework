@@ -81,18 +81,18 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 20.0)
 
     def workflow_requires(self):
-        return { "anaCache" : AnaCacheTask.req(self, branches=None), "inputFile": InputFileTask.req(self,workflow='local', branches=None) }
+        return { "anaCache" : AnaCacheTask.req(self, branches=()), "inputFile": InputFileTask.req(self,workflow='local', branches=()) }
 
     def requires(self):
         sample_id, sample_name, sample_type, input_file = self.branch_data
-        return [ AnaCacheTask.req(self, branch=sample_id, max_runtime=AnaCacheTask.max_runtime._default, branches=None), InputFileTask.req(self, branch=sample_id, workflow='local', branches=None) ]
+        return [ AnaCacheTask.req(self, branch=sample_id, max_runtime=AnaCacheTask.max_runtime._default, branches=()), InputFileTask.req(self, branch=sample_id, workflow='local', branches=()) ]
 
     def create_branch_map(self):
         self.load_sample_configs()
         n = 0
         branches = {}
         for sample_id, sample_name in enumerate(sorted(self.samples.keys())):
-            inputFileTxt = InputFileTask.req(self, branch=sample_id,workflow='local', branches=None).output().path
+            inputFileTxt = InputFileTask.req(self, branch=sample_id,workflow='local', branches=()).output().path
             with open(inputFileTxt, 'r') as inputtxtFile:
                 input_files = inputtxtFile.read().splitlines()
             if len(input_files) == 0:
@@ -100,6 +100,11 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             for input_file in input_files:
                 branches[n] = (sample_id, sample_name, self.samples[sample_name]['sampleType'], input_file)
                 n += 1
+                '''
+                if n >= len(self.branches):
+                    print(branches)
+                    return branches
+                '''
         return branches
 
     def output(self, force_pre_output=False):

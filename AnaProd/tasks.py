@@ -152,7 +152,66 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             shutil.rmtree(job_home)
         print(f'anaTuple for sample {sample_name} is created in {outdir_final}')
 
+    def getBranches():
+        return AnaTupleTask.branches
 
     @staticmethod
     def getOutputDir(central_anaTuples_path, sample_name):
         return os.path.join(central_anaTuples_path, sample_name)
+
+class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
+    max_files_per_job = luigi.IntParameter(default=1000000, description="maximum number of input files per job")
+
+
+    #def workflow_requires(self):
+        #return { "anaTuple" : AnaTupleTask.req(self) }
+
+    def requires(self):
+        prod_branches, input_files = self.branch_data
+        print(self.branch_data)
+        deps = [AnaTupleTask.req(self, max_runtime=AnaCacheTask.max_runtime._default, branch=prod_br) for prod_br in prod_branches ]
+        return deps
+
+
+    def create_branch_map(self):
+        self.load_sample_configs()
+        deps = []
+        anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
+        prod_branches = []
+        input_files = []
+        for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
+            if sample_type == "data":
+                inDir = os.path.join(self.central_anaTuples_path(), sample_name)
+                #print(inDir)
+                for root, dirs, files in os.walk(inDir):
+                    for file in files:
+                        if file.endswith('.root') and not file.startswith('.'):
+                            if os.path.join(root, file) not in input_files:
+                                input_files.append(os.path.join(root, file))
+            prod_branches.append(prod_br)
+        return { 0: (prod_branches, input_files) }
+
+
+
+    def output(self, force_pre_output=False):
+        out = os.path.join(self.central_anaTuples_path(), 'data','nano.root')
+        return law.LocalFileTarget(out)
+
+    def run(self):
+        prod_branches, input_files = self.branch_data
+        print(input_files)
+        job_home, remove_job_home = self.law_job_home()
+        input_files_str = ','.join(input_files)
+        outdir_dataMerge = os.path.join(job_home, 'data')
+        producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
+        finalFile = self.output().path
+        tmpFile = os.path.join(outdir_dataMerge, 'data.root')
+        dataMerge_cmd = ['python3', producer_dataMerge, '--inputFiles', input_files_str, '--outFile', tmpFile ]
+        sh_call(dataMerge_cmd,verbose=1)
+        if self.test: print(f"finalFile is {finalFile}")
+        shutil.copy(tmpFile, finalFile)
+        if os.path.exists(finalFile):
+            os.remove(tmpFile)
+        if remove_job_home:
+            shutil.rmtree(job_home)

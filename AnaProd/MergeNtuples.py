@@ -38,11 +38,9 @@ def merge_ntuples(df):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--inputDirFile', required=True, type=str)
-    parser.add_argument('--outDir', required=True, type=str)
-    parser.add_argument('--outputFileName', required=True, type=str)
+    parser.add_argument('--inputFiles', required=True, type=str)
+    parser.add_argument('--outFile', required=True, type=str)
     args = parser.parse_args()
-    #outputFileName = 'test_dataMerging.root'
     headers_dir = os.path.dirname(os.path.abspath(__file__))
 
     ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
@@ -53,13 +51,9 @@ if __name__ == "__main__":
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'kZLIB')
     snapshotOptions.fCompressionLevel = 4
     other_histograms = []
-    #dir_list = args.inputDirList.split(',')
-    with open(args.inputDirFile, 'r') as inputDirFileTxt:
-            dir_list = inputDirFileTxt.read().splitlines()
-    inFiles_list = []
-    for folder in dir_list :
-        inFiles_list.extend([ os.path.join(folder, filein) for filein in os.listdir(folder)])
-    #print(inFiles_list)
+    inFiles_list = args.inputFiles.split(',')
+
+    print(inFiles_list)
     dfNames = []
     histNames = []
     histograms = {}
@@ -110,7 +104,6 @@ if __name__ == "__main__":
     snapshotOptions.fLazy = True
     if snapshotOptions.fLazy == True:
         ROOT.RDF.RunGraphs(snaps)
-    finalOutFile = os.path.join(args.outDir, args.outputFileName)
-    ConvertUproot.toUproot(tmpFile, finalOutFile)
-    if os.path.exists(finalOutFile):
+    ConvertUproot.toUproot(tmpFile, outFile)
+    if os.path.exists(outFile):
         os.remove(tmpFile)

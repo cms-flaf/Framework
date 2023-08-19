@@ -28,6 +28,13 @@ ROOT.gInterpreter.Declare(
         }
     """
 )
+class ObjDesc:
+    def __init__(self, obj_type):
+        self.obj_type = obj_type
+        self.ref_obj = None
+        self.objsToMerge = ROOT.TList()
+        self.file_names = []
+
 
 def merge_ntuples(df):
     if 'run' not in df.GetColumnNames() or 'luminosityBlock'  not in df.GetColumnNames() or 'event'  not in df.GetColumnNames():
@@ -38,7 +45,7 @@ def merge_ntuples(df):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--inputFiles', required=True, type=str)
+    parser.add_argument('inputFile', nargs='+', type=str)
     parser.add_argument('--outFile', required=True, type=str)
     args = parser.parse_args()
     headers_dir = os.path.dirname(os.path.abspath(__file__))
@@ -46,64 +53,57 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=False
-    snapshotOptions.fLazy = True
+    snapshotOptions.fLazy = False
     snapshotOptions.fMode="UPDATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'kZLIB')
     snapshotOptions.fCompressionLevel = 4
-    other_histograms = []
-    inFiles_list = args.inputFiles.split(',')
 
-    print(inFiles_list)
-    dfNames = []
-    histNames = []
-    histograms = {}
-    inputs = ROOT.TList()
-    for fileName in inFiles_list:
-        file_in = ROOT.TFile(fileName, "READ")
-        for k in file_in.GetListOfKeys():
-            key_name = k.GetName()
-            obj = k.ReadObj()
-            isTree = obj.IsA().InheritsFrom(ROOT.TTree.Class())
-            if isTree:
-                if key_name not in dfNames:
-                    dfNames.append(key_name)
+    inputFiles = [ (fileName, ROOT.TFile(fileName, "READ")) for fileName in args.inputFile ]
+    objects = {}
+    for fileName, file in inputFiles:
+        for key in file.GetListOfKeys():
+            key_name = key.GetName()
+            obj = key.ReadObj()
+
+            if obj.IsA().InheritsFrom(ROOT.TTree.Class()):
+                objType = "TTree"
+            elif obj.IsA().InheritsFrom(ROOT.TH1.Class()):
+                objType = "TH1"
             else:
-                if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
-                    if key_name not in histNames:
-                        histNames.append(k.GetName())
-                        histograms[key_name] = ROOT.TH1D()
-                    inputs.Add(obj)
-                    histograms[key_name].Merge(inputs)
-                    inputs.Clear()
+                raise RuntimeError(f"Object {obj} is not a TTree or TH1.")
+
+            if key_name not in objects:
+                objects[key_name] = ObjDesc(objType)
+            obj_desc = objects[key_name]
+            if objType != obj_desc.obj_type:
+                raise RuntimeError(f"Object {key_name} is of type {objType} but was previously found to be"
+                                f"of type {obj_desc.obj_type}.")
+            if objType == "TTree":
+                obj_desc.file_names.append(fileName)
+            else:
+                if obj_desc.ref_obj is None:
+                    obj_desc.ref_obj = obj
                 else:
-                    print(f"Object {obj} is not a TH1.")
-        file_in.Close()
+                    obj_desc.objsToMerge.Add(obj)
 
-    for fileName in inFiles_list:
-        file_in = ROOT.TFile(fileName, "READ")
-        for dfName in dfNames:
-            if dfName not in file_in.GetListOfKeys():
-                print(f"{dfName} not in keys of {fileName}")
-                rdf = ROOT.RDataFrame(1)
-                snapshotOptions.fLazy = False
-                rdf.Define("entryIndex", "-1").Snapshot(dfName, fileName, rdf.GetColumnNames(), snapshotOptions)
-        file_in.Close()
+    tmpFileName = args.outputFile + '.tmp.root'
+    outputFile = ROOT.TFile(tmpFileName, "RECREATE")
+    for obj_name, obj_desc in objects.items():
+        if obj_desc.obj_type != "TH1":
+            continue
+        obj_desc.ref_obj.Merge(obj_desc.objsToMerge)
+        outputFile.WriteTObject(obj_desc.ref_obj, obj_name)
+    outputFile.Close()
+    for fileName, file in inputFiles:
+        file.Close()
 
-    snaps = []
-    if not os.path.isdir(args.outDir):
-        os.makedirs(args.outDir)
-    tmpFile =  os.path.join(args.outDir, 'tmp.root')
-    for dfName in dfNames:
-        df_key = ROOT.RDataFrame(dfName,inFiles_list)
-        final_df = merge_ntuples(df_key)
-        snaps.append(final_df.Snapshot(dfName, tmpFile, final_df.GetColumnNames(), snapshotOptions))
-    tmpFile_ = ROOT.TFile(tmpFile, "RECREATE")
-    for histName in histograms.keys():
-        histograms[histName].Write()
-    tmpFile_.Close()
-    snapshotOptions.fLazy = True
-    if snapshotOptions.fLazy == True:
-        ROOT.RDF.RunGraphs(snaps)
-    ConvertUproot.toUproot(tmpFile, outFile)
-    if os.path.exists(outFile):
-        os.remove(tmpFile)
+    for obj_name, obj_desc in objects.items():
+        if obj_desc.obj_type != "TTree":
+            continue
+        df = ROOT.RDataFrame(obj_name, obj_desc.file_names)
+        df = merge_ntuples(df)
+        df.Snapshot(obj_name, tmpFileName, df.GetColumnNames(), snapshotOptions)
+
+    ConvertUproot.toUproot(tmpFileName, args.outFile)
+    if os.path.exists(args.outFile):
+        os.remove(tmpFileName)

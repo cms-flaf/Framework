@@ -199,7 +199,7 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
         finalFile = self.output().path
         tmpFile = os.path.join(outdir_dataMerge, 'data.root')
-        dataMerge_cmd = ['python3', producer_dataMerge, '--inputFiles', input_files_str, '--outFile', tmpFile ]
+        dataMerge_cmd = ['python3', producer_dataMerge, input_files_str, '--outFile', tmpFile ]
         sh_call(dataMerge_cmd,verbose=1)
         if self.test: print(f"finalFile is {finalFile}")
         shutil.copy(tmpFile, finalFile)

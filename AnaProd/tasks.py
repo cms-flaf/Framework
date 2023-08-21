@@ -92,7 +92,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         n = 0
         branches = {}
         for sample_id, sample_name in enumerate(sorted(self.samples.keys())):
-            inputFileTxt = InputFileTask.req(self, branch=sample_id,workflow='local', branches=()).output().path
+            inputFileTxt = InputFileTask.req(self, branch=sample_id,workflow='local', branches=(sample_id,)).output().path
             with open(inputFileTxt, 'r') as inputtxtFile:
                 input_files = inputtxtFile.read().splitlines()
             if len(input_files) == 0:
@@ -159,7 +159,7 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def workflow_requires(self):
         prod_branches = self.create_branch_map()
-        workflow_dict = { "anaTuple" : AnaTupleTask.req(self, branches=tuple((prod_br,) for prod_br in prod_branches))}
+        workflow_dict = { "anaTuple" : AnaTupleTask.req(self, branches=tuple((prod_br,) for prod_br in prod_branches)),}
         return workflow_dict
 
     def requires(self):

@@ -100,11 +100,6 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             for input_file in input_files:
                 branches[n] = (sample_id, sample_name, self.samples[sample_name]['sampleType'], input_file)
                 n += 1
-                '''
-                if n >= len(self.branches):
-                    print(branches)
-                    return branches
-                '''
         return branches
 
     def output(self, force_pre_output=False):
@@ -161,11 +156,14 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 25.0)
-    max_files_per_job = luigi.IntParameter(default=1000000, description="maximum number of input files per job")
+
+    def workflow_requires(self):
+        prod_branches = self.create_branch_map()
+        workflow_dict = { "anaTuple" : AnaTupleTask.req(self, branches=tuple((prod_br,) for prod_br in prod_branches))}
+        return workflow_dict
 
     def requires(self):
-        prod_branches, input_files = self.branch_data
-        print(self.branch_data)
+        prod_branches = self.branch_data
         deps = [AnaTupleTask.req(self, max_runtime=AnaCacheTask.max_runtime._default, branch=prod_br) for prod_br in prod_branches ]
         return deps
 
@@ -175,14 +173,10 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         deps = []
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
         prod_branches = []
-        input_files = []
         for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-            if sample_type == "data":
-                print(input_file)
-                if input_file not in input_files:
-                    input_files.append(input_file)
+            if sample_type != "data": continue
             prod_branches.append(prod_br)
-        return { 0: (prod_branches, input_files) }
+        return { 0: prod_branches }
 
 
 
@@ -191,8 +185,9 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return law.LocalFileTarget(out)
 
     def run(self):
-        prod_branches, input_files = self.branch_data
-        print(input_files)
+        prod_branches = self.branch_data
+        print(self.input)
+        '''
         job_home, remove_job_home = self.law_job_home()
         input_files_str = ' '.join(input_files)
         outdir_dataMerge = os.path.join(job_home, 'data')
@@ -207,3 +202,4 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             os.remove(tmpFile)
         if remove_job_home:
             shutil.rmtree(job_home)
+        '''

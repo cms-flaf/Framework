@@ -28,7 +28,7 @@ if __name__ == "__main__":
   parser.add_argument('--inputDir', required=True, type=str)
   parser.add_argument('--workingDir', required=True, type=str)
   parser.add_argument('--outputFile', required=True, type=str)
-  parser.add_argument('--centralFile', required=False, type=str, default='Events.root')
+  parser.add_argument('--centralFile', required=False, type=str, default='nano.root')
   parser.add_argument('--recreateOutDir', required=False, type=bool, default=True)
   parser.add_argument('--test', required=False, type=bool, default=False)
   args = parser.parse_args()
@@ -49,7 +49,7 @@ if __name__ == "__main__":
   syst_trees = []
   k=0
   for systFile in all_files:
-    if args.test and k>=1 :
+    if args.test and k>=10 :
       print(systFile)
       continue
     inFileShiftedName = os.path.join(args.inputDir, systFile)
@@ -79,11 +79,12 @@ if __name__ == "__main__":
   if args.test : print(f'outFileName is {outFileName}')
   hadd_str = f'hadd -f209 -j -O {outFileName} '
   hadd_str += ' '.join(f for f in syst_files_to_merge)
+
   if args.test : print(f'hadd_str is {hadd_str}')
   sh_call([hadd_str], True)
-  print(outFileName)
+  if args.test : print(f"outFileName is {outFileName}")
   if os.path.exists(outFileName):
     for file_syst in syst_files_to_merge:# + [outFileCentralName]:
-      print(file_syst)
+      if args.test : print(file_syst)
       if file_syst == outFileName: continue
       os.remove(file_syst)

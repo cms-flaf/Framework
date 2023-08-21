@@ -33,6 +33,9 @@ col_type_dict = {
 def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Events',treeName_central='Events'):
   df_out = ROOT.RDataFrame(treeName_in, inputFileShifted)
   colNames = [str(c) for c in df_out.GetColumnNames()]
+  if "entryIndex" not in colNames:
+    print(f"{treeName_in} has no entryIndex in colNames")
+    return
   entryIndexIdx = colNames.index("entryIndex")
   colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
   col_types = [str(df_out.GetColumnType(c)) for c in colNames]

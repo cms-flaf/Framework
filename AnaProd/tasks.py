@@ -160,7 +160,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return os.path.join(central_anaTuples_path, sample_name)
 
 class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 12.0)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 25.0)
     max_files_per_job = luigi.IntParameter(default=1000000, description="maximum number of input files per job")
 
     def requires(self):
@@ -194,7 +194,7 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         prod_branches, input_files = self.branch_data
         print(input_files)
         job_home, remove_job_home = self.law_job_home()
-        input_files_str = ','.join(input_files)
+        input_files_str = ' '.join(input_files)
         outdir_dataMerge = os.path.join(job_home, 'data')
         producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
         finalFile = self.output().path

@@ -203,12 +203,14 @@ if __name__ == "__main__":
 
         dfWrapped_central = DataFrameBuilder(ROOT.RDataFrame('Events', inFile_path), args.deepTauVersion)
         createCentralQuantities(dfWrapped_central.df, dfWrapped_central.colTypes, dfWrapped_central.colNames)
-
+        test_idx = 0
         all_dataframes={}
         for key in keys:
+
+            if args.test and test_idx>5:
+                continue
+            print(key)
             dfWrapped_key = DataFrameBuilder(ROOT.RDataFrame(key, inFile_path))
-            if args.test:
-                dfWrapped_key.df = dfWrapped_key.df.Range(100)
             if(key.endswith('_noDiff')):
                 dfWrapped_key.GetEventsFromShifted(dfWrapped_central.df)
             elif(key.endswith('_Valid')):
@@ -222,8 +224,9 @@ if __name__ == "__main__":
             keyName_split = key.split("_")[1:]
             treeName = '_'.join(keyName_split)
             #print(treeName)
-            all_dataframes[treeName]= PrepareDfWrapped(dfWrapped_key).df.Range(100)
-        all_dataframes['Central'] = PrepareDfWrapped(dfWrapped_central).df.Range(100)
+            all_dataframes[treeName]= PrepareDfWrapped(dfWrapped_key)
+            test_idx+=1
+        all_dataframes['Central'] = PrepareDfWrapped(dfWrapped_central)
         # create hist dict
         hist_cfg_dict = {}
         hist_cfg = "config/plot/histograms.yaml"
@@ -246,7 +249,7 @@ if __name__ == "__main__":
         for var in hist_cfg_dict.keys():
             for name in all_dataframes.keys():
                 histName = f"{args.dataset}_{name}"
-                #print(histName)
+                print(histName)
                 for qcdRegion in QCDregions:
                     df_qcd = all_dataframes[name].Filter(qcdRegion)
                     for cut in cuts :
@@ -262,6 +265,6 @@ if __name__ == "__main__":
             if not os.path.isdir(finalDir):
                 os.makedirs(finalDir)
             inFile_idx = inFile.split('.')[0].split('_')[1]
-            finalFile = ROOT.TFile(f'{finalDir}/tmp_{args.dataset}_{inFile_idx}_100Evts.root','RECREATE')
+            finalFile = ROOT.TFile(f'{finalDir}/tmp_{args.dataset}_{inFile_idx}.root','RECREATE')
             SaveHisto(finalFile, histograms[var], current_path=None)
             finalFile.Close()

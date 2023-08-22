@@ -178,15 +178,12 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             prod_branches.append(prod_br)
         return { 0: prod_branches }
 
-
-
     def output(self, force_pre_output=False):
         out = os.path.join(self.central_anaTuples_path(), 'data','nano.root')
         return law.LocalFileTarget(out)
 
     def run(self):
         prod_branches = self.branch_data
-        job_home, remove_job_home = self.law_job_home()
         outdir_dataMerge = os.path.join(job_home, 'data')
         producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
         finalFile = self.output().path
@@ -198,5 +195,3 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         shutil.copy(tmpFile, finalFile)
         if os.path.exists(finalFile):
             os.remove(tmpFile)
-        if remove_job_home:
-            shutil.rmtree(job_home)

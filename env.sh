@@ -134,6 +134,8 @@ action() {
     export ANALYSIS_BIG_DATA_PATH="$CENTRAL_STORAGE/tmp/$(whoami)/data"
     #export PATH=$PATH:$HOME/.local/bin:$ANALYSIS_PATH/scripts
 
+    run_cmd source /afs/cern.ch/user/m/mrieger/public/law_sw/setup.sh
+
     run_cmd mkdir -p "$ANALYSIS_DATA_PATH"
 
     local os_version=$(cat /etc/os-release | grep VERSION_ID | sed -E 's/VERSION_ID="([0-9]+).*"/\1/')

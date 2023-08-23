@@ -120,44 +120,44 @@ if __name__ == "__main__":
                                 all_histograms[inputVar][sample_type][channel][qcdRegion][cat][key_name].append(obj)
             inFile_root.Close()
 
+    for inVar in inputVariables
+        # 1 merge histograms per sample:
+        # let's try to fix first the var
+        #inVar = 'bbtautau_mass'
+        all_histograms_inVar = all_histograms[inVar]
+        for sample_type in all_histograms_inVar.keys():
+            for channel in all_histograms_inVar[sample_type].keys():
+                for QCDRegion in all_histograms_inVar[sample_type][channel].keys():
+                    for category in all_histograms_inVar[sample_type][channel][QCDRegion]:
+                        print(sample_type, channel, QCDRegion, category, all_histograms_inVar[sample_type][channel][QCDRegion][category])
+                        all_final_hists = []
+                        for key_name,histlist in all_histograms_inVar[sample_type][channel][QCDRegion][category].items():
+                            final_hist =  histlist[0]
+                            if len(histlist) > 1:
+                                final_hist = ROOT.TH1D()
+                                #print(f'hist has {hist.GetEntries()} entries')
+                                final_hist.Add(hist for hist in histlist)
+                                #print(f'final hist has {final_hist.GetEntries()} entries')
+                            #all_final_hists.append((final_hist))
+                            all_histograms_inVar[sample_type][channel][QCDRegion][category][key_name] = final_hist
 
-    # 1 merge histograms per sample:
-    # let's try to fix first the var
-    inVar = 'bbtautau_mass'
-    all_histograms_inVar = all_histograms[inVar]
-    for sample_type in all_histograms_inVar.keys():
-        for channel in all_histograms_inVar[sample_type].keys():
-            for QCDRegion in all_histograms_inVar[sample_type][channel].keys():
-                for category in all_histograms_inVar[sample_type][channel][QCDRegion]:
-                    print(sample_type, channel, QCDRegion, category, all_histograms_inVar[sample_type][channel][QCDRegion][category])
-                    all_final_hists = []
-                    for key_name,histlist in all_histograms_inVar[sample_type][channel][QCDRegion][category].items():
-                        final_hist =  histlist[0]
-                        if len(histlist) > 1:
-                            final_hist = ROOT.TH1D()
-                            #print(f'hist has {hist.GetEntries()} entries')
-                            final_hist.Add(hist for hist in histlist)
-                            #print(f'final hist has {final_hist.GetEntries()} entries')
-                        #all_final_hists.append((final_hist))
-                        all_histograms_inVar[sample_type][channel][QCDRegion][category][key_name] = final_hist
 
+        # now the histograms are merged. We need to evaluate the QCD
+        for channel in channels:
+            for category in categories:
+                for key_name in all_histograms_inVar[sample_type][channel][QCDRegion][category].keys():
+                    all_histograms_inVar['QCD'][channel]['SS_Iso'][category][key_name] =  QCD_Estimation(all_histograms_inVar, all_samples_list, channel, category,key_name,'TT')
 
-    # now the histograms are merged. We need to evaluate the QCD
-    for channel in channels:
-        for category in categories:
-            for key_name in all_histograms_inVar[sample_type][channel][QCDRegion][category].keys():
-                all_histograms_inVar['QCD'][channel]['SS_Iso'][category][key_name] =  QCD_Estimation(all_histograms_inVar, all_samples_list, channel, category,key_name,'TT')
-
-    finalFileName = 'all_histograms.root'
-    outFileName = os.path.join(args.inputDir, inVar, finalFileName)
-    outFile = ROOT.TFile(outFileName, "RECREATE")
-    for sample_type in all_histograms_inVar.keys():
-        for channel in all_histograms_inVar[sample_type].keys():
-            for QCDRegion in all_histograms_inVar[sample_type][channel].keys():
-                for category in all_histograms_inVar[sample_type][channel][QCDRegion]:
-                    for key_name,hist in all_histograms_inVar[sample_type][channel][QCDRegion][category].items():
-                        new_histName = f'{sample_type}_{channel}_{QCDRegion}_{category}_{key_name}'
-                        hist.SetTitle(new_histName)
-                        hist.SetName(new_histName)
-                        hist.Write()
-    outFile.Close()
+        finalFileName = 'all_histograms.root'
+        outFileName = os.path.join(args.inputDir, inVar, finalFileName)
+        outFile = ROOT.TFile(outFileName, "RECREATE")
+        for sample_type in all_histograms_inVar.keys():
+            for channel in all_histograms_inVar[sample_type].keys():
+                for QCDRegion in all_histograms_inVar[sample_type][channel].keys():
+                    for category in all_histograms_inVar[sample_type][channel][QCDRegion]:
+                        for key_name,hist in all_histograms_inVar[sample_type][channel][QCDRegion][category].items():
+                            new_histName = f'{sample_type}_{channel}_{QCDRegion}_{category}_{key_name}'
+                            hist.SetTitle(new_histName)
+                            hist.SetName(new_histName)
+                            hist.Write()
+        outFile.Close()

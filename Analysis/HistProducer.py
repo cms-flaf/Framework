@@ -97,14 +97,16 @@ def merge_sameNameHistos(hist_list,histName):
     for hist_ptr in hist_list:
         hist = hist_ptr.GetValue()
         current_uncName = histName[hist_list.index(hist_ptr)]
-        print(current_uncName)
+        #print(f"current uncName is {current_uncName}")
         current_uncName_splitted = current_uncName.split("_")
         current_uncName_noSuffixNoPrefix_splitted = uncName.split("_")[1:len(current_uncName_splitted)-1]
         current_uncName_noSuffix = '_'.join(p for p in current_uncName_splitted[0:len(current_uncName_splitted)-1])
         current_uncName_noPrefix = '_'.join(p for p in current_uncName_splitted[1:])
         current_uncName_noSuffixNoPrefix = '_'.join(p for p in current_uncName_splitted[1:len(current_uncName_splitted)-1])
         hist.SetTitle(current_uncName_noSuffix)
+        #print(f"current_uncName_noSuffix is {current_uncName_noSuffix}")
         hist.SetName(current_uncName_noSuffix)
+        #print(titlesList)
         if current_uncName_noSuffix in titlesList.keys():
             titlesList[current_uncName_noSuffix].Add(hist)
         else:
@@ -177,7 +179,7 @@ def createHistDict(df, histName, histograms, histNames,rel_weights):
             df_cat = df_qcd if cat=='inclusive' else df_qcd.Filter(cat)
             for channel,channel_code in channels.items():
                 df_channel = df_cat.Filter(f"""channelId == {channel_code}""").Filter(triggers[channel])
-                for var in hist_cfg_dict.keys():
+                for var in vars_to_plot:
                     model = createModel(hist_cfg_dict, var)
                     total_weight_expression = GetWeight(cat, channel, "Medium")
                     hist = df_channel.Define("total_total_weight", f"{total_weight_expression}").Histo1D(model, var, "total_total_weight" )#.GetValue()
@@ -199,6 +201,7 @@ if __name__ == "__main__":
     parser.add_argument('--nFiles', required=False, type=int, default=-1)
     parser.add_argument('--deepTauVersion', required=False, type=str, default='v2p1')
     parser.add_argument('--compute_unc_variations', type=bool, default=False)
+    parser.add_argument('--compute_rel_weights', type=bool, default=False)
     args = parser.parse_args()
 
     headers_dir = os.path.dirname(os.path.abspath(__file__))
@@ -209,6 +212,13 @@ if __name__ == "__main__":
     if not os.path.isdir(args.outDir):
         os.makedirs(args.outDir)
     allOutFiles = {}
+    # create hist dict
+    hist_cfg_dict = {}
+    hist_cfg = "config/plot/histograms.yaml"
+    with open(hist_cfg, 'r') as f:
+        hist_cfg_dict = yaml.safe_load(f)
+    vars_to_plot = list(hist_cfg_dict.keys())
+
     for inFile in os.listdir(args.inputDir):
         inFile_path = os.path.join(args.inputDir,inFile)
         print(f"computing histoMaker for file {inFile_path}")
@@ -231,16 +241,11 @@ if __name__ == "__main__":
         dfWrapped_central = DataFrameBuilder(ROOT.RDataFrame('Events', inFile_path), args.deepTauVersion)
 
         all_dataframes={}
-        # create hist dict
-        hist_cfg_dict = {}
-        hist_cfg = "config/plot/histograms.yaml"
-        with open(hist_cfg, 'r') as f:
-            hist_cfg_dict = yaml.safe_load(f)
-        vars_to_plot = list(hist_cfg_dict.keys())
         histograms = {}
         histNames = {}
 
         # *********************************************************************
+        '''
         test_idx = 0
         if args.compute_unc_variations:
             #print(f"nRuns for central in general [0] is {dfWrapped_central.df.GetNRuns()}")
@@ -268,12 +273,13 @@ if __name__ == "__main__":
                 #print(treeName)
                 all_dataframes[treeName]= PrepareDfWrapped(dfWrapped_key).df
                 test_idx+=1
+        '''
 
         all_dataframes['Central'] = PrepareDfWrapped(dfWrapped_central).df
         central_colNames = [str(col) for col in all_dataframes['Central'].GetColumnNames()]
         weights_central = GetRelativeWeights(central_colNames)
 
-        for var in hist_cfg_dict.keys():
+        for var in vars_to_plot:
             if not var in all_dataframes['Central'].GetColumnNames() : continue
             histograms[var]={}
             histNames[var]={}
@@ -292,16 +298,15 @@ if __name__ == "__main__":
 
         for name in all_dataframes.keys():
             histName = f"{args.dataset}_{name}"
-            print(histName)
             weights_relative = []
-            if name == "Central":
+            if name == "Central" and args.compute_rel_weights == True:
                 weights_relative = weights_central
             createHistDict(all_dataframes[name], histName, histograms, histNames,weights_relative)
 
 
 
 
-        for var in hist_cfg_dict.keys():
+        for var in vars_to_plot:
             if var not in allOutFiles.keys():
                 allOutFiles[var] = []
             finalDir = os.path.join(args.outDir, var)
@@ -313,16 +318,15 @@ if __name__ == "__main__":
             finalFile = ROOT.TFile(f'{finalDir}/tmp_{args.dataset}_{inFile_idx}.root','RECREATE')
             SaveHisto(finalFile, histograms[var], histNames[var], current_path=None)
         finalFile.Close()
-        '''
+
         for name,df in all_dataframes.items():
             print(name)
             print(df.GetNRuns())
-        '''
 
-    for var in hist_cfg_dict.keys():
+    for var in vars_to_plot:
         finalDir = os.path.join(args.outDir, var)
         outFileName = f'{finalDir}/{args.dataset}.root'
-        hadd_str = f'hadd -f {outFileName} '
+        hadd_str = f'hadd -f209 -j -O {outFileName} '
         hadd_str += ' '.join(f for f in allOutFiles[var])
         if args.test : print(f'hadd_str is {hadd_str}')
         if len(allOutFiles[var]) > 1:

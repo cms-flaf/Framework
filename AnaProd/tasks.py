@@ -159,7 +159,14 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def workflow_requires(self):
         prod_branches = self.create_branch_map()
-        workflow_dict = { "anaTuple" : AnaTupleTask.req(self, branches=tuple((prod_br,) for prod_br in prod_branches)),}
+        print(prod_branches)
+        #workflow_dict = { "anaTuple" : AnaTupleTask.req(self, branches=tuple((prod_br,) for prod_br in prod_branches)),}
+        workflow_dict = {}
+        workflow_dict["anaTuple"] = {
+            idx: AnaTupleTask.req(self, branches=tuple((br,) for br in branches))
+            for idx, branches in prod_branches.items()
+        }
+        print(workflow_dict)
         return workflow_dict
 
     def requires(self):
@@ -184,7 +191,7 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         prod_branches = self.branch_data
-        outdir_dataMerge = os.path.join(job_home, 'data')
+        outdir_dataMerge = os.path.join(self.central_anaTuples_path(), 'data')
         producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
         finalFile = self.output().path
         tmpFile = os.path.join(outdir_dataMerge, 'data.root')

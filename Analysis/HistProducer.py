@@ -64,26 +64,6 @@ class DataFrameBuilder:
                                      analysis::GetEntriesMap()[entryIndex]->GetValue<{col_type_dict[self.colTypes[var_idx]]}>({central_col_idx}) )""")
             var_list.append(f"{var_name_forDelta}")
 
-    def GetWeightDict(self):
-        weight_variables = []
-        for var in self.colNames:
-            if var.split('_')[0] == 'weight':
-                weight_variables.append(var)
-        all_weights = {}
-        relative_weights = []
-        options = ['Central', 'Up','Down', 'total']
-        #variations = ['Up','Down']
-        for opt in options:
-            for weightName in weight_variables:
-                if opt not in all_weights.keys():
-                    all_weights[opt] = []
-                if opt in weightName:
-                    all_weights[opt].append(weightName)
-            weight_variables=list(set(weight_variables)-set(all_weights[opt]))
-        print(weight_variables)
-        for opt in options:
-            print(opt)
-            print(all_weights[opt])
 
 def createModel(hist_cfg, var):
     hists = {}
@@ -117,6 +97,7 @@ def merge_sameNameHistos(hist_list,histName):
     for hist_ptr in hist_list:
         hist = hist_ptr.GetValue()
         current_uncName = histName
+        print(histName)
         current_uncName_splitted = current_uncName.split("_")
         current_uncName_noSuffixNoPrefix_splitted = uncName.split("_")[1:len(current_uncName_splitted)-1]
         current_uncName_noSuffix = '_'.join(p for p in current_uncName_splitted[0:len(current_uncName_splitted)-1])
@@ -169,21 +150,38 @@ def createCentralQuantities(df_central, central_col_types, central_columns):
     tuple_maker.CleanCentral()
     tuple_maker.CleanCentralVec()
     tuple_maker.processCentral(Utilities.ListToVector(central_columns))
-    #print(f"nRuns [1] for df central is {df_central.GetNRuns()}")
     tuple_maker.getEventIdxFromShifted()
-    #print(f"nRuns [2] for df central is {df_central.GetNRuns()}")
 
-def createHistDict(df, histName, histograms, histNames, QCDregions, cuts):
+def GetWeight(cat, channel, btag_wp):
+    btag_weight = "1"
+    if cat!='inclusive':
+        btag_weight = f"weight_bTagSF_{btag_wp}_Central"
+    trg_weights_dict = {
+        'eTau':["weight_tau1_TrgSF_singleEle_Central","weight_tau2_TrgSF_singleEle_Central"],
+        'muTau':["weight_tau1_TrgSF_singleMu_Central","weight_tau2_TrgSF_singleMu_Central"],
+        'tauTau':["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central"]
+        }
+    weights_to_apply = [ "weight_Jet_PUJetID_Central_b1", "weight_Jet_PUJetID_Central_b2", "weight_TauID_Central", btag_weight, "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
+    weights_to_apply.extend(trg_weights_dict[channel])
+    total_weight = '*'.join(weights_to_apply)
+    return total_weight
+
+
+
+def createHistDict(df, histName, histograms, histNames):
     for qcdRegion in QCDregions:
         df_qcd = df.Filter(qcdRegion)
-        for cut in cuts :
-            if cut != 'inclusive' and cut not in df_qcd.GetColumnNames() : continue
-            df_cut = df_qcd if cut=='inclusive' else df_qcd.Filter(cut)
-            for var in hist_cfg_dict.keys():
-                model = createModel(hist_cfg_dict, var)
-                hist = df_cut.Histo1D(model, var)#.GetValue()
-                histograms[var][qcdRegion][cut].append(hist)
-                histNames[var][qcdRegion][cut] = histName
+        for cat in categories :
+            if cat != 'inclusive' and cat not in df_qcd.GetColumnNames() : continue
+            df_cat = df_qcd if cat=='inclusive' else df_qcd.Filter(cat)
+            for channel,channel_code in channels.items():
+                df_channel = df_cat.Filter(f"""channelId == {channel_code}""").Filter(triggers[channel])
+                for var in hist_cfg_dict.keys():
+                    model = createModel(hist_cfg_dict, var)
+                    total_weight_expression = GetWeight(cat, channel, "Medium")
+                    hist = df_channel.Define("total_total_weight", f"{total_weight_expression}").Histo1D(model, var, "total_total_weight" )#.GetValue()
+                    histograms[var][channel][qcdRegion][cat].append(hist)
+                    histNames[var][channel][qcdRegion][cat] = histName
 
 if __name__ == "__main__":
     import argparse
@@ -255,7 +253,6 @@ if __name__ == "__main__":
                 elif(key.endswith('_Valid')):
                     var_list = []
                     dfWrapped_key.CreateFromDelta(var_list, dfWrapped_central.colNames)
-                    #print(f"nRuns for central _Valid is {dfWrapped_central.df.GetNRuns()}")
                 elif(key.endswith('_nonValid')):
                     pass
                 else:
@@ -274,18 +271,23 @@ if __name__ == "__main__":
             if not var in all_dataframes['Central'].GetColumnNames() : continue
             histograms[var]={}
             histNames[var]={}
-            for qcdRegion in QCDregions:
-                if not qcdRegion in all_dataframes['Central'].GetColumnNames() : continue
-                histograms[var][qcdRegion]={}
-                histNames[var][qcdRegion]={}
-                for cut in cuts :
-                    if cut != 'inclusive' and cut not in all_dataframes['Central'].GetColumnNames() : continue
-                    histograms[var][qcdRegion][cut]= []
-                    histNames[var][qcdRegion][cut]= []
+            for channel in channels.keys():
+                histograms[var][channel] = {}
+                histNames[var][channel] = {}
+
+                for qcdRegion in QCDregions:
+                    if not qcdRegion in all_dataframes['Central'].GetColumnNames() : continue
+                    histograms[var][channel][qcdRegion]={}
+                    histNames[var][channel][qcdRegion]={}
+                    for cat in categories :
+                        if cat != 'inclusive' and cat not in all_dataframes['Central'].GetColumnNames() : continue
+                        histograms[var][channel][qcdRegion][cat]= []
+                        histNames[var][channel][qcdRegion][cat]= []
 
         for name in all_dataframes.keys():
             histName = f"{args.dataset}_{name}"
-            createHistDict(all_dataframes[name], histName, histograms, histNames, QCDregions, cuts)
+            print(histName)
+            createHistDict(all_dataframes[name], histName, histograms, histNames)
 
 
 

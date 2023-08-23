@@ -6,8 +6,10 @@ import Common.Utilities as Utilities
 
 deepTauYears = {'v2p1':'2017','v2p5':'2018'}
 QCDregions = ['OS_Iso', 'SS_Iso', 'OS_AntiIso', 'SS_AntiIso']
-cuts = ['res2b', 'res1b', 'inclusive', 'boosted']
-
+categories = ['res2b', 'res1b', 'inclusive']#, 'boosted']
+#categories = ['res2b', 'res1b', 'inclusive', 'boosted']
+channels = {'eTau':13, 'muTau':23, 'tauTau':33}
+triggers = {'eTau':'HLT_singleEle', 'muTau':'HLT_singleMu', 'tauTau':"HLT_ditau"}
 
 col_type_dict = {
   'Float_t':'float',

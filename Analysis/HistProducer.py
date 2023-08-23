@@ -96,8 +96,8 @@ def merge_sameNameHistos(hist_list,histName):
     titlesList = {}
     for hist_ptr in hist_list:
         hist = hist_ptr.GetValue()
-        current_uncName = histName
-        print(histName)
+        current_uncName = histName[hist_list.index(hist_ptr)]
+        print(current_uncName)
         current_uncName_splitted = current_uncName.split("_")
         current_uncName_noSuffixNoPrefix_splitted = uncName.split("_")[1:len(current_uncName_splitted)-1]
         current_uncName_noSuffix = '_'.join(p for p in current_uncName_splitted[0:len(current_uncName_splitted)-1])
@@ -166,9 +166,10 @@ def GetWeight(cat, channel, btag_wp):
     total_weight = '*'.join(weights_to_apply)
     return total_weight
 
+def GetRelativeWeights(column_names):
+    return [col for col in column_names if "weight" in col and "rel" in col]
 
-
-def createHistDict(df, histName, histograms, histNames):
+def createHistDict(df, histName, histograms, histNames,rel_weights):
     for qcdRegion in QCDregions:
         df_qcd = df.Filter(qcdRegion)
         for cat in categories :
@@ -181,7 +182,11 @@ def createHistDict(df, histName, histograms, histNames):
                     total_weight_expression = GetWeight(cat, channel, "Medium")
                     hist = df_channel.Define("total_total_weight", f"{total_weight_expression}").Histo1D(model, var, "total_total_weight" )#.GetValue()
                     histograms[var][channel][qcdRegion][cat].append(hist)
-                    histNames[var][channel][qcdRegion][cat] = histName
+                    histNames[var][channel][qcdRegion][cat].append(histName)
+                    for rel_weight in rel_weights:
+                        hist_relative_weight = df_channel.Define(f"total_total_relative_weight_{rel_weight}", f"{total_weight_expression}*{rel_weight}").Histo1D(model, var, f"total_total_relative_weight_{rel_weight}" )#.GetValue()
+                        histograms[var][channel][qcdRegion][cat].append(hist_relative_weight)
+                        histNames[var][channel][qcdRegion][cat].append(f"{histName}_{rel_weight}")
 
 if __name__ == "__main__":
     import argparse
@@ -265,7 +270,8 @@ if __name__ == "__main__":
                 test_idx+=1
 
         all_dataframes['Central'] = PrepareDfWrapped(dfWrapped_central).df
-
+        central_colNames = [str(col) for col in all_dataframes['Central'].GetColumnNames()]
+        weights_central = GetRelativeWeights(central_colNames)
 
         for var in hist_cfg_dict.keys():
             if not var in all_dataframes['Central'].GetColumnNames() : continue
@@ -287,7 +293,10 @@ if __name__ == "__main__":
         for name in all_dataframes.keys():
             histName = f"{args.dataset}_{name}"
             print(histName)
-            createHistDict(all_dataframes[name], histName, histograms, histNames)
+            weights_relative = []
+            if name == "Central":
+                weights_relative = weights_central
+            createHistDict(all_dataframes[name], histName, histograms, histNames,weights_relative)
 
 
 

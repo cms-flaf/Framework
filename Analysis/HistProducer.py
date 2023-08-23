@@ -2,7 +2,8 @@ import ROOT
 import sys
 import os
 import math
-
+import shutil
+from RunKit.sh_tools import sh_call
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
@@ -83,8 +84,6 @@ class DataFrameBuilder:
         for opt in options:
             print(opt)
             print(all_weights[opt])
-    #def CreateShiftDfForNormWeights(self, dataframe, var):
-    #    dataframe = dataframe.Vary(var, f"""RVecF{{ {var}*{weight_variables[0]}}}""", [''])
 
 def createModel(hist_cfg, var):
     hists = {}
@@ -110,13 +109,14 @@ def GetKeyNames(filee, dir = "" ):
         filee.cd(dir)
         return [key.GetName() for key in ROOT.gDirectory.GetListOfKeys()]
 
-def merge_sameNameHistos(hist_list):
+def merge_sameNameHistos(hist_list,histName):
     uncName = ""
     newHist = ROOT.TH1F()
     new_histList = []
     titlesList = {}
-    for hist in hist_list:
-        current_uncName = hist.GetTitle()
+    for hist_ptr in hist_list:
+        hist = hist_ptr.GetValue()
+        current_uncName = histName
         current_uncName_splitted = current_uncName.split("_")
         current_uncName_noSuffixNoPrefix_splitted = uncName.split("_")[1:len(current_uncName_splitted)-1]
         current_uncName_noSuffix = '_'.join(p for p in current_uncName_splitted[0:len(current_uncName_splitted)-1])
@@ -136,22 +136,23 @@ def merge_sameNameHistos(hist_list):
     return new_histList
 
 
-def SaveHisto(outFile, directories_names, current_path=None):
+def SaveHisto(outFile, directories_names, histNames, current_path=None):
     if current_path is None:
         current_path = []
     for key, value in directories_names.items():
         current_path.append(key)
+        value_name = histNames[key]
         if isinstance(value, dict):
             subdir = outFile.GetDirectory("/".join(current_path))
             if not subdir:
                 subdir = outFile.mkdir("/".join(current_path))
-            SaveHisto(outFile, value, current_path)
+            SaveHisto(outFile, value,  value_name, current_path)
         elif isinstance(value, list):
             subdir = outFile.GetDirectory("/".join(current_path))
             if not subdir:
                 subdir = outFile.mkdir("/".join(current_path))
             outFile.cd("/".join(current_path))
-            new_values = merge_sameNameHistos(value)
+            new_values = merge_sameNameHistos(value, value_name)
             for val in new_values:
                 val.Write()
         current_path.pop()
@@ -166,19 +167,33 @@ def PrepareDfWrapped(dfWrapped):
 def createCentralQuantities(df_central, central_col_types, central_columns):
     tuple_maker = ROOT.analysis.MapCreator(*central_col_types)(df_central)
     tuple_maker.CleanCentral()
-    tuple_maker.processCentral(Utilities.ListToVector(central_columns))
     tuple_maker.CleanCentralVec()
+    tuple_maker.processCentral(Utilities.ListToVector(central_columns))
+    #print(f"nRuns [1] for df central is {df_central.GetNRuns()}")
     tuple_maker.getEventIdxFromShifted()
+    #print(f"nRuns [2] for df central is {df_central.GetNRuns()}")
 
+def createHistDict(df, histName, histograms, histNames, QCDregions, cuts):
+    for qcdRegion in QCDregions:
+        df_qcd = df.Filter(qcdRegion)
+        for cut in cuts :
+            if cut != 'inclusive' and cut not in df_qcd.GetColumnNames() : continue
+            df_cut = df_qcd if cut=='inclusive' else df_qcd.Filter(cut)
+            for var in hist_cfg_dict.keys():
+                model = createModel(hist_cfg_dict, var)
+                hist = df_cut.Histo1D(model, var)#.GetValue()
+                histograms[var][qcdRegion][cut].append(hist)
+                histNames[var][qcdRegion][cut] = histName
 
 if __name__ == "__main__":
     import argparse
     import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument('--inputDir', required=True, type=str)
-    parser.add_argument('--dataset', required=False, type=str, default='TTTo2L2Nu')
+    parser.add_argument('--dataset', required=True, type=str)
     parser.add_argument('--outDir', required=False, type=str)
     parser.add_argument('--test', required=False, type=bool, default=False)
+    parser.add_argument('--nFiles', required=False, type=int, default=-1)
     parser.add_argument('--deepTauVersion', required=False, type=str, default='v2p1')
     parser.add_argument('--compute_unc_variations', type=bool, default=False)
     args = parser.parse_args()
@@ -188,11 +203,18 @@ if __name__ == "__main__":
     header_path_Skimmer = os.path.join(headers_dir, "HistHelper.h")
     ROOT.gInterpreter.Declare(f'#include "{header_path_Skimmer}"')
     inFiles = [os.path.join(args.inputDir, fileIn) for fileIn in os.listdir(args.inputDir)]
+    if not os.path.isdir(args.outDir):
+        os.makedirs(args.outDir)
     allOutFiles = {}
     for inFile in os.listdir(args.inputDir):
         inFile_path = os.path.join(args.inputDir,inFile)
         print(f"computing histoMaker for file {inFile_path}")
-        inFile_idx = inFile.split('.')[0].split('_')[1]
+        inFile_idx_list = inFile.split('.')[0].split('_')
+        #print(len(inFile_idx_list))
+        inFile_idx = inFile_idx_list[1] if len(inFile_idx_list)>1 else 0
+        #print(inFile_idx)
+        if args.nFiles > 0 and inFile_idx+1 == args.nFiles:
+            break
         fileToOpen = ROOT.TFile(inFile_path, 'READ')
         keys= []
         for key in fileToOpen.GetListOfKeys():
@@ -204,21 +226,36 @@ if __name__ == "__main__":
         fileToOpen.Close()
 
         dfWrapped_central = DataFrameBuilder(ROOT.RDataFrame('Events', inFile_path), args.deepTauVersion)
+
         all_dataframes={}
+        # create hist dict
+        hist_cfg_dict = {}
+        hist_cfg = "config/plot/histograms.yaml"
+        with open(hist_cfg, 'r') as f:
+            hist_cfg_dict = yaml.safe_load(f)
+        vars_to_plot = list(hist_cfg_dict.keys())
+        histograms = {}
+        histNames = {}
+
+        # *********************************************************************
         test_idx = 0
         if args.compute_unc_variations:
+            #print(f"nRuns for central in general [0] is {dfWrapped_central.df.GetNRuns()}")
             createCentralQuantities(dfWrapped_central.df, dfWrapped_central.colTypes, dfWrapped_central.colNames)
+            #print(f"nRuns for central in general [1] is {dfWrapped_central.df.GetNRuns()}")
             print("Preparing uncertainty variation dataframes")
             for key in keys:
+                #print(key)
                 if args.test and test_idx>5:
                     continue
-                print(key)
                 dfWrapped_key = DataFrameBuilder(ROOT.RDataFrame(key, inFile_path))
                 if(key.endswith('_noDiff')):
                     dfWrapped_key.GetEventsFromShifted(dfWrapped_central.df)
+                    #print(f"nRuns for central noDiff is {dfWrapped_central.df.GetNRuns()}")
                 elif(key.endswith('_Valid')):
                     var_list = []
                     dfWrapped_key.CreateFromDelta(var_list, dfWrapped_central.colNames)
+                    #print(f"nRuns for central _Valid is {dfWrapped_central.df.GetNRuns()}")
                 elif(key.endswith('_nonValid')):
                     pass
                 else:
@@ -229,60 +266,62 @@ if __name__ == "__main__":
                 #print(treeName)
                 all_dataframes[treeName]= PrepareDfWrapped(dfWrapped_key).df
                 test_idx+=1
+
         all_dataframes['Central'] = PrepareDfWrapped(dfWrapped_central).df
-        # create hist dict
-        hist_cfg_dict = {}
-        hist_cfg = "config/plot/histograms.yaml"
-        with open(hist_cfg, 'r') as f:
-            hist_cfg_dict = yaml.safe_load(f)
-        vars_to_plot = list(hist_cfg_dict.keys())
-        histograms = {}
+
+
         for var in hist_cfg_dict.keys():
-            print(f"creating hist dict for var {var}")
             if not var in all_dataframes['Central'].GetColumnNames() : continue
             histograms[var]={}
+            histNames[var]={}
             for qcdRegion in QCDregions:
                 if not qcdRegion in all_dataframes['Central'].GetColumnNames() : continue
                 histograms[var][qcdRegion]={}
+                histNames[var][qcdRegion]={}
                 for cut in cuts :
                     if cut != 'inclusive' and cut not in all_dataframes['Central'].GetColumnNames() : continue
                     histograms[var][qcdRegion][cut]= []
-        if not os.path.isdir(args.outDir):
-            os.makedirs(args.outDir)
+                    histNames[var][qcdRegion][cut]= []
+
+        for name in all_dataframes.keys():
+            histName = f"{args.dataset}_{name}"
+            createHistDict(all_dataframes[name], histName, histograms, histNames, QCDregions, cuts)
+
+
 
 
         for var in hist_cfg_dict.keys():
-            finalDir = os.path.join(args.outDir, var)
-            print(f"the final file name will be {finalDir}/tmp_{args.dataset}_{inFile_idx}.root")
             if var not in allOutFiles.keys():
                 allOutFiles[var] = []
+            finalDir = os.path.join(args.outDir, var)
             allOutFiles[var].append(f'{finalDir}/tmp_{args.dataset}_{inFile_idx}.root')
-            finalFile = ROOT.TFile(f'{finalDir}/tmp_{args.dataset}_{inFile_idx}.root','RECREATE')
             if not os.path.isdir(finalDir):
                 os.makedirs(finalDir)
-            for name in all_dataframes.keys():
-                print(f"creating hist dict for var {var} and for dataframe {name}")
-                histName = f"{args.dataset}_{name}"
-                print(f"the final hist name will be {histName}")
-                for qcdRegion in QCDregions:
-                    df_qcd = all_dataframes[name].Filter(qcdRegion)
-                    for cut in cuts :
-                        if cut != 'inclusive' and cut not in df_qcd.GetColumnNames() : continue
-                        df_cut = df_qcd if cut=='inclusive' else df_qcd.Filter(cut)
-                        model = createModel(hist_cfg_dict, var)
-                        hist = df_cut.Histo1D(model, var).GetValue()
-                        hist.GetXaxis().SetTitle()
-                        hist.SetName(histName)
-                        hist.SetTitle(histName)
-                        histograms[var][qcdRegion][cut].append(hist)
-
-            SaveHisto(finalFile, histograms[var], current_path=None)
+            finalDir = os.path.join(args.outDir, var)
+            #print(f"the final file name will be {finalDir}/tmp_{args.dataset}_{inFile_idx}.root")
+            finalFile = ROOT.TFile(f'{finalDir}/tmp_{args.dataset}_{inFile_idx}.root','RECREATE')
+            SaveHisto(finalFile, histograms[var], histNames[var], current_path=None)
         finalFile.Close()
+        '''
+        for name,df in all_dataframes.items():
+            print(name)
+            print(df.GetNRuns())
+        '''
 
     for var in hist_cfg_dict.keys():
         finalDir = os.path.join(args.outDir, var)
-        outFileName = f'{finalDir}/{args.dataset}_{inFile_idx}.root'
-        hadd_str = f'hadd -f209 -j -O {outFileName} '
+        outFileName = f'{finalDir}/{args.dataset}.root'
+        hadd_str = f'hadd -f {outFileName} '
         hadd_str += ' '.join(f for f in allOutFiles[var])
-        print(hadd_str)
+        if args.test : print(f'hadd_str is {hadd_str}')
+        if len(allOutFiles[var]) > 1:
+            sh_call([hadd_str], True)
+            if os.path.exists(outFileName):
+                for histFile in allOutFiles[var]:# + [outFileCentralName]:
+                    if args.test : print(histFile)
+                    if histFile == outFileName: continue
+                    os.remove(histFile)
+        else:
+            shutil.move(allOutFiles[var][0],outFileName)
+
 

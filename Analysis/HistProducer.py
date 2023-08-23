@@ -322,11 +322,11 @@ if __name__ == "__main__":
             finalFile = ROOT.TFile(f'{finalDir}/tmp_{args.dataset}_{inFile_idx}.root','RECREATE')
             SaveHisto(finalFile, histograms[var], histNames[var], current_path=None)
         finalFile.Close()
-
+        '''
         for name,df in all_dataframes.items():
             print(name)
             print(df.GetNRuns())
-
+        '''
     for var in vars_to_plot:
         finalDir = os.path.join(args.outDir, var)
         outFileName = f'{finalDir}/{args.dataset}.root'

@@ -86,7 +86,7 @@ if __name__ == "__main__":
                 else:
                     obj_desc.objsToMerge.Add(obj)
 
-    tmpFileName = args.outputFile + '.tmp.root'
+    tmpFileName = args.outFile + '.tmp.root'
     outputFile = ROOT.TFile(tmpFileName, "RECREATE")
     for obj_name, obj_desc in objects.items():
         if obj_desc.obj_type != "TH1":

@@ -53,9 +53,10 @@ class DataFrameBuilder:
                                      """)
         self.df=df_final
 
-    def CreateFromDelta(self,var_list,central_columns):
+    def CreateFromDelta(self,var_list,central_columns,central_col_types):
         for var_idx,var_name in enumerate(self.colNames):
-            if not var_name.endswith("Diff"): continue
+            if not var_name.endswith("Diff"):
+                continue
             var_name_forDelta = var_name.split("Diff")[0]
             central_col_idx = central_columns.index(var_name_forDelta)
             if central_columns[central_col_idx]!=var_name_forDelta:
@@ -63,6 +64,13 @@ class DataFrameBuilder:
             self.df = self.df.Define(f"{var_name_forDelta}", f"""analysis::FromDelta({var_name},
                                      analysis::GetEntriesMap()[entryIndex]->GetValue<{col_type_dict[self.colTypes[var_idx]]}>({central_col_idx}) )""")
             var_list.append(f"{var_name_forDelta}")
+        for central_col_idx,central_col in enumerate(central_columns):
+            if central_col in var_list or central_col in self.colNames: continue
+            if central_col != 'channelId' : continue # this is for a bugfix that I still haven't figured out !!
+            if( 'Vec' in central_col_types[central_col_idx]):
+                print(f"{central_col} is vec type")
+                continue
+            self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[entryIndex]->GetValue<{central_col_types[central_col_idx]}>({central_col_idx})""")
 
 
 def createModel(hist_cfg, var):
@@ -245,7 +253,6 @@ if __name__ == "__main__":
         histNames = {}
 
         # *********************************************************************
-        '''
         test_idx = 0
         if args.compute_unc_variations:
             #print(f"nRuns for central in general [0] is {dfWrapped_central.df.GetNRuns()}")
@@ -262,7 +269,7 @@ if __name__ == "__main__":
                     #print(f"nRuns for central noDiff is {dfWrapped_central.df.GetNRuns()}")
                 elif(key.endswith('_Valid')):
                     var_list = []
-                    dfWrapped_key.CreateFromDelta(var_list, dfWrapped_central.colNames)
+                    dfWrapped_key.CreateFromDelta(var_list, dfWrapped_central.colNames, dfWrapped_central.colTypes)
                 elif(key.endswith('_nonValid')):
                     pass
                 else:
@@ -273,8 +280,6 @@ if __name__ == "__main__":
                 #print(treeName)
                 all_dataframes[treeName]= PrepareDfWrapped(dfWrapped_key).df
                 test_idx+=1
-        '''
-
         all_dataframes['Central'] = PrepareDfWrapped(dfWrapped_central).df
         central_colNames = [str(col) for col in all_dataframes['Central'].GetColumnNames()]
         weights_central = GetRelativeWeights(central_colNames)
@@ -297,11 +302,10 @@ if __name__ == "__main__":
                         histNames[var][channel][qcdRegion][cat]= []
 
         for name in all_dataframes.keys():
-            histName = f"{args.dataset}_{name}"
             weights_relative = []
             if name == "Central" and args.compute_rel_weights == True:
                 weights_relative = weights_central
-            createHistDict(all_dataframes[name], histName, histograms, histNames,weights_relative)
+            createHistDict(all_dataframes[name], name, histograms, histNames,weights_relative)
 
 
 
@@ -338,5 +342,3 @@ if __name__ == "__main__":
                     os.remove(histFile)
         else:
             shutil.move(allOutFiles[var][0],outFileName)
-
-

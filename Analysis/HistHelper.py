@@ -16,6 +16,7 @@ col_type_dict = {
   'Bool_t':'bool',
   'Int_t' :'int',
   'ULong64_t' :'unsigned long long',
+  'Long64_t' : 'long long',
   'Long_t' :'long',
   'UInt_t' :'unsigned int',
   'Char_t' : 'char',

@@ -12,7 +12,6 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
 
     def create_branch_map(self):
-        self.load_sample_configs()
         n = 0
         branches = {}
         for sample_name in sorted(self.samples.keys()):
@@ -45,7 +44,6 @@ class InputFileTask(Task, law.LocalWorkflow):
     max_files_per_job = luigi.IntParameter(default=1, description="maximum number of input files per job")
 
     def create_branch_map(self):
-        self.load_sample_configs()
         branches = {}
         for n, sample_name in enumerate(sorted(self.samples.keys())):
             branches[n] = sample_name
@@ -88,7 +86,6 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return [ AnaCacheTask.req(self, branch=sample_id, max_runtime=AnaCacheTask.max_runtime._default, branches=()), InputFileTask.req(self, branch=sample_id, workflow='local', branches=()) ]
 
     def create_branch_map(self):
-        self.load_sample_configs()
         n = 0
         branches = {}
         for sample_id, sample_name in enumerate(sorted(self.samples.keys())):
@@ -164,7 +161,6 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             idx: AnaTupleTask.req(self, branches=tuple((br,) for br in branches))
             for idx, branches in prod_branches.items()
         }
-        print(prod_branches)
         return workflow_dict
 
     def requires(self):

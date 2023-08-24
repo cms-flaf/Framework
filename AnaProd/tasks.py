@@ -183,10 +183,11 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return law.LocalFileTarget(out)
 
     def run(self):
-        inputs = ' '.join(x.path for x in self.input())
         producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
-        tmpFile = os.path.join(self.central_anaTuples_path(), 'data', 'data.root')
-        dataMerge_cmd = ['python3', producer_dataMerge, inputs, '--outFile', tmpFile ]
+        tmpFile = os.path.join(self.central_anaTuples_path(), 'data', 'data_tmp.root')
+        dataMerge_cmd = ['python3', producer_dataMerge]
+        dataMerge_cmd.extend([f.path for f in self.input()])
+        dataMerge_cmd.extend(['--outFile', tmpFile ])
         sh_call(dataMerge_cmd,verbose=1)
         finalFile = self.output().path
         if self.test: print(f"finalFile is {finalFile}")
@@ -225,13 +226,17 @@ class HistProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         if not os.path.isdir(self.central_Histograms_path()):
             os.makedirs(self.central_Histograms_path())
         sample_name, sample_id = self.branch_data
-        out = os.path.join(self.central_Histograms_path(), sample_name)
-        return law.LocalDirectoryTarget(out)
+        first_dir = 'tau1_pt'
+        fileName = f'{sample_name}.root'
+        outFile = os.path.join(self.central_Histograms_path(),first_dir,fileName)
+        return law.LocalFileTarget(outFile)
 
     def run(self):
         sample_name, sample_id = self.branch_data
         print(sample_name)
+        hist_config = os.path.join(self.ana_path(), 'config', 'plot','histograms.yaml')
+        sample_config = self.sample_config
         HistProducer = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample.py')
-        outDir = self.output().path
-        HistProducer_cmd = ['python3', HistProducer,'--inputDir', self.central_anaTuples_path(), '--dataset', sample_name, '--histDir', self.central_Histograms_path() , '--compute_unc_variations', 'True', '--compute_rel_weights', 'True']
+        HistProducer_cmd = ['python3', HistProducer,'--inputDir', self.central_anaTuples_path(), '--dataset', sample_name, '--histDir', self.central_Histograms_path() ,
+                            '--compute_unc_variations', 'True', '--compute_rel_weights', 'True','--histConfig', hist_config,'--sampleConfig', sample_config]
         sh_call(HistProducer_cmd,verbose=1)

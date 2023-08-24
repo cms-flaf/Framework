@@ -93,6 +93,7 @@ if __name__ == "__main__":
     parser.add_argument('--deepTauVersion', required=False, type=str, default='v2p1')
     parser.add_argument('--compute_unc_variations', type=bool, default=False)
     parser.add_argument('--compute_rel_weights', type=bool, default=False)
+    parser.add_argument('--histConfig', required=True, type=str)
     args = parser.parse_args()
 
     headers_dir = os.path.dirname(os.path.abspath(__file__))
@@ -102,8 +103,8 @@ if __name__ == "__main__":
     if not os.path.isdir(args.outDir):
         os.makedirs(args.outDir)
     hist_cfg_dict = {}
-    hist_cfg = "config/plot/histograms.yaml"
-    with open(hist_cfg, 'r') as f:
+    #hist_cfg = "config/plot/histograms.yaml"
+    with open(args.histConfig, 'r') as f:
         hist_cfg_dict = yaml.safe_load(f)
     vars_to_plot = list(hist_cfg_dict.keys())
 

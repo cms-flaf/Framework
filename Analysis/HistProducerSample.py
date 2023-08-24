@@ -22,18 +22,20 @@ if __name__ == "__main__":
     parser.add_argument('--dataset', required=True, type=str)
     parser.add_argument('--compute_unc_variations', type=bool, default=False)
     parser.add_argument('--compute_rel_weights', type=bool, default=False)
+    parser.add_argument('--histConfig', required=True, type=str)
+    parser.add_argument('--sampleConfig', required=True, type=str)
     args = parser.parse_args()
 
     sample_cfg_dict = {}
-    sample_cfg = "config/samples_Run2_2018.yaml"
-    with open(sample_cfg, 'r') as f:
+    #sample_cfg = "config/samples_Run2_2018.yaml"
+    with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
 
     if not os.path.isdir(args.histDir):
         os.makedirs(args.histDir)
     hist_cfg_dict = {}
-    hist_cfg = "config/plot/histograms.yaml"
-    with open(hist_cfg, 'r') as f:
+    #hist_cfg = "config/plot/histograms.yaml"
+    with open(args.histConfig, 'r') as f:
         hist_cfg_dict = yaml.safe_load(f)
     vars_to_plot = list(hist_cfg_dict.keys())
 
@@ -50,7 +52,9 @@ if __name__ == "__main__":
         if not os.path.isdir(tmpDir):
             os.makedirs(tmpDir)
         print(inputFile)
-        cmd_list = ['python3', 'Analysis/HistProducerFile.py', '--inFile', inputFile, '--outDir', tmpDir, '--dataset', args.dataset, '--compute_unc_variations', f"{args.compute_unc_variations}", '--compute_rel_weights', f"{args.compute_rel_weights}"]
+        histProducerFile = os.path.join(os.environ['ANALYSIS_PATH'], "Analysis/HistProducerFile.py")
+        cmd_list = ['python3', histProducerFile, '--inFile', inputFile, '--outDir', tmpDir, '--dataset', args.dataset, '--compute_unc_variations',
+                    f"{args.compute_unc_variations}", '--compute_rel_weights', f"{args.compute_rel_weights}", '--histConfig', args.histConfig]
         print(cmd_list)
         if args.test:
             cmd_list.extend(['--test','True'])

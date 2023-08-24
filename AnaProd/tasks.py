@@ -183,13 +183,60 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return law.LocalFileTarget(out)
 
     def run(self):
-        inputs = ' '.join(x.path for x in self.input())
         producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
-        tmpFile = os.path.join(self.central_anaTuples_path(), 'data', 'data.root')
-        dataMerge_cmd = ['python3', producer_dataMerge, inputs, '--outFile', tmpFile ]
+        tmpFile = os.path.join(self.central_anaTuples_path(), 'data', 'data_tmp.root')
+        dataMerge_cmd = ['python3', producer_dataMerge]
+        dataMerge_cmd.extend([f.path for f in self.input()])
+        dataMerge_cmd.extend(['--outFile', tmpFile ])
         sh_call(dataMerge_cmd,verbose=1)
         finalFile = self.output().path
         if self.test: print(f"finalFile is {finalFile}")
         shutil.copy(tmpFile, finalFile)
         if os.path.exists(finalFile):
             os.remove(tmpFile)
+
+
+class HistProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
+
+    def workflow_requires(self):
+        return { "anaTuple" : AnaTupleTask.req(self, branches=())}
+
+    def requires(self):
+        sample_name, sample_id = self.branch_data
+        return [ AnaTupleTask.req(self, branch=sample_id, max_runtime=AnaTupleTask.max_runtime._default, branches=())]
+
+    def create_branch_map(self):
+        n = 0
+        branches = {}
+        anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
+        already_considered_samples = []
+        for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
+            if sample_type =='data' or 'QCD' in sample_name: continue
+            if sample_name not in already_considered_samples:
+                already_considered_samples.append(sample_name)
+            else: continue
+            branches[n] =  (sample_name, sample_id)
+            n+=1
+        branches[n+1] = ('data', 0)
+        #print(branches)
+        return branches
+
+    def output(self):
+        if not os.path.isdir(self.central_Histograms_path()):
+            os.makedirs(self.central_Histograms_path())
+        sample_name, sample_id = self.branch_data
+        first_dir = 'tau1_pt'
+        fileName = f'{sample_name}.root'
+        outFile = os.path.join(self.central_Histograms_path(),first_dir,fileName)
+        return law.LocalFileTarget(outFile)
+
+    def run(self):
+        sample_name, sample_id = self.branch_data
+        print(sample_name)
+        hist_config = os.path.join(self.ana_path(), 'config', 'plot','histograms.yaml')
+        sample_config = self.sample_config
+        HistProducer = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample.py')
+        HistProducer_cmd = ['python3', HistProducer,'--inputDir', self.central_anaTuples_path(), '--dataset', sample_name, '--histDir', self.central_Histograms_path() ,
+                            '--compute_unc_variations', 'True', '--compute_rel_weights', 'True','--histConfig', hist_config,'--sampleConfig', sample_config]
+        sh_call(HistProducer_cmd,verbose=1)

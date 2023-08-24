@@ -1,4 +1,5 @@
 import sys
+import ROOT
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
@@ -108,50 +109,117 @@ def GetValues(collection):
             collection[key] = value.GetValue()
     return collection
 
-def Estimate_QCD(histograms, sums):
-    hist_data = histograms['data']
-    sum_data = sums['data']
-    hist_data_B = hist_data['region_B']
-    n_C = sum_data['region_C']
-    n_D = sum_data['region_D']
-    for sample in histograms.keys():
-        if sample=='data' or sample in signals:
-            continue
-        # find kappa value
-        n_C -= sums[sample]['region_C']
-        n_D -= sums[sample]['region_D']
-        hist_data_B.Add(histograms[sample]['region_B'], -1)
-    kappa = n_C/n_D
-    if n_C <= 0 or n_D <= 0:
-        raise  RuntimeError(f"transfer factor <=0 ! {kappa}")
-    hist_data_B.Scale(kappa)
-    fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(hist_data_B)
-    if not fix_negative_contributions:
-        print(debug_info)
-        print(negative_bins_info)
-        raise RuntimeError("Unable to estimate QCD")
-    return hist_data_B
 
-def createHistograms(df_dict, var):
+class DataFrameBuilder:
+
+    def defineSelectionRegions(self):
+        self.df = self.df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {self.bTagWP}) + int(b2_idbtagDeepFlavB >= {self.bTagWP})")
+        self.df = self.df.Define("res1b", f"nSelBtag == 1")
+        self.df = self.df.Define("res2b", f"nSelBtag == 2")
+
+    def defineQCDRegions(self):
+        tau2_iso_var = f"tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet"
+        self.df = self.df.Define("OS", "tau1_charge*tau2_charge < 0")
+        self.df = self.df.Define("Iso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
+        self.df = self.df.Define("AntiIso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value} && !Iso")
+        self.df = self.df.Define("OS_Iso", f"OS && Iso")
+        self.df = self.df.Define("SS_Iso", f"!OS && Iso")
+        self.df = self.df.Define("OS_AntiIso", f"OS && AntiIso")
+        self.df = self.df.Define("SS_AntiIso", f"!OS && AntiIso")
+
+    def deepTauYear(self):
+        return deepTauYears[self.deepTauVersion]
+
+    def selectTrigger(self, trigger):
+        self.df = self.df.Filter(trigger)
+
+    def CreateColumnTypes(self):
+        colNames = [str(c) for c in self.df.GetColumnNames()]
+        entryIndexIdx = colNames.index("entryIndex")
+        colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
+        self.colNames = colNames
+        self.colTypes = [str(self.df.GetColumnType(c)) for c in self.colNames]
+
+    def __init__(self, df, deepTauVersion='v2p1'):
+        self.df = df
+        self.colNames=[]
+        self.colTypes=[]
+        self.deepTauVersion = deepTauVersion
+        self.bTagWP = 2
+        self.var_list = []
+        self.CreateColumnTypes()
+
+
+    def GetEventsFromShifted(self, df_central):
+        df_final = df_central.Filter(""" std::find ( analysis::GetEntriesVec().begin(), analysis::GetEntriesVec().end(),
+                                     entryIndex ) != analysis::GetEntriesVec().end()""")
+        self.df=df_final
+
+    def CreateFromDelta(self,var_list,central_columns,central_col_types):
+        for var_idx,var_name in enumerate(self.colNames):
+            if not var_name.endswith("Diff"):
+                continue
+            var_name_forDelta = var_name.removesuffix("Diff")
+            central_col_idx = central_columns.index(var_name_forDelta)
+            if central_columns[central_col_idx]!=var_name_forDelta:
+                print("ERRORE!")
+            self.df = self.df.Define(f"{var_name_forDelta}", f"""analysis::FromDelta({var_name},
+                                     analysis::GetEntriesMap()[entryIndex]->GetValue<{col_type_dict[self.colTypes[var_idx]]}>({central_col_idx}) )""")
+            var_list.append(f"{var_name_forDelta}")
+        for central_col_idx,central_col in enumerate(central_columns):
+            if central_col in var_list or central_col in self.colNames: continue
+            if central_col != 'channelId' : continue # this is for a bugfix that I still haven't figured out !!
+            if( 'Vec' in central_col_types[central_col_idx]):
+                print(f"{central_col} is vec type")
+                continue
+            self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[entryIndex]->GetValue<{central_col_types[central_col_idx]}>({central_col_idx})""")
+
+
+def createModel(hist_cfg, var):
     hists = {}
-    x_bins = plotter.hist_cfg[var]['x_bins']
-    if type(plotter.hist_cfg[var]['x_bins'])==list:
+    x_bins = hist_cfg[var]['x_bins']
+    if type(hist_cfg[var]['x_bins'])==list:
         x_bins_vec = Utilities.ListToVector(x_bins, "double")
         model = ROOT.RDF.TH1DModel("", "", x_bins_vec.size()-1, x_bins_vec.data())
     else:
         n_bins, bin_range = x_bins.split('|')
         start,stop = bin_range.split(':')
         model = ROOT.RDF.TH1DModel("", "",int(n_bins), float(start), float(stop))
-    for sample in df_dict.keys():
-        hists[sample] = {}
-        for region in QCDregions:
-            hists[sample][f"region_{region}"] = df_dict[sample].Filter(f"region_{region}").Histo1D(model,var, "weight")
-    return hists
+    return model
 
-def createSums(df_dict):
-    sums = {}
-    for sample in df_dict.keys():
-        sums[sample] = {}
-        for region in QCDregions:
-            sums[sample][f"region_{region}"] = df_dict[sample].Filter(f"region_{region}").Sum("weight")
-    return sums
+
+def GetKeyNames(filee, dir = "" ):
+        filee.cd(dir)
+        return [str(key.GetName()) for key in ROOT.gDirectory.GetListOfKeys()]
+
+
+def PrepareDfWrapped(dfWrapped):
+    dfWrapped.df = defineAllP4(dfWrapped.df)
+    dfWrapped.df = createInvMass(dfWrapped.df)
+    dfWrapped.defineQCDRegions()
+    dfWrapped.defineSelectionRegions()
+    return dfWrapped
+
+def createCentralQuantities(df_central, central_col_types, central_columns):
+    tuple_maker = ROOT.analysis.MapCreator(*central_col_types)(df_central)
+    tuple_maker.CleanCentral()
+    tuple_maker.CleanCentralVec()
+    tuple_maker.processCentral(Utilities.ListToVector(central_columns))
+    tuple_maker.getEventIdxFromShifted()
+
+def GetWeight(cat, channel, btag_wp):
+    btag_weight = "1"
+    if cat!='inclusive':
+        btag_weight = f"weight_bTagSF_{btag_wp}_Central"
+    trg_weights_dict = {
+        'eTau':["weight_tau1_TrgSF_singleEle_Central","weight_tau2_TrgSF_singleEle_Central"],
+        'muTau':["weight_tau1_TrgSF_singleMu_Central","weight_tau2_TrgSF_singleMu_Central"],
+        'tauTau':["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central"]
+        }
+    weights_to_apply = [ "weight_Jet_PUJetID_Central_b1", "weight_Jet_PUJetID_Central_b2", "weight_TauID_Central", btag_weight, "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
+    weights_to_apply.extend(trg_weights_dict[channel])
+    total_weight = '*'.join(weights_to_apply)
+    return total_weight
+
+def GetRelativeWeights(column_names):
+    return [col for col in column_names if "weight" in col and "rel" in col]

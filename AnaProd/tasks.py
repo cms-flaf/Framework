@@ -219,7 +219,8 @@ class HistProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def output(self):
         if not os.path.isdir(self.central_Histograms_path()):
             os.makedirs(self.central_Histograms_path())
-        out = self.central_Histograms_path()
+        sample_name, sample_id = self.branch_data
+        out = os.path.join(self.central_Histograms_path(), sample_name)
         return law.LocalDirectoryTarget(out)
 
     def run(self):
@@ -227,5 +228,5 @@ class HistProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         print(sample_name)
         HistProducer = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample.py')
         outDir = self.output().path
-        HistProducer_cmd = ['python3', HistProducer,'--inputDir', self.central_anaTuples_path(), '--dataset', sample_name, '----histDir', outDir , '--compute_unc_variations', 'True', '--compute_rel_weights', 'True']
+        HistProducer_cmd = ['python3', HistProducer,'--inputDir', self.central_anaTuples_path(), '--dataset', sample_name, '--histDir', self.central_Histograms_path() , '--compute_unc_variations', 'True', '--compute_rel_weights', 'True']
         sh_call(HistProducer_cmd,verbose=1)

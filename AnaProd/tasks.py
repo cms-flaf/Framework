@@ -12,7 +12,6 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
 
     def create_branch_map(self):
-        self.load_sample_configs()
         n = 0
         branches = {}
         for sample_name in sorted(self.samples.keys()):
@@ -45,7 +44,6 @@ class InputFileTask(Task, law.LocalWorkflow):
     max_files_per_job = luigi.IntParameter(default=1, description="maximum number of input files per job")
 
     def create_branch_map(self):
-        self.load_sample_configs()
         branches = {}
         for n, sample_name in enumerate(sorted(self.samples.keys())):
             branches[n] = sample_name
@@ -88,7 +86,6 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return [ AnaCacheTask.req(self, branch=sample_id, max_runtime=AnaCacheTask.max_runtime._default, branches=()), InputFileTask.req(self, branch=sample_id, workflow='local', branches=()) ]
 
     def create_branch_map(self):
-        self.load_sample_configs()
         n = 0
         branches = {}
         for sample_id, sample_name in enumerate(sorted(self.samples.keys())):
@@ -164,7 +161,6 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             idx: AnaTupleTask.req(self, branches=tuple((br,) for br in branches))
             for idx, branches in prod_branches.items()
         }
-        print(prod_branches)
         return workflow_dict
 
     def requires(self):
@@ -187,21 +183,17 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return law.LocalFileTarget(out)
 
     def run(self):
-        print("starting run")
-        print(self.input)
-        '''
-        prod_branches = self.branch_data
-        outdir_dataMerge = os.path.join(self.central_anaTuples_path(), 'data')
+        inputs = ' '.join(x.path for x in self.input())
         producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
-        finalFile = self.output().path
         tmpFile = os.path.join(outdir_dataMerge, 'data.root')
-        dataMerge_cmd = ['python3', producer_dataMerge, self.input, '--outFile', tmpFile ]
+        dataMerge_cmd = ['python3', producer_dataMerge, inputs, '--outFile', tmpFile ]
         sh_call(dataMerge_cmd,verbose=1)
+        finalFile = self.output().path
         if self.test: print(f"finalFile is {finalFile}")
         shutil.copy(tmpFile, finalFile)
         if os.path.exists(finalFile):
             os.remove(tmpFile)
-        '''
+
 
 class HistProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
@@ -214,7 +206,6 @@ class HistProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return [ AnaTupleTask.req(self, branch=sample_id, max_runtime=AnaTupleTask.max_runtime._default, branches=())]
 
     def create_branch_map(self):
-        self.load_sample_configs()
         n = 0
         branches = {}
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()

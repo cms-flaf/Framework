@@ -209,11 +209,16 @@ class HistProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         n = 0
         branches = {}
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
+        already_considered_samples = []
         for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-            if sample_type =='data': continue
+            if sample_type =='data' or 'QCD' in sample_name: continue
+            if sample_name not in already_considered_samples:
+                already_considered_samples.append(sample_name)
+            else: continue
             branches[n] =  (sample_name, sample_id)
             n+=1
         branches[n+1] = ('data', 0)
+        #print(branches)
         return branches
 
     def output(self):

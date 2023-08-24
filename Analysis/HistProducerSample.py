@@ -19,7 +19,9 @@ if __name__ == "__main__":
     parser.add_argument('--histDir', required=True, type=str)
     parser.add_argument('--test', required=False, type=bool, default=False)
     parser.add_argument('--deepTauVersion', required=False, type=str, default='v2p1')
-    parser.add_argument('--sample', required=True, type=str)
+    parser.add_argument('--dataset', required=True, type=str)
+    parser.add_argument('--compute_unc_variations', type=bool, default=False)
+    parser.add_argument('--compute_rel_weights', type=bool, default=False)
     args = parser.parse_args()
 
     sample_cfg_dict = {}
@@ -40,15 +42,16 @@ if __name__ == "__main__":
     samples_files = {}
     tmpDir = os.path.join(args.histDir, 'tmp')
 
-    sample_type = sample_cfg_dict[args.sample]['sampleType']
+    sample_type = sample_cfg_dict[args.dataset]['sampleType']
 
-    all_files = os.listdir(os.path.join(args.inputDir, args.sample))
+    all_files = os.listdir(os.path.join(args.inputDir, args.dataset))
     for single_file in all_files:
-        inputFile = os.path.join(args.inputDir, args.sample, single_file)
+        inputFile = os.path.join(args.inputDir, args.dataset, single_file)
         if not os.path.isdir(tmpDir):
             os.makedirs(tmpDir)
         print(inputFile)
-        cmd_list = ['python3', 'Analysis/HistProducerFile.py', '--inFile', inputFile, '--outDir', tmpDir, '--dataset', args.sample, '--compute_unc_variations', 'True', '--compute_rel_weights', 'True']
+        cmd_list = ['python3', 'Analysis/HistProducerFile.py', '--inFile', inputFile, '--outDir', tmpDir, '--dataset', args.dataset, '--compute_unc_variations', f"{args.compute_unc_variations}", '--compute_rel_weights', f"{args.compute_rel_weights}"]
+        print(cmd_list)
         if args.test:
             cmd_list.extend(['--test','True'])
         sh_call(cmd_list,verbose=1)
@@ -61,7 +64,7 @@ if __name__ == "__main__":
         hist_out_dir = os.path.join(args.histDir, var)
         if not os.path.isdir(hist_out_dir):
             os.makedirs(hist_out_dir)
-        outFileName = f'{hist_out_dir}/{args.sample}.root'
+        outFileName = f'{hist_out_dir}/{args.dataset}.root'
         hadd_str = f'hadd -f209 -j -O {outFileName} '
         hadd_str += ' '.join(f for f in all_out_files)
         if len(all_out_files) > 1:

@@ -213,25 +213,19 @@ class HistProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             if sample_type =='data': continue
             branches[n] =  (sample_name, sample_id)
             n+=1
+        branches[n+1] = ('data', 0)
         return branches
 
     def output(self):
-        sample_name, sample_id = self.branch_data
         if not os.path.isdir(self.central_Histograms_path()):
             os.makedirs(self.central_Histograms_path())
-        out = os.path.join(self.central_Histograms_path(), sample_name)
+        out = self.central_Histograms_path()
         return law.LocalDirectoryTarget(out)
 
     def run(self):
         sample_name, sample_id = self.branch_data
         print(sample_name)
-        '''
-        inDir = os.path.join(self.central_anaTuples_path(), sample_name)
-        HistProducer = os.path.join(self.ana_path(), 'Analysis', 'HistProducer.py')
+        HistProducer = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample.py')
         outDir = self.output().path
-        if os.path.isdir(finalDir):
-            os.remove(finalDir)
-        print(self.input)
-        HistProducer_cmd = ['python3', HistProducer,'--inputDir', inDir, '--dataset', sample_name, '--outDir', finalDir , '--compute_unc_variations', 'True', '--compute_rel_weights', 'True']
+        HistProducer_cmd = ['python3', HistProducer,'--inputDir', self.central_anaTuples_path(), '--dataset', sample_name, '----histDir', outDir , '--compute_unc_variations', 'True', '--compute_rel_weights', 'True']
         sh_call(HistProducer_cmd,verbose=1)
-        '''

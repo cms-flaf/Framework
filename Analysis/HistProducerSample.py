@@ -73,6 +73,7 @@ if __name__ == "__main__":
                     os.remove(histFile)
         else:
             shutil.move(all_out_files[0],outFileName)
+        os.rmdir(tmpDir)
 
 '''
     for var in vars_to_plot:

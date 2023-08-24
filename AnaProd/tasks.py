@@ -3,6 +3,7 @@ import luigi
 import os
 import shutil
 import time
+import yaml
 from RunKit.sh_tools import sh_call
 from RunKit.checkRootFile import checkRootFileSafe
 
@@ -226,17 +227,30 @@ class HistProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         if not os.path.isdir(self.central_Histograms_path()):
             os.makedirs(self.central_Histograms_path())
         sample_name, sample_id = self.branch_data
-        first_dir = 'tau1_pt'
+        hist_config = os.path.join(self.ana_path(), 'config', 'plot','histograms.yaml')
+        with open(hist_config, 'r') as f:
+            hist_cfg_dict = yaml.safe_load(f)
+        vars_to_plot = list(hist_cfg_dict.keys())
         fileName = f'{sample_name}.root'
-        outFile = os.path.join(self.central_Histograms_path(),first_dir,fileName)
-        return law.LocalFileTarget(outFile)
+        local_files_target = []
+        for var in vars_to_plot:
+            if not os.path.isdir( os.path.join(self.central_Histograms_path(),var)):
+                os.makedirs(os.path.join(self.central_Histograms_path(),var))
+            outFile = os.path.join(self.central_Histograms_path(),var,fileName)
+            local_files_target.append(law.LocalFileTarget(outFile))
+        return local_files_target
 
     def run(self):
         sample_name, sample_id = self.branch_data
         print(sample_name)
         hist_config = os.path.join(self.ana_path(), 'config', 'plot','histograms.yaml')
         sample_config = self.sample_config
+        with open(hist_config, 'r') as f:
+            hist_cfg_dict = yaml.safe_load(f)
+        vars_to_plot = list(hist_cfg_dict.keys())
         HistProducer = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample.py')
+        print(' '.join(x.path for x in self.output()))
+
         HistProducer_cmd = ['python3', HistProducer,'--inputDir', self.central_anaTuples_path(), '--dataset', sample_name, '--histDir', self.central_Histograms_path() ,
                             '--compute_unc_variations', 'True', '--compute_rel_weights', 'True','--histConfig', hist_config,'--sampleConfig', sample_config]
         sh_call(HistProducer_cmd,verbose=1)

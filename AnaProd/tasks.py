@@ -183,18 +183,13 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return law.LocalFileTarget(out)
 
     def run(self):
-        print("starting run")
-        print(self.input)
-        '''
-        prod_branches = self.branch_data
-        outdir_dataMerge = os.path.join(self.central_anaTuples_path(), 'data')
+        inputs = ' '.join(x.path for x in self.input())
         producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
-        finalFile = self.output().path
         tmpFile = os.path.join(outdir_dataMerge, 'data.root')
-        dataMerge_cmd = ['python3', producer_dataMerge, self.input, '--outFile', tmpFile ]
+        dataMerge_cmd = ['python3', producer_dataMerge, inputs, '--outFile', tmpFile ]
         sh_call(dataMerge_cmd,verbose=1)
+        finalFile = self.output().path
         if self.test: print(f"finalFile is {finalFile}")
         shutil.copy(tmpFile, finalFile)
         if os.path.exists(finalFile):
             os.remove(tmpFile)
-        '''

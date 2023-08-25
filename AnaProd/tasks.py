@@ -3,6 +3,7 @@ import luigi
 import os
 import shutil
 import time
+import yaml
 from RunKit.sh_tools import sh_call
 from RunKit.checkRootFile import checkRootFileSafe
 
@@ -76,7 +77,7 @@ class InputFileTask(Task, law.LocalWorkflow):
 
 
 class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 20.0)
 
     def workflow_requires(self):
         return { "anaCache" : AnaCacheTask.req(self, branches=()), "inputFile": InputFileTask.req(self,workflow='local', branches=()) }
@@ -144,8 +145,6 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             shutil.rmtree(job_home)
         print(f'anaTuple for sample {sample_name} is created in {outdir_final}')
 
-    def getBranches():
-        return AnaTupleTask.branches
 
     @staticmethod
     def getOutputDir(central_anaTuples_path, sample_name):
@@ -185,9 +184,8 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def run(self):
         producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
         tmpFile = os.path.join(self.central_anaTuples_path(), 'data', 'data_tmp.root')
-        dataMerge_cmd = ['python3', producer_dataMerge]
+        dataMerge_cmd = [ 'python3', producer_dataMerge, '--outFile', tmpFile ]
         dataMerge_cmd.extend([f.path for f in self.input()])
-        dataMerge_cmd.extend(['--outFile', tmpFile ])
         sh_call(dataMerge_cmd,verbose=1)
         finalFile = self.output().path
         if self.test: print(f"finalFile is {finalFile}")
@@ -197,7 +195,7 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 
 class HistProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)
 
     def workflow_requires(self):
         return { "anaTuple" : AnaTupleTask.req(self, branches=())}
@@ -226,17 +224,30 @@ class HistProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         if not os.path.isdir(self.central_Histograms_path()):
             os.makedirs(self.central_Histograms_path())
         sample_name, sample_id = self.branch_data
-        first_dir = 'tau1_pt'
+        hist_config = os.path.join(self.ana_path(), 'config', 'plot','histograms.yaml')
+        with open(hist_config, 'r') as f:
+            hist_cfg_dict = yaml.safe_load(f)
+        vars_to_plot = list(hist_cfg_dict.keys())
         fileName = f'{sample_name}.root'
-        outFile = os.path.join(self.central_Histograms_path(),first_dir,fileName)
-        return law.LocalFileTarget(outFile)
+        local_files_target = []
+        for var in vars_to_plot:
+            if not os.path.isdir( os.path.join(self.central_Histograms_path(),var)):
+                os.makedirs(os.path.join(self.central_Histograms_path(),var))
+            outFile = os.path.join(self.central_Histograms_path(),var,fileName)
+            local_files_target.append(law.LocalFileTarget(outFile))
+        return local_files_target
 
     def run(self):
         sample_name, sample_id = self.branch_data
         print(sample_name)
         hist_config = os.path.join(self.ana_path(), 'config', 'plot','histograms.yaml')
         sample_config = self.sample_config
+        with open(hist_config, 'r') as f:
+            hist_cfg_dict = yaml.safe_load(f)
+        vars_to_plot = list(hist_cfg_dict.keys())
         HistProducer = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample.py')
+        print(' '.join(x.path for x in self.output()))
+
         HistProducer_cmd = ['python3', HistProducer,'--inputDir', self.central_anaTuples_path(), '--dataset', sample_name, '--histDir', self.central_Histograms_path() ,
                             '--compute_unc_variations', 'True', '--compute_rel_weights', 'True','--histConfig', hist_config,'--sampleConfig', sample_config]
         sh_call(HistProducer_cmd,verbose=1)

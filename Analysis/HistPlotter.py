@@ -59,7 +59,6 @@ if __name__ == "__main__":
             for sample in all_histograms[var].keys():
                 for region in regions:
                     hists_to_plot[var][sample] = all_histograms[var][sample]['region_A']
-            hists_to_plot[var]['QCD'] = Estimate_QCD(all_histograms[var], all_sums)
             custom1= {'cat_text':'inclusive'}
             plotter.plot(var, hists_to_plot[var], f"output/plots/{var}_XMass{args.mass}_{args.version}.pdf")#, custom=custom1)
             for sample in  hists_to_plot[var].keys():

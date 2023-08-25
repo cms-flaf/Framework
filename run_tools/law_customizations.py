@@ -62,9 +62,6 @@ def select_items(all_items, filters):
     return list(sorted(selected_items))
 
 
-global_params = None
-samples = None
-
 def load_sample_configs(sample_config, period):
     global global_params
     global samples
@@ -103,20 +100,6 @@ class Task(law.Task):
         self.global_params, self.samples = load_sample_configs(self.sample_config, self.period)
 
 
-    def load_sample_configs(self):
-        with open(self.sample_config, 'r') as f:
-            samples = yaml.safe_load(f)
-
-        self.global_params = samples['GLOBAL']
-        all_samples = []
-        for key, value in samples.items():
-            if(type(value) != dict):
-                raise RuntimeError(f'Invalid sample definition period="{self.period}", sample_name="{key}"' )
-            if key != 'GLOBAL':
-                all_samples.append(key)
-        selected_samples = select_items(all_samples, self.global_params.get('sampleSelection', []))
-        self.samples = { key : samples[key] for key in selected_samples }
-
     def store_parts(self):
         return (self.__class__.__name__, self.period, self.version)
 
@@ -137,6 +120,11 @@ class Task(law.Task):
 
     def central_anaTuples_path(self):
         return os.path.join(self.central_path(), 'anaTuples', self.period, self.version)
+
+    def central_Histograms_path(self):
+        current_path_for_hists='/eos/home-v/vdamante/HH_bbtautau_resonant_Run2'
+        #return os.path.join(self.central_path(), 'histograms', self.period, self.version)
+        return os.path.join(current_path_for_hists, 'histograms', self.period, self.version)
 
     def central_anaCache_path(self):
         return os.path.join(self.central_path(), 'anaCache', self.period)

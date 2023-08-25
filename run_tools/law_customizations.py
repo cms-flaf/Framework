@@ -62,9 +62,6 @@ def select_items(all_items, filters):
     return list(sorted(selected_items))
 
 
-global_params = None
-samples = None
-
 def load_sample_configs(sample_config, period):
     global global_params
     global samples
@@ -102,20 +99,6 @@ class Task(law.Task):
         self.sample_config = os.path.join(self.ana_path(), 'config', f'samples_{self.period}.yaml')
         self.global_params, self.samples = load_sample_configs(self.sample_config, self.period)
 
-
-    def load_sample_configs(self):
-        with open(self.sample_config, 'r') as f:
-            samples = yaml.safe_load(f)
-
-        self.global_params = samples['GLOBAL']
-        all_samples = []
-        for key, value in samples.items():
-            if(type(value) != dict):
-                raise RuntimeError(f'Invalid sample definition period="{self.period}", sample_name="{key}"' )
-            if key != 'GLOBAL':
-                all_samples.append(key)
-        selected_samples = select_items(all_samples, self.global_params.get('sampleSelection', []))
-        self.samples = { key : samples[key] for key in selected_samples }
 
     def store_parts(self):
         return (self.__class__.__name__, self.period, self.version)

@@ -73,7 +73,7 @@ def createHistDict(df, histName, histograms, histNames,rel_weights):
                 df_channel = df_cat.Filter(f"""channelId == {channel_code}""").Filter(triggers[channel])
                 for var in vars_to_plot:
                     model = createModel(hist_cfg_dict, var)
-                    total_weight_expression = GetWeight(cat, channel, "Medium")
+                    total_weight_expression = GetWeight(cat, channel, "Medium") if histName != 'data' else "1"
                     hist = df_channel.Define("final_weight", f"{total_weight_expression}").Histo1D(model, var, "final_weight" )#.GetValue()
                     histograms[var][channel][qcdRegion][cat].append(hist)
                     histNames[var][channel][qcdRegion][cat].append(histName)
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     if args.test: print(f"Running on file {args.inFile}")
 
     test_idx = 0
-    if args.compute_unc_variations:
+    if args.compute_unc_variations and args.dataset != 'data':
         createCentralQuantities(dfWrapped_central.df, dfWrapped_central.colTypes, dfWrapped_central.colNames)
         if args.test: print("Preparing uncertainty variation dataframes")
         for key in keys:
@@ -180,7 +180,7 @@ if __name__ == "__main__":
 
     for name in all_dataframes.keys():
         weights_relative = []
-        if name == "Central" and args.compute_rel_weights == True:
+        if name == "Central" and args.compute_rel_weights == True and args.dataset != 'data' :
             weights_relative = weights_central
         createHistDict(all_dataframes[name], name, histograms, histNames,weights_relative)
 

@@ -42,9 +42,11 @@ if __name__ == "__main__":
     # 1 list files :
 
     samples_files = {}
-    tmpDir = os.path.join(args.histDir, 'tmp')
+    tmpDir = os.path.join(args.histDir, args.dataset,'tmp')
 
-    sample_type = sample_cfg_dict[args.dataset]['sampleType']
+    sample_type = ""
+    if(args.dataset=='data'): sample_type = 'data'
+    else: sample_type = sample_cfg_dict[args.dataset]['sampleType']
 
     all_files = os.listdir(os.path.join(args.inputDir, args.dataset))
     for single_file in all_files:
@@ -64,7 +66,10 @@ if __name__ == "__main__":
         if var not in samples_files.keys():
             samples_files[var] = {}
         hist_produced_dir = os.path.join(tmpDir, var)
-        all_out_files = [ os.path.join(hist_produced_dir, hist) for hist in os.listdir(hist_produced_dir)]
+        all_out_files = []
+        for hist in os.listdir(hist_produced_dir):
+            if args.dataset in hist:
+                all_out_files.append(os.path.join(hist_produced_dir, hist))
         hist_out_dir = os.path.join(args.histDir, var)
         if not os.path.isdir(hist_out_dir):
             os.makedirs(hist_out_dir)
@@ -80,6 +85,7 @@ if __name__ == "__main__":
                     os.remove(histFile)
         else:
             shutil.move(all_out_files[0],outFileName)
+    shutil.rmtree(os.path.join(args.histDir, args.dataset))
 
 
 '''

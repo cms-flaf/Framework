@@ -46,26 +46,6 @@ def createInvMass(df):
     df = df.Define("dR_tautau", 'ROOT::Math::VectorUtil::DeltaR(tau1_p4, tau2_p4)')
     return df
 
-def defineWeights(df_dict, use_new_weights=False, deepTauVersion='v2p1'):
-    for sample in df_dict.keys():
-        weight_names=[]
-        if sample != "data":
-            if(use_new_weights):
-                df_dict[sample] = GetNewSFs_DM(df_dict[sample],weights_to_apply, deepTauVersion)
-            '''
-            else:
-                if "weight_tauID_Central" not in weights_to_apply:
-                    weights_to_apply.append("weight_tauID_Central")
-            '''
-        for weight in weights_to_apply:
-            weight_names.append(weight if sample!="data" else "1")
-            if weight == 'weight_Central' and weight in df_dict[sample].GetColumnNames():
-                weight_names.append("1000")
-                if(sample=="TT"):
-                    weight_names.append('791. / 687.')
-        weight_str = " * ".join(weight_names)
-        df_dict[sample]=df_dict[sample].Define("weight",weight_str)
-
 def RenormalizeHistogram(histogram, norm, include_overflows=True):
     integral = histogram.Integral(0, histogram.GetNbinsX()+1) if include_overflows else histogram.Integral()
     histogram.Scale(norm / integral)
@@ -100,15 +80,6 @@ def FixNegativeContributions(histogram):
 
     RenormalizeHistogram(histogram, original_Integral, True)
     return True, ss_debug, ss_negative
-
-def GetValues(collection):
-    for key, value in collection.items():
-        if isinstance(value, dict):
-            GetValues(value)
-        else:
-            collection[key] = value.GetValue()
-    return collection
-
 
 class DataFrameBuilder:
 
@@ -188,10 +159,6 @@ def createModel(hist_cfg, var):
     return model
 
 
-def GetKeyNames(filee, dir = "" ):
-        if dir != "":
-            filee.cd(dir)
-        return [str(key.GetName()) for key in ROOT.gDirectory.GetListOfKeys()]
 
 
 def PrepareDfWrapped(dfWrapped):

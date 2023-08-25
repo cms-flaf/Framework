@@ -102,3 +102,16 @@ def ApplyConfigCustomisations(config_dict, customisations):
             cfg_entry = cfg_entry[key]
         entry_type = type(cfg_entry[key_entries[-1]])
         cfg_entry[key_entries[-1]] = entry_type(value)
+
+def GetValues(collection):
+    for key, value in collection.items():
+        if isinstance(value, dict):
+            GetValues(value)
+        else:
+            collection[key] = value.GetValue()
+    return collection
+
+def GetKeyNames(filee, dir = "" ):
+        if dir != "":
+            filee.cd(dir)
+        return [str(key.GetName()) for key in ROOT.gDirectory.GetListOfKeys()]

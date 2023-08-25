@@ -52,10 +52,8 @@ if __name__ == "__main__":
         inFile = ROOT.TFile(inFileName,"READ")
         hists_to_plot = {}
         inFile = ROOT.TFile(inFileName,"READ")
-        print(GetKeyNames())
+        print(Utilities.GetKeyNames())
         '''
-        all_histograms=GetValues(all_histograms)
-        all_sums=GetValues(all_sums)
         for var in vars:
             hists_to_plot[var] = {}
             for sample in all_histograms[var].keys():

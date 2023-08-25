@@ -74,7 +74,7 @@ if __name__ == "__main__":
     print(inputVariables)
     all_inputFiles = {}
     all_histograms = {}
-
+    inputVariables = ['tau1_pt']
     sample_cfg_dict = {}
     #sample_cfg = "config/samples_Run2_2018.yaml"
     all_samples_list = []
@@ -90,7 +90,7 @@ if __name__ == "__main__":
         for inFile in all_inputFiles[inputVar]:
             sample_name = inFile.split('.')[0]
             #if sample_name != 'GluGluToBulkGravitonToHHTo2B2Tau_M-1250' : continue
-            print(sample_name)
+            #print(sample_name)
             if "tmp" in sample_name:
                 continue
             sample_type = sample_cfg_dict[sample_name]['sampleType'] if sample_name!='data' else 'data'
@@ -145,7 +145,8 @@ if __name__ == "__main__":
                             if len(histlist) > 1:
                                 final_hist = ROOT.TH1D()
                                 #print(f'hist has {hist.GetEntries()} entries')
-                                final_hist.Add(hist for hist in histlist)
+                                for hist in histlist:
+                                    final_hist.Add(hist)
                                 #print(f'final hist has {final_hist.GetEntries()} entries')
                             #all_final_hists.append((final_hist))
                             all_histograms_inVar[sample_type][channel][QCDRegion][category][key_name] = final_hist

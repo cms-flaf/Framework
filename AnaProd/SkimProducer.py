@@ -57,7 +57,7 @@ if __name__ == "__main__":
     if args.test: print('index = ', k)
     treeName = getTreeName(systFile)
     if args.test : print(f"final TreeName is {treeName}")
-    skimEventsPython = os.path.join(os.environ['ANALYSIS_PATH'], "Analysis/SkimEvents.py")
+    skimEventsPython = os.path.join(os.environ['ANALYSIS_PATH'], "AnaProd/SkimEvents.py")
     cmd = f"""python3 {skimEventsPython} --inFileCentral {inFileCentralName} --inFileShifted {inFileShiftedName} --outDir {args.workingDir} --treeName_out {treeName}"""
     if args.test : print(cmd)
     sh_call(cmd, True)

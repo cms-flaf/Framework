@@ -118,7 +118,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         if self.test:
             anatuple_cmd.extend(['--nEvents', '100'])
         sh_call(anatuple_cmd, env=self.cmssw_env(),verbose=1)
-        producer_skimtuples = os.path.join(self.ana_path(), 'Analysis', 'SkimProducer.py')
+        producer_skimtuples = os.path.join(self.ana_path(), 'AnaProd', 'SkimProducer.py')
         outdir_skimtuples = os.path.join(job_home, 'skim', sample_name)
         outFileName = os.path.basename(input_file)
         if self.test: print(f"outFileName is {outFileName}")

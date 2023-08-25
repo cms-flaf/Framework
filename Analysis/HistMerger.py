@@ -26,9 +26,8 @@ def QCD_Estimation(histograms, all_samples_list, channel='tauTau', category='inc
         if sample==data or sample in signals:
             continue
         # find kappa value
-        hist_sample = histograms[sample][channel
+        hist_sample = histograms[sample][channel]
         hist_sample_B = hist_sample['OS_AntiIso'][category][key_name]
-                                         ]
         hist_sample_C = hist_sample['SS_Iso'][category][key_name]
         hist_sample_D = hist_sample['SS_AntiIso'][category][key_name]
         n_sample_C = hist_sample_C.Integral(0, hist_sample_C.GetNbinsX()+1)
@@ -53,23 +52,33 @@ if __name__ == "__main__":
     import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument('--inputDir', required=True, type=str)
-    parser.add_argument('--outDir', required=False, type=str)
-    #parser.add_argument('--test', required=False, type=bool, default=False)
-    #parser.add_argument('--nFiles', required=False, type=int, default=-1)
+    parser.add_argument('--test', required=False, type=bool, default=False)
     #parser.add_argument('--deepTauVersion', required=False, type=str, default='v2p1')
-    parser.add_argument('--compute_unc_variations', type=bool, default=False)
+    #parser.add_argument('--compute_unc_variations', type=bool, default=False)
+    #parser.add_argument('--compute_rel_weights', type=bool, default=False)
+    parser.add_argument('--histConfig', required=True, type=str)
+    parser.add_argument('--sampleConfig', required=True, type=str)
+
     args = parser.parse_args()
 
     headers_dir = os.path.dirname(os.path.abspath(__file__))
     ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
-    inputVariables = os.listdir(args.inputDir)
+    inputVariables = []
+
+    with open(args.histConfig, 'r') as f:
+        hist_cfg_dict = yaml.safe_load(f)
+    vars_to_plot = list(hist_cfg_dict.keys())
+    for var in os.listdir(args.inputDir):
+        if var not in vars_to_plot: continue
+        inputVariables.append(var)
+    print(inputVariables)
     all_inputFiles = {}
     all_histograms = {}
 
     sample_cfg_dict = {}
-    sample_cfg = "config/samples_Run2_2018.yaml"
+    #sample_cfg = "config/samples_Run2_2018.yaml"
     all_samples_list = []
-    with open(sample_cfg, 'r') as f:
+    with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
     for inputVar in inputVariables:
         #print(inputVar)
@@ -80,12 +89,12 @@ if __name__ == "__main__":
         k = 0
         for inFile in all_inputFiles[inputVar]:
             sample_name = inFile.split('.')[0]
-            if sample_name != 'GluGluToBulkGravitonToHHTo2B2Tau_M-1250' : continue
+            #if sample_name != 'GluGluToBulkGravitonToHHTo2B2Tau_M-1250' : continue
             print(sample_name)
             if "tmp" in sample_name:
                 continue
-            sample_type = sample_cfg_dict[sample_name]['sampleType']
-            if 'mass' in sample_cfg_dict[sample_name].keys():
+            sample_type = sample_cfg_dict[sample_name]['sampleType'] if sample_name!='data' else 'data'
+            if sample_name != 'data' and 'mass' in sample_cfg_dict[sample_name].keys():
                 mass = sample_cfg_dict[sample_name]['mass']
                 sample_type+=f'_M-{mass}'
             if sample_type not in all_histograms[inputVar].keys():
@@ -120,7 +129,7 @@ if __name__ == "__main__":
                                 all_histograms[inputVar][sample_type][channel][qcdRegion][cat][key_name].append(obj)
             inFile_root.Close()
 
-    for inVar in inputVariables
+    for inVar in inputVariables:
         # 1 merge histograms per sample:
         # let's try to fix first the var
         #inVar = 'bbtautau_mass'
@@ -146,7 +155,7 @@ if __name__ == "__main__":
         for channel in channels:
             for category in categories:
                 for key_name in all_histograms_inVar[sample_type][channel][QCDRegion][category].keys():
-                    all_histograms_inVar['QCD'][channel]['SS_Iso'][category][key_name] =  QCD_Estimation(all_histograms_inVar, all_samples_list, channel, category,key_name,'TT')
+                    all_histograms_inVar['QCD'][channel]['SS_Iso'][category][key_name] =  QCD_Estimation(all_histograms_inVar, all_samples_list, channel, category,key_name,'data')
 
         finalFileName = 'all_histograms.root'
         outFileName = os.path.join(args.inputDir, inVar, finalFileName)

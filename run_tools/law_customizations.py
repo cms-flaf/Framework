@@ -124,7 +124,7 @@ class Task(law.Task):
         return os.path.join(self.central_path(), 'anaTuples', self.period, self.version)
 
     def central_Histograms_path(self):
-        current_path_for_hists='/eos/home-v/vdamante/HH_bbtautau_resonant_Run2'
+        current_path_for_hists=os.getenv("VDAMANTE_STORAGE")
         #return os.path.join(self.central_path(), 'histograms', self.period, self.version)
         return os.path.join(current_path_for_hists, 'histograms', self.period, self.version)
 

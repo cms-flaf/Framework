@@ -131,8 +131,11 @@ action() {
     export ANALYSIS_DATA_PATH="$ANALYSIS_PATH/data"
     export X509_USER_PROXY="$ANALYSIS_DATA_PATH/voms.proxy"
     export CENTRAL_STORAGE="/eos/home-k/kandroso/cms-hh-bbtautau"
+    export VDAMANTE_STORAGE='/eos/home-v/vdamante/HH_bbtautau_resonant_Run2'
     export ANALYSIS_BIG_DATA_PATH="$CENTRAL_STORAGE/tmp/$(whoami)/data"
     #export PATH=$PATH:$HOME/.local/bin:$ANALYSIS_PATH/scripts
+
+    run_cmd source /afs/cern.ch/user/m/mrieger/public/law_sw/setup.sh
 
     run_cmd mkdir -p "$ANALYSIS_DATA_PATH"
 

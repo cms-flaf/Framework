@@ -101,7 +101,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self, force_pre_output=False):
         sample_id, sample_name, sample_type, input_file = self.branch_data
-        outFileName = os.path.basename(input_file)# input_file[0].split('/')[-1]#.strip('.root')
+        outFileName = os.path.basename(input_file)
         out = os.path.join(self.central_anaTuples_path(), sample_name,outFileName)
         return law.LocalFileTarget(out)
 

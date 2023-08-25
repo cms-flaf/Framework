@@ -61,6 +61,8 @@ def select_items(all_items, filters):
 
     return list(sorted(selected_items))
 
+_global_params = None
+_samples = None
 
 def load_sample_configs(sample_config, period):
     global global_params

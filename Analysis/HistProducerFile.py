@@ -63,7 +63,7 @@ def SaveHisto(outFile, directories_names, histNames, current_path=None):
                 val.Write()
         current_path.pop()
 
-def createHistDict(df, histName, histograms, histNames,rel_weights):
+def createHistDict(df, histName, histograms, histNames,rel_weights, dataset):
     for qcdRegion in QCDregions:
         df_qcd = df.Filter(qcdRegion)
         for cat in categories :
@@ -73,7 +73,7 @@ def createHistDict(df, histName, histograms, histNames,rel_weights):
                 df_channel = df_cat.Filter(f"""channelId == {channel_code}""").Filter(triggers[channel])
                 for var in vars_to_plot:
                     model = createModel(hist_cfg_dict, var)
-                    total_weight_expression = GetWeight(cat, channel, "Medium") if histName != 'data' else "1"
+                    total_weight_expression = GetWeight(cat, channel, "Medium") if dataset!='data' else "1"
                     hist = df_channel.Define("final_weight", f"{total_weight_expression}").Histo1D(model, var, "final_weight" )#.GetValue()
                     histograms[var][channel][qcdRegion][cat].append(hist)
                     histNames[var][channel][qcdRegion][cat].append(histName)
@@ -182,7 +182,7 @@ if __name__ == "__main__":
         weights_relative = []
         if name == "Central" and args.compute_rel_weights == True and args.dataset != 'data' :
             weights_relative = weights_central
-        createHistDict(all_dataframes[name], name, histograms, histNames,weights_relative)
+        createHistDict(all_dataframes[name], name, histograms, histNames,weights_relative, args.dataset)
 
 
 

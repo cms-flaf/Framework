@@ -65,23 +65,23 @@ _global_params = None
 _samples = None
 
 def load_sample_configs(sample_config, period):
-    global global_params
-    global samples
+    global _global_params
+    global _samples
 
-    if global_params is None:
+    if _global_params is None:
         with open(sample_config, 'r') as f:
-            samples = yaml.safe_load(f)
+            _samples = yaml.safe_load(f)
 
-        global_params = samples['GLOBAL']
+        _global_params = _samples['GLOBAL']
         all_samples = []
-        for key, value in samples.items():
+        for key, value in _samples.items():
             if(type(value) != dict):
                 raise RuntimeError(f'Invalid sample definition period="{period}", sample_name="{key}"' )
             if key != 'GLOBAL':
                 all_samples.append(key)
-        selected_samples = select_items(all_samples, global_params.get('sampleSelection', []))
-        samples = { key : samples[key] for key in selected_samples }
-    return global_params, samples
+        selected_samples = select_items(all_samples, _global_params.get('sampleSelection', []))
+        _samples = { key : _samples[key] for key in selected_samples }
+    return _global_params, _samples
 
 
 class Task(law.Task):

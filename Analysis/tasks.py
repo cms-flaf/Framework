@@ -8,6 +8,7 @@ from RunKit.sh_tools import sh_call
 from RunKit.checkRootFile import checkRootFileSafe
 
 from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
+from AnaProd.tasks import AnaTupleTask
 
 class HistProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)

@@ -87,7 +87,8 @@ if __name__ == "__main__":
                     obj_desc.objsToMerge.Add(obj)
 
     tmpFileName = args.outFile + '.tmp.root'
-    outputFile = ROOT.TFile(tmpFileName, "RECREATE", "kZLIB:4")
+    compression = ROOT.CompressionSettings(snapshotOptions.fCompressionAlgorithm, snapshotOptions.fCompressionLevel)
+    outputFile = ROOT.TFile(tmpFileName, "RECREATE", "", compression)
     for obj_name, obj_desc in objects.items():
         if obj_desc.obj_type != "TH1":
             continue

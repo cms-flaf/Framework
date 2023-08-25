@@ -103,7 +103,6 @@ if __name__ == "__main__":
     if not os.path.isdir(args.outDir):
         os.makedirs(args.outDir)
     hist_cfg_dict = {}
-    #hist_cfg = "config/plot/histograms.yaml"
     with open(args.histConfig, 'r') as f:
         hist_cfg_dict = yaml.safe_load(f)
     vars_to_plot = list(hist_cfg_dict.keys())
@@ -112,9 +111,7 @@ if __name__ == "__main__":
     if args.test: print(f"computing histoMaker for file {args.inFile}")
 
     inFile_idx_list = args.inFile.split('/')[-1].split('.')[0].split('_')
-    #print(inFile_idx_list)
     inFile_idx = inFile_idx_list[1] if len(inFile_idx_list)>1 else 0
-    #print(inFile_idx)
     fileToOpen = ROOT.TFile(args.inFile, 'READ')
     keys= []
     for key in fileToOpen.GetListOfKeys():

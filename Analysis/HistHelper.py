@@ -189,7 +189,8 @@ def createModel(hist_cfg, var):
 
 
 def GetKeyNames(filee, dir = "" ):
-        filee.cd(dir)
+        if dir != "":
+            filee.cd(dir)
         return [str(key.GetName()) for key in ROOT.gDirectory.GetListOfKeys()]
 
 
@@ -202,8 +203,6 @@ def PrepareDfWrapped(dfWrapped):
 
 def createCentralQuantities(df_central, central_col_types, central_columns):
     tuple_maker = ROOT.analysis.MapCreator(*central_col_types)(df_central)
-    tuple_maker.CleanCentral()
-    tuple_maker.CleanCentralVec()
     tuple_maker.processCentral(Utilities.ListToVector(central_columns))
     tuple_maker.getEventIdxFromShifted()
 

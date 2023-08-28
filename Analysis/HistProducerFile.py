@@ -12,6 +12,11 @@ import Common.Utilities as Utilities
 from Analysis.HistHelper import *
 
 
+def createCentralQuantities(df_central, central_col_types, central_columns):
+    tuple_maker = ROOT.analysis.MapCreator(*central_col_types)()
+    tuple_maker.processCentral(ROOT.RDF.AsRNode(df_central), Utilities.ListToVector(central_columns))
+    tuple_maker.getEventIdxFromShifted(ROOT.RDF.AsRNode(df_central))
+
 def merge_sameNameHistos(hist_list,histName):
     uncName = ""
     newHist = ROOT.TH1F()
@@ -24,6 +29,7 @@ def merge_sameNameHistos(hist_list,histName):
         current_uncName_splitted = current_uncName.split("_")
         current_uncName_noSuffixNoPrefix_splitted = uncName.split("_")[1:len(current_uncName_splitted)-1]
         current_uncName_noSuffix = '_'.join(p for p in current_uncName_splitted[0:len(current_uncName_splitted)-1])
+        if current_uncName=="Central": current_uncName_noSuffix=current_uncName
         current_uncName_noPrefix = '_'.join(p for p in current_uncName_splitted[1:])
         current_uncName_noSuffixNoPrefix = '_'.join(p for p in current_uncName_splitted[1:len(current_uncName_splitted)-1])
         hist.SetTitle(current_uncName_noSuffix)
@@ -33,10 +39,10 @@ def merge_sameNameHistos(hist_list,histName):
         if current_uncName_noSuffix in titlesList.keys():
             titlesList[current_uncName_noSuffix].Add(hist)
         else:
-            if current_uncName_noSuffix!="":
-                titlesList[current_uncName_noSuffix]= hist
-            else:
-                pass
+            if current_uncName!="Central" and current_uncName_noSuffix=='':
+                print(f'current uncname is {current_uncName} ')
+                continue
+            titlesList[current_uncName_noSuffix]= hist
     for hist_name,hist_key in titlesList.items():
         new_histList.append(hist_key)
     return new_histList
@@ -59,6 +65,8 @@ def SaveHisto(outFile, directories_names, histNames, current_path=None):
                 subdir = outFile.mkdir("/".join(current_path))
             outFile.cd("/".join(current_path))
             new_values = merge_sameNameHistos(value, value_name)
+            #print(value_name)
+            #print(new_values)
             for val in new_values:
                 val.Write()
         current_path.pop()
@@ -70,14 +78,18 @@ def createHistDict(df, histName, histograms, histNames,rel_weights, dataset):
             if cat != 'inclusive' and cat not in df_qcd.GetColumnNames() : continue
             df_cat = df_qcd if cat=='inclusive' else df_qcd.Filter(cat)
             for channel,channel_code in channels.items():
-                df_channel = df_cat.Filter(f"""channelId == {channel_code}""").Filter(triggers[channel])
+                df_channel = df_cat.Filter(f"""channelId == {channel_code}""").Filter(triggers[channel]).Filter("""b1_pt > 50 && b2_pt > 50""")
                 for var in vars_to_plot:
                     model = createModel(hist_cfg_dict, var)
                     total_weight_expression = GetWeight(cat, channel, "Medium") if dataset!='data' else "1"
+                    if dataset == 'TTToSemiLeptonic':
+                        total_weight_expression+="*2"
                     hist = df_channel.Define("final_weight", f"{total_weight_expression}").Histo1D(model, var, "final_weight" )#.GetValue()
                     histograms[var][channel][qcdRegion][cat].append(hist)
                     histNames[var][channel][qcdRegion][cat].append(histName)
+                    #print(histName)
                     for rel_weight in rel_weights:
+                        #print(rel_weight)
                         hist_relative_weight = df_channel.Define(f"final_relative_weight_{rel_weight}", f"{total_weight_expression}*{rel_weight}").Histo1D(model, var, f"final_relative_weight_{rel_weight}" )#.GetValue()
                         histograms[var][channel][qcdRegion][cat].append(hist_relative_weight)
                         histNames[var][channel][qcdRegion][cat].append(f"{histName}_{rel_weight}")
@@ -98,8 +110,10 @@ if __name__ == "__main__":
 
     headers_dir = os.path.dirname(os.path.abspath(__file__))
     ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
-    header_path_Skimmer = os.path.join(headers_dir, "HistHelper.h")
-    ROOT.gInterpreter.Declare(f'#include "{header_path_Skimmer}"')
+    #header_path_HistHelper = os.path.join(headers_dir, "include/HistHelper.h")
+    #header_path_Utilities = os.path.join(headers_dir, "include/Utilities.h")
+    ROOT.gInterpreter.Declare(f'#include "include/HistHelper.h"')
+    ROOT.gInterpreter.Declare(f'#include "include/Utilities.h"')
     if not os.path.isdir(args.outDir):
         os.makedirs(args.outDir)
     hist_cfg_dict = {}
@@ -135,8 +149,8 @@ if __name__ == "__main__":
         if args.test: print("Preparing uncertainty variation dataframes")
         for key in keys:
             #print(key)
-            if args.test and test_idx>5:
-                continue
+            #if args.test and test_idx>5:
+            #    continue
             dfWrapped_key = DataFrameBuilder(ROOT.RDataFrame(key, args.inFile))
             if(key.endswith('_noDiff')):
                 dfWrapped_key.GetEventsFromShifted(dfWrapped_central.df)
@@ -177,6 +191,9 @@ if __name__ == "__main__":
 
     for name in all_dataframes.keys():
         weights_relative = []
+        #if args.test:
+        #    print(name)
+        #    print(all_dataframes[name].Count().GetValue())
         if name == "Central" and args.compute_rel_weights == True and args.dataset != 'data' :
             weights_relative = weights_central
         createHistDict(all_dataframes[name], name, histograms, histNames,weights_relative, args.dataset)

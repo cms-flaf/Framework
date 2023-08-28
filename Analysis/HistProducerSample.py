@@ -55,8 +55,12 @@ if __name__ == "__main__":
             os.makedirs(tmpDir)
         print(inputFile)
         histProducerFile = os.path.join(os.environ['ANALYSIS_PATH'], "Analysis/HistProducerFile.py")
-        cmd_list = ['python3', histProducerFile, '--inFile', inputFile, '--outDir', tmpDir, '--dataset', args.dataset, '--compute_unc_variations',
-                    f"{args.compute_unc_variations}", '--compute_rel_weights', f"{args.compute_rel_weights}", '--histConfig', args.histConfig]
+        cmd_list = ['python3', histProducerFile, '--inFile', inputFile, '--outDir', tmpDir,
+                    '--dataset', args.dataset, '--histConfig', args.histConfig]
+        if args.compute_unc_variations:
+            cmd_list.extend(['--compute_unc_variations', 'True'])
+        if args.compute_rel_weights:
+            cmd_list.extend(['--compute_rel_weights', 'True'])
         print(cmd_list)
         if args.test:
             cmd_list.extend(['--test','True'])

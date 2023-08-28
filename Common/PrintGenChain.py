@@ -21,7 +21,7 @@ if __name__ == "__main__":
     import ROOT
     ROOT.gROOT.SetBatch(True)
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
-    ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
+    ROOT.gROOT.ProcessLine('#include "include/GenTools.h"')
     ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");")
 
     if os.path.exists(args.outFile):

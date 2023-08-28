@@ -333,7 +333,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
-    ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
+    ROOT.gROOT.ProcessLine('#include "include/GenTools.h"')
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
     if len(args.customisations)>0:

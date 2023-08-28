@@ -8,7 +8,7 @@ from RunKit.sh_tools import sh_call
 from RunKit.checkRootFile import checkRootFileSafe
 
 from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
-from AnaProd.tasks import AnaTupleTask
+from AnaProd.tasks import AnaTupleTask, DataMergeTask
 
 class HistProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)
@@ -18,6 +18,8 @@ class HistProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def requires(self):
         sample_name, sample_id = self.branch_data
+        if sample_name =='data':
+            return [ DataMergeTask.req(self,max_runtime=DataMergeTask.max_runtime._default, branches=())]
         return [ AnaTupleTask.req(self, branch=sample_id, max_runtime=AnaTupleTask.max_runtime._default, branches=())]
 
     def create_branch_map(self):

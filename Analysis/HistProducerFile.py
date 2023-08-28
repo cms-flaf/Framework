@@ -73,7 +73,10 @@ if __name__ == "__main__":
     parser.add_argument('--histConfig', required=True, type=str)
     args = parser.parse_args()
 
+    headers_dir = os.path.dirname(os.path.abspath(__file__))
     ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
+    #header_path_HistHelper = os.path.join(headers_dir, "include/HistHelper.h")
+    #header_path_Utilities = os.path.join(headers_dir, "include/Utilities.h")
     ROOT.gInterpreter.Declare(f'#include "include/HistHelper.h"')
     ROOT.gInterpreter.Declare(f'#include "include/Utilities.h"')
     if not os.path.isdir(args.outDir):
@@ -110,9 +113,13 @@ if __name__ == "__main__":
         createCentralQuantities(dfWrapped_central.df, dfWrapped_central.colTypes, dfWrapped_central.colNames)
         if args.test: print("Preparing uncertainty variation dataframes")
         for key in keys:
+            #print(key)
+            #if args.test and test_idx>5:
+            #    continue
             dfWrapped_key = DataFrameBuilder(ROOT.RDataFrame(key, args.inFile))
             if(key.endswith('_noDiff')):
                 dfWrapped_key.GetEventsFromShifted(dfWrapped_central.df)
+                #print(f"nRuns for central noDiff is {dfWrapped_central.df.GetNRuns()}")
             elif(key.endswith('_Valid')):
                 var_list = []
                 dfWrapped_key.CreateFromDelta(var_list, dfWrapped_central.colNames, dfWrapped_central.colTypes)
@@ -123,6 +130,7 @@ if __name__ == "__main__":
             keys.remove(key)
             keyName_split = key.split("_")[1:]
             treeName = '_'.join(keyName_split)
+            #print(treeName)
             all_dataframes[treeName]= PrepareDfWrapped(dfWrapped_key).df
             test_idx+=1
     all_dataframes['Central'] = PrepareDfWrapped(dfWrapped_central).df

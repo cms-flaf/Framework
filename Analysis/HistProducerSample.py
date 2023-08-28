@@ -27,14 +27,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     sample_cfg_dict = {}
-    #sample_cfg = "config/samples_Run2_2018.yaml"
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
 
     if not os.path.isdir(args.histDir):
         os.makedirs(args.histDir)
     hist_cfg_dict = {}
-    #hist_cfg = "config/plot/histograms.yaml"
     with open(args.histConfig, 'r') as f:
         hist_cfg_dict = yaml.safe_load(f)
     vars_to_plot = list(hist_cfg_dict.keys())
@@ -83,27 +81,10 @@ if __name__ == "__main__":
         if len(all_out_files) > 1:
             sh_call([hadd_str], True)
             if os.path.exists(outFileName):
-                for histFile in all_out_files:# + [outFileCentralName]:
+                for histFile in all_out_files:
                     if args.test : print(histFile)
                     if histFile == outFileName: continue
                     os.remove(histFile)
         else:
             shutil.move(all_out_files[0],outFileName)
     shutil.rmtree(os.path.join(args.histDir, args.dataset))
-
-
-'''
-    for var in vars_to_plot:
-        hist_out_dir = os.path.join(args.histDir, var)
-        for hist_file in os.listdir(hist_out_dir):
-            sample_name = hist_file.split('.')[0]
-            sample_type = sample_cfg_dict[sample_name]['sampleType']
-            if 'mass' in sample_cfg_dict[sample_name].keys():
-                mass = sample_cfg_dict[sample_name]['mass']
-                sample_type+=f'_M-{mass}'
-            elif sample_type == 'QCD' : continue
-            if sample_type not in samples_files[var].keys():
-                samples_files[var][sample_type] = []
-            samples_files[var][sample_type].append(hist_file)
-    print(samples_files)
-'''

@@ -3,9 +3,10 @@ import luigi
 import os
 import shutil
 import time
+import threading
 from RunKit.sh_tools import sh_call
 from RunKit.checkRootFile import checkRootFileSafe
-
+from RunKit.crabLaw import cond as kInit_cond,update_kinit_thread
 from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
 
 class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
@@ -76,7 +77,7 @@ class InputFileTask(Task, law.LocalWorkflow):
 
 
 class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 20.0)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
 
     def workflow_requires(self):
         return { "anaCache" : AnaCacheTask.req(self, branches=()), "inputFile": InputFileTask.req(self,workflow='local', branches=()) }
@@ -106,43 +107,51 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return law.LocalFileTarget(out)
 
     def run(self):
-        job_home, remove_job_home = self.law_job_home()
-        sample_id, sample_name, sample_type, input_file = self.branch_data
-        if self.test: print(f"sample_id= {sample_id}\nsample_name = {sample_name}\nsample_type = {sample_type}\ninput_file = {input_file}")
-        producer_anatuples = os.path.join(self.ana_path(), 'AnaProd', 'anaTupleProducer.py')
-        anaCache = os.path.join(self.central_anaCache_path(), sample_name, 'anaCache.yaml')
-        outdir_anatuples = os.path.join(job_home, 'anaTuples', sample_name)
-        anatuple_cmd = [ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', input_file,
-                    '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations',
-                    self.customisations, '--compute_unc_variations', 'True', '--store-noncentral']
-        if self.test:
-            anatuple_cmd.extend(['--nEvents', '100'])
-        sh_call(anatuple_cmd, env=self.cmssw_env(),verbose=1)
-        producer_skimtuples = os.path.join(self.ana_path(), 'AnaProd', 'SkimProducer.py')
-        outdir_skimtuples = os.path.join(job_home, 'skim', sample_name)
-        outFileName = os.path.basename(input_file)
-        if self.test: print(f"outFileName is {outFileName}")
-        if sample_type!='data':
-            skimtuple_cmd = ['python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--centralFile',outFileName, '--workingDir', outdir_skimtuples,
-                     '--outputFile', outFileName]
+        thread = threading.Thread(target=update_kinit_thread)
+        thread.start()
+        try:
+            job_home, remove_job_home = self.law_job_home()
+            sample_id, sample_name, sample_type, input_file = self.branch_data
+            if self.test: print(f"sample_id= {sample_id}\nsample_name = {sample_name}\nsample_type = {sample_type}\ninput_file = {input_file}")
+            producer_anatuples = os.path.join(self.ana_path(), 'AnaProd', 'anaTupleProducer.py')
+            anaCache = os.path.join(self.central_anaCache_path(), sample_name, 'anaCache.yaml')
+            outdir_anatuples = os.path.join(job_home, 'anaTuples', sample_name)
+            anatuple_cmd = [ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', input_file,
+                        '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations',
+                        self.customisations, '--compute_unc_variations', 'True', '--store-noncentral']
             if self.test:
-                skimtuple_cmd.extend(['--test' , 'True'])
-            sh_call(skimtuple_cmd,verbose=1)
-        tmpFile = os.path.join(outdir_skimtuples, outFileName)
-        if sample_type=='data':
-            tmpFile = os.path.join(outdir_anatuples, outFileName)
-        outdir_final = os.path.join(self.central_anaTuples_path(), sample_name)
-        os.makedirs(outdir_final, exist_ok=True)
-        finalFile = self.output().path
-        if self.test: print(f"finalFile is {finalFile}")
-        shutil.copy(tmpFile, finalFile)
-        if os.path.exists(finalFile):
-            os.remove(tmpFile)
-        else:
-            raise RuntimeError(f"file {tmpFile} was not copied in {finalFile} ")
-        if remove_job_home:
-            shutil.rmtree(job_home)
-        print(f'anaTuple for sample {sample_name} is created in {outdir_final}')
+                anatuple_cmd.extend(['--nEvents', '100'])
+            sh_call(anatuple_cmd, env=self.cmssw_env(),verbose=1)
+            producer_skimtuples = os.path.join(self.ana_path(), 'AnaProd', 'SkimProducer.py')
+            outdir_skimtuples = os.path.join(job_home, 'skim', sample_name)
+            outFileName = os.path.basename(input_file)
+            if self.test: print(f"outFileName is {outFileName}")
+            if sample_type!='data':
+                skimtuple_cmd = ['python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--centralFile',outFileName, '--workingDir', outdir_skimtuples,
+                        '--outputFile', outFileName]
+                if self.test:
+                    skimtuple_cmd.extend(['--test' , 'True'])
+                sh_call(skimtuple_cmd,verbose=1)
+            tmpFile = os.path.join(outdir_skimtuples, outFileName)
+            if sample_type=='data':
+                tmpFile = os.path.join(outdir_anatuples, outFileName)
+            outdir_final = os.path.join(self.central_anaTuples_path(), sample_name)
+            os.makedirs(outdir_final, exist_ok=True)
+            finalFile = self.output().path
+            if self.test: print(f"finalFile is {finalFile}")
+            shutil.copy(tmpFile, finalFile)
+            if os.path.exists(finalFile):
+                os.remove(tmpFile)
+            else:
+                raise RuntimeError(f"file {tmpFile} was not copied in {finalFile} ")
+            if remove_job_home:
+                shutil.rmtree(job_home)
+            print(f'anaTuple for sample {sample_name} is created in {outdir_final}')
+        finally:
+            kInit_cond.acquire()
+            kInit_cond.notify_all()
+            kInit_cond.release()
+            thread.join()
 
 
     @staticmethod

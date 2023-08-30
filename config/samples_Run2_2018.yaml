@@ -14,6 +14,11 @@ GLOBAL:
   triggerFile: config/triggers_2018.yaml
   crossSectionsFile : config/crossSections13TeV.yaml
   lumiFile: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt
+  signal_types:
+    - GluGluToRadion
+    - GluGluToBulkGraviton
+    - VBFToRadion
+    - VBFToBulkGraviton
   genuineTau_SFtype:
     eTau: dm
     muTau: dm

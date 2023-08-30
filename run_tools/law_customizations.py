@@ -8,6 +8,7 @@ import yaml
 import tempfile
 
 from RunKit.envToJson import get_cmsenv
+from RunKit.crabLaw import update_kinit
 
 law.contrib.load("htcondor")
 
@@ -157,6 +158,9 @@ class Task(law.Task):
             return os.environ['LAW_JOB_HOME'], False
         os.makedirs(self.local_path(), exist_ok=True)
         return tempfile.mkdtemp(dir=self.local_path()), True
+
+    def poll_callback(self, poll_data):
+        update_kinit(verbose=0)
 
 
 class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):

@@ -12,7 +12,7 @@ import Common.Utilities as Utilities
 from Analysis.HistHelper import *
 from Analysis.RegionDefinition import *
 scales = ['Up', 'Down']
-
+'''
 def getHistValues(histograms):
     for var in histograms.keys():
         histograms_var = histograms[var]
@@ -23,6 +23,7 @@ def getHistValues(histograms):
                 objsToMerge.Add(hist.GetValue())
                 final_hist.Merge(objsToMerge)
             histograms_var[key_tuple] = final_hist
+'''
 
 def createCentralQuantities(df_central, central_col_types, central_columns):
     tuple_maker = ROOT.analysis.MapCreator(*central_col_types)()
@@ -37,7 +38,7 @@ def SaveHists(histograms, out_file):
             merged_hist = hist_list[0].GetValue()
             for hist in hist_list[1:] :
                 merged_hist.Add(hist.GetValue())
-            hist_name = '_'.join(key[1])
+            hist_name = '_'.join(key_tuple[1])
             dir_ptr.WriteObject(merged_hist, hist_name)
 
 def GetHistogramDictFromDataframes(all_dataframes, hist_cfg_dict, dataset):
@@ -62,10 +63,9 @@ def GetHistogramDictFromDataframes(all_dataframes, hist_cfg_dict, dataset):
                 for dataframe in dataframes:
                     dataframe = dataframe.Filter(key_cut)
                     histograms_var[(key_1, key_2)].append(dataframe.Define("final_weight", f"{total_weight_expression}").Define("weight_for_hists", weight_name).Histo1D(model, var, "weight_for_hists"))
-
     return histograms
 
-def PrepareDataframes(inFile,dataset,unc_cfg_dict, sample_cfg_dict,deepTauVersion, compute_unc_variations, compute_rel_weights):
+def GetHistograms(inFile,dataset,unc_cfg_dict, sample_cfg_dict, hist_cfg_dict,deepTauVersion, compute_unc_variations, compute_rel_weights):
     fileToOpen = ROOT.TFile(inFile, 'READ')
     file_keys= []
     for key in fileToOpen.GetListOfKeys():
@@ -86,6 +86,7 @@ def PrepareDataframes(inFile,dataset,unc_cfg_dict, sample_cfg_dict,deepTauVersio
     #print(f"are we computing unc variations? {(compute_unc_variations or compute_rel_weights ) and dataset != 'data'}")
     if ( compute_unc_variations or compute_rel_weights ) and dataset != 'data':
         createCentralQuantities(dfWrapped_central.df, dfWrapped_central.colTypes, dfWrapped_central.colNames)
+        print(f"time to compute Central quantities is {datetime.now() - startTime}")
 
         for key in unc_cfg_dict.keys():
             for scale in scales:
@@ -118,7 +119,12 @@ def PrepareDataframes(inFile,dataset,unc_cfg_dict, sample_cfg_dict,deepTauVersio
                         all_dataframes[key_2].append(dfWrapped_nonValid.df)
                 else:
                     all_dataframes[key_2] = all_dataframes[key_central]
-    return all_dataframes
+
+
+    print(f"time to get all dataframes dict is {datetime.now() - startTime}")
+    all_histograms = GetHistogramDictFromDataframes(all_dataframes, hist_cfg_dict,dataset)
+    print(f"time to get all histograms dict is {datetime.now() - startTime}")
+    return all_histograms
 
 
 if __name__ == "__main__":
@@ -160,18 +166,15 @@ if __name__ == "__main__":
 
 
     #if args.test: print(f"Running on file {args.inFile}")
-    all_dataframes = PrepareDataframes(args.inFile, args.dataset, unc_cfg_dict, sample_cfg_dict,
+    all_histograms = PrepareDataframes(args.inFile, args.dataset, unc_cfg_dict, sample_cfg_dict, hist_cfg_dict,
                                        args.deepTauVersion, args.compute_unc_variations, args.compute_rel_weights)
-    #print("all dataframes prepared")
-    all_histograms = GetHistogramDictFromDataframes(all_dataframes, hist_cfg_dict, args.dataset)
-    #print("all histograms prepared")
-    getHistValues(all_histograms)
+
     for var in all_histograms.keys():
         finalDir = os.path.join(args.outDir, var)
         if not os.path.isdir(finalDir):
             os.makedirs(finalDir)
         finalFile = ROOT.TFile(f'{finalDir}/tmp_{args.dataset}_{inFile_idx}.root','RECREATE')
-        if args.test: print(f"the final file name will be {finalDir}/tmp_{args.dataset}_{inFile_idx}.root")
+        print(f"the final file name will be {finalDir}/tmp_{args.dataset}_{inFile_idx}.root")
         SaveHists(all_histograms[var], finalFile)
         finalFile.Close()
     print(f"the script took {datetime.now() - startTime}")

@@ -39,6 +39,7 @@ def SaveHists(histograms, out_file):
             for hist in hist_list[1:] :
                 merged_hist.Add(hist.GetValue())
             hist_name = '_'.join(key_tuple[1])
+            print(f"histName is {hist_name}")
             dir_ptr.WriteObject(merged_hist, hist_name)
 
 def GetHistogramDictFromDataframes(all_dataframes, hist_cfg_dict, dataset):
@@ -166,7 +167,7 @@ if __name__ == "__main__":
 
 
     #if args.test: print(f"Running on file {args.inFile}")
-    all_histograms = PrepareDataframes(args.inFile, args.dataset, unc_cfg_dict, sample_cfg_dict, hist_cfg_dict,
+    all_histograms = GetHistograms(args.inFile, args.dataset, unc_cfg_dict, sample_cfg_dict, hist_cfg_dict,
                                        args.deepTauVersion, args.compute_unc_variations, args.compute_rel_weights)
 
     for var in all_histograms.keys():

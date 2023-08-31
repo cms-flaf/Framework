@@ -12,35 +12,29 @@ import Common.Utilities as Utilities
 from Analysis.HistHelper import *
 from Analysis.RegionDefinition import *
 scales = ['Up', 'Down']
-'''
-def getHistValues(histograms):
-    for var in histograms.keys():
-        histograms_var = histograms[var]
-        for key_tuple in histograms_var:
-            final_hist = histograms_var[key_tuple][0].GetValue()
-            objsToMerge = ROOT.TList()
-            for hist in histograms_var[key_tuple][1:]:
-                objsToMerge.Add(hist.GetValue())
-                final_hist.Merge(objsToMerge)
-            histograms_var[key_tuple] = final_hist
-'''
 
 def createCentralQuantities(df_central, central_col_types, central_columns):
     tuple_maker = ROOT.analysis.MapCreator(*central_col_types)()
     tuple_maker.processCentral(ROOT.RDF.AsRNode(df_central), Utilities.ListToVector(central_columns))
     tuple_maker.getEventIdxFromShifted(ROOT.RDF.AsRNode(df_central))
 
-def SaveHists(histograms, out_file):
-    for var in histograms.keys():
-        histograms_var = histograms[var]
-        for key_tuple,hist_list in histograms_var.items():
-            dir_ptr = make_dir(out_file, key_tuple[0])
-            merged_hist = hist_list[0].GetValue()
-            for hist in hist_list[1:] :
-                merged_hist.Add(hist.GetValue())
-            hist_name = '_'.join(key_tuple[1])
-            print(f"histName is {hist_name}")
-            dir_ptr.WriteObject(merged_hist, hist_name)
+def SaveHists(histograms, out_file_name):
+    out_file= ROOT.TFile(out_file_name,'RECREATE')
+    for key_tuple,hist_list in histograms.items():
+        print(key_tuple)
+        dir_name = '/'.join(key_tuple[0])
+        dir_ptr = out_file.mkdir(dir_name,dir_name)
+        print(dir_ptr)
+        time_00 = datetime.now()
+        merged_hist = hist_list[0].GetValue()
+        for hist in hist_list[1:] :
+            merged_hist.Add(hist.GetValue())
+        hist_name = '_'.join(key_tuple[1])
+        time_01 = datetime.now()-time_00
+        print(f"time to have the hist {hist_name} is {time_01}" )
+        #print(f"histName is {hist_name}")
+        dir_ptr.WriteObject(merged_hist, f"{hist_name}")
+    out_file.Close()
 
 def GetHistogramDictFromDataframes(all_dataframes, hist_cfg_dict, dataset):
     histograms = {}
@@ -66,28 +60,19 @@ def GetHistogramDictFromDataframes(all_dataframes, hist_cfg_dict, dataset):
                     histograms_var[(key_1, key_2)].append(dataframe.Define("final_weight", f"{total_weight_expression}").Define("weight_for_hists", weight_name).Histo1D(model, var, "weight_for_hists"))
     return histograms
 
-def GetHistograms(inFile,dataset,unc_cfg_dict, sample_cfg_dict, hist_cfg_dict,deepTauVersion, compute_unc_variations, compute_rel_weights):
-    fileToOpen = ROOT.TFile(inFile, 'READ')
-    file_keys= []
-    for key in fileToOpen.GetListOfKeys():
-        if key.GetName() == 'Events' : continue
-        obj = key.ReadObj()
-        if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
-            continue
-        file_keys.append(key.GetName())
-    fileToOpen.Close()
 
+def GetDataFrameDict(inFile, file_keys, dataset, sample_cfg_dict, unc_cfg_dict, compute_unc_variations, compute_rel_weights, deepTauVersion):
     sample_type = sample_cfg_dict[dataset]['sampleType'] if dataset != 'data' else 'data'
-
-    all_dataframes={}
     dfWrapped_central = DataFrameBuilder(ROOT.RDataFrame('Events', inFile), deepTauVersion)
     key_central = (sample_type, 'Central', 'Central')
+    all_dataframes={}
     all_dataframes[key_central] = [PrepareDfWrapped(dfWrapped_central).df]
 
     #print(f"are we computing unc variations? {(compute_unc_variations or compute_rel_weights ) and dataset != 'data'}")
     if ( compute_unc_variations or compute_rel_weights ) and dataset != 'data':
+        time_1 = datetime.now()
         createCentralQuantities(dfWrapped_central.df, dfWrapped_central.colTypes, dfWrapped_central.colNames)
-        print(f"time to compute Central quantities is {datetime.now() - startTime}")
+        print(f"time to compute Central quantities is {datetime.now() - time_1}")
 
         for key in unc_cfg_dict.keys():
             for scale in scales:
@@ -120,11 +105,26 @@ def GetHistograms(inFile,dataset,unc_cfg_dict, sample_cfg_dict, hist_cfg_dict,de
                         all_dataframes[key_2].append(dfWrapped_nonValid.df)
                 else:
                     all_dataframes[key_2] = all_dataframes[key_central]
+    return all_dataframes
 
-
-    print(f"time to get all dataframes dict is {datetime.now() - startTime}")
+def GetHistograms(inFile,dataset,unc_cfg_dict, sample_cfg_dict, hist_cfg_dict,deepTauVersion, compute_unc_variations, compute_rel_weights):
+    fileToOpen = ROOT.TFile(inFile, 'READ')
+    file_keys= []
+    for key in fileToOpen.GetListOfKeys():
+        if key.GetName() == 'Events' : continue
+        obj = key.ReadObj()
+        if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
+            continue
+        file_keys.append(key.GetName())
+    fileToOpen.Close()
+    time_0 = datetime.now()
+    all_dataframes = GetDataFrameDict(inFile,file_keys, dataset, sample_cfg_dict, unc_cfg_dict, compute_unc_variations, compute_rel_weights, deepTauVersion)
+    time_2 = datetime.now()
+    print(f"time to get all dataframes dict is { time_2 - time_0}")
     all_histograms = GetHistogramDictFromDataframes(all_dataframes, hist_cfg_dict,dataset)
-    print(f"time to get all histograms dict is {datetime.now() - startTime}")
+    time_3 = datetime.now()
+    print(f"time to get all histograms dict is { time_3 - time_2}")
+
     return all_histograms
 
 
@@ -174,10 +174,9 @@ if __name__ == "__main__":
         finalDir = os.path.join(args.outDir, var)
         if not os.path.isdir(finalDir):
             os.makedirs(finalDir)
-        finalFile = ROOT.TFile(f'{finalDir}/tmp_{args.dataset}_{inFile_idx}.root','RECREATE')
+        finalFileName =f'{finalDir}/tmp_{args.dataset}_{inFile_idx}.root'
         print(f"the final file name will be {finalDir}/tmp_{args.dataset}_{inFile_idx}.root")
-        SaveHists(all_histograms[var], finalFile)
-        finalFile.Close()
+        SaveHists(all_histograms[var], finalFileName)
     print(f"the script took {datetime.now() - startTime}")
 
     #print(all_histograms)

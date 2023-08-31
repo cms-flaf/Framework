@@ -16,7 +16,7 @@ using RVecI = ROOT::VecOps::RVec<int>;
 using RVecUC = ROOT::VecOps::RVec<unsigned char>;
 
 namespace analysis {
-typedef std::variant<int,float,bool, unsigned long long,long,unsigned int, RVecI, RVecF,RVecUC> MultiType;
+typedef std::variant<int,float,bool, unsigned long long,long long, long,unsigned int, RVecI, RVecF,RVecUC> MultiType;
 
 struct Entry {
   std::vector<MultiType> var_values;
@@ -58,37 +58,35 @@ struct MapCreator {
   MapCreator& operator= (const MapCreator&) = delete;
 
 
-  static void processCentral(ROOT::RDF::RNode df_in, const std::vector<std::string>& var_names)
+  ROOT::RDF::RNode processCentral(ROOT::RDF::RNode df_in, const std::vector<std::string>& var_names)
   {
       auto df_node = df_in.Define("_entry", [=](const Args& ...args) {
               auto entry = std::make_shared<Entry>(var_names.size());
               int index = 0;
               (void) std::initializer_list<int>{ (entry->Add(index++, args), 0)... };
               return entry;
-          }, var_names);
-
-
-
-      ROOT::RDF::RNode df = df_node;
-      df.Foreach([&](const std::shared_ptr<Entry>& entry) {
-          const auto idx = entry->GetValue<int>(0);
-          if(GetEntriesMap().count(idx)) {
-              throw std::runtime_error("Duplicate entry for index " + std::to_string(idx));
-          }
-          GetEntriesMap()[idx] = entry;
-          }, {"_entry"});
-
+          }, var_names).Define("map_placeholder", [&](const std::shared_ptr<Entry>& entry) {
+              const auto idx = entry->GetValue<int>(0);
+              if(GetEntriesMap().count(idx)) {
+                throw std::runtime_error("Duplicate entry for index " + std::to_string(idx));
+              }
+              GetEntriesMap()[idx] = entry;
+              return true;
+              }, {"_entry"});
+  return df_node;
   }
-
-  static void getEventIdxFromShifted(ROOT::RDF::RNode df_in){
-    df_in.Foreach([=](Int_t entryIndex) {
+  /*
+  ROOT::RDF::RNode getEventIdxFromShifted(ROOT::RDF::RNode df_in){
+    auto df_node =  df_in.Define("idxFromShifted", [=](Int_t entryIndex) {
           //auto map = GetEntriesMap();
           if(std::find(GetEntriesVec().begin(), GetEntriesVec().end(), entryIndex) != GetEntriesVec().end()) {
               throw std::runtime_error("Duplicate entry for index " + std::to_string(entryIndex));
           }
           GetEntriesVec().push_back(entryIndex);
+          return true;
           }, {"entryIndex"});
-  }
+    return df_node;
+  }*/
 };
 
 } // namespace analysis

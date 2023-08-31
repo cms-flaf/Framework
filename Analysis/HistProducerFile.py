@@ -6,7 +6,6 @@ import shutil
 from RunKit.sh_tools import sh_call
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
-from datetime import datetime
 
 import Common.Utilities as Utilities
 from Analysis.HistHelper import *
@@ -14,120 +13,136 @@ from Analysis.RegionDefinition import *
 scales = ['Up', 'Down']
 
 def createCentralQuantities(df_central, central_col_types, central_columns):
-    tuple_maker = ROOT.analysis.MapCreator(*central_col_types)()
-    tuple_maker.processCentral(ROOT.RDF.AsRNode(df_central), Utilities.ListToVector(central_columns))
-    tuple_maker.getEventIdxFromShifted(ROOT.RDF.AsRNode(df_central))
+    map_creator = ROOT.analysis.MapCreator(*central_col_types)()
+    df_central = map_creator.processCentral(ROOT.RDF.AsRNode(df_central), Utilities.ListToVector(central_columns))
+    #df_central = map_creator.getEventIdxFromShifted(ROOT.RDF.AsRNode(df_central))
+    return df_central
+
+
+def mkdir(file, path):
+    dir_names = path.split('/')
+    current_dir = file
+    for n, dir_name in enumerate(dir_names):
+        dir_obj = current_dir.Get(dir_name)
+        full_name = f'{file.GetPath()}' + '/'.join(dir_names[:n])
+        if dir_obj:
+            if not dir_obj.IsA().InheritsFrom(ROOT.TDirectory.Class()):
+                raise RuntimeError(f'{dir_name} already exists in {full_name} and it is not a directory')
+        else:
+            dir_obj = current_dir.mkdir(dir_name)
+            if not dir_obj:
+
+                raise RuntimeError(f'Failed to create {dir_name} in {full_name}')
+        current_dir = dir_obj
+    return current_dir
 
 def SaveHists(histograms, out_file_name):
     out_file= ROOT.TFile(out_file_name,'RECREATE')
     for key_tuple,hist_list in histograms.items():
-        #print(key_tuple)
         dir_name = '/'.join(key_tuple[0])
-        out_file.mkdir(dir_name, "", True)
-        out_file.cd(dir_name)
-        #print(dir_ptr)
-        time_00 = datetime.now()
+        dir_ptr = mkdir(out_file,dir_name)
         merged_hist = hist_list[0].GetValue()
         for hist in hist_list[1:] :
             merged_hist.Add(hist.GetValue())
         isCentral = 'Central' in key_tuple[1]
         hist_name = '_'.join(key_tuple[1][:2]) if isCentral else '_'.join(key_tuple[1])
-        time_01 = datetime.now()-time_00
-        #print(f"time to have the hist {hist_name} is {time_01}" )
-        #print(f"histName is {hist_name}")
-        ROOT.gDirectory.WriteTObject(merged_hist, hist_name, "Overwrite")
+        dir_ptr.WriteTObject(merged_hist, hist_name, "Overwrite")
     out_file.Close()
 
-def GetHistogramDictFromDataframes(all_dataframes, hist_cfg_dict, dataset):
-    histograms = {}
+def GetHistogramDictFromDataframes(all_dataframes, all_histograms, key_2 , hist_cfg_dict, key_filter_dict):
     vars_to_plot = list(hist_cfg_dict.keys())
-    key_filter_dict = createKeyFilterDict()
-    for var in vars_to_plot :
-        histograms[var] = {}
+    dataframes = all_dataframes[key_2]
+    sample_type,uncName,scale = key_2
+
     for var in vars_to_plot:
         model = createModel(hist_cfg_dict, var)
-        histograms_var = histograms[var]
+        if var not in all_histograms.keys():
+            all_histograms[var] = {}
+        all_histograms_var = all_histograms[var]
         for key_1,key_cut in key_filter_dict.items():
             ch, reg, cat = key_1
-            for key_2,dataframes in all_dataframes.items():
-                #print(f"running on {key_1}, {key_2}, using cut {key_cut}")
-                sample_type,uncName,scale = key_2
-                histograms_var[(key_1, key_2)] = []
-                weight_name = unc_cfg_dict[uncName]['expression'].format(scale=scale) if uncName != 'Central' else "final_weight"
-                total_weight_expression = GetWeight(ch, cat, "Medium") if dataset!='data' else "1"
+            if (key_1, key_2) in all_histograms_var.keys(): continue
+            all_histograms_var[(key_1, key_2)] = []
+            weight_name = unc_cfg_dict[uncName]['expression'].format(scale=scale) if uncName != 'Central' else "final_weight"
+            total_weight_expression = GetWeight(ch, cat, "Medium") if sample_type!='data' else "1"
 
-                for dataframe in dataframes:
-                    dataframe = dataframe.Filter(key_cut)
-                    histograms_var[(key_1, key_2)].append(dataframe.Define("final_weight", f"{total_weight_expression}").Define("weight_for_hists", weight_name).Histo1D(model, var, "weight_for_hists"))
-    return histograms
+            for dataframe in dataframes:
+                dataframe = dataframe.Filter(key_cut)
+                all_histograms_var[(key_1, key_2)].append(dataframe.Define("final_weight", f"{total_weight_expression}").Define("weight_for_hists", weight_name).Histo1D(model, var, "weight_for_hists"))
 
 
-def GetDataFrameDict(inFile, file_keys, dataset, sample_cfg_dict, unc_cfg_dict, compute_unc_variations, compute_rel_weights, deepTauVersion):
-    sample_type = sample_cfg_dict[dataset]['sampleType'] if dataset != 'data' else 'data'
+def GetDataFrameDict(all_dataframes, key, key_central, inFile, compute_variations,is_shape,  deepTauVersion, return_central =False):
     dfWrapped_central = DataFrameBuilder(ROOT.RDataFrame('Events', inFile), deepTauVersion)
-    key_central = (sample_type, "Central", "Central")
-    all_dataframes={}
-    all_dataframes[key_central] = [PrepareDfWrapped(dfWrapped_central).df]
-    #print(dfWrapped_central.colNames)
-    #print(dfWrapped_central.colTypes)
+    if key_central not in all_dataframes:
+        all_dataframes[key_central] = [PrepareDfWrapped(dfWrapped_central).df]
 
-    #print(f"are we computing unc variations? {(compute_unc_variations or compute_rel_weights ) and dataset != 'data'}")
-    if ( compute_unc_variations or compute_rel_weights ) and dataset != 'data':
-        time_1 = datetime.now()
-        createCentralQuantities(dfWrapped_central.df, dfWrapped_central.colTypes, dfWrapped_central.colNames)
-        #print(f"time to compute Central quantities is {datetime.now() - time_1}")
+    sample_type,uncName,scale=key
+    if compute_variations and key!=key_central and sample_type!='data':
+        if key not in all_dataframes.keys():
+            all_dataframes[key] = []
 
-        for key in unc_cfg_dict.keys():
-            for scale in scales:
-                #key_2 = f"{sample_type}_{key}{scale}"
-                key_2 = (sample_type, key, scale)
-                if key_2 not in all_dataframes.keys():
-                    all_dataframes[key_2] = []
+        if is_shape :
+            fileToOpen = ROOT.TFile(inFile, 'READ')
+            file_keys= []
+            for keyFile in fileToOpen.GetListOfKeys():
+                if keyFile.GetName() == 'Events' : continue
+                obj = keyFile.ReadObj()
+                if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
+                    continue
+                file_keys.append(keyFile.GetName())
+            fileToOpen.Close()
+            treeName = f"Events_{uncName}{scale}"
+            treeName_noDiff = f"{treeName}_noDiff"
+            if treeName_noDiff in file_keys:
+                dfWrapped_noDiff = DataFrameBuilder(ROOT.RDataFrame(treeName_noDiff, inFile))
+                dfWrapped_noDiff.GetEventsFromShifted(all_dataframes[key_central][0])
+                all_dataframes[key].append(dfWrapped_noDiff.df)
 
-                if unc_cfg_dict[key]['is_shape'] :
-                    treeName = f"Events_{key}{scale}"
+            treeName_Valid = f"{treeName}_Valid"
+            if treeName_Valid in file_keys:
+                dfWrapped_Valid = DataFrameBuilder(ROOT.RDataFrame(treeName_Valid, inFile))
+                var_list = []
+                dfWrapped_Valid.CreateFromDelta(var_list, dfWrapped_central.colNames, dfWrapped_central.colTypes)
+                all_dataframes[key].append(PrepareDfWrapped(dfWrapped_Valid).df)
 
-                    treeName_noDiff = f"{treeName}_noDiff"
-                    if treeName_noDiff in file_keys:
-                        dfWrapped_noDiff = DataFrameBuilder(ROOT.RDataFrame(treeName_noDiff, inFile))
-                        dfWrapped_noDiff.GetEventsFromShifted(dfWrapped_central.df)
-                        all_dataframes[key_2].append(dfWrapped_noDiff.df)
+            treeName_nonValid = f"{treeName}_nonValid"
+            if treeName_nonValid in file_keys:
+                dfWrapped_nonValid = DataFrameBuilder(ROOT.RDataFrame(treeName_nonValid, inFile))
+                all_dataframes[key].append(PrepareDfWrapped(dfWrapped_nonValid).df)
+        else:
+            all_dataframes[key] = all_dataframes[key_central]
 
-                    treeName_Valid = f"{treeName}_Valid"
-                    if treeName_Valid in file_keys:
-                        dfWrapped_Valid = DataFrameBuilder(ROOT.RDataFrame(treeName_Valid, inFile))
-                        var_list = []
-                        dfWrapped_Valid.CreateFromDelta(var_list, dfWrapped_central.colNames, dfWrapped_central.colTypes)
-                        PrepareDfWrapped(dfWrapped_Valid)
-                        all_dataframes[key_2].append(dfWrapped_Valid.df)
+    if return_central:
+        return dfWrapped_central
 
-                    treeName_nonValid = f"{treeName}_nonValid"
-                    if treeName_nonValid in file_keys:
-                        dfWrapped_nonValid = DataFrameBuilder(ROOT.RDataFrame(treeName_nonValid, inFile))
-                        PrepareDfWrapped(dfWrapped_nonValid)
-                        all_dataframes[key_2].append(dfWrapped_nonValid.df)
-                else:
-                    all_dataframes[key_2] = all_dataframes[key_central]
-    return all_dataframes
 
 def GetHistograms(inFile,dataset,unc_cfg_dict, sample_cfg_dict, hist_cfg_dict,deepTauVersion, compute_unc_variations, compute_rel_weights):
-    fileToOpen = ROOT.TFile(inFile, 'READ')
-    file_keys= []
-    for key in fileToOpen.GetListOfKeys():
-        if key.GetName() == 'Events' : continue
-        obj = key.ReadObj()
-        if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
-            continue
-        file_keys.append(key.GetName())
-    fileToOpen.Close()
-    time_0 = datetime.now()
-    all_dataframes = GetDataFrameDict(inFile,file_keys, dataset, sample_cfg_dict, unc_cfg_dict, compute_unc_variations, compute_rel_weights, deepTauVersion)
-    time_2 = datetime.now()
-    #print(f"time to get all dataframes dict is { time_2 - time_0}")
-    all_histograms = GetHistogramDictFromDataframes(all_dataframes, hist_cfg_dict,dataset)
-    time_3 = datetime.now()
-    #print(f"time to get all histograms dict is { time_3 - time_2}")
 
+
+    sample_type = sample_cfg_dict[dataset]['sampleType'] if dataset != 'data' else 'data'
+    key_central = (sample_type, "Central", "Central")
+
+    all_dataframes = {}
+    all_histograms = {}
+    return_central = True
+    compute_variations = False
+    is_shape = False
+    key_filter_dict = createKeyFilterDict()
+
+    dfWrapped_central = GetDataFrameDict(all_dataframes, key_central, key_central, inFile, compute_variations, is_shape, deepTauVersion, return_central)
+    GetHistogramDictFromDataframes(all_dataframes, all_histograms, key_central , hist_cfg_dict, key_filter_dict)
+    compute_variations = ( compute_unc_variations or compute_rel_weights ) and dataset != 'data'
+
+    if compute_variations:
+        all_dataframes[key_central][0] = createCentralQuantities(all_dataframes[key_central][0], dfWrapped_central.colTypes, dfWrapped_central.colNames)
+        if all_dataframes[key_central][0].Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no entries for map")
+        for uncName in unc_cfg_dict.keys():
+            for scale in scales:
+                key_2 = (sample_type, uncName, scale)
+                is_shape = unc_cfg_dict[uncName]['is_shape']
+                return_central=False
+                GetDataFrameDict(all_dataframes, key_2, key_central, inFile, compute_variations, is_shape, deepTauVersion, return_central)
+                GetHistogramDictFromDataframes(all_dataframes, all_histograms, key_2 , hist_cfg_dict, key_filter_dict)
     return all_histograms,all_dataframes
 
 
@@ -147,7 +162,6 @@ if __name__ == "__main__":
     parser.add_argument('--sampleConfig', required=True, type=str)
     parser.add_argument('--furtherCut', required=False, type=str, default = "")
     args = parser.parse_args()
-    startTime = datetime.now()
     headers_dir = os.path.dirname(os.path.abspath(__file__))
     ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
     ROOT.gInterpreter.Declare(f'#include "include/HistHelper.h"')
@@ -178,10 +192,8 @@ if __name__ == "__main__":
         if not os.path.isdir(finalDir):
             os.makedirs(finalDir)
         finalFileName =f'{finalDir}/{args.dataset}_{inFile_idx}.root'
-        print(f"the final file name will be {finalDir}/{args.dataset}_{inFile_idx}.root")
+
         SaveHists(all_histograms[var], finalFileName)
-    #print(f"the script took {datetime.now() - startTime}")
-    for key,df in all_dataframes.keys:
-        print(key)
-        print(f"nRuns for df {key} are {df.GetNRuns()}")
-    #print(all_histograms)
+    for key,dataframes in all_dataframes.items():
+        for df in dataframes:
+            print(f"nRuns for df {key} are {df.GetNRuns()}")

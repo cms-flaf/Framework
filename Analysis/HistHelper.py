@@ -93,8 +93,7 @@ class DataFrameBuilderBase:
 
 
     def GetEventsFromShifted(self, df_central):
-        df_final = df_central.Filter(""" std::find ( analysis::GetEntriesVec().begin(), analysis::GetEntriesVec().end(),
-                                     entryIndex ) != analysis::GetEntriesVec().end()""")
+        df_final = df_central.Filter("""analysis::GetEntriesMap().count(entryIndex)""")
         self.df=df_final
 
     def CreateFromDelta(self,var_list,central_columns,central_col_types):
@@ -110,7 +109,6 @@ class DataFrameBuilderBase:
             var_list.append(f"{var_name_forDelta}")
         for central_col_idx,central_col in enumerate(central_columns):
             if central_col in var_list or central_col in self.colNames: continue
-            print(central_col)
             #if central_col != 'channelId' : continue # this is for a bugfix that I still haven't figured out !!
             self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[entryIndex]->GetValue<{col_type_dict[central_col_types[central_col_idx]]}>({central_col_idx})""")
 

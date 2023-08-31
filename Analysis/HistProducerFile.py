@@ -21,19 +21,21 @@ def createCentralQuantities(df_central, central_col_types, central_columns):
 def SaveHists(histograms, out_file_name):
     out_file= ROOT.TFile(out_file_name,'RECREATE')
     for key_tuple,hist_list in histograms.items():
-        print(key_tuple)
+        #print(key_tuple)
         dir_name = '/'.join(key_tuple[0])
-        dir_ptr = out_file.mkdir(dir_name,dir_name)
-        print(dir_ptr)
+        out_file.mkdir(dir_name, "", True)
+        out_file.cd(dir_name)
+        #print(dir_ptr)
         time_00 = datetime.now()
         merged_hist = hist_list[0].GetValue()
         for hist in hist_list[1:] :
             merged_hist.Add(hist.GetValue())
-        hist_name = '_'.join(key_tuple[1])
+        isCentral = 'Central' in key_tuple[1]
+        hist_name = '_'.join(key_tuple[1][:2]) if isCentral else '_'.join(key_tuple[1])
         time_01 = datetime.now()-time_00
-        print(f"time to have the hist {hist_name} is {time_01}" )
+        #print(f"time to have the hist {hist_name} is {time_01}" )
         #print(f"histName is {hist_name}")
-        dir_ptr.WriteObject(merged_hist, f"{hist_name}")
+        ROOT.gDirectory.WriteTObject(merged_hist, hist_name, "Overwrite")
     out_file.Close()
 
 def GetHistogramDictFromDataframes(all_dataframes, hist_cfg_dict, dataset):
@@ -53,8 +55,7 @@ def GetHistogramDictFromDataframes(all_dataframes, hist_cfg_dict, dataset):
                 histograms_var[(key_1, key_2)] = []
                 weight_name = unc_cfg_dict[uncName]['expression'].format(scale=scale) if uncName != 'Central' else "final_weight"
                 total_weight_expression = GetWeight(ch, cat, "Medium") if dataset!='data' else "1"
-                if dataset == 'TTToSemiLeptonic':
-                    total_weight_expression+="*2"
+
                 for dataframe in dataframes:
                     dataframe = dataframe.Filter(key_cut)
                     histograms_var[(key_1, key_2)].append(dataframe.Define("final_weight", f"{total_weight_expression}").Define("weight_for_hists", weight_name).Histo1D(model, var, "weight_for_hists"))
@@ -64,19 +65,21 @@ def GetHistogramDictFromDataframes(all_dataframes, hist_cfg_dict, dataset):
 def GetDataFrameDict(inFile, file_keys, dataset, sample_cfg_dict, unc_cfg_dict, compute_unc_variations, compute_rel_weights, deepTauVersion):
     sample_type = sample_cfg_dict[dataset]['sampleType'] if dataset != 'data' else 'data'
     dfWrapped_central = DataFrameBuilder(ROOT.RDataFrame('Events', inFile), deepTauVersion)
-    key_central = (sample_type, 'Central', 'Central')
+    key_central = (sample_type, "Central", "Central")
     all_dataframes={}
     all_dataframes[key_central] = [PrepareDfWrapped(dfWrapped_central).df]
+    #print(dfWrapped_central.colNames)
+    #print(dfWrapped_central.colTypes)
 
     #print(f"are we computing unc variations? {(compute_unc_variations or compute_rel_weights ) and dataset != 'data'}")
     if ( compute_unc_variations or compute_rel_weights ) and dataset != 'data':
         time_1 = datetime.now()
         createCentralQuantities(dfWrapped_central.df, dfWrapped_central.colTypes, dfWrapped_central.colNames)
-        print(f"time to compute Central quantities is {datetime.now() - time_1}")
+        #print(f"time to compute Central quantities is {datetime.now() - time_1}")
 
         for key in unc_cfg_dict.keys():
             for scale in scales:
-                treeName = f"{sample_type}{key}{scale}"
+                #key_2 = f"{sample_type}_{key}{scale}"
                 key_2 = (sample_type, key, scale)
                 if key_2 not in all_dataframes.keys():
                     all_dataframes[key_2] = []
@@ -120,12 +123,12 @@ def GetHistograms(inFile,dataset,unc_cfg_dict, sample_cfg_dict, hist_cfg_dict,de
     time_0 = datetime.now()
     all_dataframes = GetDataFrameDict(inFile,file_keys, dataset, sample_cfg_dict, unc_cfg_dict, compute_unc_variations, compute_rel_weights, deepTauVersion)
     time_2 = datetime.now()
-    print(f"time to get all dataframes dict is { time_2 - time_0}")
+    #print(f"time to get all dataframes dict is { time_2 - time_0}")
     all_histograms = GetHistogramDictFromDataframes(all_dataframes, hist_cfg_dict,dataset)
     time_3 = datetime.now()
-    print(f"time to get all histograms dict is { time_3 - time_2}")
+    #print(f"time to get all histograms dict is { time_3 - time_2}")
 
-    return all_histograms
+    return all_histograms,all_dataframes
 
 
 if __name__ == "__main__":
@@ -140,6 +143,8 @@ if __name__ == "__main__":
     parser.add_argument('--compute_unc_variations', type=bool, default=False)
     parser.add_argument('--compute_rel_weights', type=bool, default=False)
     parser.add_argument('--histConfig', required=True, type=str)
+    parser.add_argument('--uncConfig', required=True, type=str)
+    parser.add_argument('--sampleConfig', required=True, type=str)
     parser.add_argument('--furtherCut', required=False, type=str, default = "")
     args = parser.parse_args()
     startTime = datetime.now()
@@ -154,29 +159,29 @@ if __name__ == "__main__":
     inFile_idx = inFile_idx_list[1] if len(inFile_idx_list)>1 else 0
     hist_cfg_dict = {}
     unc_cfg_dict = {}
-    unc_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/weight_definition.yaml")
-    with open(unc_cfg, 'r') as f:
+    with open(args.uncConfig, 'r') as f:
         unc_cfg_dict = yaml.safe_load(f)
     with open(args.histConfig, 'r') as f:
         hist_cfg_dict = yaml.safe_load(f)
     vars_to_plot = list(hist_cfg_dict.keys())
     sample_cfg_dict = {}
-    sample_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/samples_Run2_2018.yaml")
-    with open(sample_cfg, 'r') as f:
+    with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
 
 
     #if args.test: print(f"Running on file {args.inFile}")
-    all_histograms = GetHistograms(args.inFile, args.dataset, unc_cfg_dict, sample_cfg_dict, hist_cfg_dict,
+    all_histograms,all_dataframes = GetHistograms(args.inFile, args.dataset, unc_cfg_dict, sample_cfg_dict, hist_cfg_dict,
                                        args.deepTauVersion, args.compute_unc_variations, args.compute_rel_weights)
 
     for var in all_histograms.keys():
         finalDir = os.path.join(args.outDir, var)
         if not os.path.isdir(finalDir):
             os.makedirs(finalDir)
-        finalFileName =f'{finalDir}/tmp_{args.dataset}_{inFile_idx}.root'
-        print(f"the final file name will be {finalDir}/tmp_{args.dataset}_{inFile_idx}.root")
+        finalFileName =f'{finalDir}/{args.dataset}_{inFile_idx}.root'
+        print(f"the final file name will be {finalDir}/{args.dataset}_{inFile_idx}.root")
         SaveHists(all_histograms[var], finalFileName)
-    print(f"the script took {datetime.now() - startTime}")
-
+    #print(f"the script took {datetime.now() - startTime}")
+    for key,df in all_dataframes.keys:
+        print(key)
+        print(f"nRuns for df {key} are {df.GetNRuns()}")
     #print(all_histograms)

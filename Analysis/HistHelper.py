@@ -110,8 +110,9 @@ class DataFrameBuilderBase:
             var_list.append(f"{var_name_forDelta}")
         for central_col_idx,central_col in enumerate(central_columns):
             if central_col in var_list or central_col in self.colNames: continue
+            print(central_col)
             #if central_col != 'channelId' : continue # this is for a bugfix that I still haven't figured out !!
-            self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[entryIndex]->GetValue<{central_col_types[central_col_idx]}>({central_col_idx})""")
+            self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[entryIndex]->GetValue<{col_type_dict[central_col_types[central_col_idx]]}>({central_col_idx})""")
 
 
 def createModel(hist_cfg, var):

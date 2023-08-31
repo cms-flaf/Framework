@@ -13,10 +13,8 @@ if __name__ == "__main__":
 import Common.Utilities as Utilities
 from Analysis.HistHelper import *
 
-all_samples_separated = ["DY","QCD" ,"HHnonRes" ,"W" ,"TT" ,"data" ]
-samples_signal =   ["GluGluToRadion", "VBFToRadion",  "GluGluToBulkGraviton",  "VBFToBulkGraviton"]
 channel_text = {'eTau': 'bbe#tau_{h}','muTau': 'bb#mu#tau_{h}','tauTau': 'bb#tau_{h}#tau_{h}'}
-all_samples_separated.extend(samples_signal)
+
 if __name__ == "__main__":
     import argparse
     import PlotKit.Plotter as Plotter
@@ -42,6 +40,7 @@ if __name__ == "__main__":
     inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/inputs.yaml")
     with open(inputs_cfg, 'r') as f:
         inputs_cfg_dict = yaml.safe_load(f)
+    samples_list = [ s['name'] for s['name'] in inputs_cfg_dict]
 
     all_histlist = {}
     plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg_dict, inputs_cfg=inputs_cfg_dict)

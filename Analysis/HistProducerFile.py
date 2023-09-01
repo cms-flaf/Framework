@@ -122,16 +122,6 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
         all_dataframes[key_central] = [PrepareDfWrapped(dfWrapped_central).df]
     central_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_central , models, key_filter_dict, unc_cfg_dict['norm'])
 
-
-    # central quantities definition
-    compute_variations = ( compute_unc_variations or compute_rel_weights ) and dataset != 'data'
-    if compute_variations:
-        all_dataframes[key_central][0] = createCentralQuantities(all_dataframes[key_central][0], dfWrapped_central.colTypes, dfWrapped_central.colNames)
-        if all_dataframes[key_central][0].Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no entries for map")
-
-    for var in central_histograms.keys():
-        SaveHists(central_histograms[var], outfiles[var])
-
     # norm weight histograms
     if compute_rel_weights and dataset!='data':
         for uncName in unc_cfg_dict['norm'].keys():
@@ -141,11 +131,16 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
                     all_dataframes[key_2] = []
                 all_dataframes[key_2] = all_dataframes[key_central]
                 norm_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_2, models, key_filter_dict,unc_cfg_dict['norm'])
-                for var in norm_histograms.keys():
-                    SaveHists(norm_histograms[var], outfiles[var])
-    for var in norm_histograms.keys():
-        SaveHists(norm_histograms[var], outfiles[var])
+                central_histograms.update(norm_histograms)
 
+    for var in central_histograms.keys():
+        SaveHists(central_histograms[var], outfiles[var])
+
+    # central quantities definition
+    compute_variations = ( compute_unc_variations or compute_rel_weights ) and dataset != 'data'
+    if compute_variations:
+        all_dataframes[key_central][0] = createCentralQuantities(all_dataframes[key_central][0], dfWrapped_central.colTypes, dfWrapped_central.colNames)
+        if all_dataframes[key_central][0].Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no entries for map")
     # shape weight  histograms
     if compute_unc_variations and dataset!='data':
         for uncName in unc_cfg_dict['shape'].keys():

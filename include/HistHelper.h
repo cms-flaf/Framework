@@ -75,18 +75,6 @@ struct MapCreator {
               }, {"_entry"});
   return df_node;
   }
-  /*
-  ROOT::RDF::RNode getEventIdxFromShifted(ROOT::RDF::RNode df_in){
-    auto df_node =  df_in.Define("idxFromShifted", [=](Int_t entryIndex) {
-          //auto map = GetEntriesMap();
-          if(std::find(GetEntriesVec().begin(), GetEntriesVec().end(), entryIndex) != GetEntriesVec().end()) {
-              throw std::runtime_error("Duplicate entry for index " + std::to_string(entryIndex));
-          }
-          GetEntriesVec().push_back(entryIndex);
-          return true;
-          }, {"entryIndex"});
-    return df_node;
-  }*/
 };
 
 } // namespace analysis

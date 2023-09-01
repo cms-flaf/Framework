@@ -91,12 +91,8 @@ class DataFrameBuilderBase:
         self.var_list = []
         self.CreateColumnTypes()
 
-
-    def GetEventsFromShifted(self, df_central):
-        df_final = df_central.Filter("""analysis::GetEntriesMap().count(entryIndex)""")
-        self.df=df_final
-
-    def CreateFromDelta(self,var_list,central_columns,central_col_types):
+    def CreateFromDelta(self,central_columns,central_col_types):
+        var_list =[]
         for var_idx,var_name in enumerate(self.colNames):
             if not var_name.endswith("Diff"):
                 continue
@@ -109,12 +105,10 @@ class DataFrameBuilderBase:
             var_list.append(f"{var_name_forDelta}")
         for central_col_idx,central_col in enumerate(central_columns):
             if central_col in var_list or central_col in self.colNames: continue
-            #if central_col != 'channelId' : continue # this is for a bugfix that I still haven't figured out !!
             self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[entryIndex]->GetValue<{col_type_dict[central_col_types[central_col_idx]]}>({central_col_idx})""")
 
 
-def createModel(hist_cfg, var):
-    hists = {}
+def GetModel(hist_cfg, var):
     x_bins = hist_cfg[var]['x_bins']
     if type(hist_cfg[var]['x_bins'])==list:
         x_bins_vec = Utilities.ListToVector(x_bins, "double")

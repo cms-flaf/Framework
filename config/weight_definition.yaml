@@ -1,192 +1,131 @@
-TauID_total:
-  expression : weight_TauID_total{scale}_rel * final_weight
-  is_shape: False
-TauID_stat1_DM0:
-  expression: weight_TauID_stat1_dm0{scale}_rel * final_weight
-  is_shape: False
-TauID_stat1_DM10:
-  expression: weight_TauID_stat1_dm10{scale}_rel * final_weight
-  is_shape: False
-TauID_stat1_DM1:
-  expression: weight_TauID_stat1_dm1{scale}_rel * final_weight
-  is_shape: False
-TauID_stat1_DM11:
-  expression: weight_TauID_stat1_dm11{scale}_rel * final_weight
-  is_shape: False
-TauID_stat2_DM0:
-  expression: weight_TauID_stat2_dm0{scale}_rel * final_weight
-  is_shape: False
-TauID_stat2_DM10:
-  expression: weight_TauID_stat2_dm10{scale}_rel * final_weight
-  is_shape: False
-TauID_stat2_DM1:
-  expression: weight_TauID_stat2_dm1{scale}_rel * final_weight
-  is_shape: False
-TauID_stat2_DM11:
-  expression: weight_TauID_stat2_dm11{scale}_rel * final_weight
-  is_shape: False
-TauID_syst_alleras:
-  expression: weight_TauID_syst_alleras{scale}_rel * final_weight
-  is_shape: False
-TauID_syst_year:
-  expression: weight_TauID_syst_year{scale}_rel * final_weight
-  is_shape: False
-TauID_syst_year_DM0:
-  expression: weight_TauID_syst_year_dm0{scale}_rel * final_weight
-  is_shape: False
-TauID_syst_year_DM1:
-  expression: weight_TauID_syst_year_dm1{scale}_rel * final_weight
-  is_shape: False
-TauID_syst_year_DM10:
-  expression: weight_TauID_syst_year_dm10{scale}_rel * final_weight
-  is_shape: False
-TauID_syst_year_DM11:
-  expression: weight_TauID_syst_year_dm11{scale}_rel * final_weight
-  is_shape: False
-TauID_genuineMuon_etaLt0p4:
-  expression: weight_TauID_TauID_genuineMuon_etaLt0p4{scale}_rel * final_weight
-  is_shape: False
-TauID_genuineMuon_eta0p4to0p8:
-  expression: weight_TauID_TauID_genuineMuon_eta0p4to0p8{scale}_rel * final_weight
-  is_shape: False
-TauID_genuineMuon_eta0p8to1p2:
-  expression: weight_TauID_TauID_genuineMuon_eta0p8to1p2{scale}_rel * final_weight
-  is_shape: False
-TauID_genuineMuon_eta1p2to1p7:
-  expression: weight_TauID_TauID_genuineMuon_eta1p2to1p7{scale}_rel * final_weight
-  is_shape: False
-TauID_genuineMuon_etaGt1p7:
-  expression: weight_TauID_TauID_genuineMuon_etaGt1p7{scale}_rel * final_weight
-  is_shape: False
-TauID_genuineElectron_barrel:
-  expression: weight_TauID_TauID_genuineElectron_barrel{scale}_rel * final_weight
-  is_shape: False
-TauID_genuineElectron_endcaps:
-  expression: weight_TauID_TauID_genuineElectron_endcaps{scale}_rel * final_weight
-  is_shape: False
-TauID_total:
-  expression: weight_TauID_total{scale}_rel * final_weight
-  is_shape: False
-bTagSF_Loose_btagSFbc_correlated:
-  expression: weight_bTagSF_Loose_btagSFbc_correlated{scale}_rel * final_weight
-  is_shape: False
-bTagSF_Loose_btagSFbc_uncorrelated:
-  expression: weight_bTagSF_Loose_btagSFbc_uncorrelated{scale}_rel * final_weight
-  is_shape: False
-bTagSF_Loose_btagSFlight_correlated:
-  expression: weight_bTagSF_Loose_btagSFlight_correlated{scale}_rel * final_weight
-  is_shape: False
-bTagSF_Loose_btagSFlight_uncorrelated:
-  expression: weight_bTagSF_Loose_btagSFlight_uncorrelated{scale}_rel * final_weight
-  is_shape: False
-bTagSF_Medium_btagSFbc_correlated:
-  expression: weight_bTagSF_Medium_btagSFbc_correlated{scale}_rel * final_weight
-  is_shape: False
-bTagSF_Medium_btagSFbc_uncorrelated:
-  expression: weight_bTagSF_Medium_btagSFbc_uncorrelated{scale}_rel * final_weight
-  is_shape: False
-bTagSF_Medium_btagSFlight_correlated:
-  expression: weight_bTagSF_Medium_btagSFlight_correlated{scale}_rel * final_weight
-  is_shape: False
-bTagSF_Medium_btagSFlight_uncorrelated:
-  expression: weight_bTagSF_Medium_btagSFlight_uncorrelated{scale}_rel * final_weight
-  is_shape: False
-bTagSF_Tight_btagSFbc_correlated:
-  expression: weight_bTagSF_Tight_btagSFbc_correlated{scale}_rel * final_weight
-  is_shape: False
-bTagSF_Tight_btagSFbc_uncorrelated:
-  expression: weight_bTagSF_Tight_btagSFbc_uncorrelated{scale}_rel * final_weight
-  is_shape: False
-bTagSF_Tight_btagSFlight_correlated:
-  expression: weight_bTagSF_Tight_btagSFlight_correlated{scale}_rel * final_weight
-  is_shape: False
-bTagSF_Tight_btagSFlight_uncorrelated:
-  expression: weight_bTagSF_Tight_btagSFlight_uncorrelated{scale}_rel * final_weight
-  is_shape: False
-PUJetID:
-  expression: weight_Jet_PUJetID_eff{scale}_rel_b1 * weight_Jet_PUJetID_eff{scale}_rel_b2 * final_weight
-  is_shape: False
-PileUp:
-   expression: weight_pu{scale}_rel * final_weight
-   is_shape: False
-EleID:
-  expression: weight_tau1_EleidSF_{scale}_rel * weight_tau2_EleidSF_{scale}_rel * final_weight
-  is_shape: False
-MuID_TightRelIso:
-  expression: weight_tau1_MuidSF_TightRelIso{scale}_rel * weight_tau2_MuidSF_TightRelIso{scale}_rel * final_weight
-  is_shape: False
-MuID_TightID:
-  expression: weight_tau1_MuidSF_TightID{scale}_rel * weight_tau2_MuidSF_TightID{scale}_rel * final_weight
-  is_shape: False
-TrigSF_diTau_DM0:
-  expression: weight_tau1_TrgSF_ditau_DM0{scale}_rel * weight_tau2_TrgSF_ditau_DM0{scale}_rel * final_weight
-  is_shape: False
-TrigSF_diTau_DM1:
-  expression: weight_tau1_TrgSF_ditau_DM1{scale}_rel * weight_tau2_TrgSF_ditau_DM1{scale}_rel * final_weight
-  is_shape: False
-TrigSF_diTau_3Prong:
-  expression: weight_tau1_TrgSF_ditau_3Prong{scale}_rel * weight_tau1_TrgSF_ditau_3Prong{scale}_rel * final_weight
-  is_shape: False
-TrigSF_singleEle:
-  expression: weight_tau1_TrgSF_singleEle{scale}_rel * weight_tau2_TrgSF_singleEle{scale}_rel * final_weight
-  is_shape: False
-TrigSF_singleMu:
-  expression: weight_tau1_TrgSF_singleMu{scale}_rel * weight_tau2_TrgSF_singleMu{scale}_rel * final_weight
-  is_shape: False
-TauES_DM0:
-  is_shape: True
-  expression: final_weight
-TauES_DM1:
-  is_shape: True
-  expression: final_weight
-TauES_3prong:
-  is_shape: True
-  expression: final_weight
-EleFakingTauES_DM0:
-  is_shape: True
-  expression: final_weight
-EleFakingTauES_DM1:
-  is_shape: True
-  expression: final_weight
-MuFakingTauES:
-  is_shape: True
-  expression: final_weight
-JER:
-  is_shape: True
-  expression: final_weight
-JES_FlavorQCD:
-  is_shape: True
-  expression: final_weight
-JES_RelativeBal:
-  is_shape: True
-  expression: final_weight
-JES_HF:
-  is_shape: True
-  expression: final_weight
-JES_BBEC1:
-  is_shape: True
-  expression: final_weight
-JES_EC2:
-  is_shape: True
-  expression: final_weight
-JES_Absolute:
-  is_shape: True
-  expression: final_weight
-JES_Total:
-  is_shape: True
-  expression: final_weight
-JES_BBEC1_2018:
-  is_shape: True
-  expression: final_weight
-JES_Absolute_2018:
-  is_shape: True
-  expression: final_weight
-JES_EC2_2018:
-  is_shape: True
-  expression: final_weight
-JES_HF_2018:
-  is_shape: True
-  expression: final_weight
-JES_RelativeSample_2018:
-  is_shape: True
-  expression: final_weight
+norm:
+  TauID_total:
+    expression : weight_TauID_total{scale}_rel * final_weight
+  TauID_stat1_DM0:
+    expression: weight_TauID_stat1_dm0{scale}_rel * final_weight
+  TauID_stat1_DM10:
+    expression: weight_TauID_stat1_dm10{scale}_rel * final_weight
+  TauID_stat1_DM1:
+    expression: weight_TauID_stat1_dm1{scale}_rel * final_weight
+  TauID_stat1_DM11:
+    expression: weight_TauID_stat1_dm11{scale}_rel * final_weight
+  TauID_stat2_DM0:
+    expression: weight_TauID_stat2_dm0{scale}_rel * final_weight
+  TauID_stat2_DM10:
+    expression: weight_TauID_stat2_dm10{scale}_rel * final_weight
+  TauID_stat2_DM1:
+    expression: weight_TauID_stat2_dm1{scale}_rel * final_weight
+  TauID_stat2_DM11:
+    expression: weight_TauID_stat2_dm11{scale}_rel * final_weight
+  TauID_syst_alleras:
+    expression: weight_TauID_syst_alleras{scale}_rel * final_weight
+  TauID_syst_year:
+    expression: weight_TauID_syst_year{scale}_rel * final_weight
+  TauID_syst_year_DM0:
+    expression: weight_TauID_syst_year_dm0{scale}_rel * final_weight
+  TauID_syst_year_DM1:
+    expression: weight_TauID_syst_year_dm1{scale}_rel * final_weight
+  TauID_syst_year_DM10:
+    expression: weight_TauID_syst_year_dm10{scale}_rel * final_weight
+  TauID_syst_year_DM11:
+    expression: weight_TauID_syst_year_dm11{scale}_rel * final_weight
+  TauID_genuineMuon_etaLt0p4:
+    expression: weight_TauID_TauID_genuineMuon_etaLt0p4{scale}_rel * final_weight
+  TauID_genuineMuon_eta0p4to0p8:
+    expression: weight_TauID_TauID_genuineMuon_eta0p4to0p8{scale}_rel * final_weight
+  TauID_genuineMuon_eta0p8to1p2:
+    expression: weight_TauID_TauID_genuineMuon_eta0p8to1p2{scale}_rel * final_weight
+  TauID_genuineMuon_eta1p2to1p7:
+    expression: weight_TauID_TauID_genuineMuon_eta1p2to1p7{scale}_rel * final_weight
+  TauID_genuineMuon_etaGt1p7:
+    expression: weight_TauID_TauID_genuineMuon_etaGt1p7{scale}_rel * final_weight
+  TauID_genuineElectron_barrel:
+    expression: weight_TauID_TauID_genuineElectron_barrel{scale}_rel * final_weight
+  TauID_genuineElectron_endcaps:
+    expression: weight_TauID_TauID_genuineElectron_endcaps{scale}_rel * final_weight
+  TauID_total:
+    expression: weight_TauID_total{scale}_rel * final_weight
+  bTagSF_Loose_btagSFbc_correlated:
+    expression: weight_bTagSF_Loose_btagSFbc_correlated{scale}_rel * final_weight
+  bTagSF_Loose_btagSFbc_uncorrelated:
+    expression: weight_bTagSF_Loose_btagSFbc_uncorrelated{scale}_rel * final_weight
+  bTagSF_Loose_btagSFlight_correlated:
+    expression: weight_bTagSF_Loose_btagSFlight_correlated{scale}_rel * final_weight
+  bTagSF_Loose_btagSFlight_uncorrelated:
+    expression: weight_bTagSF_Loose_btagSFlight_uncorrelated{scale}_rel * final_weight
+  bTagSF_Medium_btagSFbc_correlated:
+    expression: weight_bTagSF_Medium_btagSFbc_correlated{scale}_rel * final_weight
+  bTagSF_Medium_btagSFbc_uncorrelated:
+    expression: weight_bTagSF_Medium_btagSFbc_uncorrelated{scale}_rel * final_weight
+  bTagSF_Medium_btagSFlight_correlated:
+    expression: weight_bTagSF_Medium_btagSFlight_correlated{scale}_rel * final_weight
+  bTagSF_Medium_btagSFlight_uncorrelated:
+    expression: weight_bTagSF_Medium_btagSFlight_uncorrelated{scale}_rel * final_weight
+  bTagSF_Tight_btagSFbc_correlated:
+    expression: weight_bTagSF_Tight_btagSFbc_correlated{scale}_rel * final_weight
+  bTagSF_Tight_btagSFbc_uncorrelated:
+    expression: weight_bTagSF_Tight_btagSFbc_uncorrelated{scale}_rel * final_weight
+  bTagSF_Tight_btagSFlight_correlated:
+    expression: weight_bTagSF_Tight_btagSFlight_correlated{scale}_rel * final_weight
+  bTagSF_Tight_btagSFlight_uncorrelated:
+    expression: weight_bTagSF_Tight_btagSFlight_uncorrelated{scale}_rel * final_weight
+  PUJetID:
+    expression: weight_Jet_PUJetID_eff{scale}_rel_b1 * weight_Jet_PUJetID_eff{scale}_rel_b2 * final_weight
+  PileUp:
+    expression: weight_pu{scale}_rel * final_weight
+  EleID:
+    expression: weight_tau1_EleidSF_{scale}_rel * weight_tau2_EleidSF_{scale}_rel * final_weight
+  MuID_TightRelIso:
+    expression: weight_tau1_MuidSF_TightRelIso{scale}_rel * weight_tau2_MuidSF_TightRelIso{scale}_rel * final_weight
+  MuID_TightID:
+    expression: weight_tau1_MuidSF_TightID{scale}_rel * weight_tau2_MuidSF_TightID{scale}_rel * final_weight
+  TrigSF_diTau_DM0:
+    expression: weight_tau1_TrgSF_ditau_DM0{scale}_rel * weight_tau2_TrgSF_ditau_DM0{scale}_rel * final_weight
+  TrigSF_diTau_DM1:
+    expression: weight_tau1_TrgSF_ditau_DM1{scale}_rel * weight_tau2_TrgSF_ditau_DM1{scale}_rel * final_weight
+  TrigSF_diTau_3Prong:
+    expression: weight_tau1_TrgSF_ditau_3Prong{scale}_rel * weight_tau1_TrgSF_ditau_3Prong{scale}_rel * final_weight
+  TrigSF_singleEle:
+    expression: weight_tau1_TrgSF_singleEle{scale}_rel * weight_tau2_TrgSF_singleEle{scale}_rel * final_weight
+  TrigSF_singleMu:
+    expression: weight_tau1_TrgSF_singleMu{scale}_rel * weight_tau2_TrgSF_singleMu{scale}_rel * final_weight
+
+shape:
+  TauES_DM0:
+    expression: final_weight
+  TauES_DM1:
+    expression: final_weight
+  TauES_3prong:
+    expression: final_weight
+  EleFakingTauES_DM0:
+    expression: final_weight
+  EleFakingTauES_DM1:
+    expression: final_weight
+  MuFakingTauES:
+    expression: final_weight
+  JER:
+    expression: final_weight
+  JES_FlavorQCD:
+    expression: final_weight
+  JES_RelativeBal:
+    expression: final_weight
+  JES_HF:
+    expression: final_weight
+  JES_BBEC1:
+    expression: final_weight
+  JES_EC2:
+    expression: final_weight
+  JES_Absolute:
+    expression: final_weight
+  JES_Total:
+    expression: final_weight
+  JES_BBEC1_2018:
+    expression: final_weight
+  JES_Absolute_2018:
+    expression: final_weight
+  JES_EC2_2018:
+    expression: final_weight
+  JES_HF_2018:
+    expression: final_weight
+  JES_RelativeSample_2018:
+    expression: final_weight

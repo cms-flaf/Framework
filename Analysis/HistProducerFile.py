@@ -118,6 +118,8 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
 
     # central hist definition
     dfWrapped_central = dfWrapped_central = DataFrameBuilder(ROOT.RDataFrame('Events', inFile), deepTauVersion)
+    col_names_central =  dfWrapped_central.colNames
+    col_tpyes_central =  dfWrapped_central.colTypes
     if key_central not in all_dataframes:
         all_dataframes[key_central] = [PrepareDfWrapped(dfWrapped_central).df]
     central_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_central , models, key_filter_dict, unc_cfg_dict['norm'])
@@ -133,23 +135,34 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
                 norm_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_2, models, key_filter_dict,unc_cfg_dict['norm'])
                 central_histograms.update(norm_histograms)
 
-    for var in central_histograms.keys():
-        SaveHists(central_histograms[var], outfiles[var])
-
     # central quantities definition
     compute_variations = ( compute_unc_variations or compute_rel_weights ) and dataset != 'data'
     if compute_variations:
-        all_dataframes[key_central][0] = createCentralQuantities(all_dataframes[key_central][0], dfWrapped_central.colTypes, dfWrapped_central.colNames)
-        if all_dataframes[key_central][0].Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no entries for map")
+        all_dataframes[key_central][0] = createCentralQuantities(all_dataframes[key_central][0], col_tpyes_central, col_names_central)
+        if all_dataframes[key_central][0].Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
+
+    # save histograms
+    for var in central_histograms.keys():
+        SaveHists(central_histograms[var], outfiles[var])
+
     # shape weight  histograms
     if compute_unc_variations and dataset!='data':
         for uncName in unc_cfg_dict['shape'].keys():
             for scale in scales:
                 key_2 = (sample_type, uncName, scale)
-                GetShapeDataFrameDict(all_dataframes, key_2, key_central, inFile, compute_variations, deepTauVersion, dfWrapped_central.colNames, dfWrapped_central.colTypes )
+                #print(key_2)
+                #print("before everything")
+                #print(f"nRuns for dfCentral are: {all_dataframes[key_central][0].GetNRuns()}")
+                GetShapeDataFrameDict(all_dataframes, key_2, key_central, inFile, compute_variations, deepTauVersion, col_names_central, col_tpyes_central )
+                #print("after GetShapeDataFrameDict, before GetHistogramDictFromDataframes")
+                #print(f"nRuns for dfCentral are: {all_dataframes[key_central][0].GetNRuns()}")
                 shape_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_dict,unc_cfg_dict['shape'])
+                #print("after GetHistogramDictFromDataframes, before saving histograms")
+                #print(f"nRuns for dfCentral are: {all_dataframes[key_central][0].GetNRuns()}")
                 for var in shape_histograms.keys():
                     SaveHists(shape_histograms[var], outfiles[var])
+                #print("after saving histograms")
+                #print(f"nRuns for dfCentral are: {all_dataframes[key_central][0].GetNRuns()}")
 
     # for debugging: get number of runs for each dataframe
     for key,dataframes in all_dataframes.items():

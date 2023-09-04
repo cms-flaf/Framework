@@ -174,6 +174,7 @@ class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
 
     max_runtime = law.DurationParameter(default=12.0, unit="h", significant=False,
                                         description="maximum runtime, default unit is hours")
+    n_cpus = luigi.IntParameter(default=1, description="number of cpus")
     poll_interval = copy_param(law.htcondor.HTCondorWorkflow.poll_interval, 5)
 
     def htcondor_check_job_completeness(self):
@@ -196,7 +197,7 @@ class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
         config.custom_content.append(("requirements", '( (OpSysAndVer =?= "CentOS7") || (OpSysAndVer =?= "CentOS8") )'))
         # maximum runtime
         config.custom_content.append(("+MaxRuntime", int(math.floor(self.max_runtime * 3600)) - 1))
-
+        config.custom_content.append(("RequestCpus", self.n_cpus))
         log_path = os.path.join(ana_path, "data", "logs")
         os.makedirs(log_path, exist_ok=True)
         config.custom_content.append(("log", os.path.join(log_path, 'job.$(ClusterId).$(ProcId).log')))

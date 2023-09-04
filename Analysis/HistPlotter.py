@@ -1,7 +1,7 @@
 import ROOT
 import sys
 import os
-import mathimport ROOT
+import math
 import sys
 import os
 import math
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/inputs.yaml")
     with open(inputs_cfg, 'r') as f:
         inputs_cfg_dict = yaml.safe_load(f)
-    samples_list = [ s['name'] for s['name'] in inputs_cfg_dict]
+    samples_list = [ s['name'] for s in inputs_cfg_dict]
 
     all_histlist = {}
     plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg_dict, inputs_cfg=inputs_cfg_dict)

@@ -7,6 +7,7 @@ from RunKit.sh_tools import sh_call
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
+# HistProducerSample.py --histDir my/hist/dir --outDir my/out/dir --hists m_tautau,tau1_pt --file-name-pattern 'nano_{id}.root' --file-ids '0-100'
 
 import Common.Utilities as Utilities
 from Analysis.HistHelper import *
@@ -18,57 +19,42 @@ if __name__ == "__main__":
     parser.add_argument('--histDir', required=True, type=str)
     parser.add_argument('--test', required=False, type=bool, default=False)
     parser.add_argument('--remove-files', required=False, type=bool, default=False)
-    parser.add_argument('--dataset', required=True, type=str)
-    parser.add_argument('--sampleConfig', required=True, type=str)
+    parser.add_argument('--outDir', required=True, type=str)
+    parser.add_argument('--hists', required=False, type=str, default='bbtautau_mass,dR_tautau,tautau_m_vis,tau1_pt')
+    parser.add_argument('--file-name-pattern', required=False, type=str, default="nano_{id}.root")
+    parser.add_argument('--file-ids', required=False, type=str, default='')
+    parser.add_argument('--outFileName', required=True, type=str)
+
     args = parser.parse_args()
-
-    sample_cfg_dict = {}
-    with open(args.sampleConfig, 'r') as f:
-        sample_cfg_dict = yaml.safe_load(f)
-
 
     # 1 list files :
 
-    samples_files = {}
-    tmpDir = os.path.join(args.histDir, args.dataset,'tmp')
-    histDirSample = os.path.join(args.histDir, args.dataset)
+    all_vars = args.hists.split(',')
+    start_end_idx = args.hists.split('-')
+    all_files = {}
+    for var in all_vars:
+        all_files[var] = []
+        file_name = args.file_name_pattern
+        if(len(start_end_idx) > 1):
+            for idx in range(start_end_idx[0],start_end_idx[1]):
+                file_name = file_name.format(id=idx)
+                all_files[var].append(os.path.join(args.histDir, var, file_name))
+        all_files[var].append(os.path.join(args.histDir, var, file_name))
 
-    sample_type = ""
-    if(args.dataset=='data'): sample_type = 'data'
-    else: sample_type = sample_cfg_dict[args.dataset]['sampleType']
-
-    all_dir_vars = os.listdir(tmpDir)
-
-    for dir_var in all_dir_vars:
-        txtFile  = os.path.join(tmpDir, dir_var, "filesToHAdd.txt")
-        input_files_to_write = []
-        input_files_to_read = []
-        for root, dirs, files in os.walk(os.path.join(tmpDir, dir_var)):
-            for file in files:
-                if file.endswith('.root') and not file.startswith('.'):
-                    if os.path.join(root, file) not in input_files_to_read:
-                        input_files_to_write.append(os.path.join(root, file))
-        with open(txtFile, 'w') as inputFileTxt:
-            for input_line in input_files_to_write:
-                inputFileTxt.write(input_line+'\n')
-        with open(txtFile, 'r') as inputtxtFile:
-            input_files_to_read = inputtxtFile.read().splitlines()
-            if len(input_files_to_read) == 0:
-                raise RuntimeError(f"no input files found for {tmpDir}, {dir_var}")
-        outDir = os.path.join(histDirSample, dir_var)
-        if not os.path.isdir(outDir):
-            os.makedirs(outDir)
-        outFileName = f'{outDir}/{args.dataset}.root'
-        hadd_str = f'hadd -f209 -j -O {outFileName} '
-        hadd_str += ' '.join(f for f in input_files_to_read)
-        if len(input_files_to_read) > 1:
+        outDirFinal = os.path.join(args.outDir, var)
+        if not os.path.isdir(outDirFinal):
+            os.makedirs(outDirFinal)
+        outFileNameFinal = f'{outDirFinal}/{args.outFileName}'
+        hadd_str = f'hadd -f209 -j -O {outFileNameFinal} '
+        hadd_str += ' '.join(f for f in all_files[var])
+        if len(all_files[var]) > 1:
             sh_call([hadd_str], True)
         else:
-            shutil.copy(input_files_to_read[0],outFileName)
-        if os.path.exists(outFileName) and args.remove_files:
+            shutil.copy(all_files[var][0],outFileNameFinal)
+        if os.path.exists(outFileNameFinal) and args.remove_files:
             for histFile in input_files_to_read:
                 if args.test : print(histFile)
-                if histFile == outFileName: continue
+                if histFile == outFileNameFinal: continue
                 os.remove(histFile)
     if args.remove_files:
         shutil.rmtree(tmpDir)

@@ -12,6 +12,7 @@ from AnaProd.tasks import AnaTupleTask, DataMergeTask
 
 class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)
+    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
     def workflow_requires(self):
         return { "anaTuple" : AnaTupleTask.req(self, branches=())}
@@ -77,14 +78,19 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 
 class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
 
     def workflow_requires(self):
         return { "histProducerFile" : HistProducerFileTask.req(self, branches=())}
 
     def requires(self):
-        sample_name, prod_br = HistProducerFileTask.req(self, branch=-1, branches=()).create_branch_map()
-        return [ HistProducerFileTask.req(self, branch=prod_br, max_runtime=HistProducerFileTask.max_runtime._default, branches=())]
+        histProducerFile_map = HistProducerFileTask.req(self, branch=-1, branches=()).create_branch_map()
+        sample_name = self.branch_data
+        reqs = []
+        for br_idx, (smpl_name, prod_br) in histProducerFile_map.items():
+            if smpl_name == sample_name:
+                reqs.append( HistProducerFileTask.req(self, branch=br_idx, max_runtime=HistProducerFileTask.max_runtime._default, branches=()))
+        return reqs
 
     def create_branch_map(self):
         n = 0
@@ -117,8 +123,30 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         sample_name = self.branch_data
-        sample_config = self.sample_config
+        histProducerFile_map = HistProducerFileTask.req(self, branch=-1, branches=()).create_branch_map()
+        files_idx = []
+        hist_config = os.path.join(self.ana_path(), 'config', 'plot','histograms.yaml')
+        with open(hist_config, 'r') as f:
+            hist_cfg_dict = yaml.safe_load(f)
+        vars_to_plot = list(hist_cfg_dict.keys())
+        hists_str = ','.join(var for var in vars_to_plot)
+        file_ids_str = ''
+        file_name_pattern = sample_name
+        for br_idx, (smpl_name, prod_br) in histProducerFile_map.items():
+            if smpl_name == sample_name:
+                files_idx.append(br_idx)
+        if(len(files_idx)>1):
+            file_name_pattern +="_{id}"
+            file_ids_str = f"{files_idx[0]}-{files_idx[-1]}"
+        #HistProducerSample.py --histDir my/hist/dir --outDir my/out/dir --hists m_tautau,tau1_pt --file-name-pattern 'nano_{id}.root' --file-ids '0-100
+        file_name_pattern += ".root"
+        outFileName = f'{sample_name}.root'
         HistProducerSample = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample.py')
-        HistProducerSample_cmd = ['python3', HistProducerSample,'--histDir',  self.central_Histograms_path(), '--dataset', sample_name,
-                            '--sampleConfig', sample_config]
-        sh_call(HistProducerSample_cmd,verbose=1)
+        outDir = os.path.join(self.central_Histograms_path(), sample_name)
+        histDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp')
+        HistProducerSample_cmd = ['python3', HistProducerSample,'--histDir', histDir, '--outDir', outDir, '--hists', hists_str,
+                            '--file-name-pattern', file_name_pattern, '--outFileName', outFileName]
+        if(len(files_idx)>1):
+            HistProducerSample_cmd.extend(['--file-ids', file_ids_str])
+        #sh_call(HistProducerSample_cmd,verbose=1)
+        print(HistProducerSample_cmd)

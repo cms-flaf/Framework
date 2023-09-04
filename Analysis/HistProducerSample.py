@@ -26,13 +26,12 @@ if __name__ == "__main__":
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
 
-    if not os.path.isdir(args.histDir):
-        os.makedirs(args.histDir)
 
     # 1 list files :
 
     samples_files = {}
     tmpDir = os.path.join(args.histDir, args.dataset,'tmp')
+    histDirSample = os.path.join(args.histDir, args.dataset)
 
     sample_type = ""
     if(args.dataset=='data'): sample_type = 'data'
@@ -56,8 +55,10 @@ if __name__ == "__main__":
             input_files_to_read = inputtxtFile.read().splitlines()
             if len(input_files_to_read) == 0:
                 raise RuntimeError(f"no input files found for {tmpDir}, {dir_var}")
-
-        outFileName = f'{args.histDir}/{args.dataset}.root'
+        outDir = os.path.join(histDirSample, dir_var)
+        if not os.path.isdir(outDir):
+            os.makedirs(outDir)
+        outFileName = f'{outDir}/{args.dataset}.root'
         hadd_str = f'hadd -f209 -j -O {outFileName} '
         hadd_str += ' '.join(f for f in input_files_to_read)
         if len(input_files_to_read) > 1:

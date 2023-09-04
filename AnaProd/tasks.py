@@ -197,6 +197,7 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sh_call(dataMerge_cmd,verbose=1)
         finalFile = self.output().path
         if self.test: print(f"finalFile is {finalFile}")
+        print(f"finalFile is {finalFile}")
         shutil.copy(tmpFile, finalFile)
         if os.path.exists(finalFile):
             os.remove(tmpFile)

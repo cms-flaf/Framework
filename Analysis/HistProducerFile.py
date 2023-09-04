@@ -165,9 +165,9 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
                 #print(f"nRuns for dfCentral are: {all_dataframes[key_central][0].GetNRuns()}")
 
     # for debugging: get number of runs for each dataframe
-    for key,dataframes in all_dataframes.items():
-        for df in dataframes:
-            print(f"nRuns for df {key} are {df.GetNRuns()}")
+    #for key,dataframes in all_dataframes.items():
+    #    for df in dataframes:
+    #        print(f"nRuns for df {key} are {df.GetNRuns()}")
 
 
 
@@ -209,14 +209,14 @@ if __name__ == "__main__":
 
 
     inFile_idx_list = args.inFile.split('/')[-1].split('.')[0].split('_')
-    inFile_idx = inFile_idx_list[1] if len(inFile_idx_list)>1 else 0
+    inFile_idx = f'_{inFile_idx_list[1]}' if len(inFile_idx_list)>1 else ''
 
     outfiles = {}
     for var in vars_to_plot:
         finalDir = os.path.join(args.outDir, var)
         if not os.path.isdir(finalDir):
             os.makedirs(finalDir)
-        finalFileName =f'{finalDir}/{args.dataset}_{inFile_idx}.root'
+        finalFileName =f'{finalDir}/{args.dataset}{inFile_idx}.root'
         outfiles[var] = ROOT.TFile(finalFileName,'RECREATE')
 
     #if args.test: print(f"Running on file {args.inFile}")

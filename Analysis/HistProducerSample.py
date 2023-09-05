@@ -41,11 +41,8 @@ if __name__ == "__main__":
                 all_files[var].append(os.path.join(args.histDir, var, file_name))
         all_files[var].append(os.path.join(args.histDir, var, file_name))
 
-        outDirFinal = os.path.join(args.outDir, var)
-        if not os.path.isdir(outDirFinal):
-            os.makedirs(outDirFinal)
-        outFileNameFinal = f'{outDirFinal}/{args.outFileName}'
-        hadd_str = f'hadd -f209 -j -O {outFileNameFinal} '
+        outFileNameFinal = f'{args.outDir}/{var}.root'
+        hadd_str = f'hadd -f209 -j -O {outFileNameFinal}'
         hadd_str += ' '.join(f for f in all_files[var])
         if len(all_files[var]) > 1:
             sh_call([hadd_str], True)

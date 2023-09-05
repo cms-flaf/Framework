@@ -6,23 +6,6 @@ if __name__ == "__main__":
 
 import Common.Utilities as Utilities
 
-
-col_type_dict = {
-  'Float_t':'float',
-  'Bool_t':'bool',
-  'Int_t' :'int',
-  'ULong64_t' :'unsigned long long',
-  'Long64_t' : 'long long',
-  'Long_t' :'long',
-  'UInt_t' :'unsigned int',
-  'Char_t' : 'char',
-  'ROOT::VecOps::RVec<Float_t>':'ROOT::VecOps::RVec<float>',
-  'ROOT::VecOps::RVec<Int_t>':'ROOT::VecOps::RVec<int>',
-  'ROOT::VecOps::RVec<UChar_t>':'ROOT::VecOps::RVec<unsigned char>',
-  'ROOT::VecOps::RVec<float>':'ROOT::VecOps::RVec<float>',
-  'ROOT::VecOps::RVec<int>':'ROOT::VecOps::RVec<int>',
-  'ROOT::VecOps::RVec<unsigned char>':'ROOT::VecOps::RVec<unsigned char>'
-  }
 def defineP4(df, name):
     df = df.Define(f"{name}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({name}_pt,{name}_eta,{name}_phi,{name}_mass)")
     return df
@@ -101,11 +84,11 @@ class DataFrameBuilderBase:
             if central_columns[central_col_idx]!=var_name_forDelta:
                 raise RuntimeError(f"CreateFromDelta: {central_columns[central_col_idx]} != {var_name_forDelta}")
             self.df = self.df.Define(f"{var_name_forDelta}", f"""analysis::FromDelta({var_name},
-                                     analysis::GetEntriesMap()[entryIndex]->GetValue<{col_type_dict[self.colTypes[var_idx]]}>({central_col_idx}) )""")
+                                     analysis::GetEntriesMap()[entryIndex]->GetValue<{self.colTypes[var_idx]}>({central_col_idx}) )""")
             var_list.append(f"{var_name_forDelta}")
         for central_col_idx,central_col in enumerate(central_columns):
             if central_col in var_list or central_col in self.colNames: continue
-            self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[entryIndex]->GetValue<{col_type_dict[central_col_types[central_col_idx]]}>({central_col_idx})""")
+            self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[entryIndex]->GetValue<{central_col_types[central_col_idx]}>({central_col_idx})""")
 
 
 def GetModel(hist_cfg, var):
@@ -120,26 +103,23 @@ def GetModel(hist_cfg, var):
     return model
 
 
+def mkdir(file, path):
+    dir_names = path.split('/')
+    current_dir = file
+    for n, dir_name in enumerate(dir_names):
+        dir_obj = current_dir.Get(dir_name)
+        full_name = f'{file.GetPath()}' + '/'.join(dir_names[:n])
+        if dir_obj:
+            if not dir_obj.IsA().InheritsFrom(ROOT.TDirectory.Class()):
+                raise RuntimeError(f'{dir_name} already exists in {full_name} and it is not a directory')
+        else:
+            dir_obj = current_dir.mkdir(dir_name)
+            if not dir_obj:
+
+                raise RuntimeError(f'Failed to create {dir_name} in {full_name}')
+        current_dir = dir_obj
+    return current_dir
 
 
 
 
-def GetWeight(channel,cat , btag_wp):
-    btag_weight = "1"
-    if cat!='inclusive':
-        btag_weight = f"weight_bTagSF_{btag_wp}_Central"
-    trg_weights_dict = {
-        'eTau':["weight_tau1_TrgSF_singleEle_Central","weight_tau2_TrgSF_singleEle_Central"],
-        'muTau':["weight_tau1_TrgSF_singleMu_Central","weight_tau2_TrgSF_singleMu_Central"],
-        'tauTau':["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central"]
-        }
-    weights_to_apply = [ "weight_Jet_PUJetID_Central_b1", "weight_Jet_PUJetID_Central_b2", "weight_TauID_Central", btag_weight, "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
-    #weights_to_apply = [  "weight_TauID_Central",btag_weight, "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
-    #weights_to_apply = [ "weight_total"]
-
-    weights_to_apply.extend(trg_weights_dict[channel])
-    total_weight = '*'.join(weights_to_apply)
-    return total_weight
-
-def GetRelativeWeights(column_names):
-    return [col for col in column_names if "weight" in col and col.endswith("rel")]

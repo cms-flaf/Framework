@@ -45,6 +45,16 @@ GLOBAL:
     - eTau
     - muTau
     - tauTau
+  QCDRegions:
+    - OS_Iso
+    - SS_Iso
+    - OS_AntiIso
+    - SS_AntiIso
+  categories:
+    - res1b
+    - res2b
+    - inclusive
+    #- boosted
   storeExtraJets: False
   sampleSelection:
     - drop ^.*$

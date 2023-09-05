@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
 import Common.Utilities as Utilities
 from Analysis.HistHelper import *
-from Analysis.RegionDefinition import *
+from Analysis.hh_bbtautau import *
 scales = ['Up', 'Down']
 
 def createCentralQuantities(df_central, central_col_types, central_columns):
@@ -19,23 +19,6 @@ def createCentralQuantities(df_central, central_col_types, central_columns):
     return df_central
 
 
-def mkdir(file, path):
-    dir_names = path.split('/')
-    current_dir = file
-    for n, dir_name in enumerate(dir_names):
-        dir_obj = current_dir.Get(dir_name)
-        full_name = f'{file.GetPath()}' + '/'.join(dir_names[:n])
-        if dir_obj:
-            if not dir_obj.IsA().InheritsFrom(ROOT.TDirectory.Class()):
-                raise RuntimeError(f'{dir_name} already exists in {full_name} and it is not a directory')
-        else:
-            dir_obj = current_dir.mkdir(dir_name)
-            if not dir_obj:
-
-                raise RuntimeError(f'Failed to create {dir_name} in {full_name}')
-        current_dir = dir_obj
-    return current_dir
-
 def SaveHists(histograms, out_file):
     for key_tuple,hist_list in histograms.items():
         dir_name = '/'.join(key_tuple[0])
@@ -44,19 +27,20 @@ def SaveHists(histograms, out_file):
         for hist in hist_list[1:] :
             merged_hist.Add(hist.GetValue())
         isCentral = 'Central' in key_tuple[1]
-        hist_name = '_'.join(key_tuple[1][:2]) if isCentral else '_'.join(key_tuple[1])
+        sample_type,uncName,scale = key_tuple[1]
+        hist_name =  sample_type
+        if not isCentral:
+            hist_name+=f"_{uncName}{scale}"
         dir_ptr.WriteTObject(merged_hist, hist_name, "Overwrite")
 
 def createModels(hist_cfg_dict):
-    vars_to_plot = list(hist_cfg_dict.keys())
-    models = {}
-    for var in vars_to_plot:
-        models[var] = GetModel(hist_cfg_dict, var)
-    return models
+    return { var : GetModel(hist_cfg_dict, var) for var in hist_cfg_dict.keys() }
+
 
 def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_dict, unc_cfg_dict):
     dataframes = all_dataframes[key_2]
     sample_type,uncName,scale = key_2
+    isCentral = 'Central' in key_2
     histograms = {}
     for var in models.keys():
         if var not in histograms.keys():
@@ -66,8 +50,12 @@ def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_di
             ch, reg, cat = key_1
             if (key_1, key_2) in histograms_var.keys(): continue
             histograms_var[(key_1, key_2)] = []
-            weight_name = unc_cfg_dict[uncName]['expression'].format(scale=scale) if uncName != 'Central' else "final_weight"
-            total_weight_expression = GetWeight(ch, cat, "Medium") if sample_type!='data' else "1"
+            weight_name = "final_weight"
+            if not isCentral:
+                if type(unc_cfg_dict)==dict:
+                    if uncName in unc_cfg_dict.keys() and 'expression' in unc_cfg_dict[uncName].keys():
+                        weight_name = unc_cfg_dict[uncName]['expression'].format(scale=scale)
+            total_weight_expression = GetWeight(ch, cat) if sample_type!='data' else "1"
 
             for dataframe in dataframes:
                 dataframe = dataframe.Filter(key_cut)
@@ -85,7 +73,7 @@ def GetShapeDataFrameDict(all_dataframes, key, key_central, inFile, compute_vari
         for keyFile in fileToOpen.GetListOfKeys():
             if keyFile.GetName() == 'Events' : continue
             obj = keyFile.ReadObj()
-            if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
+            if not obj.IsA().InheritsFrom(ROOT.TTree.Class()):
                 continue
             file_keys.append(keyFile.GetName())
         fileToOpen.Close()
@@ -147,28 +135,13 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
 
     # shape weight  histograms
     if compute_unc_variations and dataset!='data':
-        for uncName in unc_cfg_dict['shape'].keys():
+        for uncName in unc_cfg_dict['shape']:
             for scale in scales:
                 key_2 = (sample_type, uncName, scale)
-                #print(key_2)
-                #print("before everything")
-                #print(f"nRuns for dfCentral are: {all_dataframes[key_central][0].GetNRuns()}")
                 GetShapeDataFrameDict(all_dataframes, key_2, key_central, inFile, compute_variations, deepTauVersion, col_names_central, col_tpyes_central )
-                #print("after GetShapeDataFrameDict, before GetHistogramDictFromDataframes")
-                #print(f"nRuns for dfCentral are: {all_dataframes[key_central][0].GetNRuns()}")
                 shape_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_dict,unc_cfg_dict['shape'])
-                #print("after GetHistogramDictFromDataframes, before saving histograms")
-                #print(f"nRuns for dfCentral are: {all_dataframes[key_central][0].GetNRuns()}")
                 for var in shape_histograms.keys():
                     SaveHists(shape_histograms[var], outfiles[var])
-                #print("after saving histograms")
-                #print(f"nRuns for dfCentral are: {all_dataframes[key_central][0].GetNRuns()}")
-
-    # for debugging: get number of runs for each dataframe
-    #for key,dataframes in all_dataframes.items():
-    #    for df in dataframes:
-    #        print(f"nRuns for df {key} are {df.GetNRuns()}")
-
 
 
 if __name__ == "__main__":
@@ -176,9 +149,9 @@ if __name__ == "__main__":
     import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument('--inFile', required=True, type=str)
+    parser.add_argument('--outFileName', required=True, type=str)
     parser.add_argument('--outDir', required=False, type=str)
     parser.add_argument('--dataset', required=True, type=str)
-    parser.add_argument('--test', required=False, type=bool, default=False)
     parser.add_argument('--deepTauVersion', required=False, type=str, default='v2p1')
     parser.add_argument('--compute_unc_variations', type=bool, default=False)
     parser.add_argument('--compute_rel_weights', type=bool, default=False)
@@ -208,18 +181,14 @@ if __name__ == "__main__":
     models = createModels(hist_cfg_dict)
 
 
-    inFile_idx_list = args.inFile.split('/')[-1].split('.')[0].split('_')
-    inFile_idx = f'_{inFile_idx_list[1]}' if len(inFile_idx_list)>1 else ''
-
     outfiles = {}
     for var in vars_to_plot:
         finalDir = os.path.join(args.outDir, var)
         if not os.path.isdir(finalDir):
             os.makedirs(finalDir)
-        finalFileName =f'{finalDir}/{args.dataset}{inFile_idx}.root'
+        finalFileName =f'{finalDir}/{args.outFileName}'
         outfiles[var] = ROOT.TFile(finalFileName,'RECREATE')
 
-    #if args.test: print(f"Running on file {args.inFile}")
     GetHistograms(args.inFile, args.dataset, outfiles, unc_cfg_dict, sample_cfg_dict, models,
                                        args.deepTauVersion, args.compute_unc_variations, args.compute_rel_weights)
 

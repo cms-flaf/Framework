@@ -91,41 +91,22 @@ norm:
     expression: weight_tau1_TrgSF_singleMu{scale}_rel * weight_tau2_TrgSF_singleMu{scale}_rel * final_weight
 
 shape:
-  TauES_DM0:
-    expression: final_weight
-  TauES_DM1:
-    expression: final_weight
-  TauES_3prong:
-    expression: final_weight
-  EleFakingTauES_DM0:
-    expression: final_weight
-  EleFakingTauES_DM1:
-    expression: final_weight
-  MuFakingTauES:
-    expression: final_weight
-  JER:
-    expression: final_weight
-  JES_FlavorQCD:
-    expression: final_weight
-  JES_RelativeBal:
-    expression: final_weight
-  JES_HF:
-    expression: final_weight
-  JES_BBEC1:
-    expression: final_weight
-  JES_EC2:
-    expression: final_weight
-  JES_Absolute:
-    expression: final_weight
-  JES_Total:
-    expression: final_weight
-  JES_BBEC1_2018:
-    expression: final_weight
-  JES_Absolute_2018:
-    expression: final_weight
-  JES_EC2_2018:
-    expression: final_weight
-  JES_HF_2018:
-    expression: final_weight
-  JES_RelativeSample_2018:
-    expression: final_weight
+  - TauES_DM0
+  - TauES_DM1
+  - TauES_3prong
+  - EleFakingTauES_DM0
+  - EleFakingTauES_DM1
+  - MuFakingTauES
+  - JER
+  - JES_FlavorQCD
+  - JES_RelativeBal
+  - JES_HF
+  - JES_BBEC1
+  - JES_EC2
+  - JES_Absolute
+  - JES_Total
+  - JES_BBEC1_2018
+  - JES_Absolute_2018
+  - JES_EC2_2018
+  - JES_HF_2018
+  - JES_RelativeSample_2018

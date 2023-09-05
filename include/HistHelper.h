@@ -49,13 +49,6 @@ static std::vector<int>& GetEntriesVec(){
 
 template<typename ...Args>
 struct MapCreator {
-  MapCreator()
-
-  {
-  }
-
-  MapCreator(const MapCreator&) = delete;
-  MapCreator& operator= (const MapCreator&) = delete;
 
 
   ROOT::RDF::RNode processCentral(ROOT::RDF::RNode df_in, const std::vector<std::string>& var_names)
@@ -73,7 +66,7 @@ struct MapCreator {
               GetEntriesMap()[idx] = entry;
               return true;
               }, {"_entry"});
-  return df_node;
+      return df_node;
   }
 };
 

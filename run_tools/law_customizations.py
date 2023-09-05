@@ -64,6 +64,13 @@ def select_items(all_items, filters):
 
 _global_params = None
 _samples = None
+_hists = None
+
+def load_hist_config(hist_config):
+    global _hists
+    with open(hist_config, 'r') as f:
+        _hists = yaml.safe_load(f)
+    return _hists
 
 def load_sample_configs(sample_config, period):
     global _global_params
@@ -100,8 +107,9 @@ class Task(law.Task):
         super(Task, self).__init__(*args, **kwargs)
         self.cmssw_env_ = None
         self.sample_config = os.path.join(self.ana_path(), 'config', f'samples_{self.period}.yaml')
+        self.hist_config = os.path.join(self.ana_path(), 'config', 'plot','histograms.yaml')
         self.global_params, self.samples = load_sample_configs(self.sample_config, self.period)
-
+        self.hists = load_hist_config(self.hist_config)
 
     def store_parts(self):
         return (self.__class__.__name__, self.period, self.version)

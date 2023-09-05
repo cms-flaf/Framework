@@ -7,10 +7,11 @@ from Common.Utilities import *
 
 deepTauYears = {'v2p1':'2017','v2p5':'2018'}
 QCDregions = ['OS_Iso', 'SS_Iso', 'OS_AntiIso', 'SS_AntiIso']
-categories = ['res2b', 'res1b', 'inclusive']#, 'boosted']
+categories = ['res2b', 'res1b', 'inclusive']
 #categories = ['res2b', 'res1b', 'inclusive', 'boosted']
 channels = {'eTau':13, 'muTau':23, 'tauTau':33}
 triggers = {'eTau':'HLT_singleEle', 'muTau':'HLT_singleMu', 'tauTau':"HLT_ditau"}
+btag_wps = {'res2b':'Medium', 'res1b':'Medium', 'boosted':"Loose", 'inclusive':''}
 
 filters = {
         'channels':[('eTau','eTau && HLT_singleEle'), ('muTau','muTau && HLT_singleMu'),('tauTau','tauTau && HLT_ditau')],
@@ -28,11 +29,25 @@ def createKeyFilterDict():
                 if cat != 'inclusive':
                     filter_str+=f" && {cat}"
                 key = (ch, reg, cat)
-                #print(key, filter_str)
                 reg_dict[key] = filter_str
-                #filter_str = ""
-    #print(reg_dict)
     return reg_dict
+
+
+
+def GetWeight(channel,cat):
+    btag_weight = "1"
+    if btag_wps[cat]!='':
+        btag_weight = f"weight_bTagSF_{btag_wps[cat]}_Central"
+    trg_weights_dict = {
+        'eTau':["weight_tau1_TrgSF_singleEle_Central","weight_tau2_TrgSF_singleEle_Central"],
+        'muTau':["weight_tau1_TrgSF_singleMu_Central","weight_tau2_TrgSF_singleMu_Central"],
+        'tauTau':["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central"]
+        }
+    weights_to_apply = [ "weight_Jet_PUJetID_Central_b1", "weight_Jet_PUJetID_Central_b2", "weight_TauID_Central", btag_weight, "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
+    weights_to_apply.extend(trg_weights_dict[channel])
+    total_weight = '*'.join(weights_to_apply)
+    return total_weight
+
 
 class DataFrameBuilder(DataFrameBuilderBase):
 

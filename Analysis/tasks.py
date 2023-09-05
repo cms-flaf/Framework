@@ -18,12 +18,12 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branch_map = self.create_branch_map()
         workflow_dict = {}
         workflow_dict["anaTuple"] = {
-            idx: AnaTupleTask.req(self, branches=branch)
-            for idx, (sample, branch) in prod_branches.items() if sample !='data'
+            idx: AnaTupleTask.req(self, branch=br, branches=())
+            for idx, (sample, br) in branch_map.items() if sample !='data'
         }
         workflow_dict["dataMergeTuple"] = {
-            idx: DataMergeTask.req(self, branches=branch)
-            for idx, (sample, branch) in prod_branches.items() if sample =='data'
+            idx: DataMergeTask.req(self, branch=br, branches=())
+            for idx, (sample, br) in branch_map.items() if sample =='data'
         }
 
         return workflow_dict

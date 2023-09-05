@@ -23,7 +23,6 @@ if __name__ == "__main__":
     parser.add_argument('--hists', required=False, type=str, default='bbtautau_mass,dR_tautau,tautau_m_vis,tau1_pt')
     parser.add_argument('--file-name-pattern', required=False, type=str, default="nano_{id}.root")
     parser.add_argument('--file-ids', required=False, type=str, default='')
-    parser.add_argument('--outFileName', required=True, type=str)
 
     args = parser.parse_args()
 
@@ -39,7 +38,8 @@ if __name__ == "__main__":
             for idx in range(start_end_idx[0],start_end_idx[1]):
                 file_name = file_name.format(id=idx)
                 all_files[var].append(os.path.join(args.histDir, var, file_name))
-        all_files[var].append(os.path.join(args.histDir, var, file_name))
+        else:
+            all_files[var].append(os.path.join(args.histDir, var, file_name))
 
         outFileNameFinal = f'{args.outDir}/{var}.root'
         hadd_str = f'hadd -f209 -j -O {outFileNameFinal}'
@@ -49,9 +49,9 @@ if __name__ == "__main__":
         else:
             shutil.copy(all_files[var][0],outFileNameFinal)
         if os.path.exists(outFileNameFinal) and args.remove_files:
-            for histFile in input_files_to_read:
+            for histFile in all_files[var]:
                 if args.test : print(histFile)
                 if histFile == outFileNameFinal: continue
                 os.remove(histFile)
     if args.remove_files:
-        shutil.rmtree(tmpDir)
+        shutil.rmtree(args.histDir)

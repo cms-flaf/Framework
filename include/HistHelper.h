@@ -42,10 +42,6 @@ static std::map<int, std::shared_ptr<Entry>>& GetEntriesMap(){
       return entries;
     }
 
-static std::vector<int>& GetEntriesVec(){
-      static std::vector<int> eventVec;
-      return eventVec;
-    }
 
 template<typename ...Args>
 struct MapCreator {

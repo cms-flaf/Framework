@@ -177,44 +177,22 @@ if __name__ == "__main__":
                 fillHistDict(inFileRoot, all_histograms[var][sample_type], channels, QCDregions,categories )
                 inFileRoot.Close()
             MergeHistogramsPerType(all_histograms[var][sample_type])
-
+        # Get QCD estimation:
         AddQCDInHistDict(all_histograms[var], channels, categories, sample_type, uncNameTypes, all_samples_list)
 
 
-    # Get QCD estimation:
-    '''
-
-        if 'QCD' not in all_histograms_inputVar.keys():
-                all_histograms_inputVar['QCD'] = {}
-        # now the histograms are merged. We need to evaluate the QCD
-        for channel in channels:
-            #if channel == 'eTau': channel='muTau'
-            if channel not in all_histograms_inputVar['QCD'].keys():
-                all_histograms_inputVar['QCD'][channel]= {}
-            for category in categories:
-                if 'OS_Iso' not in all_histograms_inputVar['QCD'][channel].keys():
-                    all_histograms_inputVar['QCD'][channel]['OS_Iso']= {}
-                if category not in all_histograms_inputVar['QCD'][channel]['OS_Iso'].keys():
-                    all_histograms_inputVar['QCD'][channel]['OS_Iso'][category]= {}
-                for key_name in all_histograms_inputVar[sample_type][channel]['OS_Iso'][category].keys():
-                    if key_name !='Central': continue
-                    all_histograms_inputVar['QCD'][channel]['OS_Iso'][category][key_name] =  QCD_Estimation(all_histograms_inputVar, all_samples_list, channel, category,key_name,'data')
-
-
-        outFileName = os.path.join(args.inputDir, inputVar, finalFileName)
+    for var in all_histograms.keys():
+        outFileName = os.path.join(args.histDir, f'all_histograms_{var}.root')
         if os.path.exists(outFileName):
             os.remove(outFileName)
-        print(inputVar)
         outFile = ROOT.TFile(outFileName, "RECREATE")
-        for sample_type in all_histograms_inputVar.keys():
-            for channel in all_histograms_inputVar[sample_type].keys():
-                for QCDRegion in all_histograms_inputVar[sample_type][channel].keys():
-                    for category in all_histograms_inputVar[sample_type][channel][QCDRegion]:
-                        for key_name,hist in all_histograms_inputVar[sample_type][channel][QCDRegion][category].items():
-                            if key_name !='Central': continue
-                            new_histName = f'{sample_type}_{channel}_{QCDRegion}_{category}_{key_name}'
-                            hist.SetTitle(new_histName)
-                            hist.SetName(new_histName)
-                            hist.Write()
+        for sample_type in all_histograms[var].keys():
+            for key in all_histograms[sample]:
+                (channel, qcdRegion, cat), uncNameType = key
+                new_histName = f'{sample_type}_{channel}_{QCDRegion}_{cat}'
+                if uncNameType != 'Central':
+                    new_histName+=f'_{uncNameType}'
+                hist.SetTitle(new_histName)
+                hist.SetName(new_histName)
+                hist.Write()
         outFile.Close()
-    '''

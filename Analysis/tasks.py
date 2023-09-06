@@ -65,7 +65,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         vars_to_plot = list(hists.keys())
         local_files_target = []
         for var in vars_to_plot:
-            outFile_histProdSample = HistProducerSampleTask.req(self, branch=-1, branches=()).getOutFileName(var, sample_name)
+            outFile_histProdSample = self.getOutFileName(var, sample_name)
             if os.path.exists(outFile_histProdSample):
                 local_files_target.append(law.LocalFileTarget(outFile_histProdSample))
                 continue
@@ -92,6 +92,11 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                             '--uncConfig', unc_config, '--histConfig', hist_config,'--sampleConfig', sample_config]
         sh_call(HistProducerFile_cmd,verbose=1)
 
+    def getOutFileName(self, var, sample_name):
+        outDir = os.path.join(self.central_Histograms_path(), sample_name)
+        fileName = f'{var}.root'
+        outFile = os.path.join(outDir,fileName)
+        return outFile
 
 class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
@@ -116,38 +121,38 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         n = 0
         branches = {}
         already_considered_samples = []
-        histProducerFile_map = HistProducerFileTask.req(self, branches=()).create_branch_map()
+        histProducerFile_map = HistProducerFileTask.req(self,branch=-1, branches=()).create_branch_map()
         samples = {}
         for br_idx, (sample_name, prod_br) in histProducerFile_map.items():
             if sample_name not in samples:
                 samples[sample_name] = []
             samples[sample_name].append(br_idx)
-        return { n : (sample_name, idx_list) for n, (sample_name, idx_list) in enumerate(samples.items()) }
+        branches = { n : (sample_name, idx_list) for n, (sample_name, idx_list) in enumerate(samples.items()) }
+        #print(branches)
+        return branches
 
     def output(self):
         sample_name, idx_list = self.branch_data
         vars_to_plot = list(hists.keys())
         local_files_target = []
         for var in vars_to_plot:
-            outFile = getOutFileName(var, sample_name)
+            outFile = self.getOutFileName(var, sample_name)
             local_files_target.append(law.LocalFileTarget(outFile))
         return local_files_target
 
     def run(self):
+        print(self.create_branch_map())
         sample_name, idx_list = self.branch_data
-        histProducerFile_map = HistProducerFileTask.req(self, branches=tuple((idx,) for idx in idx_list)).create_branch_map()
+        print(self.branch_data)
         #print(histProducerFile_map)
         files_idx = []
         vars_to_plot = list(hists.keys())
         hists_str = ','.join(var for var in vars_to_plot)
         file_ids_str = ''
         file_name_pattern = 'nano'
-        for br_idx, (smpl_name, prod_br) in histProducerFile_map.items():
-            if smpl_name == sample_name:
-                files_idx.append(br_idx)
-        if(len(files_idx)>1):
+        if(len(idx_list)>1):
             file_name_pattern +="_{id}"
-            file_ids_str = f"{files_idx[0]}-{files_idx[-1]}"
+            file_ids_str = f"0-{len(idx_list)}"
 
         file_name_pattern += ".root"
         HistProducerSample = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample.py')

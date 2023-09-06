@@ -156,7 +156,7 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         histDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp')
         HistProducerSample_cmd = ['python3', HistProducerSample,'--histDir', histDir, '--outDir', outDir, '--hists', hists_str,
                             '--file-name-pattern', file_name_pattern, '--remove-files', 'True']
-        if(len(files_idx)>1):
+        if(len(idx_list)>1):
             HistProducerSample_cmd.extend(['--file-ids', file_ids_str])
         #print(HistProducerSample_cmd)
         sh_call(HistProducerSample_cmd,verbose=1)

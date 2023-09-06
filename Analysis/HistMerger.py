@@ -163,6 +163,7 @@ if __name__ == "__main__":
 
     #print(all_files)
     # 1. get Histograms
+    all_histograms ={}
 
     for var in all_files.keys():
         if var not in all_histograms.keys():

@@ -105,6 +105,7 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     hists = load_hist_config(hist_config)
 
     def workflow_requires(self):
+
         self_map = self.create_branch_map()
         workflow_dict = {}
         workflow_dict["histProducerFile"] = {
@@ -115,7 +116,8 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def requires(self):
         sample_name, idx_list  = self.branch_data
-        return [ HistProducerFileTask.req(self, max_runtime=HistProducerFileTask.max_runtime._default, branches=tuple((idx,) for idx in idx_list))]
+        deps = [HistProducerFileTask.req(self, max_runtime=HistProducerFileTask.max_runtime._default, branch=idx) for idx in idx_list ]
+        return deps
 
 
     def create_branch_map(self):
@@ -138,7 +140,6 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         sample_name, idx_list = self.branch_data
-        print(self.branch_data)
         #print(histProducerFile_map)
         files_idx = []
         vars_to_plot = list(hists.keys())
@@ -159,4 +160,3 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             HistProducerSample_cmd.extend(['--file-ids', file_ids_str])
         #print(HistProducerSample_cmd)
         sh_call(HistProducerSample_cmd,verbose=1)
-

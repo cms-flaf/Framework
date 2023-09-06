@@ -29,20 +29,22 @@ if __name__ == "__main__":
     # 1 list files :
 
     all_vars = args.hists.split(',')
-    start_end_idx = args.hists.split('-')
+    start_end_idx = args.file_ids.split('-')
     all_files = {}
     for var in all_vars:
         all_files[var] = []
         file_name = args.file_name_pattern
         if(len(start_end_idx) > 1):
-            for idx in range(start_end_idx[0],start_end_idx[1]):
-                file_name = file_name.format(id=idx)
+            for idx in range(int(start_end_idx[0]),int(start_end_idx[1])):
+                print(idx)
+                file_name = args.file_name_pattern.format(id=idx)
+                print(file_name)
                 all_files[var].append(os.path.join(args.histDir, var, file_name))
         else:
             all_files[var].append(os.path.join(args.histDir, var, file_name))
-
+        print(all_files[var])
         outFileNameFinal = f'{args.outDir}/{var}.root'
-        hadd_str = f'hadd -f209 -j -O {outFileNameFinal}'
+        hadd_str = f'hadd -f209 -j -O {outFileNameFinal} '
         hadd_str += ' '.join(f for f in all_files[var])
         if len(all_files[var]) > 1:
             sh_call([hadd_str], True)

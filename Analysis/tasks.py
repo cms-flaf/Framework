@@ -64,17 +64,11 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         fileName = outFileName = os.path.basename(input_file)
         vars_to_plot = list(hists.keys())
         local_files_target = []
-        histProducerSample_map = HistProducerSampleTask.req(self, branch=-1, branches=()).create_branch_map() # this is very slow
-        branch = 0
-        for br_idx, (smpl_name, idx_list) in histProducerSample_map.items():
-            if smpl_name != sample_name: continue
-            branch = br_idx
-        output_HistProducerSampleTask = HistProducerSampleTask.req(self, branch=branch, branches=()).output()
-        for foutput in output_HistProducerSampleTask:
-            if os.path.exists(foutput.path):
-                local_files_target.append(foutput)
-        if local_files_target: return local_files_target
         for var in vars_to_plot:
+            outFile_histProdSample = HistProducerSampleTask.req(self, branch=-1, branches=()).getOutFileName(var, sample_name)
+            if os.path.exists(outFile_histProdSample):
+                local_files_target.append(law.LocalFileTarget(outFile_histProdSample))
+                continue
             outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp', var)
             if not os.path.isdir(outDir):
                 os.makedirs(outDir)
@@ -143,9 +137,8 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         sample_name, idx_list = self.branch_data
-        histProducerFile_map = HistProducerFileTask.req(self, branches=tuple((idx,) for idx in idx_list)).branch_data
-        print(histProducerFile_map)
-        '''
+        histProducerFile_map = HistProducerFileTask.req(self, branches=tuple((idx,) for idx in idx_list)).create_branch_map()
+        #print(histProducerFile_map)
         files_idx = []
         vars_to_plot = list(hists.keys())
         hists_str = ','.join(var for var in vars_to_plot)
@@ -166,7 +159,11 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                             '--file-name-pattern', file_name_pattern, '--remove-files', 'True']
         if(len(files_idx)>1):
             HistProducerSample_cmd.extend(['--file-ids', file_ids_str])
-        print(HistProducerSample_cmd)
-        #sh_call(HistProducerSample_cmd,verbose=1)
+        #print(HistProducerSample_cmd)
+        sh_call(HistProducerSample_cmd,verbose=1)
 
-        '''
+    def getOutFileName(self, var, sample_name):
+        outDir = os.path.join(self.central_Histograms_path(), sample_name)
+        fileName = f'{var}.root'
+        outFile = os.path.join(outDir,fileName)
+        return outFile

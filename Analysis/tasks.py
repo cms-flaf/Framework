@@ -10,6 +10,17 @@ from RunKit.checkRootFile import checkRootFileSafe
 from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
 from AnaProd.tasks import AnaTupleTask, DataMergeTask
 
+
+hists = None
+def load_hist_config(hist_config):
+    global hists
+    with open(hist_config, 'r') as f:
+        hists = yaml.safe_load(f)
+    return hists
+
+hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
+hists = load_hist_config(hist_config)
+
 class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
@@ -51,18 +62,17 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_name, prod_br = self.branch_data
         input_file = self.input()[0].path
         fileName = outFileName = os.path.basename(input_file)
-        vars_to_plot = list(self.hists.keys())
+        vars_to_plot = list(hists.keys())
         local_files_target = []
-
-        histProducerSample_map = HistProducerSampleTask.req(self, branch=-1, branches=()).create_branch_map()
+        histProducerSample_map = HistProducerSampleTask.req(self, branches=()).create_branch_map()
         branch = 0
-        for br_idx, (smpl_name, idx_list) in histProducerSample_map:
+        for br_idx, (smpl_name, idx_list) in histProducerSample_map.items():
             if smpl_name != sample_name: continue
             branch = br_idx
         output_HistProducerSampleTask = HistProducerSampleTask.req(self, branch=branch, branches=()).output()
         for foutput in output_HistProducerSampleTask:
-            if os.path.exists(foutput):
-                local_files_target.append(foutput)
+            if os.path.exists(foutput.path):
+                local_files_target.append(foutput.path)
         if local_files_target: return local_files_target
         for var in vars_to_plot:
             outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp', var)
@@ -93,16 +103,17 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
 
     def workflow_requires(self):
-        return { "histProducerFile" : HistProducerFileTask.req(self, branches=())}
+        self_map = self.create_branch_map()
+        workflow_dict = {}
+        workflow_dict["histProducerFile"] = {
+            n: AnaTupleTask.req(self, branches=tuple((idx,) for idx in idx_list))
+            for n, (sample_name, idx_list) in self_map.items()
+        }
+        return workflow_dict
 
     def requires(self):
-        histProducerFile_map = HistProducerFileTask.req(self, branches=()).create_branch_map()
-        sample_name = self.branch_data
-        reqs = []
-        for br_idx, (smpl_name, prod_br) in histProducerFile_map.items():
-            if smpl_name == sample_name:
-                reqs.append( HistProducerFileTask.req(self, branch=br_idx, max_runtime=HistProducerFileTask.max_runtime._default, branches=()))
-        return reqs
+        sample_name, idx_list  = self.branch_data
+        return [ HistProducerFileTask.req(self, max_runtime=HistProducerFileTask.max_runtime._default, branches=tuple((idx,) for idx in idx_list))]
 
 
     def create_branch_map(self):
@@ -119,7 +130,7 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         sample_name, idx_list = self.branch_data
-        vars_to_plot = list(self.hists.keys())
+        vars_to_plot = list(hists.keys())
         local_files_target = []
         for var in vars_to_plot:
             fileName = f'{var}.root'
@@ -132,9 +143,9 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         sample_name, idx_list = self.branch_data
-        histProducerFile_map = HistProducerFileTask.req(self, branches=()).branch_data
+        histProducerFile_map = HistProducerFileTask.req(self, branches=tuple((idx,) for idx in idx_list)).create_branch_map()
         files_idx = []
-        vars_to_plot = list(self.hists.keys())
+        vars_to_plot = list(hists.keys())
         hists_str = ','.join(var for var in vars_to_plot)
         file_ids_str = ''
         file_name_pattern = 'nano'
@@ -153,5 +164,6 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                             '--file-name-pattern', file_name_pattern, '--remove-files', 'True']
         if(len(files_idx)>1):
             HistProducerSample_cmd.extend(['--file-ids', file_ids_str])
-        sh_call(HistProducerSample_cmd,verbose=1)
+        print(HistProducerSample_cmd)
+        #sh_call(HistProducerSample_cmd,verbose=1)
 

@@ -107,9 +107,7 @@ class Task(law.Task):
         super(Task, self).__init__(*args, **kwargs)
         self.cmssw_env_ = None
         self.sample_config = os.path.join(self.ana_path(), 'config', f'samples_{self.period}.yaml')
-        self.hist_config = os.path.join(self.ana_path(), 'config', 'plot','histograms.yaml')
         self.global_params, self.samples = load_sample_configs(self.sample_config, self.period)
-        self.hists = load_hist_config(self.hist_config)
 
     def store_parts(self):
         return (self.__class__.__name__, self.period, self.version)

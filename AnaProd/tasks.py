@@ -177,7 +177,6 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 
     def create_branch_map(self):
-        deps = []
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
         prod_branches = []
         for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():

@@ -18,12 +18,12 @@ def load_hist_config(hist_config):
         hists = yaml.safe_load(f)
     return hists
 
-hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
-hists = load_hist_config(hist_config)
 
 class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
+    hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
+    hists = load_hist_config(hist_config)
 
     def workflow_requires(self):
         branch_map = self.create_branch_map()
@@ -95,6 +95,8 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
+    hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
+    hists = load_hist_config(hist_config)
 
     def workflow_requires(self):
         self_map = self.create_branch_map()
@@ -127,11 +129,7 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         vars_to_plot = list(hists.keys())
         local_files_target = []
         for var in vars_to_plot:
-            fileName = f'{var}.root'
-            outDir = os.path.join(self.central_Histograms_path(), sample_name)
-            if not os.path.isdir(outDir):
-                os.makedirs(outDir)
-            outFile = os.path.join(outDir,fileName)
+            outFile = getOutFileName(var, sample_name)
             local_files_target.append(law.LocalFileTarget(outFile))
         return local_files_target
 

@@ -19,6 +19,12 @@ def load_hist_config(hist_config):
     return hists
 
 
+def getOutFileName(var, sample_name, central_Histograms_path):
+    outDir = os.path.join(central_Histograms_path, sample_name)
+    fileName = f'{var}.root'
+    outFile = os.path.join(outDir,fileName)
+    return outFile
+
 class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
@@ -65,7 +71,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         vars_to_plot = list(hists.keys())
         local_files_target = []
         for var in vars_to_plot:
-            outFile_histProdSample = self.getOutFileName(var, sample_name)
+            outFile_histProdSample = getOutFileName(var, sample_name, self.central_Histograms_path())
             if os.path.exists(outFile_histProdSample):
                 local_files_target.append(law.LocalFileTarget(outFile_histProdSample))
                 continue
@@ -92,11 +98,6 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                             '--uncConfig', unc_config, '--histConfig', hist_config,'--sampleConfig', sample_config]
         sh_call(HistProducerFile_cmd,verbose=1)
 
-    def getOutFileName(self, var, sample_name):
-        outDir = os.path.join(self.central_Histograms_path(), sample_name)
-        fileName = f'{var}.root'
-        outFile = os.path.join(outDir,fileName)
-        return outFile
 
 class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
@@ -118,9 +119,6 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 
     def create_branch_map(self):
-        n = 0
-        branches = {}
-        already_considered_samples = []
         histProducerFile_map = HistProducerFileTask.req(self,branch=-1, branches=()).create_branch_map()
         all_samples = {}
         for br_idx, (sample_name, prod_br) in histProducerFile_map.items():
@@ -134,7 +132,7 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         vars_to_plot = list(hists.keys())
         local_files_target = []
         for var in vars_to_plot:
-            outFile = self.getOutFileName(var, sample_name)
+            outFile = getOutFileName(var, sample_name, self.central_Histograms_path())
             local_files_target.append(law.LocalFileTarget(outFile))
         return local_files_target
 
@@ -162,8 +160,3 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         #print(HistProducerSample_cmd)
         sh_call(HistProducerSample_cmd,verbose=1)
 
-    def getOutFileName(self, var, sample_name):
-        outDir = os.path.join(self.central_Histograms_path(), sample_name)
-        fileName = f'{var}.root'
-        outFile = os.path.join(outDir,fileName)
-        return outFile

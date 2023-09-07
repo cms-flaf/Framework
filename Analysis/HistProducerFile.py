@@ -27,6 +27,7 @@ def SaveHists(histograms, out_file):
         for hist in hist_list[1:] :
             merged_hist.Add(hist.GetValue())
         isCentral = 'Central' in key_tuple[1]
+        #print(key_tuple[1])
         sample_type,uncName,scale = key_tuple[1]
         hist_name =  sample_type
         if not isCentral:
@@ -111,7 +112,6 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
     if key_central not in all_dataframes:
         all_dataframes[key_central] = [PrepareDfWrapped(dfWrapped_central).df]
     central_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_central , models, key_filter_dict, unc_cfg_dict['norm'])
-
     # norm weight histograms
     if compute_rel_weights and dataset!='data':
         for uncName in unc_cfg_dict['norm'].keys():
@@ -121,7 +121,10 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
                     all_dataframes[key_2] = []
                 all_dataframes[key_2] = all_dataframes[key_central]
                 norm_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_2, models, key_filter_dict,unc_cfg_dict['norm'])
-                central_histograms.update(norm_histograms)
+                for var in central_histograms.keys():
+                    if var not in norm_histograms.keys():
+                        print(f"norm hist not available for {var}")
+                    central_histograms[var].update(norm_histograms[var])
 
     # central quantities definition
     compute_variations = ( compute_unc_variations or compute_rel_weights ) and dataset != 'data'
@@ -130,6 +133,7 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
         if all_dataframes[key_central][0].Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
 
     # save histograms
+    #print(central_histograms)
     for var in central_histograms.keys():
         SaveHists(central_histograms[var], outfiles[var])
 

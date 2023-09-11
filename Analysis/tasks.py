@@ -105,7 +105,6 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     hists = load_hist_config(hist_config)
 
     def workflow_requires(self):
-
         self_map = self.create_branch_map()
         workflow_dict = {}
         workflow_dict["histProducerFile"] = {
@@ -121,13 +120,16 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 
     def create_branch_map(self):
+        branches = {}
         histProducerFile_map = HistProducerFileTask.req(self,branch=-1, branches=()).create_branch_map()
         all_samples = {}
         for br_idx, (sample_name, prod_br) in histProducerFile_map.items():
             if sample_name not in all_samples:
                 all_samples[sample_name] = []
             all_samples[sample_name].append(br_idx)
-        return { n : (sample_name, idx_list) for n, (sample_name, idx_list) in enumerate(all_samples.items()) }
+        for n, (sample_name, idx_list) in enumerate(all_samples.items()):
+            branches[n] = (sample_name, idx_list)
+        return branches
 
     def output(self):
         sample_name, idx_list = self.branch_data

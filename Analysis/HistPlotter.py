@@ -20,18 +20,13 @@ if __name__ == "__main__":
     import PlotKit.Plotter as Plotter
     import yaml
     parser = argparse.ArgumentParser()
-    parser.add_argument('--inFileName', required=False, type=str, default='all_histograms.root')
-    parser.add_argument('--period', required=False, type=str, default = 'Run2_2018')
-    parser.add_argument('--version', required=False, type=str, default = 'v2_deepTau_v2p1')
-    parser.add_argument('--vars', required=False, type=str, default = 'tau1_pt')
-    parser.add_argument('--histdir', required=False, type=str, default='histograms')
+    parser.add_argument('--inFileName', required=True)
+    parser.add_argument('--hists', required=False, type=str, default = 'tau1_pt')
     parser.add_argument('--mass', required=False, type=int, default=2000)
     parser.add_argument('--test', required=False, type=bool, default=True)
-    #parser.add_argument('--new-weights', required=False, type=bool, default=False)
+    parser.add_argument('--sampleConfig', required=True, type=str)
     args = parser.parse_args()
-    #histograms_path = "/eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms_noBjetWeights/Run2_2018/v4p1_deepTau2p1/"
-    histograms_path = f"/eos/home-v/vdamante/HH_bbtautau_resonant_Run2/{args.histdir}/Run2_2018/v4p1_deepTau2p1/"
-    #histograms_path = os.path.join( os.environ['VDAMANTE_STORAGE'], args.period, args.version) if args.test==False else ''
+
     page_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/cms_stacked.yaml")
     page_cfg_custom = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/2018.yaml")
     hist_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/histograms.yaml")
@@ -41,12 +36,16 @@ if __name__ == "__main__":
     with open(inputs_cfg, 'r') as f:
         inputs_cfg_dict = yaml.safe_load(f)
     samples_list = [ s['name'] for s in inputs_cfg_dict]
+    with open(args.sampleConfig, 'r') as f:
+        sample_cfg_dict = yaml.safe_load(f)
+    #print(sample_cfg_dict.keys())
 
     all_histlist = {}
     plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg_dict, inputs_cfg=inputs_cfg_dict)
-    vars_to_plot = ['bbtautau_mass']#list(hist_cfg_dict.keys())
-    categories = ['inclusive']
-    channels = ['tauTau']
+    vars_to_plot = args.hists.split(',')
+    categories = list(sample_cfg_dict['GLOBAL']['categories'])
+    QCDregions = list(sample_cfg_dict['GLOBAL']['QCDRegions'])
+    channels = list(sample_cfg_dict['GLOBAL']['channelSelection'])
     for var in vars_to_plot:
         hists_to_plot = {}
         inDir = os.path.join(histograms_path, var)

@@ -60,6 +60,8 @@ def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_di
 
             for dataframe in dataframes:
                 dataframe = dataframe.Filter(key_cut)
+                #print(key_cut)
+                #print(f"after cut df has {dataframe.Count().GetValue()}")
                 histograms_var[(key_1, key_2)].append(dataframe.Define("final_weight", f"{total_weight_expression}").Define("weight_for_hists", weight_name).Histo1D(models[var], var, "weight_for_hists"))
     return histograms
 
@@ -104,9 +106,11 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
     all_dataframes = {}
     all_histograms = {}
     key_filter_dict = createKeyFilterDict()
+    #print(key_filter_dict)
 
     # central hist definition
     dfWrapped_central = dfWrapped_central = DataFrameBuilder(ROOT.RDataFrame('Events', inFile), deepTauVersion)
+
     col_names_central =  dfWrapped_central.colNames
     col_tpyes_central =  dfWrapped_central.colTypes
     if key_central not in all_dataframes:

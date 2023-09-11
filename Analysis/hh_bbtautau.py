@@ -30,6 +30,7 @@ def createKeyFilterDict():
                     filter_str+=f" && {cat}"
                 key = (ch, reg, cat)
                 reg_dict[key] = filter_str
+                print(filter_str)
     return reg_dict
 
 
@@ -60,7 +61,7 @@ class DataFrameBuilder(DataFrameBuilderBase):
     def defineChannels(self):
         self.df = self.df.Define("eTau", f"channelId==13")
         self.df = self.df.Define("muTau", f"channelId==23")
-        self.df = self.df.Define("tauTau", f"channelId==23")
+        self.df = self.df.Define("tauTau", f"channelId==33")
 
     def defineQCDRegions(self):
         tau2_iso_var = f"tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet"

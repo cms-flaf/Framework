@@ -17,6 +17,7 @@ import Corrections.Corrections as Corrections
 from Corrections.lumi import LumiFilter
 
 #ROOT.EnableImplicitMT(1)
+ROOT.EnableThreadSafety()
 
 deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
             "rawDeepTau2017v2p1VSjet", "rawDeepTau2018v2p5VSe", "rawDeepTau2018v2p5VSmu",
@@ -28,14 +29,14 @@ Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all"]
 Electron_observables = ["Electron_mvaNoIso_WP90", "Electron_mvaIso_WP90", "Electron_pfRelIso03_all"]
 JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",
-                "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL"]
+                "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL", "bRegCorr", "bRegRes", "idbtagDeepFlavB"]
 JetObservablesMC = ["hadronFlavour","partonFlavour"]
 
 FatJetObservables = ["area", "btagCSVV2", "btagDDBvLV2", "btagDeepB", "btagHbb", "deepTagMD_HbbvsQCD",
                      "deepTagMD_ZHbbvsQCD", "deepTagMD_ZbbvsQCD", "deepTagMD_bbvsLight", "deepTag_H",
                      "jetId", "msoftdrop", "nBHadrons", "nCHadrons",
                      "nConstituents", "particleNetMD_QCD", "particleNetMD_Xbb", "particleNet_HbbvsQCD",
-                     "particleNet_mass", "rawFactor", "subJetIdx1", "subJetIdx2" ]
+                     "particleNet_mass", "rawFactor" ]
 
 
 FatJetObservablesMC = ["hadronFlavour","partonFlavour"]
@@ -43,7 +44,7 @@ FatJetObservablesMC = ["hadronFlavour","partonFlavour"]
 SubJetObservables = ["btagDeepB", "eta", "mass", "phi", "pt", "rawFactor"]
 SubJetObservablesMC = ["hadronFlavour","partonFlavour"]
 
-defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "isData","PuppiMET_pt", "PuppiMET_phi",
+defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "X_spin", "isData","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
                 "PV_npvs" ]
 
@@ -64,23 +65,25 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     dfw.DefineAndAppend("Hbb_isValid" , "HbbCandidate.has_value()")
     dfw.Apply(Baseline.ExtraRecoJetSelection)
     dfw.Apply(Corrections.jet.getEnergyResolution)
-    dfw.DefineAndAppend(f"ExtraJet_pt", f"v_ops::pt(Jet_p4[ExtraJet_B1])")
-    dfw.DefineAndAppend(f"ExtraJet_eta", f"v_ops::eta(Jet_p4[ExtraJet_B1])")
-    dfw.DefineAndAppend(f"ExtraJet_phi", f"v_ops::phi(Jet_p4[ExtraJet_B1])")
-    dfw.DefineAndAppend(f"ExtraJet_mass", f"v_ops::mass(Jet_p4[ExtraJet_B1])")
-    dfw.DefineAndAppend(f"ExtraJet_ptRes", f"Jet_ptRes[ExtraJet_B1]")
+    dfw.Apply(Corrections.btag.getWPid)
     jet_obs = []
     jet_obs.extend(JetObservables)
     dfw.Apply(Baseline.ApplyJetSelection)
     if not isData:
         dfw.Define(f"Jet_genJet_idx", f" FindMatching(Jet_p4,GenJet_p4,0.3)")
         jet_obs.extend(JetObservablesMC)
-        if "LHE_HT" in dfw.df.GetColumnNames():
-            dfw.colToSave.append("LHE_HT")
-    for jetVar in jet_obs:
-        if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
-        dfw.DefineAndAppend(f"ExtraJet_{jetVar}", f"Jet_{jetVar}[ExtraJet_B1]")
-    dfw.DefineAndAppend(f"ExtraJet_HHbtag", f"Jet_HHBtagScore[ExtraJet_B1]")
+
+    if config["GLOBAL"]["storeExtraJets"]:
+        dfw.DefineAndAppend(f"ExtraJet_pt", f"v_ops::pt(Jet_p4[ExtraJet_B1])")
+        dfw.DefineAndAppend(f"ExtraJet_eta", f"v_ops::eta(Jet_p4[ExtraJet_B1])")
+        dfw.DefineAndAppend(f"ExtraJet_phi", f"v_ops::phi(Jet_p4[ExtraJet_B1])")
+        dfw.DefineAndAppend(f"ExtraJet_mass", f"v_ops::mass(Jet_p4[ExtraJet_B1])")
+        dfw.DefineAndAppend(f"ExtraJet_ptRes", f"Jet_ptRes[ExtraJet_B1]")
+        for jetVar in jet_obs:
+            if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
+            dfw.DefineAndAppend(f"ExtraJet_{jetVar}", f"Jet_{jetVar}[ExtraJet_B1]")
+        dfw.DefineAndAppend(f"ExtraJet_HHbtag", f"Jet_HHBtagScore[ExtraJet_B1]")
+
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, nLegs, isData)
         dfw.colToSave.extend(hltBranches)
@@ -91,7 +94,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     if mode == "HH":
         channel_to_select = " || ".join(f"HttCandidate.channel()==Channel::{ch}" for ch in config["GLOBAL"]["channelSelection"])
         dfw.Filter(channel_to_select, "select channels")
-
     fatjet_obs = []
     fatjet_obs.extend(FatJetObservables)
     if not isData:
@@ -101,6 +103,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_phi", f"v_ops::phi(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_mass", f"v_ops::mass(FatJet_p4[FatJet_bbCand])")
+
     for fatjetVar in fatjet_obs:
         if(f"FatJet_{fatjetVar}" not in dfw.df.GetColumnNames()): continue
         dfw.DefineAndAppend(f"SelectedFatJet_{fatjetVar}", f"FatJet_{fatjetVar}[FatJet_bbCand]")
@@ -111,10 +114,11 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
         dfw.Define(f"SubJet2_genJet_idx", f" FindMatching(SubJet_p4[FatJet_subJetIdx2],SubGenJetAK8_p4,0.3)")
         fatjet_obs.extend(SubJetObservablesMC)
     for subJetIdx in [1,2]:
+        dfw.Define(f"SelectedFatJet_subJetIdx{subJetIdx}", f"FatJet_subJetIdx{subJetIdx}[FatJet_bbCand]")
         dfw.Define(f"FatJet_SubJet{subJetIdx}_isValid", f" FatJet_subJetIdx{subJetIdx} >=0 && FatJet_subJetIdx{subJetIdx} < nSubJet")
         dfw.DefineAndAppend(f"SelectedFatJet_SubJet{subJetIdx}_isValid", f"FatJet_SubJet{subJetIdx}_isValid[FatJet_bbCand]")
         for subJetVar in subjet_obs:
-            dfw.DefineAndAppend(f"SubJet{subJetIdx}_{subJetVar}", f"""
+            dfw.DefineAndAppend(f"SelectedFatJet_SubJet{subJetIdx}_{subJetVar}", f"""
                                 RVecF subjet_var(SelectedFatJet_pt.size(), 0.f);
                                 for(size_t fj_idx = 0; fj_idx<SelectedFatJet_pt.size(); fj_idx++) {{
                                     auto sj_idx = SelectedFatJet_subJetIdx{subJetIdx}.at(fj_idx);
@@ -207,13 +211,13 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     compression_settings = snapshotOptions.fCompressionAlgorithm * 100 + snapshotOptions.fCompressionLevel
     period = config["GLOBAL"]["era"]
     mass = -1 if 'mass' not in config[sample_name] else config[sample_name]['mass']
+    spin = -100 if 'spin' not in config[sample_name] else config[sample_name]['spin']
     isHH = True if mass > 0 else False
     isData = True if config[sample_name]['sampleType'] == 'data' else False
     loadTF = mode == "HH"
     loadHHBtag = mode == "HH"
     nLegs = 4 if mode == "ttHH" else 2
     Baseline.Initialize(loadTF, loadHHBtag)
-    #if not isData:
     Corrections.Initialize(config=config['GLOBAL'],isData=isData)
     triggerFile = config['GLOBAL'].get('triggerFile')
     if triggerFile is not None:
@@ -237,6 +241,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     df = df.Define("sample_name", f"{zlib.crc32(sample_name.encode())}")
     df = df.Define("period", f"static_cast<int>(Period::{period})")
     df = df.Define("X_mass", f"static_cast<int>({mass})")
+    df = df.Define("X_spin", f"static_cast<int>({spin})")
     df = df.Define("entryIndex", "static_cast<int>(rdfentry_)")
     is_data = 'true' if isData else 'false'
     df = df.Define("isData", is_data)
@@ -247,20 +252,19 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         syst_dict = { 'nano' : 'Central' }
     else:
         df, syst_dict = Corrections.applyScaleUncertainties(df)
-    # syst_dict = { 'nano' : 'Central' }
-    #print(syst_dict)
     df_empty = df
     snaps = []
     reports = []
     outfilesNames = []
+    k=0
     for syst_name, source_name in syst_dict.items():
         if source_name not in uncertainties and "all" not in uncertainties: continue
-        #print(f"source name is {source_name} and syst name is {syst_name}")
         is_central = syst_name in [ 'Central', 'nano' ]
         if not is_central and not compute_unc_variations: continue
         suffix = '' if is_central else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
         dfw = Utilities.DataFrameWrapper(df_empty,defaultColToSave)
+
         addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs)
         if not isData:
             weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name, nLegs,
@@ -273,22 +277,24 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
             for puIDbranch in puIDbranches:
                 if puIDbranch in dfw.df.GetColumnNames():
                     new_branch_name= puIDbranch.strip("_tmp")
-                    dfw.DefineAndAppend(new_branch_name, f"{puIDbranch}[ExtraJet_B1]")
+                    dfw.Define(f"""ExtraJet_{new_branch_name}""", f"{puIDbranch}[ExtraJet_B1]")
+                    if config["GLOBAL"]["storeExtraJets"]:
+                        dfw.colToSave.extend.append(f"""ExtraJet_{new_branch_name}""")
                     for bjet_idx in [1,2]:
                         dfw.DefineAndAppend(f"{new_branch_name}_b{bjet_idx}", f"Hbb_isValid ? {puIDbranch}[b{bjet_idx}_idx] : -100.f")
                 if puIDbranch in weight_branches: weight_branches.remove(puIDbranch)
             dfw.colToSave.extend(weight_branches)
         reports.append(dfw.df.Report())
         varToSave = Utilities.ListToVector(dfw.colToSave)
-        outFileName = os.path.join(outDir, f"Events{suffix}.root")
+        outfile_prefix = inFiles[0].split('/')[-1]
+        outfile_prefix = outfile_prefix.split('.')[0]
+        outFileName = os.path.join(outDir, f"{outfile_prefix}{suffix}.root")
         outfilesNames.append(outFileName)
         if os.path.exists(outFileName):
             os.remove(outFileName)
         snaps.append(dfw.df.Snapshot(f"Events", outFileName, varToSave, snapshotOptions))
     if snapshotOptions.fLazy == True:
-        #print(f"rungraph is running now")
         ROOT.RDF.RunGraphs(snaps)
-        #print(f"rungraph has finished running")
     hist_time = ROOT.TH1D(f"time", f"time", 1, 0, 1)
     end_time = datetime.datetime.now()
     hist_time.SetBinContent(1, (end_time - start_time).total_seconds())
@@ -315,7 +321,7 @@ if __name__ == "__main__":
     parser.add_argument('--sample', required=True, type=str)
     parser.add_argument('--anaCache', required=True, type=str)
     parser.add_argument('--compressionLevel', type=int, default=4)
-    parser.add_argument('--compressionAlgo', type=str, default="LZ4")
+    parser.add_argument('--compressionAlgo', type=str, default="ZLIB")
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--store-noncentral', action="store_true", help="Store ES variations.")
@@ -338,7 +344,6 @@ if __name__ == "__main__":
     if os.path.isdir(args.outDir):
         shutil.rmtree(args.outDir)
     os.makedirs(args.outDir, exist_ok=True)
-    #print( args.uncertainties.split(","))
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=False
     snapshotOptions.fLazy = True

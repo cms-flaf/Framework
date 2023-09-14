@@ -131,8 +131,11 @@ action() {
     export ANALYSIS_DATA_PATH="$ANALYSIS_PATH/data"
     export X509_USER_PROXY="$ANALYSIS_DATA_PATH/voms.proxy"
     export CENTRAL_STORAGE="/eos/home-k/kandroso/cms-hh-bbtautau"
+    export VDAMANTE_STORAGE='/eos/home-v/vdamante/HH_bbtautau_resonant_Run2'
     export ANALYSIS_BIG_DATA_PATH="$CENTRAL_STORAGE/tmp/$(whoami)/data"
     #export PATH=$PATH:$HOME/.local/bin:$ANALYSIS_PATH/scripts
+
+    run_cmd source /afs/cern.ch/user/m/mrieger/public/law_sw/setup.sh
 
     run_cmd mkdir -p "$ANALYSIS_DATA_PATH"
 
@@ -152,8 +155,9 @@ action() {
         autoload bashcompinit
         bashcompinit
     fi
-    source /cvmfs/sft.cern.ch/lcg/views/setupViews.sh LCG_102 x86_64-centos${os_version}-gcc11-opt
-    source /afs/cern.ch/user/m/mrieger/public/law_sw/setup.sh
+    export MAMBA_ROOT_PREFIX=/afs/cern.ch/work/k/kandroso/micromamba
+    eval "$($MAMBA_ROOT_PREFIX/micromamba shell hook -s posix)"
+    micromamba activate hh
     source "$( law completion )"
 
     alias cmsEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY CENTRAL_STORAGE=$CENTRAL_STORAGE ANALYSIS_BIG_DATA_PATH=$ANALYSIS_BIG_DATA_PATH DEFAULT_CMSSW_BASE=$DEFAULT_CMSSW_BASE $ANALYSIS_PATH/RunKit/cmsEnv.sh"

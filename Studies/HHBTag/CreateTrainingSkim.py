@@ -17,7 +17,7 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv, config, snapshotOpt
     Baseline.Initialize(False, False)
 
     df = ROOT.RDataFrame("Events", inFile)
-    df = df.Range(1000)
+    # df = df.Range(1000)
     df = Baseline.CreateRecoP4(df)
     df = Baseline.DefineGenObjects(df, isHH=True, Hbb_AK4mass_mpv=mpv)
     df = Baseline.SelectRecoP4(df)

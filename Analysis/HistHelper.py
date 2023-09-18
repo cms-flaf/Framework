@@ -1,10 +1,41 @@
 import sys
 import math
 import ROOT
+import os
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
 import Common.Utilities as Utilities
+
+scales = ['Up','Down']
+
+
+def GetUncNameTypes(unc_cfg_dict):
+    uncNames = []
+    uncNames.extend(list(unc_cfg_dict['norm'].keys()))
+    uncNames.extend([unc for unc in unc_cfg_dict['shape']])
+    return uncNames
+
+def GetSamplesStuff(sample_cfg_dict,histDir):
+    all_samples_list = []
+    all_samples_types = {'data':['data'],}
+    signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
+    for sample in sample_cfg_dict.keys():
+        if not os.path.isdir(os.path.join(histDir, sample)): continue
+        sample_type = sample_cfg_dict[sample]['sampleType']
+        isSignal = False
+        if sample_type in signals:
+            isSignal = True
+            sample_type=sample
+        if sample_type not in all_samples_types.keys() :
+            all_samples_types[sample_type] = []
+        all_samples_types[sample_type].append(sample)
+        if isSignal: continue
+        if sample_type in all_samples_list: continue
+        all_samples_list.append(sample_type)
+    return all_samples_list, all_samples_types
+
+
 
 def defineP4(df, name):
     df = df.Define(f"{name}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({name}_pt,{name}_eta,{name}_phi,{name}_mass)")

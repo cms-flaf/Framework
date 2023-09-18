@@ -29,7 +29,7 @@ if __name__ == "__main__":
   parser.add_argument('--workingDir', required=True, type=str)
   parser.add_argument('--outputFile', required=True, type=str)
   parser.add_argument('--centralFile', required=False, type=str, default='nano.root')
-  parser.add_argument('--recreateOutDir', required=False, type=bool, default=True)
+  parser.add_argument('--recreateOutDir', required=False, type=bool, default=False)
   parser.add_argument('--test', required=False, type=bool, default=False)
   args = parser.parse_args()
   all_files = os.listdir(args.inputDir)

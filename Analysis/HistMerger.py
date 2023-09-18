@@ -15,42 +15,66 @@ from Analysis.HistHelper import *
 # region C = SS_Iso
 # region D = SS_AntiIso
 
-def CompareYields(histograms, all_samples_list, channel='tauTau', category='res2b', key_name = 'Central',data = 'data'):
+def CreateNamesDict(histNamesDict, sample_types, uncNames, scales, sample_cfg_dict):
+    signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
+    for sample_key in sample_types.keys():
+        if sample_key in sample_cfg_dict.keys():
+            sample_type = sample_cfg_dict[sample_key]['sampleType']
+            #if sample_type in signals:
+            #    sample_key = sample_type
+        histNamesDict[sample_key] = (sample_key, 'Central','Central')
+        if sample_key == 'data': continue
+        for uncName in uncNames:
+            for scale in scales:
+                histName = f"{sample_key}_{uncName}{scale}"
+                histKey = (sample_key, uncName, scale)
+                histNamesDict[histName] = histKey
+
+
+def CompareYields(histograms, all_samples_list, channel, category, uncName, scale):
     #print(channel, category)
-    #print(histograms.keys())
-    key_B_data = ((channel, 'OS_AntiIso', category), 'Central')
-    key_B = ((channel, 'OS_AntiIso', category), key_name)
-    key_C_data = ((channel, 'SS_Iso', category), 'Central')
-    key_C = ((channel, 'SS_Iso', category), key_name)
-    key_D_data = ((channel, 'SS_AntiIso', category), 'Central')
-    key_D = ((channel, 'SS_AntiIso', category), key_name)
-    hist_data = histograms[data]
+    #print(histograms.keys())key_B_data = ((channel, 'OS_AntiIso', category), ('Central', 'Central'))
+    key_A_data = ((channel, 'OS_Iso', category), ('Central', 'Central'))
+    key_A = ((channel, 'OS_Iso', category), (uncName, scale))
+    key_B_data = ((channel, 'OS_AntiIso', category), ('Central', 'Central'))
+    key_B = ((channel, 'OS_AntiIso', category), (uncName, scale))
+    key_C_data = ((channel, 'SS_Iso', category), ('Central', 'Central'))
+    key_C = ((channel, 'SS_Iso', category), (uncName, scale))
+    key_D_data = ((channel, 'SS_AntiIso', category), ('Central', 'Central'))
+    key_D = ((channel, 'SS_AntiIso', category), (uncName, scale))
+    hist_data = histograms['data']
     #print(hist_data.keys())
+    hist_data_A = hist_data[key_A_data]
     hist_data_B = hist_data[key_B_data]
     #if channel != 'tauTau' and category != 'inclusive': return hist_data_B
     hist_data_C = hist_data[key_C_data]
     hist_data_D = hist_data[key_D_data]
+    n_data_A = hist_data_A.Integral(0, hist_data_A.GetNbinsX()+1)
     n_data_B = hist_data_B.Integral(0, hist_data_B.GetNbinsX()+1)
     n_data_C = hist_data_C.Integral(0, hist_data_C.GetNbinsX()+1)
     n_data_D = hist_data_D.Integral(0, hist_data_D.GetNbinsX()+1)
-    print(f"Yield for data {key_B_data} is {n_data_B}")
-    print(f"Yield for data {key_C_data} is {n_data_C}")
-    print(f"Yield for data {key_D_data} is {n_data_D}")
+    print(f"data || {key_A_data} || {n_data_A}")
+    print(f"data || {key_B_data} || {n_data_B}")
+    print(f"data || {key_C_data} || {n_data_C}")
+    print(f"data || {key_D_data} || {n_data_D}")
     for sample in all_samples_list:
         #print(sample)
         # find kappa value
         hist_sample = histograms[sample]
         #print(histograms[sample].keys())
+        hist_sample_A = hist_sample[key_A]
         hist_sample_B = hist_sample[key_B]
         hist_sample_C = hist_sample[key_C]
         hist_sample_D = hist_sample[key_D]
+        n_sample_A = hist_sample_A.Integral(0, hist_sample_A.GetNbinsX()+1)
         n_sample_B = hist_sample_B.Integral(0, hist_sample_B.GetNbinsX()+1)
         n_sample_C = hist_sample_C.Integral(0, hist_sample_C.GetNbinsX()+1)
         n_sample_D = hist_sample_D.Integral(0, hist_sample_D.GetNbinsX()+1)
 
-        print(f"Yield for {sample} {key_B} is {n_sample_B}")
-        print(f"Yield for {sample} {key_C} is {n_sample_C}")
-        print(f"Yield for {sample} {key_D} is {n_sample_D}")
+        print(f"{sample} || {key_A} || {n_sample_A}")
+        print(f"{sample} || {key_B} || {n_sample_B}")
+        print(f"{sample} || {key_C} || {n_sample_C}")
+        print(f"{sample} || {key_D} || {n_sample_D}")
 
 def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, scale):
     #print(channel, category)
@@ -63,10 +87,10 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
     key_D = ((channel, 'SS_AntiIso', category), (uncName, scale))
     hist_data = histograms['data']
     #print(hist_data.keys())
-    hist_data_B = hist_data[key_B_data]
+    hist_data_B = hist_data[key_B_data].Clone()
     #if channel != 'tauTau' and category != 'inclusive': return hist_data_B
-    hist_data_C = hist_data[key_C_data]
-    hist_data_D = hist_data[key_D_data]
+    hist_data_C = hist_data[key_C_data].Clone()
+    hist_data_D = hist_data[key_D_data].Clone()
     n_data_C = hist_data_C.Integral(0, hist_data_C.GetNbinsX()+1)
     n_data_D = hist_data_D.Integral(0, hist_data_D.GetNbinsX()+1)
     print(f"Yield for data {key_C_data} is {n_data_C}")
@@ -79,9 +103,9 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
         # find kappa value
         hist_sample = histograms[sample]
         #print(histograms[sample].keys())
-        hist_sample_B = hist_sample[key_B]
-        hist_sample_C = hist_sample[key_C]
-        hist_sample_D = hist_sample[key_D]
+        hist_sample_B = hist_sample[key_B].Clone()
+        hist_sample_C = hist_sample[key_C].Clone()
+        hist_sample_D = hist_sample[key_D].Clone()
         n_sample_C = hist_sample_C.Integral(0, hist_sample_C.GetNbinsX()+1)
         n_data_C-=n_sample_C
         n_sample_D = hist_sample_D.Integral(0, hist_sample_D.GetNbinsX()+1)
@@ -90,9 +114,9 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
         print(f"Yield for data {key_D_data} after removing {sample} with yield {n_sample_D} is {n_data_D}")
 
         hist_data_B.Add(hist_sample_B, -1)
-    if n_data_C <= 0 or n_data_D <= 0:
-        print(f"n_data_C = {n_data_C}")
-        print(f"n_data_D = {n_data_D}")
+    #if n_data_C <= 0 or n_data_D <= 0:
+        #print(f"n_data_C = {n_data_C}")
+        #print(f"n_data_D = {n_data_D}")
     kappa = n_data_C/n_data_D
     if kappa<0:
         print(f"transfer factor <0")
@@ -110,7 +134,7 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
         #raise RuntimeError("Unable to estimate QCD")
     return hist_data_B
 
-def AddQCDInHistDict(all_histograms, channels, categories, sample_type, uncNameTypes, all_samples_list, scales):
+def AddQCDInHistDict(all_histograms, channels, categories, sample_type, uncNameTypes, all_samples_list, scales, onlyCentral):
     if 'QCD' not in all_histograms.keys():
             all_histograms['QCD'] = {}
     for channel in channels:
@@ -118,34 +142,22 @@ def AddQCDInHistDict(all_histograms, channels, categories, sample_type, uncNameT
         for cat in categories:
             print(f".. and category {cat}")
             key =( (channel, 'OS_Iso', cat), ('Central', 'Central'))
-            #CompareYields(all_histograms, all_samples_list, channel, cat, uncNameType, 'data')
+            CompareYields(all_histograms, all_samples_list, channel, cat, 'Central', 'Central')
             print(f".. and uncNameType Central")
             all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, 'Central', 'Central')
             for uncNameType in uncNameTypes:
                 print(f".. and uncNameType {uncNameType}")
                 for scale in scales:
                     print(f" .. and uncScale {scale}")
+                    if onlyCentral and uncNameType!='Central' and scale!='Central' : continue
                     key =( (channel, 'OS_Iso', cat), (uncNameType, scale))
-                    #CompareYields(all_histograms, all_samples_list, channel, cat, uncNameType, 'data')
+                    CompareYields(all_histograms, all_samples_list, channel, cat, uncNameType, scale)
                     all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncNameType, scale)
 
-def CreateNamesDict(histNamesDict, sample_types, uncNames, scales, signals, sample_type_config):
-    for sample_key in sample_types.keys():
-        if sample_key in sample_cfg_dict.keys():
-            sample_type = sample_cfg_dict[sample_key]['sampleType']
-            if sample_type in signals:
-                sample_key = sample_type
-        histNamesDict[sample_key] = (sample_key, 'Central','Central')
-        if sample_key == 'data': continue
-        for uncName in uncNames:
-            for scale in scales:
-                histName = f"{sample_key}_{uncName}{scale}"
-                histKey = (sample_key, uncName, scale)
-                histNamesDict[histName] = histKey
 
-
-def fillHistDict(inFileRoot, all_histograms, channels, QCDregions, categories, sample_type, uncNameTypes, histNamesDict):
+def fillHistDict(inFileRoot, all_histograms, channels, QCDregions, categories, sample_type, uncNameTypes, histNamesDict,signals,onlyCentral=False):
     #print(f"filling hist for {sample_type}")
+
     for channel in channels:
         dir_0 = inFileRoot.Get(channel)
         for qcdRegion in QCDregions:
@@ -157,10 +169,15 @@ def fillHistDict(inFileRoot, all_histograms, channels, QCDregions, categories, s
                     if not obj.IsA().InheritsFrom(ROOT.TH1.Class()): continue
                     obj.SetDirectory(0)
                     key_name = key.GetName()
+                    key_name_split = key_name.split('_')
+                    if key_name_split[0] in signals:
+                        key_name = f"{sample_type}"
+                        if len(key_name_split)>1:
+                            key_name+="_"
+                            key_name += '_'.join(ks for ks in key_name_split[1:])
                     sample,uncNameType,scale = histNamesDict[key_name]
-                    #print(key_split)
                     key_total = ((channel, qcdRegion, cat), (uncNameType, scale))
-                    #print(key_total)
+                    if onlyCentral and uncNameType!='Central' and scale!='Central' : continue
                     if key_total not in all_histograms.keys():
                         all_histograms[key_total] = []
                     all_histograms[key_total].append(obj)
@@ -174,12 +191,6 @@ def MergeHistogramsPerType(all_histograms):
         final_hist.Merge(objsToMerge)
         all_histograms[key_name] = final_hist
 
-def GetUncNameTypes(unc_cfg_dict):
-    uncNames = []
-    uncNames.extend(list(unc_cfg_dict['norm'].keys()))
-    uncNames.extend([unc for unc in unc_cfg_dict['shape']])
-    return uncNames
-
 
 if __name__ == "__main__":
     import argparse
@@ -189,41 +200,26 @@ if __name__ == "__main__":
     parser.add_argument('--hists', required=True, type=str)
     parser.add_argument('--sampleConfig', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str)
+    parser.add_argument('--onlyCentral', required=False, type=bool, default=False)
+
     args = parser.parse_args()
     with open(args.uncConfig, 'r') as f:
         unc_cfg_dict = yaml.safe_load(f)
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
-    #print(sample_cfg_dict.keys())
-    sample_to_not_consider = ['GLOBAL']
-    all_samples_list = []
-    all_samples_path = []
-    all_samples_types = {'data':['data'],}
-    signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
-    for sample in sample_cfg_dict.keys():
-        if not os.path.isdir(os.path.join(args.histDir, sample)): continue
-        sample_type = sample_cfg_dict[sample]['sampleType']
-        isSignal = False
-        if sample_type in signals:
-            isSignal = True
-            sample_type=sample
-        if isSignal: continue
-        if sample_type not in all_samples_types.keys() :
-            all_samples_types[sample_type] = []
-        all_samples_path.append(os.path.join(args.histDir, sample))
-        all_samples_types[sample_type].append(sample)
-        if sample_type in all_samples_list: continue
-        all_samples_list.append(sample_type)
 
+    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir)
     histNamesDict = {}
     uncNameTypes = GetUncNameTypes(unc_cfg_dict)
-    scales = ['Up','Down']
-    CreateNamesDict(histNamesDict, all_samples_types, uncNameTypes, scales, signals, sample_cfg_dict)
+    #scales = ['Up','Down']
+    CreateNamesDict(histNamesDict, all_samples_types, uncNameTypes, scales, sample_cfg_dict)
+
     all_vars = args.hists.split(',')
     print(all_samples_list)
     categories = list(sample_cfg_dict['GLOBAL']['categories'])
     QCDregions = list(sample_cfg_dict['GLOBAL']['QCDRegions'])
     channels = list(sample_cfg_dict['GLOBAL']['channelSelection'])
+    signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
     all_files = {}
     for var in all_vars:
         fileName =  f"{var}.root"
@@ -247,13 +243,13 @@ if __name__ == "__main__":
                 if inFileRoot.IsZombie():
                     raise RuntimeError(f"{inFile} is Zombie")
                 #print(f"filling hist dict for {inFileName}")
-                fillHistDict(inFileRoot, all_histograms[var][sample_type], channels, QCDregions, categories, sample_type, uncNameTypes, histNamesDict)
+                fillHistDict(inFileRoot, all_histograms[var][sample_type], channels, QCDregions, categories, sample_type, uncNameTypes, histNamesDict, signals,args.onlyCentral)
                 inFileRoot.Close()
             MergeHistogramsPerType(all_histograms[var][sample_type])
+            #print(all_histograms[var])
         # Get QCD estimation:
         print("adding QCD ... ")
-        AddQCDInHistDict(all_histograms[var], channels, categories, sample_type, uncNameTypes, all_samples_list, scales)
-
+        AddQCDInHistDict(all_histograms[var], channels, categories, sample_type, uncNameTypes, all_samples_list, scales, args.onlyCentral)
     print("saving files...")
     for var in all_histograms.keys():
         outFileName = os.path.join(args.histDir, f'all_histograms_{var}.root')
@@ -262,13 +258,13 @@ if __name__ == "__main__":
         outFile = ROOT.TFile(outFileName, "RECREATE")
         for sample_type in all_histograms[var].keys():
             for key in all_histograms[var][sample_type]:
-                (channel, qcdRegion, cat), uncNameType = key
+                (channel, qcdRegion, cat), (uncNameType, uncScale) = key
                 new_histName = f'{sample_type}_{channel}_{qcdRegion}_{cat}'
-                if uncNameType != 'Central' and sample_type!='data':
-                    new_histName+=f'_{uncNameType}'
+                if uncNameType != 'Central' and uncScale !='Central' and sample_type!='data':
+                    new_histName+=f'_{uncNameType}_{uncScale}'
                 hist = all_histograms[var][sample_type][key]
                 hist.SetTitle(new_histName)
                 hist.SetName(new_histName)
                 hist.Write()
+                outFile.WriteTObject(hist, new_histName, "Overwrite")
         outFile.Close()
-

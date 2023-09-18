@@ -30,7 +30,7 @@ def createKeyFilterDict():
                     filter_str+=f" && {cat}"
                 key = (ch, reg, cat)
                 reg_dict[key] = filter_str
-                print(filter_str)
+                #print(filter_str)
     return reg_dict
 
 
@@ -44,7 +44,8 @@ def GetWeight(channel,cat):
         'muTau':["weight_tau1_TrgSF_singleMu_Central","weight_tau2_TrgSF_singleMu_Central"],
         'tauTau':["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central"]
         }
-    weights_to_apply = [ "weight_Jet_PUJetID_Central_b1", "weight_Jet_PUJetID_Central_b2", "weight_TauID_Central", btag_weight, "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
+    #weights_to_apply = [ "weight_Jet_PUJetID_Central_b1", "weight_Jet_PUJetID_Central_b2", "weight_TauID_Central", btag_weight, "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
+    weights_to_apply = ["weight_TauID_Central", btag_weight, "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
     weights_to_apply.extend(trg_weights_dict[channel])
     total_weight = '*'.join(weights_to_apply)
     return total_weight

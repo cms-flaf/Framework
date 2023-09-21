@@ -26,18 +26,18 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv, config, snapshotOpt
     df = Baseline.SelectRecoP4(df)
     df = Baseline.DefineGenObjects(df, isHH=True, Hbb_AK4mass_mpv=mpv)
 
-    df = df.Define("n_GenJet", "seline.SelectRecoP4(df)GenJet_idx.size()")
+    df = df.Define("n_GenJet", "GenJet_idx.size()")
     df = Baseline.PassGenAcceptance(df)
     df = Baseline.GenJetSelection(df)
     df = Baseline.GenJetHttOverlapRemoval(df)
     df = Baseline.RequestOnlyResolvedGenJets(df)
 
     df = Baseline.RecoLeptonsSelection(df)
-    df = Baseline.RecoJetAcceptance(df)
+    # df = Baseline.RecoJetAcceptance(df)
     df = Baseline.RecoHttCandidateSelection(df, config["GLOBAL"])
     df = Baseline.RecoJetSelection(df)
 
-    df = df.Define('genChannel', 'genHttCandidate.channel()')
+    df = df.Define('genChannel', 'genHttCandidate->channel()')
     df = df.Define('recoChannel', 'HttCandidate.channel()')
 
     df = df.Filter("genChannel == recoChannel", "SameGenRecoChannels")
@@ -46,7 +46,7 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv, config, snapshotOpt
 
     df = Baseline.GenRecoJetMatching(df)
     df = df.Define("sample", f"static_cast<int>(SampleType::{sample})")
-    df = df.Define("period", f"static_cast<int>(Period::Run{period})")
+    df = df.Define("period", f"static_cast<int>(Period::Run2_{period})")
     df = df.Define("X_mass", f"static_cast<int>({X_mass})")
 
     nodes = {'node_SM': 0, 'node_1': 1, 'node_2': 2, 'node_3': 3, 'node_4': 4, 'node_5': 5, 'node_6': 6, 'node_7': 7, 'node_8': 8, 'node_9': 9, 'node_10': 10, 'node_11': 11, 'node_12': 12}
@@ -80,7 +80,6 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv, config, snapshotOpt
 
     colToSave+=[f"RecoJet_{var}" for var in jetVar_list]
     colToSave+=["node_index"]
-    colToSave+=["HHbtagScore"]
 
     varToSave = Utilities.ListToVector(colToSave)
     df.Snapshot("Event", outFile, varToSave, snapshotOptions)

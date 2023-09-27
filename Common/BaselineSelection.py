@@ -10,11 +10,12 @@ def Initialize(loadTF=False, loadHHBtag=False):
     global initialized
     if not initialized:
         headers_dir = os.path.dirname(os.path.abspath(__file__))
-        header_path_RootExt = os.path.join(headers_dir, "RootExt.h")
-        header_path_GenLepton = os.path.join(headers_dir, "GenLepton.h")
-        header_path_Gen = os.path.join(headers_dir, "BaselineGenSelection.h")
-        header_path_Reco = os.path.join(headers_dir, "BaselineRecoSelection.h")
-        header_path_HHbTag = os.path.join(headers_dir, "HHbTagScores.h")
+        ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
+        header_path_RootExt ="include/RootExt.h"
+        header_path_GenLepton ="include/GenLepton.h"
+        header_path_Gen ="include/BaselineGenSelection.h"
+        header_path_Reco ="include/BaselineRecoSelection.h"
+        header_path_HHbTag ="include/HHbTagScores.h"
         ROOT.gInterpreter.Declare(f'#include "{header_path_RootExt}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_GenLepton}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Gen}"')

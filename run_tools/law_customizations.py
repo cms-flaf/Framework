@@ -8,6 +8,7 @@ import yaml
 import tempfile
 
 from RunKit.envToJson import get_cmsenv
+from RunKit.crabLaw import update_kinit
 
 law.contrib.load("htcondor")
 
@@ -63,6 +64,13 @@ def select_items(all_items, filters):
 
 _global_params = None
 _samples = None
+_hists = None
+
+def load_hist_config(hist_config):
+    global _hists
+    with open(hist_config, 'r') as f:
+        _hists = yaml.safe_load(f)
+    return _hists
 
 def load_sample_configs(sample_config, period):
     global _global_params
@@ -101,7 +109,6 @@ class Task(law.Task):
         self.sample_config = os.path.join(self.ana_path(), 'config', f'samples_{self.period}.yaml')
         self.global_params, self.samples = load_sample_configs(self.sample_config, self.period)
 
-
     def store_parts(self):
         return (self.__class__.__name__, self.period, self.version)
 
@@ -123,10 +130,11 @@ class Task(law.Task):
     def central_anaTuples_path(self):
         return os.path.join(self.central_path(), 'anaTuples', self.period, self.version)
 
+    def valeos_path(self):
+        return os.getenv("VDAMANTE_STORAGE")
+
     def central_Histograms_path(self):
-        current_path_for_hists=os.getenv("VDAMANTE_STORAGE")
-        #return os.path.join(self.central_path(), 'histograms', self.period, self.version)
-        return os.path.join(current_path_for_hists, 'histograms', self.period, self.version)
+        return os.path.join(self.valeos_path(), 'histograms', self.period, self.version)
 
     def central_anaCache_path(self):
         return os.path.join(self.central_path(), 'anaCache', self.period)
@@ -157,6 +165,9 @@ class Task(law.Task):
         os.makedirs(self.local_path(), exist_ok=True)
         return tempfile.mkdtemp(dir=self.local_path()), True
 
+    def poll_callback(self, poll_data):
+        update_kinit(verbose=0)
+
 
 class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
     """
@@ -169,6 +180,7 @@ class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
 
     max_runtime = law.DurationParameter(default=12.0, unit="h", significant=False,
                                         description="maximum runtime, default unit is hours")
+    n_cpus = luigi.IntParameter(default=1, description="number of cpus")
     poll_interval = copy_param(law.htcondor.HTCondorWorkflow.poll_interval, 5)
 
     def htcondor_check_job_completeness(self):
@@ -191,7 +203,7 @@ class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
         config.custom_content.append(("requirements", '( (OpSysAndVer =?= "CentOS7") || (OpSysAndVer =?= "CentOS8") )'))
         # maximum runtime
         config.custom_content.append(("+MaxRuntime", int(math.floor(self.max_runtime * 3600)) - 1))
-
+        config.custom_content.append(("RequestCpus", self.n_cpus))
         log_path = os.path.join(ana_path, "data", "logs")
         os.makedirs(log_path, exist_ok=True)
         config.custom_content.append(("log", os.path.join(log_path, 'job.$(ClusterId).$(ProcId).log')))

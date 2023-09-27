@@ -31,7 +31,7 @@ TTTo2L2Nu:
   reference: TOP-20-001 https://twiki.cern.ch/twiki/pub/CMSPublic/PhysicsResultsTOPSummaryFigures/tt_xsec_cms_13TeV.pdf
   unc:
 TTToSemiLeptonic:
-  crossSec: 791. * 0.6741 * (1-0.6741)
+  crossSec: 791. * 0.6741 * (1-0.6741) * 2
   reference: TOP-20-001 https://twiki.cern.ch/twiki/pub/CMSPublic/PhysicsResultsTOPSummaryFigures/tt_xsec_cms_13TeV.pdf
   unc:
 TTToHadronic:

@@ -34,6 +34,26 @@ def createKeyFilterDict():
     return reg_dict
 
 
+def AddQCDInHistDict(all_histograms, channels, categories, sample_type, uncNameTypes, all_samples_list, scales, onlyCentral):
+    if 'QCD' not in all_histograms.keys():
+            all_histograms['QCD'] = {}
+    for channel in channels:
+        print(f"adding QCD for channel {channel}")
+        for cat in categories:
+            print(f".. and category {cat}")
+            key =( (channel, 'OS_Iso', cat), ('Central', 'Central'))
+            CompareYields(all_histograms, all_samples_list, channel, cat, 'Central', 'Central')
+            print(f".. and uncNameType Central")
+            all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, 'Central', 'Central')
+            for uncNameType in uncNameTypes:
+                print(f".. and uncNameType {uncNameType}")
+                for scale in scales:
+                    print(f" .. and uncScale {scale}")
+                    if onlyCentral and uncNameType!='Central' and scale!='Central' : continue
+                    key =( (channel, 'OS_Iso', cat), (uncNameType, scale))
+                    CompareYields(all_histograms, all_samples_list, channel, cat, uncNameType, scale)
+                    all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncNameType, scale)
+
 
 def GetWeight(channel,cat):
     btag_weight = "1"

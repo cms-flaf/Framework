@@ -34,9 +34,6 @@ def CreateNamesDict(histNamesDict, channels, QCDRegions, categories, sample_type
                             histNamesDict[histName] = histKey
 
 
-channel_text = {'eTau': 'bbe#tau_{h}','muTau': 'bb#mu#tau_{h}','tauTau': 'bb#tau_{h}#tau_{h}'}
-all_samples_separated = ["data", "W","DY",  "TT", "HHnonRes", "QCD"]
-unify_samples = ["EWK", "ST", "VV", "VVV", "VH", "H", "ttH", "TTV", "TTVV", "TTT", "TTTT", "TTTV", "TTVH", "TTHH"]
 
 if __name__ == "__main__":
     import argparse
@@ -66,7 +63,7 @@ if __name__ == "__main__":
         sample_cfg_dict = yaml.safe_load(f)
     with open(args.uncConfig, 'r') as f:
         unc_cfg_dict = yaml.safe_load(f)
-
+    all_samples_separated = [k['name'] for k in inputs_cfg_dict]
     all_histlist = {}
     plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg_dict, inputs_cfg=inputs_cfg_dict)
 
@@ -132,7 +129,7 @@ if __name__ == "__main__":
                         hists_to_plot['Other'] = other_obj
                         #print(hist_name, other_obj.GetEntries())
                         cat_txt = cat if cat !='inclusive' else 'incl'
-                        custom1= {'cat_text':f"{cat_txt} m_{{X}}={args.mass} GeV/c^{{2}}", 'ch_text':channel_text[ch], 'datasim_text':'CMS data/simulation'}
+                        custom1= {'cat_text':f"{cat_txt} m_{{X}}={args.mass} GeV/c^{{2}}", 'ch_text':page_cfg_custom['channel_text'][ch], 'datasim_text':'CMS data/simulation'}
                         outFile_suffix = '_'.join(k for k in key)
                         outDir = os.path.join(args.outDir, var)
                         if not os.path.isdir(outDir):

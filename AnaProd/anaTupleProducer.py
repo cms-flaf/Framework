@@ -46,7 +46,7 @@ SubJetObservablesMC = ["hadronFlavour","partonFlavour"]
 
 defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "X_spin", "isData","PuppiMET_pt", "PuppiMET_phi",
                 "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
-                "PV_npvs", "Pileup_nTrueInt"]
+                "PV_npvs"]
 
 
 def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
@@ -257,6 +257,8 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     reports = []
     outfilesNames = []
     k=0
+    if not isData:
+        defaultColToSave.extend(['Pileup_nTrueInt'])
     for syst_name, source_name in syst_dict.items():
         if source_name not in uncertainties and "all" not in uncertainties: continue
         is_central = syst_name in [ 'Central', 'nano' ]

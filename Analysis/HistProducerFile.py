@@ -23,20 +23,16 @@ def SaveHists(histograms, out_file):
     for key_tuple,hist_list in histograms.items():
         dir_name = '/'.join(key_tuple[0])
         dir_ptr = mkdir(out_file,dir_name)
-        '''
         merged_hist = hist_list[0].GetValue()
         for hist in hist_list[1:] :
             merged_hist.Add(hist.GetValue())
-        '''
-        for merged_hist in hist_list:
-            isCentral = 'Central' in key_tuple[1][0]
-            #print(key_tuple[1])
-            sample_type,uncName,scale = key_tuple[1][0]
-            shift_type= key_tuple[1][1]
-            hist_name =  sample_type
-            if not isCentral:
-                hist_name+=f"_{uncName}{scale}{shift_type}"
-            dir_ptr.WriteTObject(merged_hist.GetValue(), hist_name, "Overwrite")
+        isCentral = 'Central' in key_tuple[1]
+        #print(key_tuple[1])
+        sample_type,uncName,scale = key_tuple[1]
+        hist_name =  sample_type
+        if not isCentral:
+            hist_name+=f"_{uncName}{scale}"
+        dir_ptr.WriteTObject(merged_hist, hist_name, "Overwrite")
 
 def createModels(hist_cfg_dict):
     return { var : GetModel(hist_cfg_dict, var) for var in hist_cfg_dict.keys() }
@@ -44,7 +40,7 @@ def createModels(hist_cfg_dict):
 
 def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_dict, unc_cfg_dict, furtherCut=''):
     dataframes = all_dataframes[key_2]
-    ((sample_type,uncName,scale),variation) = key_2
+    sample_type,uncName,scale = key_2
     isCentral = 'Central' in key_2
     histograms = {}
     for var in models.keys():
@@ -64,11 +60,13 @@ def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_di
 
             for dataframe in dataframes:
                 if furtherCut != '' : key_cut += f' && {furtherCut}'
+                print(key_cut)
                 dataframe = dataframe.Filter(key_cut)
                 #print(key_cut)
                 #print(f"after cut df has {dataframe.Count().GetValue()}")
                 histograms_var[(key_1, key_2)].append(dataframe.Define("final_weight", f"{total_weight_expression}").Define("weight_for_hists", weight_name).Histo1D(models[var], var, "weight_for_hists"))
     return histograms
+
 
 def GetShapeDataFrameDict(all_dataframes, key, key_central, inFile, compute_variations, deepTauVersion, colNames, colTypes ):
     sample_type,uncName,scale=key
@@ -90,23 +88,23 @@ def GetShapeDataFrameDict(all_dataframes, key, key_central, inFile, compute_vari
         if treeName_noDiff in file_keys:
             dfWrapped_noDiff = DataFrameBuilder(ROOT.RDataFrame(treeName_noDiff, inFile))
             dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
-            all_dataframes[(key, 'noDiff')]=[(PrepareDfWrapped(dfWrapped_noDiff).df)]
+            all_dataframes[key].append(PrepareDfWrapped(dfWrapped_noDiff).df)
 
         treeName_Valid = f"{treeName}_Valid"
         if treeName_Valid in file_keys:
             dfWrapped_Valid = DataFrameBuilder(ROOT.RDataFrame(treeName_Valid, inFile))
             dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
-            all_dataframes[(key, 'Valid')]=[(PrepareDfWrapped(dfWrapped_Valid).df)]
+            all_dataframes[key].append(PrepareDfWrapped(dfWrapped_Valid).df)
 
         treeName_nonValid = f"{treeName}_nonValid"
         if treeName_nonValid in file_keys:
             dfWrapped_nonValid = DataFrameBuilder(ROOT.RDataFrame(treeName_nonValid, inFile))
-            all_dataframes[(key, 'nonValid')]=[(PrepareDfWrapped(dfWrapped_nonValid).df)]
+            all_dataframes[key].append(PrepareDfWrapped(dfWrapped_nonValid).df)
 
 
 def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,deepTauVersion, compute_unc_variations, compute_rel_weights, furtherCut=''):
     sample_type = sample_cfg_dict[dataset]['sampleType'] if dataset != 'data' else 'data'
-    key_central = ((sample_type, "Central", "Central"), '')
+    key_central = (sample_type, "Central", "Central")
 
     all_dataframes = {}
     all_histograms = {}
@@ -125,7 +123,7 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
     if compute_rel_weights and dataset!='data':
         for uncName in unc_cfg_dict['norm'].keys():
             for scale in scales:
-                key_2 = ((sample_type, uncName, scale),'')
+                key_2 = (sample_type, uncName, scale)
                 if key_2 not in all_dataframes.keys():
                     all_dataframes[key_2] = []
                 all_dataframes[key_2] = all_dataframes[key_central]
@@ -150,14 +148,12 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
     if compute_unc_variations and dataset!='data':
         for uncName in unc_cfg_dict['shape']:
             for scale in scales:
-                key_2 = ((sample_type, uncName, scale))
+                key_2 = (sample_type, uncName, scale)
+                all_dataframes, key_2 , models, key_filter_dict, unc_cfg_dict,
                 GetShapeDataFrameDict(all_dataframes, key_2, key_central, inFile, compute_variations, deepTauVersion, col_names_central, col_tpyes_central )
-                for shift in ['Valid', 'nonValid', 'noDiff']:
-                    key_2 = ((sample_type, uncName, scale),shift)
-                    if key_2 not in all_dataframes.keys(): continue
-                    shape_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_dict,unc_cfg_dict['shape'], furtherCut)
-                    for var in shape_histograms.keys():
-                        SaveHists(shape_histograms[var], outfiles[var])
+                shape_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_dict,unc_cfg_dict['shape'], furtherCut)
+                for var in shape_histograms.keys():
+                    SaveHists(shape_histograms[var], outfiles[var])
 
 
 if __name__ == "__main__":

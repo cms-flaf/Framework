@@ -25,7 +25,7 @@ def createKeyFilterDict():
     for ch in channels:
         for reg in QCDregions:
             for cat in categories:
-                filter_str = f"{ch} && {triggers[ch]} && {reg}"
+                filter_str = f"b1_pt>0 && b2_pt>0 && {ch} && {triggers[ch]} && {reg}"
                 if cat != 'inclusive':
                     filter_str+=f" && {cat}"
                 key = (ch, reg, cat)

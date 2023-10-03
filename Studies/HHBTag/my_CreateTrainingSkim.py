@@ -47,8 +47,8 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv, config, snapshotOpt
     df = df.Define('recoChannel', 'HttCandidate.channel()')
 
     df = df.Filter("genChannel == recoChannel", "SameGenRecoChannels")
-    df = df.Filter("GenRecoMatching(genHttCandidate, HttCandidate, 0.2)", "SameGenRecoHTT")
-    df = Baseline.RequestOnlyResolvedRecoJets(df)
+    df = df.Filter("GenRecoMatching(*genHttCandidate, HttCandidate, 0.2)", "SameGenRecoHTT")
+    # df = Baseline.RequestOnlyResolvedRecoJets(df)
 
     df = Baseline.GenRecoJetMatching(df)
     df = df.Define("sample", f"static_cast<int>(SampleType::{sample})")
@@ -88,7 +88,8 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv, config, snapshotOpt
     colToSave+=[f"RecoJet_{var}" for var in jetVar_list]
     colToSave+=[f"genjet_{genvar}" for genvar in genjetVar_list]
     colToSave+=["GenJet_b_PF", "GenJetAK8_b_PF", "GenJet_Hbb" , "GenJetAK8_Hbb"]
-    colToSave+=["node_index"]
+    if node is not None:
+        colToSave+=["node_index"]
     colToSave+=["GenJet_idx"]
 
     varToSave = Utilities.ListToVector(colToSave)

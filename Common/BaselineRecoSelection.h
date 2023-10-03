@@ -117,27 +117,27 @@ HTTCand<N> GetBestHTTCandidate(const std::vector<const ROOT::VecOps::RVec<HTTCan
       return *std::min_element(cands->begin(), cands->end(), comparitor);
   }
 
-  throw analysis::exception("ERROR: no siutable HTT candidate ");
+  throw analysis::exception("ERROR: no suitable HTT candidate ");
 }
 
-/*
-bool GenRecoMatching(const HTTCand& genHttCand, const HTTCand& recoHttCand, double dR_thr)
+template<size_t N>
+bool GenRecoMatching(const HTTCand<N>& genHttCandidate, const HTTCand<N>& recoHttCandidate, double dR_thr)
 {
   const double dR2_thr = std::pow(dR_thr, 2);
-  std::vector<bool> matching(HTTCand::n_legs * 2, false);
-  for(size_t gen_idx = 0; gen_idx < HTTCand::n_legs; ++gen_idx) {
-    for(size_t reco_idx = 0; reco_idx < HTTCand::n_legs; ++reco_idx) {
-      if(genHttCand.leg_type[gen_idx] == recoHttCand.leg_type[reco_idx]
-          && genHttCand.leg_charge[gen_idx] == recoHttCand.leg_charge[reco_idx]) {
-        const double dR2 =  ROOT::Math::VectorUtil::DeltaR2(genHttCand.leg_p4[gen_idx], recoHttCand.leg_p4[reco_idx]);
+  std::vector<bool> matching(HTTCand<N>::n_legs * 2, false);
+  for(size_t gen_idx = 0; gen_idx < HTTCand<N>::n_legs; ++gen_idx) {
+    for(size_t reco_idx = 0; reco_idx < HTTCand<N>::n_legs; ++reco_idx) {
+      if(genHttCandidate.leg_type[gen_idx] == recoHttCandidate.leg_type[reco_idx]
+          && genHttCandidate.leg_charge[gen_idx] == recoHttCandidate.leg_charge[reco_idx]) {
+        const double dR2 =  ROOT::Math::VectorUtil::DeltaR2(genHttCandidate.leg_p4[gen_idx], recoHttCandidate.leg_p4[reco_idx]);
         if(dR2 < dR2_thr)
-          matching[gen_idx * HTTCand::n_legs + reco_idx] = true;
+          matching[gen_idx * HTTCand<N>::n_legs + reco_idx] = true;
       }
     }
   }
   return (matching[0] && matching[3]) || (matching[1] && matching[2]);
 }
-*/
+
 
 RVecI GenRecoJetMatching(int event,const RVecI& Jet_idx, const RVecI& GenJet_idx,  const RVecB& Jet_sel, const RVecB& GenJet_sel,   const RVecLV& GenJet_p4, const RVecLV& Jet_p4 , float DeltaR_thr)
 {

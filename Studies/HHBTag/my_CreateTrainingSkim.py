@@ -60,6 +60,8 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv, config, snapshotOpt
     if node is not None:
         node_index = nodes[node]
         df = df.Define("node_index", f"static_cast<int>({node_index})")
+    else:
+        df = df.Define("node_index", "-1")
 
     df = Baseline.DefineHbbCand(df)
 
@@ -88,8 +90,7 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv, config, snapshotOpt
     colToSave+=[f"RecoJet_{var}" for var in jetVar_list]
     colToSave+=[f"genjet_{genvar}" for genvar in genjetVar_list]
     colToSave+=["GenJet_b_PF", "GenJetAK8_b_PF", "GenJet_Hbb" , "GenJetAK8_Hbb"]
-    if node is not None:
-        colToSave+=["node_index"]
+    colToSave+=["node_index"]
     colToSave+=["GenJet_idx"]
 
     varToSave = Utilities.ListToVector(colToSave)

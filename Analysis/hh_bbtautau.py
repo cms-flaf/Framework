@@ -33,26 +33,121 @@ def createKeyFilterDict():
                 #print(filter_str)
     return reg_dict
 
+def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, scale):
+    #print(channel, category)
+    #print(histograms.keys())
+    key_B_data = ((channel, 'OS_AntiIso', category), ('Central', 'Central'))
+    key_B = ((channel, 'OS_AntiIso', category), (uncName, scale))
+    key_C_data = ((channel, 'SS_Iso', category), ('Central', 'Central'))
+    key_C = ((channel, 'SS_Iso', category), (uncName, scale))
+    key_D_data = ((channel, 'SS_AntiIso', category), ('Central', 'Central'))
+    key_D = ((channel, 'SS_AntiIso', category), (uncName, scale))
+    hist_data = histograms['data']
+    #print(hist_data.keys())
+    hist_data_B = hist_data[key_B_data].Clone()
+    #if channel != 'tauTau' and category != 'inclusive': return hist_data_B
+    hist_data_C = hist_data[key_C_data].Clone()
+    hist_data_D = hist_data[key_D_data].Clone()
+    n_data_C = hist_data_C.Integral(0, hist_data_C.GetNbinsX()+1)
+    n_data_D = hist_data_D.Integral(0, hist_data_D.GetNbinsX()+1)
+    #print(f"Yield for data {key_C_data} is {n_data_C}")
+    #print(f"Yield for data {key_D_data} is {n_data_D}")
+    for sample in all_samples_list:
+        if sample=='data' :
+            #print(f"sample {sample} is not considered")
+            continue
+        #print(sample)
+        # find kappa value
+        hist_sample = histograms[sample]
+        #print(histograms[sample].keys())
+        hist_sample_B = hist_sample[key_B].Clone()
+        hist_sample_C = hist_sample[key_C].Clone()
+        hist_sample_D = hist_sample[key_D].Clone()
+        n_sample_C = hist_sample_C.Integral(0, hist_sample_C.GetNbinsX()+1)
+        n_data_C-=n_sample_C
+        n_sample_D = hist_sample_D.Integral(0, hist_sample_D.GetNbinsX()+1)
+        n_data_D-=n_sample_D
+        #print(f"Yield for data {key_C_data} after removing {sample} with yield {n_sample_C} is {n_data_C}")
+        #print(f"Yield for data {key_D_data} after removing {sample} with yield {n_sample_D} is {n_data_D}")
 
-def AddQCDInHistDict(all_histograms, channels, categories, sample_type, uncNameTypes, all_samples_list, scales, onlyCentral):
+        hist_data_B.Add(hist_sample_B, -1)
+    #if n_data_C <= 0 or n_data_D <= 0:
+        #print(f"n_data_C = {n_data_C}")
+        #print(f"n_data_D = {n_data_D}")
+    kappa = n_data_C/n_data_D
+    if kappa<0:
+        print(f"transfer factor <0")
+        return ROOT.TH1D()
+        #raise  RuntimeError(f"transfer factor <=0 ! {kappa}")
+    hist_data_B.Scale(kappa)
+    fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(hist_data_B)
+    if not fix_negative_contributions:
+        #return hist_data_B
+        print(debug_info)
+        print(negative_bins_info)
+        print("Unable to estimate QCD")
+
+        return ROOT.TH1D()
+        #raise RuntimeError("Unable to estimate QCD")
+    return hist_data_B
+
+
+def CompareYields(histograms, all_samples_list, channel, category, uncName, scale):
+    #print(channel, category)
+    #print(histograms.keys())key_B_data = ((channel, 'OS_AntiIso', category), ('Central', 'Central'))
+    key_A_data = ((channel, 'OS_Iso', category), ('Central', 'Central'))
+    key_A = ((channel, 'OS_Iso', category), (uncName, scale))
+    key_B_data = ((channel, 'OS_AntiIso', category), ('Central', 'Central'))
+    key_B = ((channel, 'OS_AntiIso', category), (uncName, scale))
+    key_C_data = ((channel, 'SS_Iso', category), ('Central', 'Central'))
+    key_C = ((channel, 'SS_Iso', category), (uncName, scale))
+    key_D_data = ((channel, 'SS_AntiIso', category), ('Central', 'Central'))
+    key_D = ((channel, 'SS_AntiIso', category), (uncName, scale))
+    hist_data = histograms['data']
+    #print(hist_data.keys())
+    hist_data_A = hist_data[key_A_data]
+    hist_data_B = hist_data[key_B_data]
+    #if channel != 'tauTau' and category != 'inclusive': return hist_data_B
+    hist_data_C = hist_data[key_C_data]
+    hist_data_D = hist_data[key_D_data]
+    n_data_A = hist_data_A.Integral(0, hist_data_A.GetNbinsX()+1)
+    n_data_B = hist_data_B.Integral(0, hist_data_B.GetNbinsX()+1)
+    n_data_C = hist_data_C.Integral(0, hist_data_C.GetNbinsX()+1)
+    n_data_D = hist_data_D.Integral(0, hist_data_D.GetNbinsX()+1)
+    print(f"data || {key_A_data} || {n_data_A}")
+    print(f"data || {key_B_data} || {n_data_B}")
+    print(f"data || {key_C_data} || {n_data_C}")
+    print(f"data || {key_D_data} || {n_data_D}")
+    for sample in all_samples_list:
+        #print(sample)
+        # find kappa value
+        hist_sample = histograms[sample]
+        #print(histograms[sample].keys())
+        hist_sample_A = hist_sample[key_A]
+        hist_sample_B = hist_sample[key_B]
+        hist_sample_C = hist_sample[key_C]
+        hist_sample_D = hist_sample[key_D]
+        n_sample_A = hist_sample_A.Integral(0, hist_sample_A.GetNbinsX()+1)
+        n_sample_B = hist_sample_B.Integral(0, hist_sample_B.GetNbinsX()+1)
+        n_sample_C = hist_sample_C.Integral(0, hist_sample_C.GetNbinsX()+1)
+        n_sample_D = hist_sample_D.Integral(0, hist_sample_D.GetNbinsX()+1)
+
+        print(f"{sample} || {key_A} || {n_sample_A}")
+        print(f"{sample} || {key_B} || {n_sample_B}")
+        print(f"{sample} || {key_C} || {n_sample_C}")
+        print(f"{sample} || {key_D} || {n_sample_D}")
+
+def AddQCDInHistDict(all_histograms, channels, categories, sample_type, uncName, all_samples_list, scales):
     if 'QCD' not in all_histograms.keys():
             all_histograms['QCD'] = {}
     for channel in channels:
-        print(f"adding QCD for channel {channel}")
         for cat in categories:
-            print(f".. and category {cat}")
             key =( (channel, 'OS_Iso', cat), ('Central', 'Central'))
-            CompareYields(all_histograms, all_samples_list, channel, cat, 'Central', 'Central')
-            print(f".. and uncNameType Central")
             all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, 'Central', 'Central')
-            for uncNameType in uncNameTypes:
-                print(f".. and uncNameType {uncNameType}")
-                for scale in scales:
-                    print(f" .. and uncScale {scale}")
-                    if onlyCentral and uncNameType!='Central' and scale!='Central' : continue
-                    key =( (channel, 'OS_Iso', cat), (uncNameType, scale))
-                    CompareYields(all_histograms, all_samples_list, channel, cat, uncNameType, scale)
-                    all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncNameType, scale)
+            if uncName=='Central' : continue
+            for scale in scales:
+                key =( (channel, 'OS_Iso', cat), (uncName, scale))
+                all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale)
 
 
 def GetWeight(channel,cat):
@@ -64,7 +159,7 @@ def GetWeight(channel,cat):
         'muTau':["weight_tau1_TrgSF_singleMu_Central","weight_tau2_TrgSF_singleMu_Central"],
         'tauTau':["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central"]
         }
-    #weights_to_apply = [ "weight_Jet_PUJetID_Central_b1", "weight_Jet_PUJetID_Central_b2", "weight_TauID_Central", btag_weight, "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
+   # weights_to_apply = [ "weight_Jet_PUJetID_Central_b1", "weight_Jet_PUJetID_Central_b2", "weight_TauID_Central", btag_weight, "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
     weights_to_apply = ["weight_TauID_Central", btag_weight, "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
     weights_to_apply.extend(trg_weights_dict[channel])
     total_weight = '*'.join(weights_to_apply)

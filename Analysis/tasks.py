@@ -17,7 +17,12 @@ def load_hist_config(hist_config):
     with open(hist_config, 'r') as f:
         hists = yaml.safe_load(f)
     return hists
-
+unc_cfg_dict = None
+def load_unc_config(unc_cfg):
+    global unc_cfg_dict
+    with open(unc_cfg, 'r') as f:
+        unc_cfg_dict = yaml.safe_load(f)
+    return unc_cfg_dict
 
 def getOutFileName(var, sample_name, central_Histograms_path):
     outDir = os.path.join(central_Histograms_path, sample_name)
@@ -162,3 +167,141 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             HistProducerSample_cmd.extend(['--file-ids', file_ids_str])
         #print(HistProducerSample_cmd)
         sh_call(HistProducerSample_cmd,verbose=1)
+
+
+class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
+    hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
+    hists = load_hist_config(hist_config)
+    unc_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'weight_definition.yaml')
+    unc_cfg_dict = load_unc_config(unc_config)
+
+    def workflow_requires(self):
+        prod_branches = HistProducerSampleTask.req(self, branch=-1, branches=()).create_branch_map()
+        workflow_dict = {}
+        workflow_dict["histProducerSample"] = {
+            0: HistProducerSampleTask.req(self, branches=tuple((br,) for br in prod_branches))
+        }
+        return workflow_dict
+
+    def requires(self):
+        prod_branches = HistProducerSampleTask.req(self, branch=-1, branches=()).create_branch_map()
+        deps = [HistProducerSampleTask.req(self, max_runtime=HistProducerSampleTask.max_runtime._default, branch=prod_br) for prod_br in prod_branches ]
+        return deps
+
+
+    def create_branch_map(self):
+        uncNames = ['Central']
+        uncNames.extend(list(unc_cfg_dict['norm'].keys()))
+        uncNames.extend([unc for unc in unc_cfg_dict['shape']])
+        vars_to_plot = list(hists.keys())
+        n = 0
+        branches = {}
+        for var in vars_to_plot :
+            for uncName in uncNames:
+                branches[n] = (var, uncName)
+                n += 1
+        return branches
+
+    def output(self):
+        var, uncName = self.branch_data
+        local_file_target = os.path.join(self.central_Histograms_path(), f'all_histograms_{var}_{uncName}.root')
+        return law.LocalFileTarget(local_file_target)
+
+    def run(self):
+        var, uncName = self.branch_data
+        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
+        sample_config = self.sample_config
+        vars_to_plot = list(hists.keys())
+        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
+        MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger.py')
+        MergerProducer_cmd = ['python3', MergerProducer,'--histDir', self.central_Histograms_path(), '--sampleConfig', sample_config, '--hists', var,
+                            '--uncConfig', unc_config, '--uncSource', uncName]
+        #print(MergerProducer_cmd)
+        sh_call(MergerProducer_cmd,verbose=1)
+
+
+
+class HaddMergedTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
+    hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
+    hists = load_hist_config(hist_config)
+
+    def workflow_requires(self):
+        return { "Merge" : MergeTask.req(self, branches=()) }
+
+    def requires(self):
+        return [MergeTask.req(self, branches=())]
+
+    def create_branch_map(self):
+        n = 0
+        branches = {}
+        for var in vars_to_plot :
+            branches[n] = var
+            n += 1
+        return branches
+
+    def output(self):
+        var = self.branch_data
+        local_file_target = os.path.join(self.central_Histograms_path(), f'all_histograms_{var}.root')
+        return law.LocalFileTarget(local_file_target)
+
+    def run(self):
+        var = self.branch_data
+        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
+        sample_config = self.sample_config
+        vars_to_plot = list(hists.keys())
+        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
+        HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
+        HaddMergedHistsProducer_cmd = ['python3', HaddMergedHistsProducer,'--histDir', self.central_Histograms_path(), '--file-name-pattern', 'all_histograms', '--hists', var,
+                            '--uncConfig', unc_config, '--uncSource', uncName]
+        #print(HaddMergedHistsProducer_cmd)
+        sh_call(MergerProducer_cmd,verbose=1)
+'''
+
+class PlotterTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
+    hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
+    hists = load_hist_config(hist_config)
+
+    def workflow_requires(self):
+        prod_branches = self.create_branch_map()
+        workflow_dict = {}
+        workflow_dict["histProducerSample"] = {
+            idx: HistProducerSampleTask.req(self, branches=tuple((br,) for br in branches))
+            for idx, branches in prod_branches.items()
+        }
+        return workflow_dict
+
+     def requires(self):
+        prod_branches = self.branch_data
+        deps = [HistProducerSampleTask.req(self, max_runtime=HistProducerSampleTask.max_runtime._default, branch=prod_br) for prod_br in prod_branches ]
+        return deps
+
+    def create_branch_map(self):
+        anaProd_branch_map = HistProducerSampleTask.req(self, branch=-1, branches=()).create_branch_map()
+        prod_branches = []
+        for prod_br, (sample_name, idx_list) in anaProd_branch_map.items():
+            #if sample_type != "data": continue
+            prod_branches.append(prod_br)
+        return { 0: prod_branches }
+
+    def output(self):
+        sample_name, idx_list = self.branch_data
+        vars_to_plot = list(hists.keys())
+        final_directory = os.path.join(self.central_Histograms_path(), 'plots')
+        return law.LocalDirectoryTarget(final_directory)
+
+    def run(self):
+        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
+        sample_config = self.sample_config
+        vars_to_plot = list(hists.keys())
+        outDir = self.output().path
+        hists_str = ','.join(var for var in vars_to_plot)
+        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
+        PlotterProducer = os.path.join(self.ana_path(), 'Analysis', 'HistPlotter.py')
+        PlotterProducer_cmd = ['python3', PlotterProducer,'--mass', self.mass, '--histDir', '--histDir', self.central_Histograms_path(),
+                                '--outDir',outDir, '--inFileName', 'all_histograms', '--hists', hists_str, '--sampleConfig',sample_config,
+                                '--uncConfig', unc_config]
+        sh_call(PlotterProducer_cmd,verbose=1)
+'''

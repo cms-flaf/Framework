@@ -102,6 +102,7 @@ class Task(law.Task):
     period = luigi.Parameter()
     customisations =luigi.Parameter(default="")
     test = luigi.BoolParameter(default=False)
+    mass = luigi.Parameter(default=500)
 
     def __init__(self, *args, **kwargs):
         super(Task, self).__init__(*args, **kwargs)
@@ -204,9 +205,4 @@ class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
         # maximum runtime
         config.custom_content.append(("+MaxRuntime", int(math.floor(self.max_runtime * 3600)) - 1))
         config.custom_content.append(("RequestCpus", self.n_cpus))
-        log_path = os.path.join(ana_path, "data", "logs")
-        os.makedirs(log_path, exist_ok=True)
-        config.custom_content.append(("log", os.path.join(log_path, 'job.$(ClusterId).$(ProcId).log')))
-        config.custom_content.append(("output", os.path.join(log_path, 'job.$(ClusterId).$(ProcId).out')))
-        config.custom_content.append(("error", os.path.join(log_path, 'job.$(ClusterId).$(ProcId).err')))
         return config

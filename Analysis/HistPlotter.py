@@ -29,7 +29,7 @@ def CreateNamesDict(histNamesDict, channels, QCDRegions, categories, sample_type
                     if sample_key == 'data': continue
                     for uncName in uncNames:
                         for scale in scales:
-                            histName = f"{final_sampleKey}_{uncName}{scale}"
+                            histName = f"{final_sampleKey}_{uncName}_{scale}"
                             histKey = (sample_key, ch, reg,cat,  uncName, scale)
                             histNamesDict[histName] = histKey
 
@@ -55,6 +55,8 @@ if __name__ == "__main__":
     hist_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/histograms.yaml")
     with open(hist_cfg, 'r') as f:
         hist_cfg_dict = yaml.safe_load(f)
+    with open(page_cfg_custom, 'r') as f:
+        page_cfg_custom_dict = yaml.safe_load(f)
     inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/inputs.yaml")
     with open(inputs_cfg, 'r') as f:
         inputs_cfg_dict = yaml.safe_load(f)
@@ -72,6 +74,8 @@ if __name__ == "__main__":
     all_samples_types.update({"QCD":"QCD"})
     histNamesDict = {}
     uncNameTypes = GetUncNameTypes(unc_cfg_dict)
+    print(uncNameTypes)
+    '''
     #scales = ['Up','Down']
 
     all_vars = args.hists.split(',')
@@ -112,6 +116,7 @@ if __name__ == "__main__":
                         if key not in all_histlist.keys(): continue
                         samples_dict = all_histlist[key]
                         for sample,hist in samples_dict.items():
+                            print(sample)
                             obj_list = ROOT.TList()
                             other_inputs = []
                             if sample not in all_samples_separated+sample_cfg_dict['GLOBAL']['signal_types']:
@@ -127,9 +132,11 @@ if __name__ == "__main__":
                             hists_to_plot[sample] = hist
                             #print(hist_name, obj.GetEntries())
                         hists_to_plot['Other'] = other_obj
+                        if 'data' not in hists_to_plot.keys():
+                            hists_to_plot['data'] = all_histlist[(ch, reg,cat,'Central','Central')]['data']
                         #print(hist_name, other_obj.GetEntries())
                         cat_txt = cat if cat !='inclusive' else 'incl'
-                        custom1= {'cat_text':f"{cat_txt} m_{{X}}={args.mass} GeV/c^{{2}}", 'ch_text':page_cfg_custom['channel_text'][ch], 'datasim_text':'CMS data/simulation'}
+                        custom1= {'cat_text':f"{cat_txt} m_{{X}}={args.mass} GeV/c^{{2}}", 'ch_text':page_cfg_custom_dict['channel_text'][ch], 'datasim_text':'CMS data/simulation'}
                         outFile_suffix = '_'.join(k for k in key)
                         outDir = os.path.join(args.outDir, var)
                         if not os.path.isdir(outDir):
@@ -137,3 +144,4 @@ if __name__ == "__main__":
                         outFileName = f"{outFile_suffix}_XMass{args.mass}.pdf"
                         outFileFullPath = os.path.join(outDir,outFileName)
                         plotter.plot(var, hists_to_plot, outFileFullPath, custom=custom1)
+                        '''

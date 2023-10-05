@@ -10,18 +10,24 @@ import yaml
 import Common.BaselineSelection as Baseline
 
 
-jetVar_list = [ "pt", "eta", "phi", "mass", "btagDeepFlavB", "particleNetAK4_B", "genMatched"]
+jetVar_list = [ "pt", "eta", "phi", "mass", "btagDeepFlavB", "particleNetAK4_B", "btagDeepFlavCvB", "btagDeepFlavCvL", "btagDeepFlavQG", "particleNetAK4_CvsB", "particleNetAK4_CvsL", "particleNetAK4_QvsG", "HHBtagScore", "bRegRes", "genMatched", "hadronFlavour"]
 def JetSavingCondition(df):
     df = df.Define('Jet_selIdx', 'ReorderObjects(Jet_btagDeepFlavB, Jet_idx[Jet_bCand])')
     for var in jetVar_list:
         df = df.Define(f"RecoJet_{var}", f"Take(Jet_{var}, Jet_selIdx)")
+    return df
+    
+genjetVar_list = ["pt","eta","phi","mass","hadronFlavour"]
+def GenJetSavingCondition(df):
+    for genvar in genjetVar_list:
+        df = df.Define(f"genjet_{genvar}",f"Take(GenJet_{genvar}, GenJet_idx)")
     return df
 
 def createSkim(inFile, outFile, period, sample, X_mass, mpv, config, snapshotOptions):
     Baseline.Initialize(True, True)
 
     df = ROOT.RDataFrame("Events", inFile)
-
+    # df = df.Range(10)
     df = Baseline.CreateRecoP4(df)
     df = Baseline.SelectRecoP4(df)
     df = Baseline.DefineGenObjects(df, isHH=True, Hbb_AK4mass_mpv=mpv)
@@ -41,7 +47,7 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv, config, snapshotOpt
     df = df.Define('recoChannel', 'HttCandidate.channel()')
 
     df = df.Filter("genChannel == recoChannel", "SameGenRecoChannels")
-    # df = df.Filter("GenRecoMatching(genHttCandidate, HttCandidate, 0.2)", "SameGenRecoHTT")
+    df = df.Filter("GenRecoMatching(*genHttCandidate, HttCandidate, 0.2)", "SameGenRecoHTT")
     # df = Baseline.RequestOnlyResolvedRecoJets(df)
 
     df = Baseline.GenRecoJetMatching(df)
@@ -50,10 +56,12 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv, config, snapshotOpt
     df = df.Define("X_mass", f"static_cast<int>({X_mass})")
 
     nodes = {'node_SM': 0, 'node_1': 1, 'node_2': 2, 'node_3': 3, 'node_4': 4, 'node_5': 5, 'node_6': 6, 'node_7': 7, 'node_8': 8, 'node_9': 9, 'node_10': 10, 'node_11': 11, 'node_12': 12}
-    node = next((node for node in nodes if node in args.inFile))
-    if node:
+    node = next((node for node in nodes if node in args.inFile), None)
+    if node is not None:
         node_index = nodes[node]
         df = df.Define("node_index", f"static_cast<int>({node_index})")
+    else:
+        df = df.Define("node_index", "-1")
 
     df = Baseline.DefineHbbCand(df)
 
@@ -68,6 +76,7 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv, config, snapshotOpt
     df = df.Define("channel", "static_cast<int>(genChannel)")
     n_MoreThanTwoMatches = df.Filter("Jet_idx[Jet_genMatched].size()>2").Count()
     df = JetSavingCondition(df)
+    df = GenJetSavingCondition(df)
 
     report = df.Report()
     histReport=ReportTools.SaveReport(report.GetValue())
@@ -79,7 +88,10 @@ def createSkim(inFile, outFile, period, sample, X_mass, mpv, config, snapshotOpt
                 "channel","sample","period","X_mass", "MET_pt", "MET_phi", "PuppiMET_pt", "PuppiMET_phi","DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi"]
 
     colToSave+=[f"RecoJet_{var}" for var in jetVar_list]
+    colToSave+=[f"genjet_{genvar}" for genvar in genjetVar_list]
+    colToSave+=["GenJet_b_PF", "GenJetAK8_b_PF", "GenJet_Hbb" , "GenJetAK8_Hbb"]
     colToSave+=["node_index"]
+    colToSave+=["GenJet_idx"]
 
     varToSave = Utilities.ListToVector(colToSave)
     df.Snapshot("Event", outFile, varToSave, snapshotOptions)

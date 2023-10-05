@@ -25,6 +25,8 @@ if __name__ == "__main__":
     # 1 list files :
 
     all_vars = args.hists.split(',')
+    with open(args.uncConfig, 'r') as f:
+        unc_cfg_dict = yaml.safe_load(f)
     uncNameTypes = GetUncNameTypes(unc_cfg_dict) + ['Central']
     all_files = {}
     for var in all_vars:
@@ -40,6 +42,5 @@ if __name__ == "__main__":
             shutil.copy(all_files[var][0],outFileNameFinal)
         if os.path.exists(outFileNameFinal) and args.remove_files:
             for histFile in all_files[var]:
-                if args.test : print(histFile)
                 if histFile == outFileNameFinal: continue
                 os.remove(histFile)

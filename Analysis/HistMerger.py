@@ -17,8 +17,6 @@ def CreateNamesDict(histNamesDict, sample_types, uncName, scales, sample_cfg_dic
     for sample_key in sample_types.keys():
         if sample_key in sample_cfg_dict.keys():
             sample_type = sample_cfg_dict[sample_key]['sampleType']
-            #if sample_type in signals:
-            #    sample_key = sample_type
         histNamesDict[sample_key] = (sample_key, 'Central','Central')
         if sample_key == 'data': continue
         if uncName == 'Central':continue
@@ -29,8 +27,7 @@ def CreateNamesDict(histNamesDict, sample_types, uncName, scales, sample_cfg_dic
 
 
 
-def fillHistDict(inFileRoot, all_histograms, channels, QCDregions, categories, sample_type, histNamesDict,signals):
-    #print(f"filling hist for {sample_type}")
+def fillHistDict(inFileRoot, all_histograms, unc_source,channels, QCDregions, categories, sample_type, histNamesDict,signals):
     for channel in channels:
         dir_0 = inFileRoot.Get(channel)
         for qcdRegion in QCDregions:
@@ -50,6 +47,8 @@ def fillHistDict(inFileRoot, all_histograms, channels, QCDregions, categories, s
                             key_name += '_'.join(ks for ks in key_name_split[1:])
                     if key_name not in histNamesDict.keys(): continue
                     sample,uncNameType,scale = histNamesDict[key_name]
+                    if sample=='data' and uncNameType!='Central':continue
+                    if sample!='data' and uncNameType!=unc_source:continue
                     key_total = ((channel, qcdRegion, cat), (uncNameType, scale))
                     if key_total not in all_histograms.keys():
                         all_histograms[key_total] = []
@@ -86,10 +85,8 @@ if __name__ == "__main__":
     uncNameTypes = GetUncNameTypes(unc_cfg_dict)
     if args.uncSource != 'Central' and args.uncSource not in uncNameTypes:
         print("unknown unc source {args.uncSource}")
-    #scales = ['Up','Down']
     CreateNamesDict(histNamesDict, all_samples_types, args.uncSource, scales, sample_cfg_dict)
     all_vars = args.hists.split(',')
-    #print(all_samples_list)
     categories = list(sample_cfg_dict['GLOBAL']['categories'])
     QCDregions = list(sample_cfg_dict['GLOBAL']['QCDRegions'])
     channels = list(sample_cfg_dict['GLOBAL']['channelSelection'])
@@ -109,7 +106,6 @@ if __name__ == "__main__":
         if var not in all_histograms.keys():
             all_histograms[var] = {}
         for sample_type in all_files[var].keys():
-            #print(sample_type)
             if sample_type not in all_histograms[var].keys():
                 all_histograms[var][sample_type] = {}
             for inFileName in all_files[var][sample_type]:
@@ -117,30 +113,34 @@ if __name__ == "__main__":
                 inFileRoot = ROOT.TFile.Open(inFileName, "READ")
                 if inFileRoot.IsZombie():
                     raise RuntimeError(f"{inFile} is Zombie")
-                #print(f"filling hist dict for {inFileName}")
-                fillHistDict(inFileRoot, all_histograms[var][sample_type], channels, QCDregions, categories, sample_type, histNamesDict, signals)
+                fillHistDict(inFileRoot, all_histograms[var][sample_type],args.uncSource, channels, QCDregions, categories, sample_type, histNamesDict, signals)
                 inFileRoot.Close()
             MergeHistogramsPerType(all_histograms[var][sample_type])
-            #print(all_histograms[var])
-        # Get QCD estimation:
-        #print("adding QCD ... ")
         AddQCDInHistDict(all_histograms[var], channels, categories, sample_type, args.uncSource, all_samples_list, scales)
-    #print("saving files...")
     for var in all_histograms.keys():
-        outFileName = os.path.join(args.histDir, f'all_histograms_{var}_{args.uncSource}.root')
+        outFileName = os.path.join(args.histDir,'all_histograms',var, f'all_histograms_{var}_{args.uncSource}.root')
         if os.path.exists(outFileName):
             os.remove(outFileName)
         outFile = ROOT.TFile(outFileName, "RECREATE")
         for sample_type in all_histograms[var].keys():
             for key in all_histograms[var][sample_type]:
                 (channel, qcdRegion, cat), (uncNameType, uncScale) = key
-                new_histName = f'{sample_type}_{channel}_{qcdRegion}_{cat}'
-                if uncNameType != 'Central' and uncScale !='Central' and sample_type!='data':
-                    new_histName+=f'_{uncNameType}{uncScale}'
+
+                if qcdRegion != 'OS_Iso': continue
+                dirStruct = (channel, cat)
+                dir_name = '/'.join(dirStruct)
+                dir_ptr = mkdir(outFile,dir_name)
                 hist = all_histograms[var][sample_type][key]
-                hist.SetTitle(new_histName)
-                hist.SetName(new_histName)
-                if args.uncSource != 'Central' and uncNameType =='Central' : continue
-                hist.Write()
-                outFile.WriteTObject(hist, new_histName, "Overwrite")
+
+                hist_name =  sample_type
+                if uncNameType!=args.uncSource: continue
+                if uncNameType != 'Central':
+                    if sample_type == 'data' : continue
+                    if uncScale == 'Central': continue
+                    hist_name+=f"_{uncNameType}{uncScale}"
+                else:
+                    if uncScale!='Central':continue
+                hist.SetTitle(hist_name)
+                hist.SetName(hist_name)
+                dir_ptr.WriteTObject(hist, hist_name, "Overwrite")
         outFile.Close()

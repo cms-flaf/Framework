@@ -36,6 +36,24 @@ def GetSamplesStuff(sample_cfg_dict,histDir):
     return all_samples_list, all_samples_types
 
 
+def CreateNamesDict(histNamesDict, sample_types, uncName, scales, sample_cfg_dict):
+    signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
+    for sample_key in sample_types.keys():
+        final_sampleKey=f"{sample_key}"
+        if sample_key == 'data':
+            histNamesDict[final_sampleKey] = (sample_key, 'Central','Central')
+            continue
+        else:
+            if uncName == 'Central':
+                histNamesDict[final_sampleKey] = (sample_key, 'Central','Central')
+                continue
+            else:
+                for scale in scales:
+                    histName = f"{final_sampleKey}_{uncName}{scale}"
+                    histKey = (sample_key,  uncName, scale)
+                    histNamesDict[histName] = histKey
+
+
 
 def defineP4(df, name):
     df = df.Define(f"{name}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({name}_pt,{name}_eta,{name}_phi,{name}_mass)")

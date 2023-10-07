@@ -205,7 +205,10 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         var, uncName = self.branch_data
-        local_file_target = os.path.join(self.central_Histograms_path(), f'all_histograms_{var}_{uncName}.root')
+        outFile_haddMergedFiles = os.path.join(self.central_Histograms_path(), 'all_histograms',var,f'all_histograms_{var}.root')
+        if os.path.exists(outFile_haddMergedFiles):
+            return law.LocalFileTarget((outFile_haddMergedFiles))
+        local_file_target = os.path.join(self.central_Histograms_path(), 'all_histograms',var,f'all_histograms_{var}_{uncName}.root')
         return law.LocalFileTarget(local_file_target)
 
     def run(self):
@@ -243,17 +246,17 @@ class HaddMergedTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         var = self.branch_data
-        local_file_target = os.path.join(self.central_Histograms_path(), f'all_histograms_{var}.root')
+        local_file_target = os.path.join(self.central_Histograms_path(),'all_histograms',var, f'all_histograms_{var}.root')
         return law.LocalFileTarget(local_file_target)
 
     def run(self):
         var = self.branch_data
-        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
         sample_config = self.sample_config
         unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
         HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
-        HaddMergedHistsProducer_cmd = ['python3', HaddMergedHistsProducer,'--histDir', self.central_Histograms_path(), '--file-name-pattern', 'all_histograms', '--hists', var,
-                            '--uncConfig', unc_config, '--remove-files', 'True']
+        histDir = os.path.join(self.central_Histograms_path(),'all_histograms',var)
+        HaddMergedHistsProducer_cmd = ['python3', HaddMergedHistsProducer,'--histDir', histDir, '--file-name-pattern', 'all_histograms', '--hists', var,
+                            '--uncConfig', unc_config]#, '--remove-files', 'True']
         sh_call(HaddMergedHistsProducer_cmd,verbose=1)
 
 class PlotterTask(Task, HTCondorWorkflow, law.LocalWorkflow):
@@ -272,10 +275,9 @@ class PlotterTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         uncNames.extend(list(unc_cfg_dict['norm'].keys()))
         uncNames.extend([unc for unc in unc_cfg_dict['shape']])
         sample_cfg_dict = self.sample_config
-        categories = list(sample_cfg_dict['GLOBAL']['categories'])
+        categories = list(self.global_params['categories'])
         QCD_region = 'OS_Iso'
-        channels = list(sample_cfg_dict['GLOBAL']['channelSelection'])
-        uncScales = ['Up','Down','Central']
+        channels = list(self.global_params['channelSelection'])
         n = 0
         branches = {}
         for uncName in uncNames:
@@ -294,7 +296,7 @@ class PlotterTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if uncName == 'Central' and uncScale != 'Central': continue
                 if uncName != 'Central' and uncScale == 'Central': continue
                 final_directory = os.path.join(self.central_Histograms_path(), 'plots', var)
-                final_fileName = f'{channel}_{QCD_region}_{category}_{uncName}_{uncSource}_XMass{self.mass}.pdf'
+                final_fileName = f'{channel}_{QCD_region}_{category}_{uncName}_{uncScale}_XMass{self.mass}.pdf'
                 final_files.append(law.LocalFileTarget(os.path.join(final_directory, final_fileName)))
         return law.LocalDirectoryTarget(final_files)
 
@@ -307,8 +309,8 @@ class PlotterTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
         PlotterProducer = os.path.join(self.ana_path(), 'Analysis', 'HistPlotter.py')
         for var in vars_to_plot:
-            outDir = os.path.join(self.central_Histograms_path(), 'plots', var)
+            outDir = os.path.join(self.central_Histograms_path(), 'plots')
             PlotterProducer_cmd = ['python3', PlotterProducer,'--mass', self.mass, '--histDir', self.central_Histograms_path(),
                                     '--outDir',outDir, '--inFileName', 'all_histograms', '--hists', var, '--sampleConfig',sample_config,
-                                    '--qcdRegion', QCD_region, '--channel', channel, '--category', category, '--uncSource', uncName]
+                                    '--channel', channel, '--category', category, '--uncSource', uncName]
             sh_call(PlotterProducer_cmd,verbose=1)

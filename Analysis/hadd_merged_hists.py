@@ -27,15 +27,17 @@ if __name__ == "__main__":
     all_vars = args.hists.split(',')
     with open(args.uncConfig, 'r') as f:
         unc_cfg_dict = yaml.safe_load(f)
-    uncNameTypes = GetUncNameTypes(unc_cfg_dict) + ['Central']
+    uncNameTypes = GetUncNameTypes(unc_cfg_dict)
+    uncNameTypes.extend(['Central'])
     all_files = {}
     for var in all_vars:
         all_files[var] = []
         for uncName in uncNameTypes:
-            all_files[var].append(f"{args.histDir}/{args.file_name_pattern}_{var}_{uncName}.root")
-        outFileNameFinal = f'{args.histDir}/{args.file_name_pattern}_{var}.root'
-        hadd_str = f'hadd -f209 -j -O {outFileNameFinal} '
+            all_files[var].append(os.path.join(args.histDir, f"{args.file_name_pattern}_{var}_{uncName}.root"))
+        outFileNameFinal = os.path.join(args.histDir, f'{args.file_name_pattern}_{var}.root')
+        hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
         hadd_str += ' '.join(f for f in all_files[var])
+        print(hadd_str)
         if len(all_files[var]) > 1:
             sh_call([hadd_str], True)
         else:

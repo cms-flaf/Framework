@@ -142,10 +142,10 @@ def AddQCDInHistDict(all_histograms, channels, categories, sample_type, uncName,
             all_histograms['QCD'] = {}
     for channel in channels:
         for cat in categories:
-            key =( (channel, 'OS_Iso', cat), ('Central', 'Central'))
-            all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, 'Central', 'Central')
-            if uncName=='Central' : continue
+            #key =( (channel, 'OS_Iso', cat), ('Central', 'Central'))
+            #all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, 'Central', 'Central')
             for scale in scales:
+                if uncName=='Central' : scale = 'Central'
                 key =( (channel, 'OS_Iso', cat), (uncName, scale))
                 all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale)
 

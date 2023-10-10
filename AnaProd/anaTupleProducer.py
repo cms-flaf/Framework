@@ -49,7 +49,7 @@ defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type"
                 "PV_npvs"]
 
 def SelectBTagShapeSF(df,weight_name):
-    df = df.Define("weight_bTagShapeSF_rel", weight_name)
+    df = df.Define("weight_bTagShapeSF", weight_name)
     return df
 
 def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
@@ -279,14 +279,13 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
             weight_branches.extend(dfw.Apply(Corrections.trg.getTrgSF, trigger_class.trigger_dict.keys(), nLegs,
                                              is_central and compute_unc_variations, is_central))
             weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations, is_central))
-            SF_branches_core,SF_branches_jes=dfw.Apply(Corrections.jet.getBtagShapeSFs, syst_name, is_central)
-            if is_central:
-                weight_branches.extend(SF_branches_core)
-            else:
-                weight_name = f'weight_bTagShapeSF_{syst_name}_rel'
-                if weight_name in SF_branches_jes:
-                    dfw.df = SelectBTagShapeSF(dfw.df, weight_name)
-                    weight_branches.extend([f'weight_bTagShapeSF_rel'])
+            SF_branches_core,SF_weight_jes=dfw.Apply(Corrections.jet.getBtagShapeSFs, syst_name, is_central)
+            syst_name_selected = 'Central' if SF_weight_jes=="" else syst_name
+            SF_branches_core.remove(f'weight_bTagShapeSF_Central')
+            weight_name = f'weight_bTagShapeSF_{syst_name_selected}'
+            dfw.df = SelectBTagShapeSF(dfw.df, weight_name)
+            if is_central: weight_branches.extend(SF_branches_core)
+            weight_branches.extend([f'weight_bTagShapeSF'])
             puIDbranches = ["weight_Jet_PUJetID_Central_tmp", "weight_Jet_PUJetID_effUp_rel_tmp", "weight_Jet_PUJetID_effDown_rel_tmp"]
             for puIDbranch in puIDbranches:
                 if puIDbranch in dfw.df.GetColumnNames():

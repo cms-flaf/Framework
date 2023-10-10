@@ -266,6 +266,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     for syst_name, source_name in syst_dict.items():
         if source_name not in uncertainties and "all" not in uncertainties: continue
         is_central = syst_name in [ 'Central', 'nano' ]
+        if not is_central and syst_name!="TauES_3prongUp" : continue
         if not is_central and not compute_unc_variations: continue
         suffix = '' if is_central else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue

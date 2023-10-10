@@ -24,11 +24,11 @@ if __name__ == "__main__":
     parser.add_argument('--outDir', required=True)
     parser.add_argument('--inFileName', required=True)
     parser.add_argument('--hists', required=False, type=str, default = 'tau1_pt')
-    parser.add_argument('--mass', required=False, type=int, default=2000)
+    parser.add_argument('--mass', required=False, type=int, default=1250)
     parser.add_argument('--sampleConfig', required=True, type=str)
-    parser.add_argument('--channel',required=False, type=str, default = 'OS_Iso')
-    parser.add_argument('--category',required=False, type=str, default = 'OS_Iso')
-    parser.add_argument('--uncSource',required=False, type=str, default = 'OS_Iso')
+    parser.add_argument('--channel',required=False, type=str, default = 'tauTau')
+    parser.add_argument('--category',required=False, type=str, default = 'inclusive')
+    parser.add_argument('--uncSource',required=False, type=str, default = 'Central')
     args = parser.parse_args()
 
     page_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/cms_stacked.yaml")
@@ -66,7 +66,6 @@ if __name__ == "__main__":
             if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
                 obj.SetDirectory(0)
                 key_name = key.GetName()
-                #print(key_name)
                 if key_name not in histNamesDict.keys(): continue
                 sample, uncName, scale = histNamesDict[key_name]
                 sample_type = sample if not sample in sample_cfg_dict.keys() else sample_cfg_dict[sample]['sampleType']
@@ -108,7 +107,7 @@ if __name__ == "__main__":
             outFile_suffix = var
             if(args.uncSource != 'Central'):
                 outFile_suffix += f'{args.uncSource}{uncScale}'
-            outDir = os.path.join(args.outDir, var, args.channel, args.category)
+            outDir = os.path.join(args.outDir, var, args.channel, args.category, f'XMass_{args.mass}')
             print(outDir)
             if not os.path.isdir(outDir):
                 os.makedirs(outDir)

@@ -15,7 +15,7 @@ tautau_m_vis:
   divide_by_bin_width: True
 
 bbtautau_mass:
-  x_bins: "50|150:1500"
+  x_bins: "100|150:3000"
   x_title: "M^{HH}_{vis} (GeV)"
   y_title: Events
   use_log_y: False

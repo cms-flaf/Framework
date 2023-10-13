@@ -35,7 +35,7 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             producer = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheProducer.py')
             inDir = os.path.join(self.central_nanoAOD_path(), sample_name)
             os.makedirs(os.path.dirname(self.output().path), exist_ok=True)
-            sh_call(['python3', producer, '--config', self.sample_config, '--inDir', inDir,
+            sh_call(['python3', producer, '--config', self.sample_config, '--inDir', inDir, '--sample', sample_name,
                     '--outFile', self.output().path, '--customisations', self.customisations ], env=self.cmssw_env())
         print(f'anaCache for sample {sample_name} is created in {self.output().path}')
 

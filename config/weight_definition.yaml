@@ -69,6 +69,22 @@ norm:
     expression: weight_bTagSF_Tight_btagSFlight_correlated{scale}_rel * final_weight
   bTagSF_Tight_btagSFlight_uncorrelated:
     expression: weight_bTagSF_Tight_btagSFlight_uncorrelated{scale}_rel * final_weight
+  bTagShapeSF_lf:
+    expression: weight_bTagShapeSF_lf{scale}_rel * weight_bTagShapeSF * final_weight
+  bTagShapeSF_hf:
+    expression: weight_bTagShapeSF_hf{scale}_rel * weight_bTagShapeSF * final_weight
+  bTagShapeSF_lfstats1:
+    expression: weight_bTagShapeSF_lfstats1{scale}_rel * weight_bTagShapeSF * final_weight
+  bTagShapeSF_lfstats2:
+    expression: weight_bTagShapeSF_lfstats2{scale}_rel * weight_bTagShapeSF * final_weight
+  bTagShapeSF_hfstats1:
+    expression: weight_bTagShapeSF_hfstats1{scale}_rel * weight_bTagShapeSF * final_weight
+  bTagShapeSF_hfstats2:
+    expression: weight_bTagShapeSF_hfstats2{scale}_rel * weight_bTagShapeSF * final_weight
+  bTagShapeSF_cferr1:
+    expression: weight_bTagShapeSF_cferr1{scale}_rel * weight_bTagShapeSF * final_weight
+  bTagShapeSF_cferr2:
+    expression: weight_bTagShapeSF_cferr2{scale}_rel * weight_bTagShapeSF * final_weight
   PUJetID:
     expression: weight_Jet_PUJetID_eff{scale}_rel_b1 * weight_Jet_PUJetID_eff{scale}_rel_b2 * final_weight
   PileUp:
@@ -110,3 +126,7 @@ shape:
   - JES_EC2_2018
   - JES_HF_2018
   - JES_RelativeSample_2018
+
+shape_and_norm:
+  bTagShapeSF:
+    expression: final_weight * weight_bTagShapeSF

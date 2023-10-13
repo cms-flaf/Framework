@@ -302,6 +302,8 @@ class PlotterTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         channel, QCD_region, category, uncName = self.branch_data
+        print(channel, QCD_region, category, uncName)
+        '''
         unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
         sample_config = self.sample_config
         vars_to_plot = list(hists.keys())
@@ -314,3 +316,4 @@ class PlotterTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                                     '--outDir',outDir, '--inFileName', 'all_histograms', '--hists', var, '--sampleConfig',sample_config,
                                     '--channel', channel, '--category', category, '--uncSource', uncName]
             sh_call(PlotterProducer_cmd,verbose=1)
+        '''

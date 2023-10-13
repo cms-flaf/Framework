@@ -118,7 +118,10 @@ if __name__ == "__main__":
             MergeHistogramsPerType(all_histograms[var][sample_type])
         AddQCDInHistDict(all_histograms[var], channels, categories, sample_type, args.uncSource, all_samples_list, scales)
     for var in all_histograms.keys():
-        outFileName = os.path.join(args.histDir,'all_histograms',var, f'all_histograms_{var}_{args.uncSource}.root')
+        outDir = os.path.join(args.histDir,'all_histograms',var)
+        if not os.path.exists(outDir):
+            os.makedirs(outDir)
+        outFileName = os.path.join(outDir, f'all_histograms_{var}_{args.uncSource}.root')
         if os.path.exists(outFileName):
             os.remove(outFileName)
         outFile = ROOT.TFile(outFileName, "RECREATE")

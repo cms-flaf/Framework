@@ -57,7 +57,7 @@ if __name__ == "__main__":
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
     CreateNamesDict(histNamesDict, all_samples_types, args.uncSource, scales, sample_cfg_dict)
     for var in all_vars:
-        inFileName=f'{args.inFileName}_{var}.root'
+        inFileName=f'{args.inFileName}_{var}_{args.uncSource}.root'
         inFile = ROOT.TFile(os.path.join(args.histDir, 'all_histograms',var,inFileName),"READ")
         dir_0 = inFile.Get(args.channel)
         dir_1 = dir_0.Get(args.category)

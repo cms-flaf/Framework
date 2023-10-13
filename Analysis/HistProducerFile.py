@@ -37,8 +37,7 @@ def SaveHists(histograms, out_file):
 def createModels(hist_cfg_dict):
     return { var : GetModel(hist_cfg_dict, var) for var in hist_cfg_dict.keys() }
 
-
-def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_dict, unc_cfg_dict, furtherCut=''):
+def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_dict, unc_cfg_dict, other_shape_weights = {}, furtherCut=''):
     dataframes = all_dataframes[key_2]
     sample_type,uncName,scale = key_2
     isCentral = 'Central' in key_2
@@ -56,6 +55,12 @@ def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_di
                 if type(unc_cfg_dict)==dict:
                     if uncName in unc_cfg_dict.keys() and 'expression' in unc_cfg_dict[uncName].keys():
                         weight_name = unc_cfg_dict[uncName]['expression'].format(scale=scale)
+                else:
+                    if not other_shape_weights.keys(): continue
+                    for key_shape_norm in other_shape_weights.keys():
+                        key_2_shape_norm = sample_type,f'{key_shape_norm}_{uncName}',scale
+                        if (key_1, key_2_shape_norm) in histograms_var.keys(): continue
+                        histograms_var[(key_1, key_2_shape_norm)] = []
             total_weight_expression = GetWeight(ch, cat) if sample_type!='data' else "1"
 
             for dataframe in dataframes:
@@ -65,6 +70,11 @@ def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_di
                 #print(key_cut)
                 #print(f"after cut df has {dataframe.Count().GetValue()}")
                 histograms_var[(key_1, key_2)].append(dataframe.Define("final_weight", f"{total_weight_expression}").Define("weight_for_hists", weight_name).Histo1D(models[var], var, "weight_for_hists"))
+                if not other_shape_weights.keys(): continue
+                for key_shape_norm in other_shape_weights.keys():
+                    key_2_shape_norm = sample_type,f'{key_shape_norm}_{uncName}',scale
+                    weight_name_shapeNorm = other_shape_weights[key_shape_norm]['expression'].format(scale=scale)
+                    histograms_var[(key_1, key_2_shape_norm)].append(dataframe.Define("final_weight", f"{total_weight_expression}").Define(f"weight_for_hists_{key_shape_norm}", weight_name_shapeNorm).Histo1D(models[var], var, f"weight_for_hists_{key_shape_norm}"))
     return histograms
 
 
@@ -118,7 +128,7 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
     col_tpyes_central =  dfWrapped_central.colTypes
     if key_central not in all_dataframes:
         all_dataframes[key_central] = [PrepareDfWrapped(dfWrapped_central).df]
-    central_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_central , models, key_filter_dict, unc_cfg_dict['norm'], furtherCut)
+    central_histograms = GetHistogramDictFromDataframes(all_dataframes, key_central , models, key_filter_dict, unc_cfg_dict['norm'], {},furtherCut)
     # norm weight histograms
     if compute_rel_weights and dataset!='data':
         for uncName in unc_cfg_dict['norm'].keys():
@@ -127,7 +137,7 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
                 if key_2 not in all_dataframes.keys():
                     all_dataframes[key_2] = []
                 all_dataframes[key_2] = all_dataframes[key_central]
-                norm_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_2, models, key_filter_dict,unc_cfg_dict['norm'], furtherCut)
+                norm_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_2, models, key_filter_dict,unc_cfg_dict['norm'], {},furtherCut)
                 for var in central_histograms.keys():
                     if var not in norm_histograms.keys():
                         print(f"norm hist not available for {var}")
@@ -151,7 +161,7 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
                 key_2 = (sample_type, uncName, scale)
                 all_dataframes, key_2 , models, key_filter_dict, unc_cfg_dict,
                 GetShapeDataFrameDict(all_dataframes, key_2, key_central, inFile, compute_variations, deepTauVersion, col_names_central, col_tpyes_central )
-                shape_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_dict,unc_cfg_dict['shape'], furtherCut)
+                shape_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_dict,unc_cfg_dict['shape'], unc_cfg_dict['shape_and_norm'], furtherCut)
                 for var in shape_histograms.keys():
                     SaveHists(shape_histograms[var], outfiles[var])
 

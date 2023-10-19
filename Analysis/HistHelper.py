@@ -16,13 +16,16 @@ def GetUncNameTypes(unc_cfg_dict):
     uncNames.extend([unc for unc in unc_cfg_dict['shape']])
     return uncNames
 
-def GetSamplesStuff(sample_cfg_dict,histDir):
+def GetSamplesStuff(sample_cfg_dict,histDir,wantMass=True,mass=500):
     all_samples_list = []
     all_samples_types = {'data':['data'],}
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
     for sample in sample_cfg_dict.keys():
         if not os.path.isdir(os.path.join(histDir, sample)): continue
         sample_type = sample_cfg_dict[sample]['sampleType']
+        if wantMass:
+            if 'mass' in sample_cfg_dict[sample].keys():
+                if sample_type in signals and sample_cfg_dict[sample]['mass']!=mass : continue
         isSignal = False
         if sample_type in signals:
             isSignal = True

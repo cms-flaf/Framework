@@ -48,7 +48,7 @@ if __name__ == "__main__":
     all_histlist = {}
     plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg_dict, inputs_cfg=inputs_cfg_dict)
 
-    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir)
+    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir,True,args.mass)
 
     all_samples_types.update({"QCD":"QCD"})
     histNamesDict = {}
@@ -69,8 +69,6 @@ if __name__ == "__main__":
                 if key_name not in histNamesDict.keys(): continue
                 sample, uncName, scale = histNamesDict[key_name]
                 sample_type = sample if not sample in sample_cfg_dict.keys() else sample_cfg_dict[sample]['sampleType']
-                if sample in sample_cfg_dict.keys() and 'mass' in sample_cfg_dict[sample].keys():
-                    if sample_type in signals and sample_cfg_dict[sample]['mass']!=args.mass : continue
                 if sample_type in signals:
                     sample= sample_type
                 if (uncName, scale) not in all_histlist.keys():

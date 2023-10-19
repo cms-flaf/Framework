@@ -272,6 +272,17 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         dfw = Utilities.DataFrameWrapper(df_empty,defaultColToSave)
 
         addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs)
+        #dfw.DefineAndAppend("weight_L1PreFiring_Dn","L1PreFiringWeight_Dn")
+        #dfw.DefineAndAppend("weight_L1PreFiring_ECAL_Dn","L1PreFiringWeight_ECAL_Dn")
+        #dfw.DefineAndAppend("weight_L1PreFiring_ECAL_Nom","L1PreFiringWeight_ECAL_Nom")
+        #dfw.DefineAndAppend("weight_L1PreFiring_ECAL_Up","L1PreFiringWeight_ECAL_Up")
+        #dfw.DefineAndAppend("weight_L1PreFiring_Muon_Nom","L1PreFiringWeight_Muon_Nom")
+        #dfw.DefineAndAppend("weight_L1PreFiring_Muon_StatDn","L1PreFiringWeight_Muon_StatDn")
+        #dfw.DefineAndAppend("weight_L1PreFiring_Muon_StatUp","L1PreFiringWeight_Muon_StatUp")
+        #dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystDn","L1PreFiringWeight_Muon_SystDn")
+        #dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystUp","L1PreFiringWeight_Muon_SystUp")
+        #dfw.DefineAndAppend("weight_L1PreFiring_Nom","L1PreFiringWeight_Nom")
+        #dfw.DefineAndAppend("weight_L1PreFiring_Up","L1PreFiringWeight_Up")
         if not isData:
             weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name, nLegs,
                                         return_variations=is_central and compute_unc_variations, isCentral=is_central,

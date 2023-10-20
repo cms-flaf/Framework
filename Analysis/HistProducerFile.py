@@ -70,14 +70,15 @@ def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_di
             for dataframe in dataframes:
                 if furtherCut != '' : key_cut += f' && {furtherCut}'
                 #print(key_cut)
+                dataframe = dataframe.Filter(key_cut)
                 dataframe=dataframe.Define("final_weight_0", f"{total_weight_expression}")
                 if not applyBTagWeight:
                     dataframe = GetBTagRatio(dataframe)
 
                 final_string_weight = ApplyBTagWeight(cat,applyBtag=applyBTagWeight, finalWeight_name = 'final_weight_0')
                 dataframe=dataframe.Define("final_weight", f"{final_string_weight}")
-
-                dataframe = dataframe.Filter(key_cut)
+                if cat != 'inclusive':
+                    dataframe = dataframe.Filter(f"{cat}")
                 #print(key_cut)
                 #print(f"after cut df has {dataframe.Count().GetValue()}")
                 histograms_var[(key_1, key_2)].append(dataframe.Define("weight_for_hists", weight_name).Histo1D(models[var], var, "weight_for_hists"))

@@ -222,7 +222,9 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     loadHHBtag = mode == "HH"
     nLegs = 4 if mode == "ttHH" else 2
     Baseline.Initialize(loadTF, loadHHBtag)
-    Corrections.Initialize(config=config['GLOBAL'],isData=isData)
+    deepTauYear = Baseline.deepTauVersions[config["GLOBAL"]["deepTauVersion"]]
+    deepTauV = config["GLOBAL"]["deepTauVersion"]
+    Corrections.Initialize(config=config['GLOBAL'],isData=isData,deepTauVersion=f"""DeepTau{deepTauYear}v{deepTauV}""")
     triggerFile = config['GLOBAL'].get('triggerFile')
     if triggerFile is not None:
         triggerFile = os.path.join(os.environ['ANALYSIS_PATH'], triggerFile)

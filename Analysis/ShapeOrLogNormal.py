@@ -140,7 +140,7 @@ if __name__ == "__main__":
     #    all_uncertainties = all_uncertainties[args.UncSource]
     # before, let's run over 1 channel, 1 sample, 1 uncertainty, 1 var, 1 cat
 
-    var = 'bbtautau_mass'
+    var = 'tau1_pt'
     for sample in ['TT']: # all_samples_list+['QCD']:
         if sample == 'data': continue
         for channel in ['tauTau']:#['eTau', 'muTau', 'tauTau']:

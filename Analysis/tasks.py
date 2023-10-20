@@ -25,7 +25,8 @@ def load_unc_config(unc_cfg):
     return unc_cfg_dict
 
 def getOutFileName(var, sample_name, central_Histograms_path):
-    outDir = os.path.join(central_Histograms_path, sample_name)
+    btag_dir= "bTag_weight" if self.wantBTag else "bTag_shape"
+    outDir = os.path.join(central_Histograms_path, sample_name,btag_dir)
     fileName = f'{var}.root'
     outFile = os.path.join(outDir,fileName)
     return outFile
@@ -72,7 +73,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def output(self):
         sample_name, prod_br = self.branch_data
         input_file = self.input()[0].path
-        fileName = outFileName = os.path.basename(input_file)
+        fileName  = os.path.basename(input_file)
         vars_to_plot = list(hists.keys())
         local_files_target = []
         for var in vars_to_plot:
@@ -80,7 +81,8 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             if os.path.exists(outFile_histProdSample):
                 local_files_target.append(law.LocalFileTarget(outFile_histProdSample))
                 continue
-            outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp', var)
+            btag_dir= "bTag_weight" if self.wantBTag else "bTag_shape"
+            outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp', var, btag_dir)
             if not os.path.isdir(outDir):
                 os.makedirs(outDir)
             outFile = os.path.join(outDir,fileName)
@@ -92,7 +94,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         if len(self.input()) > 1:
             raise RuntimeError(f"multple input files!! {' '.join(f.path for f in self.input())}")
         input_file = self.input()[0].path
-        outFileName = outFileName = os.path.basename(input_file)
+        outFileName = os.path.basename(input_file)
         hist_config = self.hist_config
         unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
         sample_config = self.sample_config
@@ -141,7 +143,7 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         vars_to_plot = list(hists.keys())
         local_files_target = []
         for var in vars_to_plot:
-            outFile = getOutFileName(var, sample_name, self.central_Histograms_path())
+            outFile = getOutFileName(var, sample_name, self.central_Histograms_path(),self.wantBTag)
             local_files_target.append(law.LocalFileTarget(outFile))
         return local_files_target
 
@@ -159,7 +161,8 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
         file_name_pattern += ".root"
         HistProducerSample = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample.py')
-        outDir = os.path.join(self.central_Histograms_path(), sample_name)
+        btag_dir= "bTag_weight" if self.wantBTag else "bTag_shape"
+        outDir = os.path.join(self.central_Histograms_path(), sample_name,btag_dir)
         histDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp')
         HistProducerSample_cmd = ['python3', HistProducerSample,'--histDir', histDir, '--outDir', outDir, '--hists', hists_str,
                             '--file-name-pattern', file_name_pattern, '--remove-files', 'True']

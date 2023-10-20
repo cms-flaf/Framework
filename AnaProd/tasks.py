@@ -200,3 +200,64 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         shutil.copy(tmpFile, finalFile)
         if os.path.exists(finalFile):
             os.remove(tmpFile)
+
+
+class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)
+    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
+
+    def workflow_requires(self):
+        branch_map = self.create_branch_map()
+        workflow_dict = {}
+        workflow_dict["anaTuple"] = {
+            idx: AnaTupleTask.req(self, branch=br, branches=())
+            for idx, (sample, br) in branch_map.items() if sample !='data'
+        }
+        workflow_dict["dataMergeTuple"] = {
+            idx: DataMergeTask.req(self, branch=br, branches=())
+            for idx, (sample, br) in branch_map.items() if sample =='data'
+        }
+
+        return workflow_dict
+
+    def requires(self):
+        sample_name, prod_br = self.branch_data
+        if sample_name =='data':
+            return [ DataMergeTask.req(self,max_runtime=DataMergeTask.max_runtime._default, branch=prod_br, branches=())]
+        return [ AnaTupleTask.req(self, branch=prod_br, max_runtime=AnaTupleTask.max_runtime._default, branches=())]
+
+    def create_branch_map(self):
+        n = 0
+        branches = {}
+        anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
+        sample_id_data = 0
+        for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
+            if sample_type =='data' or 'QCD' in sample_name:
+                continue
+            branches[n] = (sample_name, prod_br)
+            n+=1
+        branches[n+1] = ('data', 0)
+        return branches
+
+    def output(self):
+        sample_name, prod_br = self.branch_data
+        input_file = self.input()[0].path
+        fileName = os.path.basename(input_file)
+        local_files_target = []
+        outDir = os.path.join(self.central_anaCache_path(), sample_name)
+        if not os.path.isdir(outDir):
+            os.makedirs(outDir)
+        outFile = os.path.join(outDir,fileName)
+        return law.LocalFileTarget(outFile)
+
+    def run(self):
+        sample_name, prod_br = self.branch_data
+        if len(self.input()) > 1:
+            raise RuntimeError(f"multple input files!! {' '.join(f.path for f in self.input())}")
+        inputFileName = self.input()[0].path
+        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
+        anaCacheTupleProducer = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheTupleProducer.py')
+        outDir = os.path.join(self.central_anaCache_path(), sample_name)
+        outFileName = os.path.join(outDir,fileName)
+        anaCacheTupleProducer_cmd = ['python3', anaCacheTupleProducer,'--inFileName', inputFileName, '--outFileName',outFileName, '--dataset', '--compute_unc_variations', 'True', '--uncConfig', unc_config]
+        sh_call(anaCacheTupleProducer_cmd,verbose=1)

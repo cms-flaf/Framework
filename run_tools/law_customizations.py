@@ -102,6 +102,7 @@ class Task(law.Task):
     period = luigi.Parameter()
     customisations =luigi.Parameter(default="")
     test = luigi.BoolParameter(default=False)
+    wantBTag = luigi.BoolParameter(default=False)
     mass = luigi.Parameter(default="500")
 
     def __init__(self, *args, **kwargs):

@@ -149,18 +149,24 @@ def AddQCDInHistDict(all_histograms, channels, categories, sample_type, uncName,
                 key =( (channel, 'OS_Iso', cat), (uncName, scale))
                 all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale)
 
+def ApplyBTagWeight(cat,applyBtag=True, finalWeight_name = 'final_weight'):
+    btag_weight = "1"
+    btagshape_weight = "1"
+    if btag_wps[cat]!='' and applyBtag:
+        btag_weight = f"weight_bTagSF_{btag_wps[cat]}_Central"
+    if not applyBtag:
+        btagshape_weight = "weight_bTagShapeSF"
+    ratio_btag = "1" if applyBtag else "ratio_btag"
+    return f'{finalWeight_name}*{btag_weight}*{btagshape_weight}*{ratio_btag}'
+
 
 def GetWeight(channel,cat):
-    btag_weight = "1"
-    if btag_wps[cat]!='':
-        btag_weight = f"weight_bTagSF_{btag_wps[cat]}_Central"
     trg_weights_dict = {
         'eTau':["weight_tau1_TrgSF_singleEle_Central","weight_tau2_TrgSF_singleEle_Central"],
         'muTau':["weight_tau1_TrgSF_singleMu_Central","weight_tau2_TrgSF_singleMu_Central"],
         'tauTau':["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central"]
         }
-    weights_to_apply = [ "weight_Jet_PUJetID_Central_b1", "weight_Jet_PUJetID_Central_b2", "weight_TauID_Central", btag_weight, "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
-    #weights_to_apply = ["weight_TauID_Central", btag_weight, "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
+    weights_to_apply = [ "weight_Jet_PUJetID_Central_b1", "weight_Jet_PUJetID_Central_b2", "weight_TauID_Central", "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
     weights_to_apply.extend(trg_weights_dict[channel])
     total_weight = '*'.join(weights_to_apply)
     return total_weight

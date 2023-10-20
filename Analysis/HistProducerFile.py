@@ -3,6 +3,7 @@ import sys
 import os
 import math
 import shutil
+import time
 from RunKit.sh_tools import sh_call
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
@@ -11,6 +12,12 @@ import Common.Utilities as Utilities
 from Analysis.HistHelper import *
 from Analysis.hh_bbtautau import *
 scales = ['Up', 'Down']
+
+def GetBTagRatio(df_in, final_weight_name='final_weight_0'):
+    df_in = df_in.Define("bweight", f"{final_weight_name}*weight_bTagShapeSF")
+    ratio_btag =df_in.Sum("bweight").GetValue()/df_in.Sum(f"{final_weight_name}").GetValue()
+    df_in = df_in.Define("ratio_btag", f"{ratio_btag}")
+    return df_in
 
 def createCentralQuantities(df_central, central_col_types, central_columns):
     map_creator = ROOT.analysis.MapCreator(*central_col_types)()
@@ -37,7 +44,7 @@ def SaveHists(histograms, out_file):
 def createModels(hist_cfg_dict):
     return { var : GetModel(hist_cfg_dict, var) for var in hist_cfg_dict.keys() }
 
-def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_dict, unc_cfg_dict, other_shape_weights = {}, furtherCut=''):
+def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_dict, unc_cfg_dict, applyBTagWeight=True, furtherCut=''):
     dataframes = all_dataframes[key_2]
     sample_type,uncName,scale = key_2
     isCentral = 'Central' in key_2
@@ -49,32 +56,31 @@ def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_di
         for key_1,key_cut in key_filter_dict.items():
             ch, reg, cat = key_1
             if (key_1, key_2) in histograms_var.keys(): continue
-            histograms_var[(key_1, key_2)] = []
-            weight_name = "final_weight"
+
             if not isCentral:
                 if type(unc_cfg_dict)==dict:
                     if uncName in unc_cfg_dict.keys() and 'expression' in unc_cfg_dict[uncName].keys():
                         weight_name = unc_cfg_dict[uncName]['expression'].format(scale=scale)
-                else:
-                    if not other_shape_weights.keys(): continue
-                    for key_shape_norm in other_shape_weights.keys():
-                        key_2_shape_norm = sample_type,f'{key_shape_norm}_{uncName}',scale
-                        if (key_1, key_2_shape_norm) in histograms_var.keys(): continue
-                        histograms_var[(key_1, key_2_shape_norm)] = []
+                    if uncName in unc_cfg_dict.keys() and 'requires_btag' in unc_cfg_dict[uncName].keys():
+                        if applyBTagWeight != unc_cfg_dict[uncName]['requires_btag'] : continue
+            histograms_var[(key_1, key_2)] = []
+            weight_name = "final_weight"
             total_weight_expression = GetWeight(ch, cat) if sample_type!='data' else "1"
 
             for dataframe in dataframes:
                 if furtherCut != '' : key_cut += f' && {furtherCut}'
                 #print(key_cut)
+                dataframe=dataframe.Define("final_weight_0", f"{total_weight_expression}")
+                if not applyBTagWeight:
+                    dataframe = GetBTagRatio(dataframe)
+
+                final_string_weight = ApplyBTagWeight(cat,applyBtag=applyBTagWeight, finalWeight_name = 'final_weight_0')
+                dataframe=dataframe.Define("final_weight", f"{final_string_weight}")
+
                 dataframe = dataframe.Filter(key_cut)
                 #print(key_cut)
                 #print(f"after cut df has {dataframe.Count().GetValue()}")
-                histograms_var[(key_1, key_2)].append(dataframe.Define("final_weight", f"{total_weight_expression}").Define("weight_for_hists", weight_name).Histo1D(models[var], var, "weight_for_hists"))
-                if not other_shape_weights.keys(): continue
-                for key_shape_norm in other_shape_weights.keys():
-                    key_2_shape_norm = sample_type,f'{key_shape_norm}_{uncName}',scale
-                    weight_name_shapeNorm = other_shape_weights[key_shape_norm]['expression'].format(scale=scale)
-                    histograms_var[(key_1, key_2_shape_norm)].append(dataframe.Define("final_weight", f"{total_weight_expression}").Define(f"weight_for_hists_{key_shape_norm}", weight_name_shapeNorm).Histo1D(models[var], var, f"weight_for_hists_{key_shape_norm}"))
+                histograms_var[(key_1, key_2)].append(dataframe.Define("weight_for_hists", weight_name).Histo1D(models[var], var, "weight_for_hists"))
     return histograms
 
 
@@ -112,7 +118,7 @@ def GetShapeDataFrameDict(all_dataframes, key, key_central, inFile, compute_vari
             all_dataframes[key].append(PrepareDfWrapped(dfWrapped_nonValid).df)
 
 
-def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,deepTauVersion, compute_unc_variations, compute_rel_weights, furtherCut=''):
+def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,deepTauVersion, compute_unc_variations, compute_rel_weights, furtherCut='', applyBTagWeight=False):
     sample_type = sample_cfg_dict[dataset]['sampleType'] if dataset != 'data' else 'data'
     key_central = (sample_type, "Central", "Central")
 
@@ -128,7 +134,7 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
     col_tpyes_central =  dfWrapped_central.colTypes
     if key_central not in all_dataframes:
         all_dataframes[key_central] = [PrepareDfWrapped(dfWrapped_central).df]
-    central_histograms = GetHistogramDictFromDataframes(all_dataframes, key_central , models, key_filter_dict, unc_cfg_dict['norm'], {},furtherCut)
+    central_histograms = GetHistogramDictFromDataframes(all_dataframes, key_central , models, key_filter_dict, unc_cfg_dict['norm'], applyBTagWeight,furtherCut)
     # norm weight histograms
     if compute_rel_weights and dataset!='data':
         for uncName in unc_cfg_dict['norm'].keys():
@@ -137,7 +143,7 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
                 if key_2 not in all_dataframes.keys():
                     all_dataframes[key_2] = []
                 all_dataframes[key_2] = all_dataframes[key_central]
-                norm_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_2, models, key_filter_dict,unc_cfg_dict['norm'], {},furtherCut)
+                norm_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_2, models, key_filter_dict,unc_cfg_dict['norm'], applyBTagWeight,furtherCut)
                 for var in central_histograms.keys():
                     if var not in norm_histograms.keys():
                         print(f"norm hist not available for {var}")
@@ -161,7 +167,7 @@ def GetHistograms(inFile,dataset,outfiles,unc_cfg_dict, sample_cfg_dict, models,
                 key_2 = (sample_type, uncName, scale)
                 all_dataframes, key_2 , models, key_filter_dict, unc_cfg_dict,
                 GetShapeDataFrameDict(all_dataframes, key_2, key_central, inFile, compute_variations, deepTauVersion, col_names_central, col_tpyes_central )
-                shape_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_dict,unc_cfg_dict['shape'], unc_cfg_dict['shape_and_norm'], furtherCut)
+                shape_histograms =  GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_dict,unc_cfg_dict['shape'], applyBTagWeight, furtherCut)
                 for var in shape_histograms.keys():
                     SaveHists(shape_histograms[var], outfiles[var])
 
@@ -181,7 +187,10 @@ if __name__ == "__main__":
     parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--sampleConfig', required=True, type=str)
     parser.add_argument('--furtherCut', required=False, type=str, default = "")
+    parser.add_argument('--applyBTagWeight', required=False, type=bool, default=False)
     args = parser.parse_args()
+
+    startTime = time.time()
     headers_dir = os.path.dirname(os.path.abspath(__file__))
     ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
     ROOT.gInterpreter.Declare(f'#include "include/HistHelper.h"')
@@ -205,15 +214,19 @@ if __name__ == "__main__":
 
     outfiles = {}
     for var in vars_to_plot:
-        finalDir = os.path.join(args.outDir, var)
+        btag_dir = "bTag_weight" if args.applyBTagWeight else "bTag_shape"
+        finalDir = os.path.join(args.outDir, var, btag_dir)
         if not os.path.isdir(finalDir):
             os.makedirs(finalDir)
         finalFileName =f'{finalDir}/{args.outFileName}'
         outfiles[var] = ROOT.TFile(finalFileName,'RECREATE')
 
     GetHistograms(args.inFile, args.dataset, outfiles, unc_cfg_dict, sample_cfg_dict, models,
-                                       args.deepTauVersion, args.compute_unc_variations, args.compute_rel_weights, args.furtherCut)
+                                       args.deepTauVersion, args.compute_unc_variations, args.compute_rel_weights, args.furtherCut, args.applyBTagWeight)
 
 
     for var in vars_to_plot:
         outfiles[var].Close()
+
+    executionTime = (time.time() - startTime)
+    print('Execution time in seconds: ' + str(executionTime))

@@ -51,6 +51,8 @@ class WorkingPointsMuonID(Enum):
     TightID = 6
     TrkHighPtID = 7
 
+deepTauVersions = {"2p1":"2017", "2p5":"2018"}
+
 def ListToVector(list, type="string"):
 	vec = ROOT.std.vector(type)()
 	for item in list:

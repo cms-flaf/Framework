@@ -205,11 +205,11 @@ def RecoLeptonsSelection(df, apply_filter=True):
     else:
         return df, filter_expr
 
-def RecoHttCandidateSelection(df, config,):
+def RecoHttCandidateSelection(df, config):
     df = df.Define("Electron_iso", "Electron_pfRelIso03_all") \
            .Define("Muon_iso", "Muon_pfRelIso04_all") \
            .Define("Tau_iso", f"""-Tau_rawDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSjet""")
-    print(f"""-Tau_rawDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSjet""")
+    #print(f"""-Tau_rawDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSjet""")
 
     df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && abs(v_ops::eta(Electron_p4)) < 2.3 && v_ops::pt(Electron_p4) > 20 && Electron_mvaIso_WP80 ")
     #df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaIso_WP80")

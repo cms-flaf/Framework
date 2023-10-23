@@ -24,18 +24,20 @@ def load_unc_config(unc_cfg):
         unc_cfg_dict = yaml.safe_load(f)
     return unc_cfg_dict
 
-def getOutFileName(var, sample_name, central_Histograms_path):
-    btag_dir= "bTag_weight" if self.wantBTag else "bTag_shape"
+def getOutFileName(var, sample_name, central_Histograms_path, btag_dir):
     outDir = os.path.join(central_Histograms_path, sample_name,btag_dir)
     fileName = f'{var}.root'
     outFile = os.path.join(outDir,fileName)
     return outFile
 
 class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
     hists = load_hist_config(hist_config)
+
+    def GetBTagDir(self):
+        return "bTag_WP" if self.wantBTag else "bTag_shape"
 
     def workflow_requires(self):
         branch_map = self.create_branch_map()
@@ -77,12 +79,11 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         vars_to_plot = list(hists.keys())
         local_files_target = []
         for var in vars_to_plot:
-            outFile_histProdSample = getOutFileName(var, sample_name, self.central_Histograms_path())
+            outFile_histProdSample = getOutFileName(var, sample_name, self.central_Histograms_path(), self.GetBTagDir())
             if os.path.exists(outFile_histProdSample):
                 local_files_target.append(law.LocalFileTarget(outFile_histProdSample))
                 continue
-            btag_dir= "bTag_weight" if self.wantBTag else "bTag_shape"
-            outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp', var, btag_dir)
+            outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp', var, self.GetBTagDir())
             if not os.path.isdir(outDir):
                 os.makedirs(outDir)
             outFile = os.path.join(outDir,fileName)
@@ -100,9 +101,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_config = self.sample_config
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
         outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp')
-        HistProducerFile_cmd = ['python3', HistProducerFile,'--inFile', input_file, '--outFileName',outFileName, '--dataset', sample_name, '--outDir', outDir,
-                            '--compute_unc_variations', 'True', '--compute_rel_weights', 'True',
-                            '--uncConfig', unc_config, '--histConfig', hist_config,'--sampleConfig', sample_config]
+        HistProducerFile_cmd = ['python3', HistProducerFile,'--inFile', input_file, '--outFileName',outFileName, '--dataset', sample_name, '--outDir', outDir, '--compute_unc_variations', 'True', '--compute_rel_weights', 'True', '--uncConfig', unc_config, '--histConfig', hist_config,'--sampleConfig', sample_config, '--wantBTag', f'{self.wantBTag}]
         sh_call(HistProducerFile_cmd,verbose=1)
 
 
@@ -110,6 +109,10 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
     hists = load_hist_config(hist_config)
+
+    def GetBTagDir(self):
+        return "bTag_WP" if self.wantBTag else "bTag_shape"
+
 
     def workflow_requires(self):
         self_map = self.create_branch_map()
@@ -143,7 +146,7 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         vars_to_plot = list(hists.keys())
         local_files_target = []
         for var in vars_to_plot:
-            outFile = getOutFileName(var, sample_name, self.central_Histograms_path(),self.wantBTag)
+            outFile = getOutFileName(var, sample_name, self.central_Histograms_path(), self.GetBTagDir())
             local_files_target.append(law.LocalFileTarget(outFile))
         return local_files_target
 
@@ -161,11 +164,9 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
         file_name_pattern += ".root"
         HistProducerSample = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample.py')
-        btag_dir= "bTag_weight" if self.wantBTag else "bTag_shape"
-        outDir = os.path.join(self.central_Histograms_path(), sample_name,btag_dir)
+        outDir = os.path.join(self.central_Histograms_path(), sample_name,self.GetBTagDir())
         histDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp')
-        HistProducerSample_cmd = ['python3', HistProducerSample,'--histDir', histDir, '--outDir', outDir, '--hists', hists_str,
-                            '--file-name-pattern', file_name_pattern, '--remove-files', 'True']
+        HistProducerSample_cmd = ['python3', HistProducerSample,'--histDir', histDir, '--outDir', outDir, '--hists', hists_str, '--file-name-pattern', file_name_pattern, '--remove-files', 'True', '--wantBTag',self.wantBTag]
         if(len(idx_list)>1):
             HistProducerSample_cmd.extend(['--file-ids', file_ids_str])
         #print(HistProducerSample_cmd)
@@ -178,6 +179,10 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     hists = load_hist_config(hist_config)
     unc_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'weight_definition.yaml')
     unc_cfg_dict = load_unc_config(unc_config)
+
+    def GetBTagDir(self):
+        return "bTag_WP" if self.wantBTag else "bTag_shape"
+
 
     def workflow_requires(self):
         prod_branches = HistProducerSampleTask.req(self, branch=-1, branches=()).create_branch_map()
@@ -208,10 +213,10 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         var, uncName = self.branch_data
-        outFile_haddMergedFiles = os.path.join(self.central_Histograms_path(), 'all_histograms',var,f'all_histograms_{var}.root')
+        outFile_haddMergedFiles = os.path.join(self.central_Histograms_path(), 'all_histograms',var,self.GetBTagDir(),f'all_histograms_{var}.root')
         if os.path.exists(outFile_haddMergedFiles):
             return law.LocalFileTarget((outFile_haddMergedFiles))
-        local_file_target = os.path.join(self.central_Histograms_path(), 'all_histograms',var,f'all_histograms_{var}_{uncName}.root')
+        local_file_target = os.path.join(self.central_Histograms_path(), 'all_histograms',var,self.GetBTagDir(),f'all_histograms_{var}_{uncName}.root')
         return law.LocalFileTarget(local_file_target)
 
     def run(self):
@@ -221,8 +226,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         vars_to_plot = list(hists.keys())
         unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
         MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger.py')
-        MergerProducer_cmd = ['python3', MergerProducer,'--histDir', self.central_Histograms_path(), '--sampleConfig', sample_config, '--hists', var,
-                            '--uncConfig', unc_config, '--uncSource', uncName]
+        MergerProducer_cmd = ['python3', MergerProducer,'--histDir', self.central_Histograms_path(), '--sampleConfig', sample_config, '--hists', var,'--uncConfig', unc_config, '--uncSource', uncName]
         sh_call(MergerProducer_cmd,verbose=1)
 
 
@@ -231,6 +235,10 @@ class HaddMergedTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
     hists = load_hist_config(hist_config)
+
+    def GetBTagDir(self):
+        return "bTag_WP" if self.wantBTag else "bTag_shape"
+
 
     def workflow_requires(self):
         return { "Merge" : MergeTask.req(self, branches=()) }
@@ -249,7 +257,7 @@ class HaddMergedTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         var = self.branch_data
-        local_file_target = os.path.join(self.central_Histograms_path(),'all_histograms',var, f'all_histograms_{var}.root')
+        local_file_target = os.path.join(self.central_Histograms_path(), 'all_histograms',var,self.GetBTagDir(),f'all_histograms_{var}.root')
         return law.LocalFileTarget(local_file_target)
 
     def run(self):
@@ -257,7 +265,7 @@ class HaddMergedTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_config = self.sample_config
         unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
         HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
-        histDir = os.path.join(self.central_Histograms_path(),'all_histograms',var)
+        histDir = os.path.join(self.central_Histograms_path(),'all_histograms',var, self.GetBTagDir())
         HaddMergedHistsProducer_cmd = ['python3', HaddMergedHistsProducer,'--histDir', histDir, '--file-name-pattern', 'all_histograms', '--hists', var,
                             '--uncConfig', unc_config]#, '--remove-files', 'True']
         sh_call(HaddMergedHistsProducer_cmd,verbose=1)
@@ -266,6 +274,10 @@ class PlotterTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
     hists = load_hist_config(hist_config)
+
+    def GetBTagDir(self):
+        return "bTag_WP" if self.wantBTag else "bTag_shape"
+
 
     def workflow_requires(self):
         return { "HaddMerged" : HaddMergedTask.req(self, branches=()) }

@@ -156,8 +156,7 @@ def ApplyBTagWeight(cat,applyBtag=True, finalWeight_name = 'final_weight'):
         btag_weight = f"weight_bTagSF_{btag_wps[cat]}_Central"
     if not applyBtag:
         btagshape_weight = "weight_bTagShapeSF"
-    ratio_btag = "1" if applyBtag else "ratio_btag"
-    return f'{finalWeight_name}*{btag_weight}*{btagshape_weight}*{ratio_btag}'
+    return f'{finalWeight_name}*{btag_weight}*{btagshape_weight}'
 
 
 def GetWeight(channel,cat):

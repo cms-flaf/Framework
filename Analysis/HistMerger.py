@@ -73,6 +73,7 @@ if __name__ == "__main__":
     parser.add_argument('--sampleConfig', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
+    parser.add_argument('--wantBTag', required=False, type=bool, default=False)
 
     args = parser.parse_args()
     with open(args.uncConfig, 'r') as f:
@@ -83,6 +84,7 @@ if __name__ == "__main__":
     all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir, False)
     histNamesDict = {}
     uncNameTypes = GetUncNameTypes(unc_cfg_dict)
+    btag_dir= "bTag_weight" if args.wantBTag else "bTag_shape"
     if args.uncSource != 'Central' and args.uncSource not in uncNameTypes:
         print("unknown unc source {args.uncSource}")
     CreateNamesDict(histNamesDict, all_samples_types, args.uncSource, scales, sample_cfg_dict)
@@ -98,7 +100,7 @@ if __name__ == "__main__":
             all_files[var] = {}
         for sample_type in all_samples_types.keys():
             samples = all_samples_types[sample_type]
-            histDirs = [os.path.join(args.histDir, sample) for sample in samples]
+            histDirs = [os.path.join(args.histDir, sample,btag_dir) for sample in samples]
             all_files[var][sample_type] = [os.path.join(hist_dir,fileName) for hist_dir in histDirs]
     # 1. get Histograms
     all_histograms ={}
@@ -118,7 +120,7 @@ if __name__ == "__main__":
             MergeHistogramsPerType(all_histograms[var][sample_type])
         AddQCDInHistDict(all_histograms[var], channels, categories, sample_type, args.uncSource, all_samples_list, scales)
     for var in all_histograms.keys():
-        outDir = os.path.join(args.histDir,'all_histograms',var)
+        outDir = os.path.join(args.histDir,'all_histograms',var, btag_dir)
         if not os.path.exists(outDir):
             os.makedirs(outDir)
         outFileName = os.path.join(outDir, f'all_histograms_{var}_{args.uncSource}.root')

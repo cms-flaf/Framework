@@ -4,12 +4,14 @@ import yaml
 import ROOT
 import datetime
 import time
+import shutil
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
     ROOT.gInterpreter.Declare(f'#include "include/HistHelper.h"')
     ROOT.gInterpreter.Declare(f'#include "include/Utilities.h"')
 
+from RunKit.sh_tools import sh_call
 ROOT.EnableThreadSafety()
 import Common.LegacyVariables as LegacyVariables
 import Common.Utilities as Utilities
@@ -42,6 +44,7 @@ def createCentralQuantities(df_central, central_col_types, central_columns):
 def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, compute_unc_variations):
     start_time = datetime.datetime.now()
     snaps = []
+    all_files = []
     file_keys = getKeyNames(inFileName)
     df = ROOT.RDataFrame('Events', inFileName)
     df_begin = df
@@ -49,7 +52,8 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
     LegacyVariables.Initialize()
     applyLegacyVariables(dfw)
     varToSave = Utilities.ListToVector(dfw.colToSave)
-    snaps.append(dfw.df.Snapshot(f"Events", outFileName, varToSave, snapshotOptions))
+    all_files.append(f'{outFileName}_Central.root')
+    snaps.append(dfw.df.Snapshot(f"Events", f'{outFileName}_Central.root', varToSave, snapshotOptions))
     #print("append the central snapshot")
     if compute_unc_variations:
         dfWrapped_central = DataFrameBuilder(df_begin)
@@ -58,7 +62,7 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
         dfWrapped_central.df = createCentralQuantities(df_begin, colTypes, colNames)
         if dfWrapped_central.df.Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
         print("finished defining central quantities")
-        for uncName in unc_cfg_dict['shape']:
+        for uncName in unc_cfg_dict['shape'][:1]:
             for scale in scales:
                 treeName = f"Events_{uncName}{scale}"
                 treeName_noDiff = f"{treeName}_noDiff"
@@ -69,7 +73,8 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
                     dfW_noDiff = Utilities.DataFrameWrapper(dfWrapped_noDiff.df,defaultColToSave)
                     applyLegacyVariables(dfW_noDiff)
                     varToSave = Utilities.ListToVector(dfW_noDiff.colToSave)
-                    snaps.append(dfW_noDiff.df.Snapshot(treeName_Valid, outFileName, varToSave, snapshotOptions))
+                    all_files.append(f'{outFileName}_{uncName}{scale}_noDiff.root')
+                    snaps.append(dfW_noDiff.df.Snapshot(treeName_noDiff, f'{outFileName}_{uncName}{scale}_noDiff.root', varToSave, snapshotOptions))
                 treeName_Valid = f"{treeName}_Valid"
                 if treeName_Valid in file_keys:
                     df_Valid = ROOT.RDataFrame(treeName_Valid, inFileName)
@@ -78,17 +83,20 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
                     dfW_Valid = Utilities.DataFrameWrapper(dfWrapped_Valid.df,defaultColToSave)
                     applyLegacyVariables(dfW_Valid)
                     varToSave = Utilities.ListToVector(dfW_Valid.colToSave)
-                    snaps.append(dfW_Valid.df.Snapshot(treeName_Valid, outFileName, varToSave, snapshotOptions))
+                    all_files.append(f'{outFileName}_{uncName}{scale}_Valid.root')
+                    snaps.append(dfW_Valid.df.Snapshot(treeName_Valid, f'{outFileName}_{uncName}{scale}_Valid.root', varToSave, snapshotOptions))
                 treeName_nonValid = f"{treeName}_nonValid"
                 if treeName_nonValid in file_keys:
                     dfWrapped_nonValid = DataFrameBuilder(ROOT.RDataFrame(treeName_nonValid, inFileName))
                     dfW_nonValid = Utilities.DataFrameWrapper(dfWrapped_nonValid.df,defaultColToSave)
                     applyLegacyVariables(dfW_nonValid)
                     varToSave = Utilities.ListToVector(dfW_nonValid.colToSave)
-                    snaps.append(dfW_nonValid.df.Snapshot(treeName_Valid, outFileName, varToSave, snapshotOptions))
+                    all_files.append(f'{outFileName}_{uncName}{scale}_nonValid.root')
+                    snaps.append(dfW_nonValid.df.Snapshot(treeName_nonValid, f'{outFileName}_{uncName}{scale}_nonValid.root', varToSave, snapshotOptions))
     if snapshotOptions.fLazy == True:
-        #print("going to rungraph")
+        print("going to rungraph")
         ROOT.RDF.RunGraphs(snaps)
+    return all_files
 
 
 if __name__ == "__main__":
@@ -103,7 +111,6 @@ if __name__ == "__main__":
     parser.add_argument('--compressionAlgo', type=str, default="ZLIB")
     args = parser.parse_args()
 
-
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
     snapshotOptions.fLazy = True
@@ -114,7 +121,18 @@ if __name__ == "__main__":
     with open(args.uncConfig, 'r') as f:
         unc_cfg_dict = yaml.safe_load(f)
     startTime = time.time()
-    createAnaCacheTuple(args.inFileName, args.outFileName, unc_cfg_dict, snapshotOptions, args.compute_unc_variations)
-
+    all_files = createAnaCacheTuple(args.inFileName, args.outFileName, unc_cfg_dict, snapshotOptions, args.compute_unc_variations)
+    outFileNameFinal = f'{args.outFileName}.root'
+    hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
+    hadd_str += ' '.join(f for f in all_files)
+    print(hadd_str)
+    if len(all_files[var]) > 1:
+        sh_call([hadd_str], True)
+    else:
+        shutil.copy(all_files[var][0],outFileNameFinal)
+    if os.path.exists(outFileNameFinal):
+            for histFile in all_files:
+                if histFile == outFileNameFinal: continue
+                os.remove(histFile)
     executionTime = (time.time() - startTime)
     print('Execution time in seconds: ' + str(executionTime))

@@ -27,6 +27,7 @@ if __name__ == "__main__":
 
 
     args = parser.parse_args()
+    btag_dir= "bTag_WP" if self.wantBTag else "bTag_shape"
 
     # 1 list files :
 
@@ -37,7 +38,6 @@ if __name__ == "__main__":
         #print(var)
         all_files[var] = []
         file_name = args.file_name_pattern
-        btag_dir= "bTag_weight" if args.wantBTag else "bTag_shape"
         if(len(start_end_idx) > 1):
             for idx in range(int(start_end_idx[0]),int(start_end_idx[1])):
                 #print(idx)

@@ -9,7 +9,6 @@ import Common.Utilities as Utilities
 
 scales = ['Up','Down']
 
-
 def GetUncNameTypes(unc_cfg_dict):
     uncNames = []
     uncNames.extend(list(unc_cfg_dict['norm'].keys()))

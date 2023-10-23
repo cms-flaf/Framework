@@ -62,37 +62,41 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
         dfWrapped_central.df = createCentralQuantities(df_begin, colTypes, colNames)
         if dfWrapped_central.df.Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
         print("finished defining central quantities")
-        for uncName in unc_cfg_dict['shape'][:1]:
-            for scale in scales:
-                treeName = f"Events_{uncName}{scale}"
-                treeName_noDiff = f"{treeName}_noDiff"
-                if treeName_noDiff in file_keys:
-                    dfWrapped_noDiff = DataFrameBuilder(ROOT.RDataFrame(treeName_noDiff, inFileName))
-                    dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
-                    #PrepareDfWrapped(dfWrapped_noDiff)
-                    dfW_noDiff = Utilities.DataFrameWrapper(dfWrapped_noDiff.df,defaultColToSave)
-                    applyLegacyVariables(dfW_noDiff)
-                    varToSave = Utilities.ListToVector(dfW_noDiff.colToSave)
-                    all_files.append(f'{outFileName}_{uncName}{scale}_noDiff.root')
-                    snaps.append(dfW_noDiff.df.Snapshot(treeName_noDiff, f'{outFileName}_{uncName}{scale}_noDiff.root', varToSave, snapshotOptions))
-                treeName_Valid = f"{treeName}_Valid"
-                if treeName_Valid in file_keys:
-                    df_Valid = ROOT.RDataFrame(treeName_Valid, inFileName)
-                    dfWrapped_Valid = DataFrameBuilder(df_Valid)
-                    dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
-                    dfW_Valid = Utilities.DataFrameWrapper(dfWrapped_Valid.df,defaultColToSave)
-                    applyLegacyVariables(dfW_Valid)
-                    varToSave = Utilities.ListToVector(dfW_Valid.colToSave)
-                    all_files.append(f'{outFileName}_{uncName}{scale}_Valid.root')
-                    snaps.append(dfW_Valid.df.Snapshot(treeName_Valid, f'{outFileName}_{uncName}{scale}_Valid.root', varToSave, snapshotOptions))
-                treeName_nonValid = f"{treeName}_nonValid"
-                if treeName_nonValid in file_keys:
-                    dfWrapped_nonValid = DataFrameBuilder(ROOT.RDataFrame(treeName_nonValid, inFileName))
-                    dfW_nonValid = Utilities.DataFrameWrapper(dfWrapped_nonValid.df,defaultColToSave)
-                    applyLegacyVariables(dfW_nonValid)
-                    varToSave = Utilities.ListToVector(dfW_nonValid.colToSave)
-                    all_files.append(f'{outFileName}_{uncName}{scale}_nonValid.root')
-                    snaps.append(dfW_nonValid.df.Snapshot(treeName_nonValid, f'{outFileName}_{uncName}{scale}_nonValid.root', varToSave, snapshotOptions))
+    for uncName in unc_cfg_dict['shape'][:1]:
+        if not compute_unc_variations : break
+        for scale in scales:
+            treeName = f"Events_{uncName}{scale}"
+            treeName_noDiff = f"{treeName}_noDiff"
+            if treeName_noDiff in file_keys:
+                dfWrapped_noDiff = DataFrameBuilder(ROOT.RDataFrame(treeName_noDiff, inFileName))
+                dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
+                dfW_noDiff = Utilities.DataFrameWrapper(dfWrapped_noDiff.df,defaultColToSave)
+                applyLegacyVariables(dfW_noDiff)
+                #print(f"number of events in dfW_noDiff is {dfW_noDiff.df.Count().GetValue()}")
+                varToSave = Utilities.ListToVector(dfW_noDiff.colToSave)
+                all_files.append(f'{outFileName}_{uncName}{scale}_noDiff.root')
+                snaps.append(dfW_noDiff.df.Snapshot(treeName_noDiff, f'{outFileName}_{uncName}{scale}_noDiff.root', varToSave, snapshotOptions))
+            treeName_Valid = f"{treeName}_Valid"
+            if treeName_Valid in file_keys:
+                df_Valid = ROOT.RDataFrame(treeName_Valid, inFileName)
+                dfWrapped_Valid = DataFrameBuilder(df_Valid)
+                dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
+                dfW_Valid = Utilities.DataFrameWrapper(dfWrapped_Valid.df,defaultColToSave)
+                applyLegacyVariables(dfW_Valid)
+                varToSave = Utilities.ListToVector(dfW_Valid.colToSave)
+                #print(f"number of events in dfW_Valid is {dfW_Valid.df.Count().GetValue()}")
+                all_files.append(f'{outFileName}_{uncName}{scale}_Valid.root')
+                snaps.append(dfW_Valid.df.Snapshot(treeName_Valid, f'{outFileName}_{uncName}{scale}_Valid.root', varToSave, snapshotOptions))
+            treeName_nonValid = f"{treeName}_nonValid"
+            if treeName_nonValid in file_keys:
+                dfWrapped_nonValid = DataFrameBuilder(ROOT.RDataFrame(treeName_nonValid, inFileName))
+                dfW_nonValid = Utilities.DataFrameWrapper(dfWrapped_nonValid.df,defaultColToSave)
+                applyLegacyVariables(dfW_nonValid)
+                #print(f"number of events in dfW_nonValid is {dfW_nonValid.df.Count().GetValue()}")
+                varToSave = Utilities.ListToVector(dfW_nonValid.colToSave)
+                all_files.append(f'{outFileName}_{uncName}{scale}_nonValid.root')
+                snaps.append(dfW_nonValid.df.Snapshot(treeName_nonValid, f'{outFileName}_{uncName}{scale}_nonValid.root', varToSave, snapshotOptions))
+    #print(f"snaps len is {len(snaps)}")
     if snapshotOptions.fLazy == True:
         print("going to rungraph")
         ROOT.RDF.RunGraphs(snaps)
@@ -126,10 +130,10 @@ if __name__ == "__main__":
     hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
     hadd_str += ' '.join(f for f in all_files)
     print(hadd_str)
-    if len(all_files[var]) > 1:
+    if len(all_files) > 1:
         sh_call([hadd_str], True)
     else:
-        shutil.copy(all_files[var][0],outFileNameFinal)
+        shutil.copy(all_files[0],outFileNameFinal)
     if os.path.exists(outFileNameFinal):
             for histFile in all_files:
                 if histFile == outFileNameFinal: continue

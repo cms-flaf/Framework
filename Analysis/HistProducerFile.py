@@ -22,16 +22,17 @@ def createCentralQuantities(df_central, central_col_types, central_columns):
 
 def SaveHists(histograms, out_file, ratio_histograms, wantBTag):
     for key_tuple,hist_list in histograms.items():
-        dir_name = '/'.join(key_tuple[0])
+        (key_1, key_2) = key_tuple
+        ch, reg, cat = key_1
+        sample_type,uncName,scale = key_2
+        if cat == 'btag_shape': continue
+        dir_name = '/'.join(key_1)
         dir_ptr = mkdir(out_file,dir_name)
         merged_hist = hist_list[0].GetValue()
         for hist in hist_list[1:] :
             merged_hist.Add(hist.GetValue())
-
         if wantBTag == False:
-            (key_1, key_2) = key_tuple
-            ch, reg, cat = key_1
-            key_tuple_ratio = ((ch, reg, 'inclusive'), key_2)
+            key_tuple_ratio = ((ch, reg, 'btag_shape'), key_2)
             ratio_num_hist = ratio_histograms[key_tuple_ratio]['beforeBTagShapeSF'][0].GetValue()
             ratio_den_hist = ratio_histograms[key_tuple_ratio]['afterBTagShapeSF'][0].GetValue()
             for num_hist in ratio_histograms[key_tuple_ratio]['beforeBTagShapeSF'][1:]:
@@ -40,8 +41,7 @@ def SaveHists(histograms, out_file, ratio_histograms, wantBTag):
                 ratio_den_hist.Add(den_hist.GetValue())
             ratio = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)/ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
             merged_hist.Scale(ratio)
-        isCentral = 'Central' in key_tuple[1]
-        sample_type,uncName,scale = key_tuple[1]
+        isCentral = 'Central' in key_2
         hist_name =  sample_type
         if not isCentral:
             hist_name+=f"_{uncName}{scale}"
@@ -74,22 +74,18 @@ def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_di
             ratio_histograms_var[(key_1, key_2)]={}
             ratio_histograms_var[(key_1, key_2)]['afterBTagShapeSF'] = []
             ratio_histograms_var[(key_1, key_2)]['beforeBTagShapeSF'] = []
-            total_weight_expression = GetWeight(ch, cat) if sample_type!='data' else "1"
+            total_weight_expression = GetWeight(ch) if sample_type!='data' else "1"
 
             for dataframe in dataframes:
                 if furtherCut != '' : key_cut += f' && {furtherCut}'
                 dataframe = dataframe.Filter(key_cut)
                 dataframe=dataframe.Define("final_weight_0", f"{total_weight_expression}")
-                if cat=='inclusive' and wantBTag==False:
-                    ratio_histograms_var[(key_1, key_2)]['beforeBTagShapeSF'].append(dataframe.Histo1D(models[var], var, "final_weight_0"))
-
-                final_string_weight = wantBTag(cat,applyBtag=wantBTag, finalWeight_name = 'final_weight_0')
+                final_string_weight = ApplyBTagWeight(cat,applyBtag=wantBTag, finalWeight_name = 'final_weight_0')
                 dataframe=dataframe.Define("final_weight", f"{final_string_weight}")
-                if cat != 'inclusive':
-                    dataframe = dataframe.Filter(f"{cat}")
-                else:
-                    if wantBTag==False:
-                        ratio_histograms_var[(key_1, key_2)]['afterBTagShapeSF'].append(dataframe.Histo1D(models[var], var, "final_weight"))
+                dataframe = dataframe.Filter(f"{cat}")
+                if wantBTag==False and cat == 'btag_shape':
+                    ratio_histograms_var[(key_1, key_2)]['beforeBTagShapeSF'].append(dataframe.Histo1D(models[var], var, "final_weight_0"))
+                    ratio_histograms_var[(key_1, key_2)]['afterBTagShapeSF'].append(dataframe.Histo1D(models[var], var, "final_weight"))
                 histograms_var[(key_1, key_2)].append(dataframe.Define("weight_for_hists", weight_name).Histo1D(models[var], var, "weight_for_hists"))
     return histograms,ratio_histograms
 

@@ -7,16 +7,16 @@ from Common.Utilities import *
 
 deepTauYears = {'v2p1':'2017','v2p5':'2018'}
 QCDregions = ['OS_Iso', 'SS_Iso', 'OS_AntiIso', 'SS_AntiIso']
-categories = ['res2b', 'res1b', 'inclusive']
+categories = ['res2b', 'res1b', 'inclusive', 'btag_shape']
 #categories = ['res2b', 'res1b', 'inclusive', 'boosted']
 channels = {'eTau':13, 'muTau':23, 'tauTau':33}
 triggers = {'eTau':'HLT_singleEle', 'muTau':'HLT_singleMu', 'tauTau':"HLT_ditau"}
-btag_wps = {'res2b':'Medium', 'res1b':'Medium', 'boosted':"Loose", 'inclusive':''}
+btag_wps = {'res2b':'Medium', 'res1b':'Medium', 'boosted':"Loose", 'inclusive':'','btag_shape':''}
 
 filters = {
         'channels':[('eTau','eTau && HLT_singleEle'), ('muTau','muTau && HLT_singleMu'),('tauTau','tauTau && HLT_ditau')],
         'QCD_regions':[('OS_Iso','OS_Iso'),('SS_Iso','SS_Iso'),('OS_AntiIso','OS_AntiIso'),('SS_AntiIso','SS_AntiIso')] ,
-        'categories': [('res2b', 'res2b'), ('res1b', 'res1b'), ('inclusive', 'return true;')],
+        'categories': [('res2b', 'res2b'), ('res1b', 'res1b'), ('inclusive', 'return true;'),('btag_shape', 'return true;')],
         }
 
 def createKeyFilterDict():
@@ -142,6 +142,7 @@ def AddQCDInHistDict(all_histograms, channels, categories, sample_type, uncName,
             all_histograms['QCD'] = {}
     for channel in channels:
         for cat in categories:
+            if cat == 'btag_shape': continue
             #key =( (channel, 'OS_Iso', cat), ('Central', 'Central'))
             #all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, 'Central', 'Central')
             for scale in scales:
@@ -152,14 +153,14 @@ def AddQCDInHistDict(all_histograms, channels, categories, sample_type, uncName,
 def ApplyBTagWeight(cat,applyBtag=True, finalWeight_name = 'final_weight'):
     btag_weight = "1"
     btagshape_weight = "1"
-    if btag_wps[cat]!='' and applyBtag:
-        btag_weight = f"weight_bTagSF_{btag_wps[cat]}_Central"
-    if not applyBtag:
-        btagshape_weight = "weight_bTagShapeSF"
+    if applyBtag:
+        if btag_wps[cat]!='' : btag_weight = f"weight_bTagSF_{btag_wps[cat]}_Central"
+    else:
+        if cat !='inclusive': btagshape_weight = "weight_bTagShapeSF"
     return f'{finalWeight_name}*{btag_weight}*{btagshape_weight}'
 
 
-def GetWeight(channel,cat):
+def GetWeight(channel):
     trg_weights_dict = {
         'eTau':["weight_tau1_TrgSF_singleEle_Central","weight_tau2_TrgSF_singleEle_Central"],
         'muTau':["weight_tau1_TrgSF_singleMu_Central","weight_tau2_TrgSF_singleMu_Central"],
@@ -178,6 +179,7 @@ class DataFrameBuilder(DataFrameBuilderBase):
         self.df = self.df.Define("res1b", f"nSelBtag == 1")
         self.df = self.df.Define("res2b", f"nSelBtag == 2")
         self.df = self.df.Define("inclusive", f"return true;")
+        self.df = self.df.Define("btag_shape", f"return true;")
 
     def defineChannels(self):
         self.df = self.df.Define("eTau", f"channelId==13")

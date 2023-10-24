@@ -101,7 +101,9 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_config = self.sample_config
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
         outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp')
-        HistProducerFile_cmd = ['python3', HistProducerFile,'--inFile', input_file, '--outFileName',outFileName, '--dataset', sample_name, '--outDir', outDir, '--compute_unc_variations', 'True', '--compute_rel_weights', 'True', '--uncConfig', unc_config, '--histConfig', hist_config,'--sampleConfig', sample_config, '--wantBTag', f'{self.wantBTag}']
+        HistProducerFile_cmd = ['python3', HistProducerFile,'--inFile', input_file, '--outFileName',outFileName, '--dataset', sample_name, '--outDir', outDir, '--compute_unc_variations', 'True', '--compute_rel_weights', 'True', '--uncConfig', unc_config, '--histConfig', hist_config,'--sampleConfig', sample_config]
+        if self.wantBTag:
+            HistProducerFile_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
         sh_call(HistProducerFile_cmd,verbose=1)
 
 
@@ -166,7 +168,9 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         HistProducerSample = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample.py')
         outDir = os.path.join(self.central_Histograms_path(), sample_name,self.GetBTagDir())
         histDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp')
-        HistProducerSample_cmd = ['python3', HistProducerSample,'--histDir', histDir, '--outDir', outDir, '--hists', hists_str, '--file-name-pattern', file_name_pattern, '--remove-files', 'True', '--wantBTag',self.wantBTag]
+        HistProducerSample_cmd = ['python3', HistProducerSample,'--histDir', histDir, '--outDir', outDir, '--hists', hists_str, '--file-name-pattern', file_name_pattern, '--remove-files', 'True']
+        if self.wantBTag:
+            HistProducerSample_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
         if(len(idx_list)>1):
             HistProducerSample_cmd.extend(['--file-ids', file_ids_str])
         #print(HistProducerSample_cmd)

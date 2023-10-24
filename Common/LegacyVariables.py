@@ -42,9 +42,7 @@ def GetKinFit(df):
         raise RuntimeError("Legacy Variables not initialized!")
     df = df.Define("bjet1_JER", f"b1_ptRes*{b1_p4}.E()")
     df = df.Define("bjet2_JER", f"b2_ptRes*{b2_p4}.E()")
-    df = df.Define("kinFit_result", f"""entry_valid ? kin_fit::FitProducer::Fit({tau1_p4}, {tau2_p4},{b1_p4}, {b2_p4},
-                                                       {MET_p4}, met_covXX, met_covXY, met_covYY,
-                                                       bjet1_JER,bjet2_JER, 0): kin_fit::FitResults() """)
+    df = df.Define("kinFit_result", f"""entry_valid ? kin_fit::FitProducer::Fit({tau1_p4}, {tau2_p4},{b1_p4}, {b2_p4}, {MET_p4}, met_covXX, met_covXY, met_covYY, bjet1_JER,bjet2_JER, 0): kin_fit::FitResults()""")
 
     df = df.Define('kinFit_convergence', 'entry_valid ? kinFit_result.convergence: -100.')
     df = df.Define('kinFit_m', 'entry_valid ? float(kinFit_result.mass): -100.')
@@ -52,9 +50,7 @@ def GetKinFit(df):
     return df,['kinFit_convergence','kinFit_m','kinFit_chi2','kinFit_result']
 
 def GetSVFit(df):
-    df = df.Define('SVfit_result',f"""entry_valid ? sv_fit::FitProducer::Fit({tau1_p4}, static_cast<Leg>(tau1_legType), tau1_decayMode,
-                                                {tau2_p4}, static_cast<Leg>(tau2_legType), tau2_decayMode,
-                                                {MET_p4}, met_covXX, met_covXY, met_covYY) : sv_fit::FitResults()""")
+    df = df.Define('SVfit_result',f"""entry_valid ? sv_fit::FitProducer::Fit({tau1_p4}, static_cast<Leg>(tau1_legType), tau1_decayMode, {tau2_p4}, static_cast<Leg>(tau2_legType), tau2_decayMode, {MET_p4}, met_covXX, met_covXY, met_covYY) : sv_fit::FitResults()""")
     df = df.Define('SVfit_valid', 'entry_valid ? int(SVfit_result.has_valid_momentum) : -100.')
     df = df.Define('SVfit_pt', 'entry_valid ? float(SVfit_result.momentum.pt()) : -100.')
     df = df.Define('SVfit_eta', 'entry_valid ? float(SVfit_result.momentum.eta()) : -100.')

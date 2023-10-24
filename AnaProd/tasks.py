@@ -4,10 +4,20 @@ import os
 import shutil
 import time
 import threading
+import yaml
+
 from RunKit.sh_tools import sh_call
 from RunKit.checkRootFile import checkRootFileSafe
 from RunKit.crabLaw import cond as kInit_cond,update_kinit_thread
 from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
+
+
+unc_cfg_dict = None
+def load_unc_config(unc_cfg):
+    global unc_cfg_dict
+    with open(unc_cfg, 'r') as f:
+        unc_cfg_dict = yaml.safe_load(f)
+    return unc_cfg_dict
 
 class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
@@ -202,6 +212,7 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             os.remove(tmpFile)
 
 
+
 class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
@@ -242,22 +253,27 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def output(self):
         sample_name, prod_br = self.branch_data
         input_file = self.input()[0].path
-        fileName = os.path.basename(input_file)
-        local_files_target = []
-        outDir = os.path.join(self.central_anaCache_path(), sample_name)
-        if not os.path.isdir(outDir):
+        fileName  = os.path.basename(input_file)
+        outDir = os.path.join(self.central_anaCache_path(), sample_name, self.version)
+        if not os.path.exists(outDir):
             os.makedirs(outDir)
-        outFile = os.path.join(outDir,fileName)
-        return law.LocalFileTarget(outFile)
+        outFileName = os.path.join(outDir, fileName)
+        return law.LocalFileTarget(outFileName)
 
     def run(self):
         sample_name, prod_br = self.branch_data
         if len(self.input()) > 1:
             raise RuntimeError(f"multple input files!! {' '.join(f.path for f in self.input())}")
-        inputFileName = self.input()[0].path
-        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
+        input_file = self.input()[0].path
+        fileName = os.path.basename(input_file).strip('.root')
+        sample_config = self.sample_config
+        unc_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'weight_definition.yaml')
+        unc_cfg_dict = load_unc_config(unc_config)
+        outDir = os.path.join(self.central_anaCache_path(), sample_name, self.version)
+        if not os.path.exists(outDir):
+            os.makedirs(outDir)
+        outFileName = os.path.join(outDir, fileName)
         anaCacheTupleProducer = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheTupleProducer.py')
-        outDir = os.path.join(self.central_anaCache_path(), sample_name)
-        outFileName = os.path.join(outDir,fileName)
-        anaCacheTupleProducer_cmd = ['python3', anaCacheTupleProducer,'--inFileName', inputFileName, '--outFileName',outFileName, '--dataset', '--compute_unc_variations', 'True', '--uncConfig', unc_config]
-        sh_call(anaCacheTupleProducer_cmd,verbose=1)
+        anaCacheTupleProducer_cmd = ['python3', anaCacheTupleProducer,'--inFileName', input_file, '--outFileName',outFileName, '--compute_unc_variations', 'True', '--uncConfig', unc_config]
+
+        sh_call(anaCacheTupleProducer_cmd, env=self.cmssw_env(),verbose=1)

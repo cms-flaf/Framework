@@ -80,7 +80,7 @@ def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_di
                 if furtherCut != '' : key_cut += f' && {furtherCut}'
                 dataframe = dataframe.Filter(key_cut)
                 dataframe=dataframe.Define("final_weight_0", f"{total_weight_expression}")
-                final_string_weight = ApplyBTagWeight(cat,applyBtag=wantBTag, finalWeight_name = 'final_weight_0')
+                final_string_weight = ApplyBTagWeight(cat,applyBtag=wantBTag, finalWeight_name = 'final_weight_0') if sample_type!='data' else "1"
                 dataframe=dataframe.Define("final_weight", f"{final_string_weight}")
                 dataframe = dataframe.Filter(f"{cat}")
                 if wantBTag==False and cat == 'btag_shape':

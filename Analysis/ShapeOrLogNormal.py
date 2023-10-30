@@ -8,8 +8,8 @@ if __name__ == "__main__":
 
 
 from Analysis.HistHelper import *
-def GetHisto(channel, category, inFileName, histDir, sample_name, uncSource, scale):
-    inFile = ROOT.TFile(os.path.join(histDir, 'all_histograms',var,inFileName),"READ")
+def GetHisto(channel, category, inFileName, histDir, btag_dir,sample_name, uncSource, scale):
+    inFile = ROOT.TFile(os.path.join(histDir, 'all_histograms',var,btag_dir,inFileName),"READ")
     dir_0 = inFile.Get(channel)
     dir_1 = dir_0.Get(category)
     total_histName = sample_name
@@ -51,23 +51,27 @@ def GetSecondMethod(histogram, sample, ch, cat, unc, updown, unc_dict):
     slope = fit_params[1]
     slope_error = fit_param_errors[1]
     threshold = 0.01
+    if mean ==0 :
+        hist_integral = histogram.Integral(0, histogram.GetNbinsX())
+        unc_dict[f'{unc}{updown}']= {'intercept':fit_params[0],'intercept_error':fit_param_errors[0],'slope':fit_params[1],'slope_error':fit_param_errors[1], 'mean':mean, 'good':abs(slope) < threshold, 'range':range_hist, 'integral': hist_integral}
 
-    if  abs(slope)*range_hist/mean < threshold:
-        print("La pendenza del fit è compatibile con zero entro gli errori.")
     else:
-        print("La pendenza del fit non è compatibile con zero entro gli errori.")
+        if  abs(slope)*range_hist/mean < threshold:
+            print("La pendenza del fit è compatibile con zero entro gli errori.")
+        else:
+            print("La pendenza del fit non è compatibile con zero entro gli errori.")
 
-    # Stampare i parametri del fit e i relativi errori
-    #print("Parametro 0 (intercetta):", fit_params[0], "±", fit_param_errors[0])
-    #print("Parametro 1 (pendenza):", fit_params[1], "±", fit_param_errors[1])
-    unc_dict[f'{unc}_{updown}']= {'intercept':fit_params[0],'intercept_error':fit_param_errors[0],'slope':fit_params[1],'slope_error':fit_param_errors[1], 'mean':mean, 'good':abs(slope) < threshold, 'range':range_hist}
+            # Stampare i parametri del fit e i relativi errori
+            hist_integral = histogram.Integral(0, histogram.GetNbinsX())
+            unc_dict[f'{unc}{updown}']= {'intercept':fit_params[0],'intercept_error':fit_param_errors[0],'slope':fit_params[1],'slope_error':fit_param_errors[1], 'mean':mean, 'good':abs(slope) < threshold, 'range':range_hist, 'integral': hist_integral}
     # Disegna l'istogramma e la funzione di adattamento
+    '''
     canvas = ROOT.TCanvas("canvas", "Fit Plot")
     histogram.Draw()
     fit_func.Draw("same")
     canvas.Update()
-
     canvas.SaveAs(f"output/histograms/fit/fit_plot_{sample}_{ch}_{cat}_{unc}_{updown}.png")
+    '''
 
 def GetChi2Method(histogram, sample, ch, cat, unc, updown, unc_dict):
     fit_func = ROOT.TF1("fit_func", constant_function, 0, 10, 1)
@@ -84,18 +88,20 @@ def GetChi2Method(histogram, sample, ch, cat, unc, updown, unc_dict):
     else:
         print("Il fit non è buono.")
 
-    # Stampare i parametri del fit e il chi-quadro ridotto
-    fit_param = fit_func.GetParameter(0)
-    fit_param_error = fit_func.GetParError(0)
-    unc_dict[f'{unc}_{updown}']= {'intercept':fit_param,'intercept_error':fit_param_error,'chi2':chi2,'good':chi2<1.}
+        # Stampare i parametri del fit e il chi-quadro ridotto
+        fit_param = fit_func.GetParameter(0)
+        fit_param_error = fit_func.GetParError(0)
+        hist_integral = histogram.Integral(0, histogram.GetNbinsX())
+        unc_dict[f'{unc}{updown}']= {'intercept':fit_param,'intercept_error':fit_param_error,'chi2':chi2, 'integral': hist_integral}
 
     # Disegna l'istogramma e la funzione di adattamento
+    '''
     canvas = ROOT.TCanvas("canvas", "Fit Plot")
     histogram.Draw()
     fit_func.Draw("same")
     canvas.Update()
     canvas.SaveAs(f"output/histograms/fit_chi2/fit_plot_{sample}_{ch}_{cat}_{unc}_{updown}.png")
-
+    '''
 
 
 if __name__ == "__main__":
@@ -113,6 +119,7 @@ if __name__ == "__main__":
     #parser.add_argument('--channel',required=False, type=str, default = 'tauTau')
     #parser.add_argument('--category',required=False, type=str, default = 'inclusive')
     #parser.add_argument('--uncSource',required=False, type=str, default = 'all')
+    parser.add_argument('--wantBTag', required=False, type=bool, default=False)
     args = parser.parse_args()
     ROOT.gStyle.SetOptFit(0)
     ROOT.gStyle.SetOptStat(0)
@@ -134,14 +141,15 @@ if __name__ == "__main__":
         unc_cfg_dict = yaml.safe_load(f)
     all_uncertainties = list(unc_cfg_dict['norm'].keys())
     all_uncertainties.extend(unc_cfg_dict['shape'])
-    all_uncertainties.extend(list(unc_cfg_dict['shape_and_norm'].keys()))
+    #all_uncertainties.extend(list(unc_cfg_dict['shape_and_norm'].keys()))
     #print(all_uncertainties)
     #if args.uncSource!='all':
     #    all_uncertainties = all_uncertainties[args.UncSource]
     # before, let's run over 1 channel, 1 sample, 1 uncertainty, 1 var, 1 cat
 
     var = 'tau1_pt'
-    for sample in ['TT']: # all_samples_list+['QCD']:
+    btag_dir= "bTag_WP" if args.wantBTag else "bTag_shape"
+    for sample in all_samples_list+['QCD']:
         if sample == 'data': continue
         for channel in ['tauTau']:#['eTau', 'muTau', 'tauTau']:
             for category in ['inclusive','res2b','res1b']:
@@ -149,23 +157,26 @@ if __name__ == "__main__":
                 unc_dict_chi2 = {}
                 for uncSource in all_uncertainties:
                     inFileName=f'{args.inFileName}_{var}_{uncSource}.root'
-                    if not os.path.exists(os.path.join(args.histDir, 'all_histograms',var,inFileName)): continue
+                    if not os.path.exists(os.path.join(args.histDir, 'all_histograms',var,btag_dir,inFileName)): continue
                     inFileName_Central=f'{args.inFileName}_{var}_Central.root'
                     sample_name = sample
                     if sample in signals:
                         sample_name += 'ToHHTo2B2Tau-M'+args.mass
-                    hist_central = GetHisto(channel, category, inFileName_Central, args.histDir, sample_name, 'Central','-')
-                    hist_source_up = GetHisto(channel, category, inFileName, args.histDir, sample_name, uncSource,'Up')
+                    hist_central = GetHisto(channel, category, inFileName_Central, args.histDir,btag_dir, sample_name, 'Central','-')
+                    hist_source_up = GetHisto(channel, category, inFileName, args.histDir,btag_dir, sample_name, uncSource,'Up')
                     hist_up_ratio = hist_source_up.Clone("hist_ratio_up")
                     hist_up_ratio.Divide(hist_central)
-                    hist_source_down = GetHisto(channel, category, inFileName, args.histDir, sample_name, uncSource,'Down')
+                    hist_source_down = GetHisto(channel, category, inFileName, args.histDir,btag_dir, sample_name, uncSource,'Down')
                     hist_down_ratio = hist_source_down.Clone("hist_ratio_down")
                     hist_down_ratio.Divide(hist_central)
                     GetSecondMethod(hist_up_ratio, sample, channel, category, uncSource, 'Up',unc_dict)
                     GetSecondMethod(hist_down_ratio, sample, channel, category, uncSource, 'Down',unc_dict)
                     GetChi2Method(hist_up_ratio, sample, channel, category, uncSource, 'Up',unc_dict_chi2)
                     GetChi2Method(hist_down_ratio, sample, channel, category, uncSource, 'Down',unc_dict_chi2)
-                with open(f'output/fitResults/slopeInfo_{sample}_{channel}_{category}.json', 'w') as f:
+                outDir = os.path.join(args.outDir, sample, btag_dir, var, channel, category)
+                if not os.path.exists(outDir):
+                    os.makedirs(outDir)
+                with open(f'{outDir}/slopeInfo_LinFit.json', 'w') as f:
                     json.dump(unc_dict, f, indent=4)
-                with open(f'output/fitResults/slopeInfo_{sample}_{channel}_{category}_chi2.json', 'w') as f:
+                with open(f'{outDir}/slopeInfo_Chi2.json', 'w') as f:
                     json.dump(unc_dict_chi2, f, indent=4)

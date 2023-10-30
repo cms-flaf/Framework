@@ -154,6 +154,18 @@ def GetModel(hist_cfg, var):
     return model
 
 
+def Get2DModel(hist_cfg, var):
+    x_bins = hist_cfg[var]['x_bins']
+    if type(hist_cfg[var]['x_bins'])==list:
+        x_bins_vec = Utilities.ListToVector(x_bins, "double")
+        model = ROOT.RDF.TH2DModel("", "", x_bins_vec.size()-1, x_bins_vec.data(), 11, 0.5, 10.5)
+    else:
+        n_bins, bin_range = x_bins.split('|')
+        start,stop = bin_range.split(':')
+        model = ROOT.RDF.TH2DModel("", "",int(n_bins), float(start), float(stop), 11, 0.5, 10.5)
+    return model
+
+
 def mkdir(file, path):
     dir_names = path.split('/')
     current_dir = file

@@ -38,7 +38,7 @@ def SaveHists(histograms, out_file):
         dir_ptr.WriteTObject(merged_hist, hist_name, "Overwrite")
 
 def createModels(hist_cfg_dict):
-    return { var : GetModel(hist_cfg_dict, var) for var in hist_cfg_dict.keys() }
+    return { var : Get2DModel(hist_cfg_dict, var) for var in hist_cfg_dict.keys() }
 
 def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_dict, unc_cfg_dict, wantBTag=True, furtherCut=''):
     dataframes = all_dataframes[key_2]
@@ -70,7 +70,8 @@ def GetHistogramDictFromDataframes(all_dataframes, key_2 , models, key_filter_di
                 dataframe = dataframe.Filter(f"{cat}")
                 if cat == 'btag_shape':
                     weight_name = 'final_weight_0'
-                histograms_var[(key_1, key_2)].append(dataframe.Define("weight_for_hists", weight_name).Histo1D(models[var], var, "weight_for_hists"))
+                dataframe = dataframe.Define("n_bJetCandidates", "ExtraJet_pt[abs(ExtraJet_eta) < 2.5].size()")
+                histograms_var[(key_1, key_2)].append(dataframe.Define("weight_for_hists", weight_name).Histo2D(models[var], var, "n_bJetCandidates", "weight_for_hists"))
     return histograms
 
 

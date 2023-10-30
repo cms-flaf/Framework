@@ -22,7 +22,7 @@ if __name__ == "__main__":
     parser.add_argument('--wantBTag', required=False, type=bool, default=False)
     parser.add_argument('--outDir', required=True, type=str)
     parser.add_argument('--hists', required=False, type=str, default='bbtautau_mass,dR_tautau,tautau_m_vis,tau1_pt')
-    parser.add_argument('--file-name-pattern', required=False, type=str, default="nano_{id}.root")
+    parser.add_argument('--file-name-pattern', required=False, type=str, default="nano_{id}2D.root")
     parser.add_argument('--file-ids', required=False, type=str, default='')
 
 

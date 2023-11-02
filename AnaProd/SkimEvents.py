@@ -110,7 +110,7 @@ if __name__ == "__main__":
   args = parser.parse_args()
   headers_dir = os.path.dirname(os.path.abspath(__file__))
   ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
-  header_path_Skimmer = os.path.join(headers_dir, "SystSkimmer.h")
-  ROOT.gInterpreter.Declare(f'#include "{header_path_Skimmer}"')
+  #header_path_Skimmer = os.path.join(headers_dir, "include/SystSkimmer.h")
+  ROOT.gInterpreter.Declare(f'#include "include/SystSkimmer.h"')
   make_df(args.inFileCentral,args.inFileShifted,args.outDir,args.treeName_out,args.treeName_in,args.treeName_central)
 

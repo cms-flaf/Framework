@@ -32,9 +32,11 @@ page_setup:
   text_boxes:
     - cms_text
     - scope_text
+    - datasim_text
     - lumi_text
     - ana_text
     - cat_text
+    - ch_text
   legend: legend
 
 legend:
@@ -63,15 +65,27 @@ cms_text:
   font: 61
 
 scope_text:
-  text: "Unpublished"
+  text: "Private work"
   pos_ref: cms_text
   pos: [ 0, -0.1 ]
   text_size: 0.04
   font: 52
 
-cat_text:
+datasim_text:
   pos_ref: scope_text
-  pos: [0, -0.1 ]
+  pos: [ 0, -0.1 ]
+  text_size: 0.04
+  font: 52
+
+cat_text:
+  pos_ref: datasim_text
+  pos: [0.11, -0.1 ]
+  text_size: 0.03
+  font: 62
+
+ch_text:
+  pos_ref: datasim_text
+  pos: [0, -0.11]
   text_size: 0.03
   font: 62
 

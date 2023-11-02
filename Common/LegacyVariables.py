@@ -14,15 +14,15 @@ def Initialize():
     if initialized:
         raise RuntimeError('HH KinFitSel already initialized')
     headers_dir = os.path.dirname(os.path.abspath(__file__))
-    header_path_AnalysisTools = os.path.join(headers_dir, "AnalysisTools.h")
+    header_path_AnalysisTools = "include/AnalysisTools.h"
     ROOT.gInterpreter.Declare(f'#include "{header_path_AnalysisTools}"')
-    header_path_HHKinFit = os.path.join(headers_dir, "KinFitInterface.h")
+    header_path_HHKinFit = "include/KinFitInterface.h"
     ROOT.gInterpreter.Declare(f'#include "{header_path_HHKinFit}"')
-    header_path_SVFit = os.path.join(headers_dir, "SVfitAnaInterface.h")
+    header_path_SVFit = "include/SVfitAnaInterface.h"
     ROOT.gInterpreter.Declare(f'#include "{header_path_SVFit}"')
-    header_path_MT2 = os.path.join(headers_dir, "MT2.h")
+    header_path_MT2 = "include/MT2.h"
     ROOT.gInterpreter.Declare(f'#include "{header_path_MT2}"')
-    header_path_Lester_mt2_bisect = os.path.join(headers_dir, "Lester_mt2_bisect.cpp")
+    header_path_Lester_mt2_bisect = "include/Lester_mt2_bisect.cpp"
     ROOT.gInterpreter.Declare(f'#include "{header_path_Lester_mt2_bisect}"')
     tau1_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(tau1_pt,tau1_eta,tau1_phi,tau1_mass)"
     tau2_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(tau2_pt,tau2_eta,tau2_phi,tau2_mass)"

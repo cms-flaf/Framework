@@ -7,28 +7,32 @@
 - name: W
   title: "W #rightarrow l#nu + jets"
   color: kYellow-7
-- name: SM_HH
+- name: HHnonRes
   title: "HH SM"
-  color: kRed
-#- name: GluGluToBulkGraviton
-#  title: "gluGlu Bulk Graviton "
-#  type: signal
-#  color: kBlue
+  color: kRed-4
+- name: GluGluToBulkGraviton
+  title: "GluGluBulkGraviton"
+  type: signal
+  color: kBlue
+  #scale: 5
 - name: GluGluToRadion
-  title: "Radion "
+  title: "GluGluRadion"
   type: signal
   color: kCyan
-#- name: VBFToBulkGraviton
-#  title: "qqHH #rightarrow bb#tau#tau"
-#  type: signal
-#  color: kMagenta
-#- name: VBFToRadion
-#  title: "qqHH #rightarrow bb#tau#tau"
-#  type: signal
-#  color: kGreen
+  #scale: 5
+- name: VBFToBulkGraviton
+  title: "qqHH #rightarrow bb#tau#tau BulkGraviton"
+  type: signal
+  color: kMagenta
+  #scale: 5
+- name: VBFToRadion
+  title: "qqHH #rightarrow bb#tau#tau Radion"
+  type: signal
+  color: kViolet+4
+  #scale: 5
 - name: QCD
   title: QCD
-  color: kMagenta
+  color: kOrange
 - name: Other
   title: "other backgrounds"
   color: kPink+1

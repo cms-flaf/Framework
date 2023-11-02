@@ -6,3 +6,7 @@ lumi_text:
   font: 42
   align: right_bottom
 
+channel_text:
+  'eTau': 'bbe#tau_{h}'
+  'muTau': 'bb#mu#tau_{h}'
+  'tauTau': 'bb#tau_{h}#tau_{h}'

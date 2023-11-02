@@ -70,7 +70,7 @@ if __name__ == "__main__":
         os.remove(args.outFile)
 
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
-    ROOT.gROOT.ProcessLine('#include "Common/GenTools.h"')
+    ROOT.gROOT.ProcessLine('#include "include/GenTools.h"')
     isHH=False
     with open(args.configFile, 'r') as f:
         config = yaml.safe_load(f)

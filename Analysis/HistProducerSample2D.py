@@ -17,6 +17,7 @@ if __name__ == "__main__":
     import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument('--histDir', required=True, type=str)
+    parser.add_argument('--suffix', required=False, type=str, default='')
     parser.add_argument('--test', required=False, type=bool, default=False)
     parser.add_argument('--remove-files', required=False, type=bool, default=False)
     parser.add_argument('--wantBTag', required=False, type=bool, default=False)
@@ -48,7 +49,7 @@ if __name__ == "__main__":
         outDirNameFinal=os.path.join(args.outDir, btag_dir)
         if not os.path.exists(outDirNameFinal):
             os.makedirs(outDirNameFinal)
-        outFileNameFinal = f'{outDirNameFinal}/{var}.root'
+        outFileNameFinal = f'{outDirNameFinal}/{var}2D{args.suffix}.root'
         hadd_str = f'hadd -f209 -j -O {outFileNameFinal} '
         hadd_str += ' '.join(f for f in all_files[var])
         if len(all_files[var]) > 1:

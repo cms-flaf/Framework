@@ -26,14 +26,15 @@ def getKeyNames(root_file_name):
     root_file.Close()
     return key_names
 
-def applyLegacyVariables(dfw):
+def applyLegacyVariables(dfw, is_central=True):
     dfw.DefineAndAppend("entry_valid","((b1_pt > 0) & (b2_pt > 0)) & (((channelId == 13) & (HLT_singleEle)) | ((channelId == 23) & (HLT_singleMu)) | ((channelId == 33) & (HLT_ditau)))")
     MT2Branches = dfw.Apply(LegacyVariables.GetMT2)
     dfw.colToSave.extend(MT2Branches)
     KinFitBranches = dfw.Apply(LegacyVariables.GetKinFit)
     dfw.colToSave.extend(KinFitBranches)
-    SVFitBranches = dfw.Apply(LegacyVariables.GetSVFit)
-    dfw.colToSave.extend(SVFitBranches)
+    if is_central:
+        SVFitBranches  = dfw.Apply(LegacyVariables.GetSVFit)
+        dfw.colToSave.extend(SVFitBranches)
 
 def createCentralQuantities(df_central, central_col_types, central_columns):
     map_creator = ROOT.analysis.MapCreator(*central_col_types)()
@@ -50,7 +51,7 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
     df_begin = df
     dfw = Utilities.DataFrameWrapper(df_begin,defaultColToSave)
     LegacyVariables.Initialize()
-    applyLegacyVariables(dfw)
+    applyLegacyVariables(dfw, True)
     varToSave = Utilities.ListToVector(dfw.colToSave)
     all_files.append(f'{outFileName}_Central.root')
     snaps.append(dfw.df.Snapshot(f"Events", f'{outFileName}_Central.root', varToSave, snapshotOptions))
@@ -71,7 +72,7 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
                     dfWrapped_noDiff = DataFrameBuilder(ROOT.RDataFrame(treeName_noDiff, inFileName))
                     dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
                     dfW_noDiff = Utilities.DataFrameWrapper(dfWrapped_noDiff.df,defaultColToSave)
-                    applyLegacyVariables(dfW_noDiff)
+                    applyLegacyVariables(dfW_noDiff,False)
                     #print(f"number of events in dfW_noDiff is {dfW_noDiff.df.Count().GetValue()}")
                     varToSave = Utilities.ListToVector(dfW_noDiff.colToSave)
                     all_files.append(f'{outFileName}_{uncName}{scale}_noDiff.root')
@@ -82,7 +83,7 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
                     dfWrapped_Valid = DataFrameBuilder(df_Valid)
                     dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
                     dfW_Valid = Utilities.DataFrameWrapper(dfWrapped_Valid.df,defaultColToSave)
-                    applyLegacyVariables(dfW_Valid)
+                    applyLegacyVariables(dfW_Valid,False)
                     varToSave = Utilities.ListToVector(dfW_Valid.colToSave)
                     #print(f"number of events in dfW_Valid is {dfW_Valid.df.Count().GetValue()}")
                     all_files.append(f'{outFileName}_{uncName}{scale}_Valid.root')
@@ -91,7 +92,7 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
                 if treeName_nonValid in file_keys:
                     dfWrapped_nonValid = DataFrameBuilder(ROOT.RDataFrame(treeName_nonValid, inFileName))
                     dfW_nonValid = Utilities.DataFrameWrapper(dfWrapped_nonValid.df,defaultColToSave)
-                    applyLegacyVariables(dfW_nonValid)
+                    applyLegacyVariables(dfW_nonValid,False)
                     #print(f"number of events in dfW_nonValid is {dfW_nonValid.df.Count().GetValue()}")
                     varToSave = Utilities.ListToVector(dfW_nonValid.colToSave)
                     all_files.append(f'{outFileName}_{uncName}{scale}_nonValid.root')

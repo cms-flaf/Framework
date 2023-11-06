@@ -73,8 +73,7 @@ def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125., p4_suff
         return df
 
     if isHH:
-        df = df.Define("genHttCandidate", """GetGenHTTCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
-                                                       GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, false)""")
+        df = df.Define("genHttCandidate", """GetGenHTTCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags, GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, false)""")
         df = df.Define("genHbbIdx", """GetGenHBBIndex(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags)""")
         df = df.Define("genHbb_isBoosted", "GenPart_pt[genHbbIdx]>550")
     for var in ["GenJet", "GenJetAK8", "SubGenJetAK8"]:

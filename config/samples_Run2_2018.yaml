@@ -55,7 +55,7 @@ GLOBAL:
     - res2b
     - inclusive
     #- boosted
-  storeExtraJets: True
+  storeExtraJets: False
   sampleSelection:
     - drop ^.*$
     - keep ^GluGluToRadion*

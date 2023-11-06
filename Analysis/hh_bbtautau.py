@@ -1,4 +1,4 @@
-
+import ROOT
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
@@ -7,11 +7,15 @@ from Common.Utilities import *
 
 deepTauYears = {'v2p1':'2017','v2p5':'2018'}
 QCDregions = ['OS_Iso', 'SS_Iso', 'OS_AntiIso', 'SS_AntiIso']
-categories = ['res2b', 'res1b', 'inclusive', 'btag_shape']
-#categories = ['res2b', 'res1b', 'inclusive', 'boosted']
+
+#categories = ['res2b', 'res1b', 'inclusive', 'btag_shape']
+categories = ['res2b', 'res1b', 'inclusive', 'boosted', 'btag_shape','baseline']
 channels = {'eTau':13, 'muTau':23, 'tauTau':33}
+gen_channels = {'eTau':[3,5], 'muTau':[4,5], 'tauTau':[5,5]}
 triggers = {'eTau':'HLT_singleEle', 'muTau':'HLT_singleMu', 'tauTau':"HLT_ditau"}
 btag_wps = {'res2b':'Medium', 'res1b':'Medium', 'boosted':"Loose", 'inclusive':'','btag_shape':''}
+mass_cut_limits = {'bb_m_vis':[50,350],'tautau_m_vis':[50,350]}
+
 
 filters = {
         'channels':[('eTau','eTau && HLT_singleEle'), ('muTau','muTau && HLT_singleMu'),('tauTau','tauTau && HLT_ditau')],
@@ -25,9 +29,14 @@ def createKeyFilterDict():
     for ch in channels:
         for reg in QCDregions:
             for cat in categories:
-                filter_str = f"b1_pt>0 && b2_pt>0 && {ch} && {triggers[ch]} && {reg}"
-                #if cat != 'inclusive':
-                    #filter_str+=f" && {cat}"
+                if cat =='boosted':
+                    filter_str =  f"gen_{ch}=={ch} && {ch} && {triggers[ch]} && {reg}"
+                else:
+                    filter_str = f"b1_pt>0 && b2_pt>0 && gen_{ch}=={ch} && {ch} && {triggers[ch]} && {reg}"
+                    for mass_name,mass_limits in mass_cut_limits.items():
+                        filter_str+=f" && {mass_name} >= {mass_limits[0]} && {mass_name} <= {mass_limits[1]}"
+                if cat != 'inclusive':
+                    filter_str+=f" && {cat}"
                 key = (ch, reg, cat)
                 reg_dict[key] = filter_str
                 #print(filter_str)
@@ -150,23 +159,25 @@ def AddQCDInHistDict(all_histograms, channels, categories, sample_type, uncName,
                 key =( (channel, 'OS_Iso', cat), (uncName, scale))
                 all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale)
 
-def ApplyBTagWeight(cat,applyBtag=True, finalWeight_name = 'final_weight'):
+def ApplyBTagWeight(cat,applyBtag=True, finalWeight_name = 'final_weight_0'):
     btag_weight = "1"
     btagshape_weight = "1"
     if applyBtag:
         if btag_wps[cat]!='' : btag_weight = f"weight_bTagSF_{btag_wps[cat]}_Central"
     else:
-        if cat !='inclusive': btagshape_weight = "weight_bTagShapeSF"
+        if cat !='btag_shape' and cat !='boosted': btagshape_weight = "weight_bTagShapeSF"
     return f'{finalWeight_name}*{btag_weight}*{btagshape_weight}'
 
 
-def GetWeight(channel):
+def GetWeight(channel, cat):
     trg_weights_dict = {
         'eTau':["weight_tau1_TrgSF_singleEle_Central","weight_tau2_TrgSF_singleEle_Central"],
         'muTau':["weight_tau1_TrgSF_singleMu_Central","weight_tau2_TrgSF_singleMu_Central"],
         'tauTau':["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central"]
         }
-    weights_to_apply = [ "weight_Jet_PUJetID_Central_b1", "weight_Jet_PUJetID_Central_b2", "weight_TauID_Central", "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
+    weights_to_apply = [ "weight_TauID_Central", "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
+    if cat != 'boosted':
+         weights_to_apply.extend(["weight_Jet_PUJetID_Central_b1", "weight_Jet_PUJetID_Central_b2"])
     weights_to_apply.extend(trg_weights_dict[channel])
     total_weight = '*'.join(weights_to_apply)
     return total_weight
@@ -174,17 +185,45 @@ def GetWeight(channel):
 
 class DataFrameBuilder(DataFrameBuilderBase):
 
+    def defineBoostedVariables(self):
+        FatJetObservables = ["area", "btagCSVV2", "btagDDBvLV2", "btagDeepB", "btagHbb", "deepTagMD_HbbvsQCD",
+                     "deepTagMD_ZHbbvsQCD", "deepTagMD_ZbbvsQCD", "deepTagMD_bbvsLight", "deepTag_H",
+                     "jetId", "msoftdrop", "nBHadrons", "nCHadrons",
+                     "nConstituents", "particleNetMD_QCD", "particleNetMD_Xbb", "particleNet_HbbvsQCD",
+                     "particleNet_mass", "rawFactor", "p4","pt","eta","phi","mass" ]
+        self.df = self.df.Define("SelectedFatJet_size_boosted","SelectedFatJet_p4[fatJet_sel].size()")
+        # def the correct discriminator
+        self.df = self.df.Define("SelectedFatJet_particleNetMD_Xbb_boosted_vec","SelectedFatJet_particleNetMD_Xbb[fatJet_sel]")
+        self.df = self.df.Define("SelectedFatJet_idxUnordered", "CreateIndexes(SelectedFatJet_p4[fatJet_sel].size())")
+        self.df = self.df.Define("SelectedFatJet_idxOrdered", "ReorderObjects(SelectedFatJet_particleNetMD_Xbb_boosted_vec, SelectedFatJet_idxUnordered)")
+        for fatJetVar in FatJetObservables:
+            if f'SelectedFatJet_{fatJetVar}_boosted_vec' not in self.df.GetColumnNames():
+                self.df = self.df.Define(f'SelectedFatJet_{fatJetVar}_boosted_vec',f""" SelectedFatJet_{fatJetVar}[fatJet_sel];""")
+            self.df = self.df.Define(f'SelectedFatJet_{fatJetVar}_boosted',f"""
+                                    SelectedFatJet_{fatJetVar}_boosted_vec[SelectedFatJet_idxOrdered[0]];
+                                   """)
+        #self.df.Display({"SelectedFatJet_p4_boosted", "SelectedFatJet_size_boosted"}).Print()
+
+
     def defineSelectionRegions(self):
         self.df = self.df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {self.bTagWP}) + int(b2_idbtagDeepFlavB >= {self.bTagWP})")
-        self.df = self.df.Define("res1b", f"nSelBtag == 1")
-        self.df = self.df.Define("res2b", f"nSelBtag == 2")
-        self.df = self.df.Define("inclusive", f"return true;")
-        self.df = self.df.Define("btag_shape", f"return true;")
+        self.df = self.df.Define("fatJet_presel", "SelectedFatJet_pt>250 && SelectedFatJet_particleNet_HbbvsQCD>=0.9734").Define("fatJet_sel"," RemoveOverlaps(SelectedFatJet_p4, fatJet_presel, { {tau1_p4, tau2_p4},}, 2, 0.8)").Define("boosted", "SelectedFatJet_p4[fatJet_sel].size()>0")
+        self.df = self.df.Define("res1b", f"!boosted && nSelBtag == 1")
+        self.df = self.df.Define("res2b", f"!boosted && nSelBtag == 2")
+        self.df = self.df.Define("inclusive", f"!boosted")
+        self.df = self.df.Define("btag_shape", f"!boosted")
+        self.df = self.df.Define("baseline",f"return true;")
 
     def defineChannels(self):
-        self.df = self.df.Define("eTau", f"channelId==13")
-        self.df = self.df.Define("muTau", f"channelId==23")
-        self.df = self.df.Define("tauTau", f"channelId==33")
+        for channel,ch_value in channels.items():
+            self.df = self.df.Define(f"{channel}", f"channelId=={ch_value}")
+
+        for gen_channel,gen_ch_value in gen_channels.items():
+            if f"gen_{gen_channel}" in self.df.GetColumnNames():
+                self.df = self.df.Define(f"gen_{gen_channel}", f"tau1_gen_kind == {gen_ch_value[0]} && tau2_gen_kind == {gen_ch_value[1]}")
+            else:
+                self.df = self.df.Define(f"gen_{gen_channel}", f"channelId=={ch_value}")
+
 
     def defineQCDRegions(self):
         tau2_iso_var = f"tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet"
@@ -206,6 +245,11 @@ class DataFrameBuilder(DataFrameBuilderBase):
         if cut!="":
             self.df = self.df.Filter(cut)
 
+    def ApplyMassCut(self):
+        for mass_name,mass_limits in mass_cut_limits.items():
+            self.df = self.df.Filter(f"{mass_name} >= {mass_limits[0]} && {mass_name} <= {mass_limits[1]}")
+
+
     def __init__(self, df, deepTauVersion='v2p1', bTagWP = 2):
         super(DataFrameBuilder, self).__init__(df)
         self.deepTauVersion = deepTauVersion
@@ -213,8 +257,9 @@ class DataFrameBuilder(DataFrameBuilderBase):
 
 def PrepareDfWrapped(dfWrapped):
     dfWrapped.df = defineAllP4(dfWrapped.df)
-    dfWrapped.df = createInvMass(dfWrapped.df)
     dfWrapped.defineQCDRegions()
     dfWrapped.defineSelectionRegions()
+    dfWrapped.defineBoostedVariables()
     dfWrapped.defineChannels()
+    dfWrapped.df = createInvMass(dfWrapped.df)
     return dfWrapped

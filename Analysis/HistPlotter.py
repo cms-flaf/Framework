@@ -29,6 +29,8 @@ if __name__ == "__main__":
     parser.add_argument('--channel',required=False, type=str, default = 'tauTau')
     parser.add_argument('--category',required=False, type=str, default = 'inclusive')
     parser.add_argument('--uncSource',required=False, type=str, default = 'Central')
+    parser.add_argument('--wantBTag', required=False, type=bool, default=False)
+    parser.add_argument('--suffix', required=False, type=str, default='')
     args = parser.parse_args()
 
     page_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/cms_stacked.yaml")
@@ -47,6 +49,7 @@ if __name__ == "__main__":
     all_samples_separated = [k['name'] for k in inputs_cfg_dict]
     all_histlist = {}
     plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg_dict, inputs_cfg=inputs_cfg_dict)
+    btag_dir= "bTag_WP" if args.wantBTag else "bTag_shape"
 
     all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir,True,args.mass)
 
@@ -57,8 +60,8 @@ if __name__ == "__main__":
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
     CreateNamesDict(histNamesDict, all_samples_types, args.uncSource, scales, sample_cfg_dict)
     for var in all_vars:
-        inFileName=f'{args.inFileName}_{var}_{args.uncSource}.root'
-        inFile = ROOT.TFile(os.path.join(args.histDir, 'all_histograms',var,inFileName),"READ")
+        inFileName=f'{args.inFileName}_{var}_{args.uncSource}{args.suffix}.root'
+        inFile = ROOT.TFile(os.path.join(args.histDir, 'all_histograms',var,btag_dir,inFileName),"READ")
         dir_0 = inFile.Get(args.channel)
         dir_1 = dir_0.Get(args.category)
         for key in dir_1.GetListOfKeys():
@@ -102,10 +105,10 @@ if __name__ == "__main__":
                 hists_to_plot['data'] = all_histlist[ ('Central','Central' )]['data']
             cat_txt = args.category if args.category !='inclusive' else 'incl'
             custom1= {'cat_text':f"{cat_txt} m_{{X}}={args.mass} GeV/c^{{2}}", 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS data/simulation'}
-            outFile_suffix = var
+            outFile_suffix = f'{var}_{args.channel}_{args.category}'
             if(args.uncSource != 'Central'):
-                outFile_suffix += f'{args.uncSource}{uncScale}'
-            outDir = os.path.join(args.outDir, var, args.channel, args.category, f'XMass_{args.mass}')
+                outFile_suffix += f'_{args.uncSource}{uncScale}'
+            outDir = os.path.join(args.outDir)
             print(outDir)
             if not os.path.isdir(outDir):
                 os.makedirs(outDir)

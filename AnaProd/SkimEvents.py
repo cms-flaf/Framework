@@ -24,6 +24,7 @@ col_type_dict = {
   'Bool_t':'bool',
   'Int_t' :'int',
   'ULong64_t' :'unsigned long long',
+  'ULong_t' :'unsigned long',
   'Long_t' :'long',
   'UInt_t' :'unsigned int',
   'ROOT::VecOps::RVec<float>':'ROOT::VecOps::RVec<float>',

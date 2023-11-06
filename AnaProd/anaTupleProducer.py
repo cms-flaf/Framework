@@ -75,8 +75,9 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
         dfw.Define(f"Jet_genJet_idx", f" FindMatching(Jet_p4,GenJet_p4,0.3)")
         jet_obs.extend(JetObservablesMC)
 
+
+    dfw.DefineAndAppend(f"nBJets", f"Jet_p4[Jet_bCand].size()")
     if config["GLOBAL"]["storeExtraJets"]:
-        #dfw.DefineAndAppend(f"nExtraJets", f"Jet_p4[ExtraJet_B1].size()")
         dfw.DefineAndAppend(f"ExtraJet_pt", f"v_ops::pt(Jet_p4[ExtraJet_B1])")
         dfw.DefineAndAppend(f"ExtraJet_eta", f"v_ops::eta(Jet_p4[ExtraJet_B1])")
         dfw.DefineAndAppend(f"ExtraJet_phi", f"v_ops::phi(Jet_p4[ExtraJet_B1])")
@@ -86,6 +87,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
             if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
             dfw.DefineAndAppend(f"ExtraJet_{jetVar}", f"Jet_{jetVar}[ExtraJet_B1]")
         dfw.DefineAndAppend(f"ExtraJet_HHbtag", f"Jet_HHBtagScore[ExtraJet_B1]")
+    else:
+        dfw.DefineAndAppend(f"nExtraJets", f"Jet_p4[ExtraJet_B1].size()")
 
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, nLegs, isData)
@@ -102,6 +105,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     if not isData:
         dfw.Define(f"FatJet_genJet_idx", f" FindMatching(FatJet_p4[FatJet_bbCand],GenJetAK8_p4,0.3)")
         fatjet_obs.extend(JetObservablesMC)
+        #dfw.DefineAndAppend("genchannelId","static_cast<int>(genHttCandidate.channel())")
     dfw.DefineAndAppend(f"SelectedFatJet_pt", f"v_ops::pt(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_phi", f"v_ops::phi(FatJet_p4[FatJet_bbCand])")

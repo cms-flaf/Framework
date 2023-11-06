@@ -62,16 +62,25 @@ def defineP4(df, name):
     return df
 
 def defineAllP4(df):
+    df = df.Define(f"SelectedFatJet_idx", f"CreateIndexes(SelectedFatJet_pt.size())")
+    df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")
     for idx in [0,1]:
         df = defineP4(df, f"tau{idx+1}")
         df = defineP4(df, f"b{idx+1}")
-        #df = defineP4(df, f"tau{idx+1}_seedingJet")
     return df
 
 def createInvMass(df):
-    df = df.Define("tautau_m_vis", "(tau1_p4+tau2_p4).M()")
-    df = df.Define("bb_m_vis", "(b1_p4+b2_p4).M()")
-    df = df.Define("bbtautau_mass", "(b1_p4+b2_p4+tau1_p4+tau2_p4).M()")
+    df = df.Define("tautau_m_vis", "static_cast<float>((tau1_p4+tau2_p4).M())")
+    df = df.Define("bb_m_vis", """
+                   if (!boosted){
+                       return static_cast<float>((b1_p4+b2_p4).M());
+                       }
+                    return static_cast<float>(SelectedFatJet_particleNet_mass_boosted);""")
+    df = df.Define("bbtautau_mass", """
+                   if (!boosted){
+                       return static_cast<float>((b1_p4+b2_p4+tau1_p4+tau2_p4).M());
+                       }
+                    return static_cast<float>(std::sqrt(tautau_m_vis*tautau_m_vis + bb_m_vis*bb_m_vis));""")
     df = df.Define("dR_tautau", 'ROOT::Math::VectorUtil::DeltaR(tau1_p4, tau2_p4)')
     return df
 
@@ -158,11 +167,11 @@ def Get2DModel(hist_cfg, var):
     x_bins = hist_cfg[var]['x_bins']
     if type(hist_cfg[var]['x_bins'])==list:
         x_bins_vec = Utilities.ListToVector(x_bins, "double")
-        model = ROOT.RDF.TH2DModel("", "", x_bins_vec.size()-1, x_bins_vec.data(), 11, 0.5, 10.5)
+        model = ROOT.RDF.TH2DModel("", "", x_bins_vec.size()-1, x_bins_vec.data(), 11, -0.5, 10.5)
     else:
         n_bins, bin_range = x_bins.split('|')
         start,stop = bin_range.split(':')
-        model = ROOT.RDF.TH2DModel("", "",int(n_bins), float(start), float(stop), 11, 0.5, 10.5)
+        model = ROOT.RDF.TH2DModel("", "",int(n_bins), float(start), float(stop), 11, -0.5, 10.5)
     return model
 
 

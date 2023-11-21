@@ -11,10 +11,6 @@ if __name__ == "__main__":
 import Common.Utilities as Utilities
 from Analysis.HistHelper import *
 from Analysis.hh_bbtautau import *
-scales = ['Up', 'Down']
-var_to_not_consider_boosted = ["b1_pt","b2_pt","b1_eta","b2_eta"]
-var_to_add_boosted= ["SelectedFatJet_pt_boosted","SelectedFatJet_eta_boosted"]
-unc_to_not_consider_boosted = ["PUJetID", "JER","JES_FlavorQCD","JES_RelativeBal","JES_HF","JES_BBEC1","JES_EC2","JES_Absolute","JES_Total","JES_BBEC1_2018","JES_Absolute_2018","JES_EC2_2018","JES_HF_2018","JES_RelativeSample_2018","bTagSF_Loose_btagSFbc_correlated",  "bTagSF_Loose_btagSFbc_uncorrelated",  "bTagSF_Loose_btagSFlight_correlated",  "bTagSF_Loose_btagSFlight_uncorrelated",  "bTagSF_Medium_btagSFbc_correlated",  "bTagSF_Medium_btagSFbc_uncorrelated",  "bTagSF_Medium_btagSFlight_correlated",  "bTagSF_Medium_btagSFlight_uncorrelated",  "bTagSF_Tight_btagSFbc_correlated",  "bTagSF_Tight_btagSFbc_uncorrelated",  "bTagSF_Tight_btagSFlight_correlated",  "bTagSF_Tight_btagSFlight_uncorrelated","bTagShapeSF_lf","bTagShapeSF_hf","bTagShapeSF_lfstats1","bTagShapeSF_lfstats2","bTagShapeSF_hfstats1","bTagShapeSF_hfstats2","bTagShapeSF_cferr1","bTagShapeSF_cferr2"]
 
 def createCentralQuantities(df_central, central_col_types, central_columns):
     map_creator = ROOT.analysis.MapCreator(*central_col_types)()
@@ -50,7 +46,7 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
     for key_1,key_cut in key_filter_dict.items():
         ch, reg, cat = key_1
         if (key_1, key_2) in histograms.keys(): continue
-        if cat == 'boosted' and var in var_to_not_consider_boosted: continue
+        if cat == 'boosted' and var in bjet_vars: continue
         if cat == 'boosted' and uncName in unc_to_not_consider_boosted: continue
         if cat != 'boosted' and var in var_to_add_boosted: continue
         #print(var, cat, uncName)

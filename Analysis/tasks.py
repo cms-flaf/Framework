@@ -248,6 +248,7 @@ class HistProducerFile2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
     hists = load_hist_config(hist_config)
 
+
     def GetBTagDir(self):
         return "bTag_WP" if self.wantBTag else "bTag_shape"
 
@@ -256,58 +257,55 @@ class HistProducerFile2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
         workflow_dict = {}
         workflow_dict["anaTuple"] = {
             idx: AnaTupleTask.req(self, branch=br, branches=())
-            for idx, (sample, br) in branch_map.items() if sample !='data'
+            for idx, (sample, br,var) in branch_map.items() if sample !='data' and var=='tau1_pt'
         }
         workflow_dict["dataMergeTuple"] = {
-            idx: DataMergeTask.req(self, branch=br, branches=())
-            for idx, (sample, br) in branch_map.items() if sample =='data'
+            idx: DataMergeTask.req(self, branch=0, branches=())
+            for idx, (sample, br,var) in branch_map.items() if sample =='data'
         }
-
         return workflow_dict
 
     def requires(self):
-        sample_name, prod_br = self.branch_data
+        sample_name, prod_br,var = self.branch_data
         if sample_name =='data':
             return [ DataMergeTask.req(self,max_runtime=DataMergeTask.max_runtime._default, branch=prod_br, branches=())]
         return [ AnaTupleTask.req(self, branch=prod_br, max_runtime=AnaTupleTask.max_runtime._default, branches=())]
 
     def create_branch_map(self):
         n = 0
+        k = 0
         branches = {}
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
-        sample_id_data = 0
-        for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-            if sample_type =='data' or 'QCD' in sample_name:
-                continue
-            branches[n] = (sample_name, prod_br)
+        vars_to_plot = ['bbtautau_mass'] #list(hists.keys())
+        for var in vars_to_plot:
+            for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
+                if sample_type =='data' or 'QCD' in sample_name:
+                    continue
+                branches[n] = (sample_name, prod_br,var)
+                n+=1
+            branches[n] = ('data', 0, var)
             n+=1
-        branches[n+1] = ('data', 0)
         return branches
 
     def output(self):
-        sample_name, prod_br = self.branch_data
+        sample_name, prod_br,var = self.branch_data
         input_file = self.input()[0].path
         fileName_split = os.path.basename(input_file).split('.')
         if len(fileName_split)>2: print(f"fileName_split is {fileName_split}")
         fileName_split[0]+='2D'
         fileName=fileName_split[0]+'.'+fileName_split[1]
-        vars_to_plot = list(hists.keys())
-        local_files_target = []
-        for var in vars_to_plot:
-            outFile_histProdSample = get2DOutFileName(var, sample_name, self.central_Histograms_path(), self.GetBTagDir(), '_onlyCentral')
-            if os.path.exists(outFile_histProdSample):
-                os.remove(outFile_histProdSample)
-                #local_files_target.append(law.LocalFileTarget(outFile_histProdSample))
-                #continue
-            outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp2D_onlyCentral', var, self.GetBTagDir())
-            if not os.path.isdir(outDir):
-                os.makedirs(outDir)
-            outFile = os.path.join(outDir,fileName)
-            local_files_target.append(law.LocalFileTarget(outFile))
-        return local_files_target
+        outFile_histProdSample = get2DOutFileName(var, sample_name, self.central_Histograms_path(), self.GetBTagDir(), '_onlyCentral')
+        #if os.path.exists(outFile_histProdSample):
+        #    return law.LocalFileTarget(outFile_histProdSample)
+        outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp2D_onlyCentral', var, self.GetBTagDir())
+        if not os.path.isdir(outDir):
+            os.makedirs(outDir)
+        outFile = os.path.join(outDir,fileName)
+        return law.LocalFileTarget(outFile)
+
 
     def run(self):
-        sample_name, prod_br = self.branch_data
+        sample_name, prod_br,var = self.branch_data
         if len(self.input()) > 1:
             raise RuntimeError(f"multple input files!! {' '.join(f.path for f in self.input())}")
         input_file = self.input()[0].path
@@ -320,7 +318,7 @@ class HistProducerFile2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_config = self.sample_config
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile2D.py')
         outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp2D_onlyCentral')
-        HistProducerFile_cmd = ['python3', HistProducerFile,'--inFile', input_file, '--outFileName',outFileName, '--dataset', sample_name, '--outDir', outDir, '--uncConfig', unc_config, '--histConfig', hist_config,'--sampleConfig', sample_config]
+        HistProducerFile_cmd = ['python3', HistProducerFile,'--inFile', input_file, '--outFileName',outFileName, '--dataset', sample_name, '--outDir', outDir, '--uncConfig', unc_config, '--histConfig', hist_config,'--sampleConfig', sample_config, '--var', var]
         if self.wantBTag:
             HistProducerFile_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
         sh_call(HistProducerFile_cmd,verbose=1)
@@ -333,49 +331,47 @@ class HistProducerSample2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow)
     def GetBTagDir(self):
         return "bTag_WP" if self.wantBTag else "bTag_shape"
 
-
     def workflow_requires(self):
         self_map = self.create_branch_map()
         workflow_dict = {}
         workflow_dict["histProducerFile"] = {
             n: HistProducerFile2DTaskCentral.req(self, branches=tuple((idx,) for idx in idx_list))
-            for n, (sample_name, idx_list) in self_map.items()
+            for n, (sample_name, idx_list, var) in self_map.items()
         }
         return workflow_dict
 
     def requires(self):
-        sample_name, idx_list  = self.branch_data
+        sample_name, idx_list,var = self.branch_data
         deps = [HistProducerFile2DTaskCentral.req(self, max_runtime=HistProducerFile2DTaskCentral.max_runtime._default, branch=idx) for idx in idx_list ]
         return deps
-
 
     def create_branch_map(self):
         branches = {}
         histProducerFile_map = HistProducerFile2DTaskCentral.req(self,branch=-1, branches=()).create_branch_map()
         all_samples = {}
-        for br_idx, (sample_name, prod_br) in histProducerFile_map.items():
+        n=0
+        for br_idx, (sample_name, prod_br,var) in histProducerFile_map.items():
             if sample_name not in all_samples:
-                all_samples[sample_name] = []
-            all_samples[sample_name].append(br_idx)
-        for n, (sample_name, idx_list) in enumerate(all_samples.items()):
-            branches[n] = (sample_name, idx_list)
+                all_samples[sample_name] = {}
+            if var not in all_samples[sample_name]:
+                all_samples[sample_name][var] = []
+            all_samples[sample_name][var].append(br_idx)
+        for sample_name,all_samples_sample in all_samples.items():
+            for var, idx_list in all_samples_sample.items():
+                branches[n] = (sample_name, idx_list, var)
+                n+=1
         return branches
 
     def output(self):
-        sample_name, idx_list = self.branch_data
-        vars_to_plot = list(hists.keys())
-        local_files_target = []
-        for var in vars_to_plot:
-            outFile = get2DOutFileName(var, sample_name, self.central_Histograms_path(), self.GetBTagDir(), '_onlyCentral')
-            local_files_target.append(law.LocalFileTarget(outFile))
-        return local_files_target
+        sample_name, idx_list,var = self.branch_data
+        outFile = get2DOutFileName(var, sample_name, self.central_Histograms_path(), self.GetBTagDir(),'_onlyCentral')
+        return law.LocalFileTarget(outFile)
+
 
     def run(self):
-        sample_name, idx_list = self.branch_data
+        sample_name, idx_list, var = self.branch_data
         #print(histProducerFile_map)
         files_idx = []
-        vars_to_plot = list(hists.keys())
-        hists_str = ','.join(var for var in vars_to_plot)
         file_ids_str = ''
         file_name_pattern = 'nano'
         if(len(idx_list)>1):
@@ -386,13 +382,15 @@ class HistProducerSample2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow)
         HistProducerSample = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample2D.py')
         outDir = os.path.join(self.central_Histograms_path(), sample_name)
         histDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp2D_onlyCentral')
-        HistProducerSample_cmd = ['python3', HistProducerSample,'--histDir', histDir, '--outDir', outDir, '--hists', hists_str, '--file-name-pattern', file_name_pattern, '--remove-files', 'True', '--suffix','_onlyCentral']
+        HistProducerSample_cmd = ['python3', HistProducerSample,'--histDir', histDir, '--outDir', outDir, '--hists', var, '--file-name-pattern', file_name_pattern, '--suffix','_onlyCentral']
         if self.wantBTag:
             HistProducerSample_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
         if(len(idx_list)>1):
             HistProducerSample_cmd.extend(['--file-ids', file_ids_str])
         #print(HistProducerSample_cmd)
         sh_call(HistProducerSample_cmd,verbose=1)
+
+
 
 class Merge2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
@@ -404,19 +402,17 @@ class Merge2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
     def GetBTagDir(self):
         return "bTag_WP" if self.wantBTag else "bTag_shape"
 
-
     def workflow_requires(self):
-        prod_branches = HistProducerSample2DTaskCentral.req(self, branch=-1, branches=()).create_branch_map()
         workflow_dict = {}
         workflow_dict["histProducerSample"] = {
-            0: HistProducerSample2DTaskCentral.req(self, branches=tuple((br,) for br in prod_branches))
+            0: HistProducerSample2DTaskCentral.req(self, branches=())
         }
         return workflow_dict
 
     def requires(self):
-        prod_branches = HistProducerSample2DTaskCentral.req(self, branch=-1, branches=()).create_branch_map()
-        deps = [HistProducerSample2DTaskCentral.req(self, max_runtime=HistProducerSample2DTaskCentral.max_runtime._default, branch=prod_br) for prod_br in prod_branches ]
+        deps = [HistProducerSample2DTaskCentral.req(self, branches=()) ]
         return deps
+
 
 
     def create_branch_map(self):
@@ -431,10 +427,17 @@ class Merge2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
     def output(self):
         var = self.branch_data
         outDir = os.path.join(self.central_Histograms_path(), 'all_histograms',var,self.GetBTagDir())
+        outFile = f'all_histograms_{var}_Central_onlyCentral.root'
+        json_dir= os.path.join(self.valeos_path(), 'jsonFiles', self.period, self.version)
+        json_file = f'all_rations_{var}_Central_onlyCentral.json'
         if not os.path.exists(outDir):
             os.makedirs(outDir)
-        local_file_target = os.path.join(outDir,f'all_histograms_{var}2D_onlyCentral.root')
-        return law.LocalFileTarget(local_file_target)
+        if not os.path.exists(json_dir):
+            os.makedirs(json_dir)
+        local_files_target = []
+        local_files_target.append(law.LocalFileTarget(os.path.join(outDir,outFile)))
+        local_files_target.append(law.LocalFileTarget(os.path.join(json_dir,json_file)))
+        return local_files_target
 
     def run(self):
         var = self.branch_data
@@ -444,17 +447,63 @@ class Merge2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
         unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
         MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger2D.py')
         json_dir= os.path.join(self.valeos_path(), 'jsonFiles', self.period, self.version)
-        MergerProducer_cmd = ['python3', MergerProducer,'--histDir', self.central_Histograms_path(), '--sampleConfig', sample_config, '--hists', var,'--uncConfig', unc_config, '--jsonDir', json_dir, '--suffix','_onlyCentral' ]
+        MergerProducer_cmd = ['python3', MergerProducer,'--histDir', self.central_Histograms_path(), '--sampleConfig', sample_config, '--var', var,'--uncConfig', unc_config, '--jsonDir', json_dir, '--suffix','_onlyCentral' ]
         if self.wantBTag:
             MergerProducer_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
         sh_call(MergerProducer_cmd,verbose=1)
-        #print(' '.join(cmd for cmd in MergerProducer_cmd))
+
+'''
+class PlotterTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
+    hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
+    hists = load_hist_config(hist_config)
+
+    def GetBTagDir(self):
+        return "bTag_WP" if self.wantBTag else "bTag_shape"
 
 
+    def workflow_requires(self):
+        return { "Merge2DTaskCentral" : Merge2DTaskCentral.req(self, branches=()) }
+
+    def requires(self):
+        return [Merge2DTaskCentral.req(self, branches=())]
+
+    def create_branch_map(self):
+        vars_to_plot = list(hists.keys())
+        sample_cfg_dict = self.sample_config
+        categories = list(self.global_params['categories'])
+        QCD_region = 'OS_Iso'
+        uncName = 'Central'
+        channels = list(self.global_params['channelSelection'])
+        n = 0
+        branches = {}
+        for var in vars_to_plot:
+            for channel in channels:
+                for category in categories:
+                    branches[n] = (var,channel, QCD_region, category, uncName)
+                    n+=1
+        return branches
+
+    def output(self):
+        var,channel, QCD_region, category, uncName = self.branch_data
+        final_directory = os.path.join(self.central_Histograms_path(), 'plots', var, self.GetBTagDir())
+        final_fileName = f'{channel}_{QCD_region}_{category}_XMass{self.mass}.pdf'
+        final_file= os.path.join(final_directory, final_fileName)
+        return law.LocalFileTarget(final_file)
+
+    def run(self):
+        var,channel, QCD_region, category, uncName = self.branch_data
+        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
+        sample_config = self.sample_config
+        PlotterProducer = os.path.join(self.ana_path(), 'Analysis', 'HistPlotter.py')
+        outDir = os.path.join(self.central_Histograms_path(), 'plots')
+        PlotterProducer_cmd = ['python3', PlotterProducer,'--mass', self.mass, '--histDir', self.central_Histograms_path(), '--outDir',outDir, '--inFileName', 'all_histograms', '--var', var, '--sampleConfig',sample_config, '--channel', channel, '--category', category, '--uncSource', uncName, '--suffix','_onlyCentral']
+        sh_call(PlotterProducer_cmd,verbose=1)
+        '''
 # ***********************************
 
 class HistProducerFile2DTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
     hists = load_hist_config(hist_config)
@@ -470,8 +519,8 @@ class HistProducerFile2DTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             for idx, (sample, br,var) in branch_map.items() if sample !='data' and var=='tau1_pt'
         }
         workflow_dict["dataMergeTuple"] = {
-            idx: DataMergeTask.req(self, branch=br, branches=())
-            for idx, (sample, br,var) in branch_map.items() if sample =='data' and var=='tau1_pt'
+            idx: DataMergeTask.req(self, branch=0, branches=())
+            for idx, (sample, br,var) in branch_map.items() if sample =='data'
         }
         return workflow_dict
 
@@ -483,9 +532,9 @@ class HistProducerFile2DTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def create_branch_map(self):
         n = 0
+        k = 0
         branches = {}
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
-        sample_id_data = 0
         vars_to_plot = list(hists.keys())
         for var in vars_to_plot:
             for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
@@ -493,7 +542,8 @@ class HistProducerFile2DTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     continue
                 branches[n] = (sample_name, prod_br,var)
                 n+=1
-            branches[n+1] = ('data', 0, var)
+            branches[n] = ('data', 0, var)
+            n+=1
         return branches
 
     def output(self):
@@ -513,6 +563,10 @@ class HistProducerFile2DTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return law.LocalFileTarget(outFile)
 
     def run(self):
+        #sample_name, prod_br,var = self.branch_data
+        #print(get2DOutFileName(var, sample_name, self.central_Histograms_path(), self.GetBTagDir()))
+        #print(os.path.exists(outFile_histProdSample))
+        #print(f"outFile is {self.output().path}")
         sample_name, prod_br,var = self.branch_data
         if len(self.input()) > 1:
             raise RuntimeError(f"multple input files!! {' '.join(f.path for f in self.input())}")
@@ -551,7 +605,7 @@ class HistProducerSample2DTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return workflow_dict
 
     def requires(self):
-        sample_name, idx_list  = self.branch_data
+        sample_name, idx_list,var = self.branch_data
         deps = [HistProducerFile2DTask.req(self, max_runtime=HistProducerFile2DTask.max_runtime._default, branch=idx) for idx in idx_list ]
         return deps
 
@@ -560,12 +614,17 @@ class HistProducerSample2DTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branches = {}
         histProducerFile_map = HistProducerFile2DTask.req(self,branch=-1, branches=()).create_branch_map()
         all_samples = {}
+        n=0
         for br_idx, (sample_name, prod_br,var) in histProducerFile_map.items():
             if sample_name not in all_samples:
-                all_samples[sample_name] = []
-            all_samples[sample_name].append(br_idx, var)
-        for n, (sample_name, idx_list) in enumerate(all_samples.items()):
-            branches[n] = (sample_name, idx_list, var)
+                all_samples[sample_name] = {}
+            if var not in all_samples[sample_name]:
+                all_samples[sample_name][var] = []
+            all_samples[sample_name][var].append(br_idx)
+        for sample_name,all_samples_sample in all_samples.items():
+            for var, idx_list in all_samples_sample.items():
+                branches[n] = (sample_name, idx_list, var)
+                n+=1
         return branches
 
     def output(self):
@@ -587,7 +646,7 @@ class HistProducerSample2DTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         HistProducerSample = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample2D.py')
         outDir = os.path.join(self.central_Histograms_path(), sample_name)
         histDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp2D')
-        HistProducerSample_cmd = ['python3', HistProducerSample,'--histDir', histDir, '--outDir', outDir, '--hists', var, '--file-name-pattern', file_name_pattern, '--remove-files', 'True']
+        HistProducerSample_cmd = ['python3', HistProducerSample,'--histDir', histDir, '--outDir', outDir, '--hists', var, '--file-name-pattern', file_name_pattern]
         if self.wantBTag:
             HistProducerSample_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
         if(len(idx_list)>1):
@@ -595,7 +654,7 @@ class HistProducerSample2DTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         #print(HistProducerSample_cmd)
         sh_call(HistProducerSample_cmd,verbose=1)
 
-'''
+
 class Merge2DTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
@@ -608,16 +667,14 @@ class Merge2DTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 
     def workflow_requires(self):
-        prod_branches = HistProducerSampleTask.req(self, branch=-1, branches=()).create_branch_map()
         workflow_dict = {}
         workflow_dict["histProducerSample"] = {
-            0: HistProducerSampleTask.req(self, branches=tuple((br,) for br in prod_branches))
+            0: HistProducerSample2DTask.req(self, branches=())
         }
         return workflow_dict
 
     def requires(self):
-        prod_branches = HistProducerSampleTask.req(self, branch=-1, branches=()).create_branch_map()
-        deps = [HistProducerSampleTask.req(self, max_runtime=HistProducerSampleTask.max_runtime._default, branch=prod_br) for prod_br in prod_branches ]
+        deps = [HistProducerSample2DTask.req(self, branches=()) ]
         return deps
 
 
@@ -646,14 +703,15 @@ class Merge2DTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         var, uncName = self.branch_data
         unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
         sample_config = self.sample_config
-        vars_to_plot = list(hists.keys())
         unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
-        MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger.py')
-        MergerProducer_cmd = ['python3', MergerProducer,'--histDir', self.central_Histograms_path(), '--sampleConfig', sample_config, '--hists', var,'--uncConfig', unc_config, '--uncSource', uncName]
+        MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger2D.py')
+        json_dir= os.path.join(self.valeos_path(), 'jsonFiles', self.period, self.version)
+        MergerProducer_cmd = ['python3', MergerProducer,'--histDir', self.central_Histograms_path(), '--sampleConfig', sample_config, '--var', var,'--uncConfig', unc_config, '--jsonDir', json_dir, '--uncSource', uncName ]
         if self.wantBTag:
             MergerProducer_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
+        #if var in ['tau2_pt', 'bbtautau_mass', 'b2_pt', 'tau1_eta', 'tau2_eta', 'bb_m_vis', 'tau1_pt', 'b1_pt','bbtautau_mass']:
         sh_call(MergerProducer_cmd,verbose=1)
-'''
+
 
 # ***************************************
 
@@ -688,12 +746,18 @@ class HaddMergedTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         var = self.branch_data
-        sample_config = self.sample_config
         unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
-        HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
+        outDir_json = os.path.join(self.valeos_path(), 'jsonFiles', self.period, self.version,'fitResults')
         histDir = os.path.join(self.central_Histograms_path(),'all_histograms',var, self.GetBTagDir())
+        ShapeOrLogNormalProducer = os.path.join(self.ana_path(), 'Analysis', 'ShapeOrLogNormal.py')
+        ShapeOrLogNormal_cmd = ['python3', ShapeOrLogNormalProducer,'--mass', self.mass, '--histDir', histDir, '--inFileName', 'all_histograms','--sampleConfig', self.sample_config,'--uncConfig', unc_config,'--var', var]
+        sh_call(HaddMergedHistsProducer_cmd,verbose=1)
+        final_json_file = os.path.join(outDir_json, var, self.GetBTagDir(), 'slopeInfo.json')
+        HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
         HaddMergedHistsProducer_cmd = ['python3', HaddMergedHistsProducer,'--histDir', histDir, '--file-name-pattern', 'all_histograms', '--hists', var,
-                            '--uncConfig', unc_config]#, '--remove-files', 'True']
+                            '--uncConfig', unc_config]
+        if os.path.exists(final_json_file):
+            HaddMergedHistsProducer_cmd.extend(['--remove-files', 'True'])
         sh_call(HaddMergedHistsProducer_cmd,verbose=1)
 
 '''

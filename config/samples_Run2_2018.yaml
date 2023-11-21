@@ -54,7 +54,9 @@ GLOBAL:
     - res1b
     - res2b
     - inclusive
-    #- boosted
+    - boosted
+    - btag_shape
+    - baseline
   storeExtraJets: False
   sampleSelection:
     - drop ^.*$

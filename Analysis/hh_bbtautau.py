@@ -16,6 +16,12 @@ triggers = {'eTau':'HLT_singleEle', 'muTau':'HLT_singleMu', 'tauTau':"HLT_ditau"
 btag_wps = {'res2b':'Medium', 'res1b':'Medium', 'boosted':"Loose", 'inclusive':'','btag_shape':''}
 mass_cut_limits = {'bb_m_vis':[50,350],'tautau_m_vis':[50,350]}
 
+scales = ['Up', 'Down']
+bjet_vars = ["b1_pt","b2_pt","b1_eta","b2_eta"]
+var_to_add_boosted= ["SelectedFatJet_pt_boosted","SelectedFatJet_eta_boosted"]
+unc_to_not_consider_boosted = ["PUJetID", "JER","JES_FlavorQCD","JES_RelativeBal","JES_HF","JES_BBEC1","JES_EC2","JES_Absolute","JES_Total","JES_BBEC1_2018","JES_Absolute_2018","JES_EC2_2018","JES_HF_2018","JES_RelativeSample_2018","bTagSF_Loose_btagSFbc_correlated",  "bTagSF_Loose_btagSFbc_uncorrelated",  "bTagSF_Loose_btagSFlight_correlated",  "bTagSF_Loose_btagSFlight_uncorrelated",  "bTagSF_Medium_btagSFbc_correlated",  "bTagSF_Medium_btagSFbc_uncorrelated",  "bTagSF_Medium_btagSFlight_correlated",  "bTagSF_Medium_btagSFlight_uncorrelated",  "bTagSF_Tight_btagSFbc_correlated",  "bTagSF_Tight_btagSFbc_uncorrelated",  "bTagSF_Tight_btagSFlight_correlated",  "bTagSF_Tight_btagSFlight_uncorrelated","bTagShapeSF_lf","bTagShapeSF_hf","bTagShapeSF_lfstats1","bTagShapeSF_lfstats2","bTagShapeSF_hfstats1","bTagShapeSF_hfstats2","bTagShapeSF_cferr1","bTagShapeSF_cferr2"]
+
+
 
 filters = {
         'channels':[('eTau','eTau && HLT_singleEle'), ('muTau','muTau && HLT_singleMu'),('tauTau','tauTau && HLT_ditau')],
@@ -34,9 +40,7 @@ def createKeyFilterDict():
                 else:
                     filter_str = f"b1_pt>0 && b2_pt>0 && gen_{ch}=={ch} && {ch} && {triggers[ch]} && {reg}"
                     for mass_name,mass_limits in mass_cut_limits.items():
-                        filter_str+=f" && {mass_name} >= {mass_limits[0]} && {mass_name} <= {mass_limits[1]}"
-                if cat != 'inclusive':
-                    filter_str+=f" && {cat}"
+                        filter_str+=f" && {mass_name} >= {mass_limits[0]} && {mass_name} <= {mass_limits[1]} && {cat}"
                 key = (ch, reg, cat)
                 reg_dict[key] = filter_str
                 #print(filter_str)
@@ -57,12 +61,13 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
     #if channel != 'tauTau' and category != 'inclusive': return hist_data_B
     hist_data_C = hist_data[key_C_data].Clone()
     hist_data_D = hist_data[key_D_data].Clone()
+    n_data_B = hist_data_B.Integral(0, hist_data_B.GetNbinsX()+1)
     n_data_C = hist_data_C.Integral(0, hist_data_C.GetNbinsX()+1)
     n_data_D = hist_data_D.Integral(0, hist_data_D.GetNbinsX()+1)
     #print(f"Yield for data {key_C_data} is {n_data_C}")
     #print(f"Yield for data {key_D_data} is {n_data_D}")
     for sample in all_samples_list:
-        if sample=='data' :
+        if sample=='data' or 'GluGluToBulkGraviton' in sample or 'GluGluToRadion' in sample or 'VBFToBulkGraviton' in sample or 'VBFToRadion'  in sample:
             #print(f"sample {sample} is not considered")
             continue
         #print(sample)
@@ -72,20 +77,22 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
         hist_sample_B = hist_sample[key_B].Clone()
         hist_sample_C = hist_sample[key_C].Clone()
         hist_sample_D = hist_sample[key_D].Clone()
+        n_sample_B= hist_sample_B.Integral(0, hist_sample_B.GetNbinsX()+1)
+        n_data_B-=n_sample_B
         n_sample_C = hist_sample_C.Integral(0, hist_sample_C.GetNbinsX()+1)
         n_data_C-=n_sample_C
         n_sample_D = hist_sample_D.Integral(0, hist_sample_D.GetNbinsX()+1)
         n_data_D-=n_sample_D
+        #print(f"Yield for data {key_B_data} after removing {sample} with yield {n_sample_B} is {n_data_B}")
         #print(f"Yield for data {key_C_data} after removing {sample} with yield {n_sample_C} is {n_data_C}")
         #print(f"Yield for data {key_D_data} after removing {sample} with yield {n_sample_D} is {n_data_D}")
-
         hist_data_B.Add(hist_sample_B, -1)
     #if n_data_C <= 0 or n_data_D <= 0:
         #print(f"n_data_C = {n_data_C}")
         #print(f"n_data_D = {n_data_D}")
-    kappa = n_data_C/n_data_D
+    kappa = n_data_C/n_data_D if n_data_D != 0 else 0
     if kappa<0:
-        print(f"transfer factor <0")
+        print(f"transfer factor <0, {category}, {channel}, {uncName}, {scale}")
         return ROOT.TH1D()
         #raise  RuntimeError(f"transfer factor <=0 ! {kappa}")
     hist_data_B.Scale(kappa)
@@ -146,7 +153,7 @@ def CompareYields(histograms, all_samples_list, channel, category, uncName, scal
         print(f"{sample} || {key_C} || {n_sample_C}")
         print(f"{sample} || {key_D} || {n_sample_D}")
 
-def AddQCDInHistDict(all_histograms, channels, categories, sample_type, uncName, all_samples_list, scales):
+def AddQCDInHistDict(var, all_histograms, channels, categories, sample_type, uncName, all_samples_list, scales):
     if 'QCD' not in all_histograms.keys():
             all_histograms['QCD'] = {}
     for channel in channels:
@@ -154,8 +161,12 @@ def AddQCDInHistDict(all_histograms, channels, categories, sample_type, uncName,
             if cat == 'btag_shape': continue
             #key =( (channel, 'OS_Iso', cat), ('Central', 'Central'))
             #all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, 'Central', 'Central')
-            for scale in scales:
-                if uncName=='Central' : scale = 'Central'
+            for scale in scales + ['Central']:
+                if uncName=='Central' and scale != 'Central': continue
+                if uncName!='Central' and scale == 'Central': continue
+                if cat == 'boosted' and var in bjet_vars: continue
+                if cat == 'boosted' and uncName in unc_to_not_consider_boosted: continue
+                if cat != 'boosted' and var in var_to_add_boosted: continue
                 key =( (channel, 'OS_Iso', cat), (uncName, scale))
                 all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale)
 
@@ -197,9 +208,9 @@ class DataFrameBuilder(DataFrameBuilderBase):
         self.df = self.df.Define("SelectedFatJet_idxUnordered", "CreateIndexes(SelectedFatJet_p4[fatJet_sel].size())")
         self.df = self.df.Define("SelectedFatJet_idxOrdered", "ReorderObjects(SelectedFatJet_particleNetMD_Xbb_boosted_vec, SelectedFatJet_idxUnordered)")
         for fatJetVar in FatJetObservables:
-            if f'SelectedFatJet_{fatJetVar}_boosted_vec' not in self.df.GetColumnNames():
+            if f'SelectedFatJet_{fatJetVar}' in self.df.GetColumnNames() and f'SelectedFatJet_{fatJetVar}_boosted_vec' not in self.df.GetColumnNames():
                 self.df = self.df.Define(f'SelectedFatJet_{fatJetVar}_boosted_vec',f""" SelectedFatJet_{fatJetVar}[fatJet_sel];""")
-            self.df = self.df.Define(f'SelectedFatJet_{fatJetVar}_boosted',f"""
+                self.df = self.df.Define(f'SelectedFatJet_{fatJetVar}_boosted',f"""
                                     SelectedFatJet_{fatJetVar}_boosted_vec[SelectedFatJet_idxOrdered[0]];
                                    """)
         #self.df.Display({"SelectedFatJet_p4_boosted", "SelectedFatJet_size_boosted"}).Print()
@@ -219,10 +230,10 @@ class DataFrameBuilder(DataFrameBuilderBase):
             self.df = self.df.Define(f"{channel}", f"channelId=={ch_value}")
 
         for gen_channel,gen_ch_value in gen_channels.items():
-            if f"gen_{gen_channel}" in self.df.GetColumnNames():
+            if f"tau1_gen_kind" in self.df.GetColumnNames() and  f"tau2_gen_kind" in self.df.GetColumnNames():
                 self.df = self.df.Define(f"gen_{gen_channel}", f"tau1_gen_kind == {gen_ch_value[0]} && tau2_gen_kind == {gen_ch_value[1]}")
             else:
-                self.df = self.df.Define(f"gen_{gen_channel}", f"channelId=={ch_value}")
+                self.df = self.df.Define(f"gen_{gen_channel}", f"{gen_channel}")
 
 
     def defineQCDRegions(self):

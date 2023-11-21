@@ -8,8 +8,8 @@ if __name__ == "__main__":
 
 
 from Analysis.HistHelper import *
-def GetHisto(channel, category, inFileName, histDir, btag_dir,sample_name, uncSource, scale):
-    inFile = ROOT.TFile(os.path.join(histDir, 'all_histograms',var,btag_dir,inFileName),"READ")
+def GetHisto(channel, category, inFileName, inDir, sample_name, uncSource, scale):
+    inFile = ROOT.TFile(os.path.join(inDir, inFileName),"READ")
     dir_0 = inFile.Get(channel)
     dir_1 = dir_0.Get(category)
     total_histName = sample_name
@@ -25,13 +25,13 @@ def GetHisto(channel, category, inFileName, histDir, btag_dir,sample_name, uncSo
             return obj
     return
 
-def GetShiftedRatios(channel, category, inFileName_Central, histDir,btag_dir, sample_name,uncSource):
-    hist_central = GetHisto(channel, category, inFileName_Central, histDir,btag_dir, sample_name, 'Central','-')
-    hist_source_up = GetHisto(channel, category, inFileName, histDir,btag_dir, sample_name, uncSource,'Up')
-    hist_up_ratio = hist_source_up.Clone("hist_ratio_up")
+def GetShiftedRatios(channel, category, inFileName_Central, inDir, sample_name,uncSource):
+    hist_central = GetHisto(channel, category, inFileName_Central, inDir, sample_name, 'Central','-')
+    hist_up = GetHisto(channel, category, inFileName, inDir, sample_name, uncSource,'Up')
+    hist_up_ratio = hist_up.Clone("hist_ratio_up")
     hist_up_ratio.Divide(hist_central)
-    hist_source_down = GetHisto(channel, category, inFileName, histDir,btag_dir, sample_name, uncSource,'Down')
-    hist_down_ratio = hist_source_down.Clone("hist_ratio_down")
+    hist_down = GetHisto(channel, category, inFileName, inDir, sample_name, uncSource,'Down')
+    hist_down_ratio = hist_down.Clone("hist_ratio_down")
     hist_down_ratio.Divide(hist_central)
     return hist_central,hist_up_ratio,hist_up,hist_down_ratio,hist_down
 
@@ -54,45 +54,47 @@ def GetChi2(histogram):
 
 
 def GetChi2Method(hist_central,hist_up_ratio,hist_up,hist_down_ratio,hist_down, sample, ch, cat, unc, unc_dict):
-    chi2_up,p_value_up,fit_param_up,fit_param_error_up=(hist_up_ratio)
-    chi2_down,p_value_down,fit_param_down,fit_param_error_down=(hist_down_ratio)
-    if p_value_up < 0.05 or p_value_down < 0.05:
-        # Stampare i parametri del fit e il chi-quadro ridotto
-        hist_integral_central = hist_central.Integral(0, hist_central.GetNbinsX())
-        hist_integral_up = hist_up.Integral(0, hist_up.GetNbinsX())
-        hist_integral_down = hist_down.Integral(0, hist_down.GetNbinsX())
-        hist_ratio_integral_up = hist_up_ratio.Integral(0, hist_up_ratio.GetNbinsX())
-        hist_ratio_integral_down = hist_down_ratio.Integral(0, hist_down_ratio.GetNbinsX())
-        if sample not in unc_dict.keys():
-            unc_dict[sample]={}
-        if ch not in unc_dict[sample].keys():
-            unc_dict[sample][ch]={}
-        if cat not in unc_dict[sample][ch].keys():
-            unc_sict[sample][ch][cat] = {}
-        #if unc not in unc_dict[sample][ch][unc].keys():
-        #    unc_sict[sample][ch][cat][unc] = {}
-        unc_dict[sample][ch][cat][unc]= {
-            'Up':
-            {
-                'p_value':p_value_up,
-                'chi2':chi2_up,
-                'integral': hist_integral_up,
-                'integral_central':hist_integral_central,
-                'integral_ratio': hist_ratio_integral_up,
-                'intercept':fit_param_up,
-                'intercept_error':fit_param_error_up
-            },
-            'Down':
-            {
-                'p_value':p_value_down,
-                'chi2':chi2_down,
-                'integral': hist_integral_down,
-                'integral_central':hist_integral_central,
-                'integral_ratio': hist_ratio_integral_down,
-                'intercept':fit_param_down,
-                'intercept_error':fit_param_error_down
-            },
-        }
+    print(sample,ch,cat,unc)
+    chi2_up,p_value_up,fit_param_up,fit_param_error_up=GetChi2(hist_up_ratio)
+    chi2_down,p_value_down,fit_param_down,fit_param_error_down=GetChi2(hist_down_ratio)
+    #if p_value_up < 0.05 or p_value_down < 0.05:
+    # Stampare i parametri del fit e il chi-quadro ridotto
+    hist_integral_central = hist_central.Integral(0, hist_central.GetNbinsX())
+    hist_integral_up = hist_up.Integral(0, hist_up.GetNbinsX())
+    hist_integral_down = hist_down.Integral(0, hist_down.GetNbinsX())
+    hist_ratio_integral_up = hist_up_ratio.Integral(0, hist_up_ratio.GetNbinsX())
+    hist_ratio_integral_down = hist_down_ratio.Integral(0, hist_down_ratio.GetNbinsX())
+    if sample not in unc_dict.keys():
+        unc_dict[sample]={}
+    if ch not in unc_dict[sample].keys():
+        unc_dict[sample][ch]={}
+    if cat not in unc_dict[sample][ch].keys():
+        unc_dict[sample][ch][cat] = {}
+    if unc not in unc_dict[sample][ch][cat].keys():
+        unc_dict[sample][ch][cat][unc] = {}
+    print(unc_dict[sample][ch][cat][unc])
+    unc_dict[sample][ch][cat][unc]= {
+        'Up':
+        {
+            'p_value':p_value_up,
+            'chi2':chi2_up,
+            'integral': hist_integral_up,
+            'integral_central':hist_integral_central,
+            'integral_ratio': hist_ratio_integral_up,
+            'intercept':fit_param_up,
+            'intercept_error':fit_param_error_up
+        },
+        'Down':
+        {
+            'p_value':p_value_down,
+            'chi2':chi2_down,
+            'integral': hist_integral_down,
+            'integral_central':hist_integral_central,
+            'integral_ratio': hist_ratio_integral_down,
+            'intercept':fit_param_down,
+            'intercept_error':fit_param_error_down
+        },
+    }
 
 
     '''
@@ -117,6 +119,7 @@ if __name__ == "__main__":
     parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--wantBTag', required=False, type=bool, default=False)
     parser.add_argument('--suffix', required=False, type=str, default='')
+    parser.add_argument('--var', required=False, type=str, default='tau1_pt')
     args = parser.parse_args()
     ROOT.gStyle.SetOptFit(0)
     ROOT.gStyle.SetOptStat(0)
@@ -128,8 +131,7 @@ if __name__ == "__main__":
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
-    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir,True,args.mass)
-
+    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir,False,False)
     all_histlist = {}
     histNamesDict = {}
     all_vars = list(hist_cfg_dict.keys())
@@ -141,23 +143,22 @@ if __name__ == "__main__":
 
 
     btag_dir= "bTag_WP" if args.wantBTag else "bTag_shape"
-    for var in all_vars:
-        unc_dict = {}
-        for sample in all_samples_list+['QCD']:
-            if sample == 'data': continue
-            for channel in ['eTau', 'muTau', 'tauTau']:
-                for category in ['inclusive','res2b','res1b','boosted']:
-                    for uncSource in all_uncertainties:
-                        inFileName=f'{args.inFileName}_{var}_{uncSource}{suffix}.root'
-                        if not os.path.exists(os.path.join(args.histDir, 'all_histograms',var,btag_dir,inFileName)): continue
-                        inFileName_Central=f'{args.inFileName}_{var}2D_Central{args.suffix}.root'
-                        sample_name = sample
-                        if sample in signals:
-                            sample_name += 'ToHHTo2B2Tau-M'+args.mass
-                        hist_central,hist_up_ratio,hist_up,hist_down_ratio,hist_down = GetShiftedRatios(channel, category, inFileName_Central, args.histDir,btag_dir, sample_name,uncSource)
-                        GetChi2Method(hist_central,hist_up_ratio,hist_up,hist_down_ratio,hist_down, sample_name, channel, category, uncSource, unc_dict)
-        outDir = os.path.join(args.outDir, sample, btag_dir, var)
-        if not os.path.exists(outDir):
-            os.makedirs(outDir)
-        with open(f'{outDir}/slopeInfo.json', 'w') as f:
-            json.dump(unc_dict, f, indent=4)
+
+    unc_dict = {}
+    for sample in all_samples_list:
+        if sample == 'data': continue
+        for channel in ['tauTau']: #['eTau', 'muTau', 'tauTau']:
+            for category in ['inclusive','res2b','res1b']: #['inclusive','res2b','res1b','boosted']:
+                for uncSource in all_uncertainties:
+                    inFileName=f'{args.inFileName}_{args.var}_{uncSource}{args.suffix}.root'
+                    inDir = os.path.join(args.histDir, 'all_histograms',args.var,btag_dir)
+                    if not os.path.exists(os.path.join(inDir,inFileName)): continue
+                    inFileName_Central=f'{args.inFileName}_{args.var}_Central{args.suffix}.root'
+                    sample_name = sample
+                    hist_central,hist_up_ratio,hist_up,hist_down_ratio,hist_down = GetShiftedRatios(channel, category, inFileName_Central, inDir, sample_name,uncSource)
+                    GetChi2Method(hist_central,hist_up_ratio,hist_up,hist_down_ratio,hist_down, sample_name, channel, category, uncSource, unc_dict)
+    outDir = os.path.join(args.outDir, args.var, btag_dir)
+    if not os.path.exists(outDir):
+        os.makedirs(outDir)
+    with open(f'{outDir}/slopeInfo.json', 'w') as f:
+        json.dump(unc_dict, f, indent=4)

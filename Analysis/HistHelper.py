@@ -15,16 +15,18 @@ def GetUncNameTypes(unc_cfg_dict):
     uncNames.extend([unc for unc in unc_cfg_dict['shape']])
     return uncNames
 
-def GetSamplesStuff(sample_cfg_dict,histDir,wantMass=True,mass=500):
+def GetSamplesStuff(sample_cfg_dict,histDir,wantAllMasses=True,wantOneMass=True,mass=500):
     all_samples_list = []
     all_samples_types = {'data':['data'],}
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
     for sample in sample_cfg_dict.keys():
         if not os.path.isdir(os.path.join(histDir, sample)): continue
         sample_type = sample_cfg_dict[sample]['sampleType']
-        if wantMass:
+        if wantOneMass:
             if 'mass' in sample_cfg_dict[sample].keys():
                 if sample_type in signals and sample_cfg_dict[sample]['mass']!=mass : continue
+        if not wantAllMasses and not wantOneMass:
+            if 'mass' in sample_cfg_dict[sample].keys(): continue
         isSignal = False
         if sample_type in signals:
             isSignal = True
@@ -32,7 +34,7 @@ def GetSamplesStuff(sample_cfg_dict,histDir,wantMass=True,mass=500):
         if sample_type not in all_samples_types.keys() :
             all_samples_types[sample_type] = []
         all_samples_types[sample_type].append(sample)
-        if isSignal: continue
+        if not wantAllMasses and isSignal: continue
         if sample_type in all_samples_list: continue
         all_samples_list.append(sample_type)
     return all_samples_list, all_samples_types
@@ -80,13 +82,14 @@ def createInvMass(df):
                    if (!boosted){
                        return static_cast<float>((b1_p4+b2_p4+tau1_p4+tau2_p4).M());
                        }
-                    return static_cast<float>(std::sqrt(tautau_m_vis*tautau_m_vis + bb_m_vis*bb_m_vis));""")
+                    return static_cast<float>((SelectedFatJet_p4_boosted+tau1_p4+tau2_p4).M());""")
     df = df.Define("dR_tautau", 'ROOT::Math::VectorUtil::DeltaR(tau1_p4, tau2_p4)')
     return df
 
 def RenormalizeHistogram(histogram, norm, include_overflows=True):
     integral = histogram.Integral(0, histogram.GetNbinsX()+1) if include_overflows else histogram.Integral()
-    histogram.Scale(norm / integral)
+    if integral!=0:
+        histogram.Scale(norm / integral)
 
 def FixNegativeContributions(histogram):
     correction_factor = 0.

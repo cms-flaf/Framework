@@ -93,7 +93,7 @@ if __name__ == "__main__":
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
 
-    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir, False)
+    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir, True, False)
     histNamesDict = {}
     uncNameTypes = GetUncNameTypes(unc_cfg_dict)
     btag_dir= "bTag_WP" if args.wantBTag else "bTag_shape"

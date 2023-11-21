@@ -20,16 +20,16 @@
   type: signal
   color: kCyan
   #scale: 5
-- name: VBFToBulkGraviton
-  title: "qqHH #rightarrow bb#tau#tau BulkGraviton"
-  type: signal
-  color: kMagenta
-  #scale: 5
-- name: VBFToRadion
-  title: "qqHH #rightarrow bb#tau#tau Radion"
-  type: signal
-  color: kViolet+4
-  #scale: 5
+#- name: VBFToBulkGraviton
+#  title: "qqHH #rightarrow bb#tau#tau BulkGraviton"
+#  type: signal
+#  color: kMagenta
+#  scale: 5
+#- name: VBFToRadion
+#  title: "qqHH #rightarrow bb#tau#tau Radion"
+#  type: signal
+#  color: kViolet+4
+#  scale: 5
 - name: QCD
   title: QCD
   color: kOrange

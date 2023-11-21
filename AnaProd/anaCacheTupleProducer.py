@@ -55,7 +55,8 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
     varToSave = Utilities.ListToVector(dfw.colToSave)
     all_files.append(f'{outFileName}_Central.root')
     snaps.append(dfw.df.Snapshot(f"Events", f'{outFileName}_Central.root', varToSave, snapshotOptions))
-    #print("append the central snapshot")
+    print("append the central snapshot")
+
     if compute_unc_variations:
         dfWrapped_central = DataFrameBuilder(df_begin)
         colNames =  dfWrapped_central.colNames
@@ -97,10 +98,10 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
                     varToSave = Utilities.ListToVector(dfW_nonValid.colToSave)
                     all_files.append(f'{outFileName}_{uncName}{scale}_nonValid.root')
                     dfW_nonValid.df.Snapshot(treeName_nonValid, f'{outFileName}_{uncName}{scale}_nonValid.root', varToSave, snapshotOptions)
-    #print(f"snaps len is {len(snaps)}")
+    print(f"snaps len is {len(snaps)}")
     snapshotOptions.fLazy = True
     if snapshotOptions.fLazy == True:
-        #print("going to rungraph")
+        print("going to rungraph")
         ROOT.RDF.RunGraphs(snaps)
     return all_files
 

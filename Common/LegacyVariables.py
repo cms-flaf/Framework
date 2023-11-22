@@ -34,7 +34,7 @@ def Initialize():
 def GetMT2(df):
     if not initialized:
         raise RuntimeError("Legacy Variables not initialized!")
-    df = df.Define('MT2', f'float(analysis::Calculate_MT2({tau1_p4}, {tau2_p4}, {b1_p4},{b2_p4}, {MET_p4}))')
+    df = df.Define('MT2', f'entry_valid ?  float(analysis::Calculate_MT2({tau1_p4}, {tau2_p4}, {b1_p4},{b2_p4}, {MET_p4})): -100.')
     return df,['MT2']
 
 def GetKinFit(df):
@@ -42,30 +42,26 @@ def GetKinFit(df):
         raise RuntimeError("Legacy Variables not initialized!")
     df = df.Define("bjet1_JER", f"b1_ptRes*{b1_p4}.E()")
     df = df.Define("bjet2_JER", f"b2_ptRes*{b2_p4}.E()")
-    df = df.Define("kinFit_result", f"""kin_fit::FitProducer::Fit({tau1_p4}, {tau2_p4},{b1_p4}, {b2_p4},
-                                                       {MET_p4}, MET_covXX, MET_covXY, MET_covYY,
-                                                       bjet1_JER,bjet2_JER, 0)""")
+    df = df.Define("kinFit_result", f"""entry_valid ? kin_fit::FitProducer::Fit({tau1_p4}, {tau2_p4},{b1_p4}, {b2_p4}, {MET_p4}, met_covXX, met_covXY, met_covYY, bjet1_JER,bjet2_JER, 0): kin_fit::FitResults()""")
 
-    df = df.Define('kinFit_convergence', 'kinFit_result.convergence')
-    df = df.Define('kinFit_m', 'float(kinFit_result.mass)')
-    df = df.Define('kinFit_chi2', 'float(kinFit_result.chi2)')
-    return df,['kinFit_convergence','kinFit_m','kinFit_chi2']
+    df = df.Define('kinFit_convergence', 'entry_valid ? kinFit_result.convergence: -100.')
+    df = df.Define('kinFit_m', 'entry_valid ? float(kinFit_result.mass): -100.')
+    df = df.Define('kinFit_chi2', 'entry_valid ? float(kinFit_result.chi2): -100.')
+    return df,['kinFit_convergence','kinFit_m','kinFit_chi2','kinFit_result']
 
 def GetSVFit(df):
-    df = df.Define('SVfit_result',f"""sv_fit::FitProducer::Fit({tau1_p4}, static_cast<Leg>(tau1_legType), tau1_decayMode,
-                                                {tau2_p4}, static_cast<Leg>(tau2_legType), tau2_decayMode,
-                                                {MET_p4}, MET_covXX, MET_covXY, MET_covYY)""")
-    df = df.Define('SVfit_valid', 'int(SVfit_result.has_valid_momentum)')
-    df = df.Define('SVfit_pt', 'float(SVfit_result.momentum.pt())')
-    df = df.Define('SVfit_eta', 'float(SVfit_result.momentum.eta())')
-    df = df.Define('SVfit_phi', 'float(SVfit_result.momentum.phi())')
-    df = df.Define('SVfit_m', 'float(SVfit_result.momentum.mass())')
-    df = df.Define('SVfit_pt_error', 'float(SVfit_result.momentum_error.pt())')
-    df = df.Define('SVfit_eta_error', 'float(SVfit_result.momentum_error.eta())')
-    df = df.Define('SVfit_phi_error', 'float(SVfit_result.momentum_error.phi())')
-    df = df.Define('SVfit_m_error', 'float(SVfit_result.momentum_error.mass())')
-    df = df.Define('SVfit_mt', 'float(SVfit_result.transverseMass)')
-    df = df.Define('SVfit_mt_error', 'float(SVfit_result.transverseMass_error)')
+    df = df.Define('SVfit_result',f"""entry_valid ? sv_fit::FitProducer::Fit({tau1_p4}, static_cast<Leg>(tau1_legType), tau1_decayMode, {tau2_p4}, static_cast<Leg>(tau2_legType), tau2_decayMode, {MET_p4}, met_covXX, met_covXY, met_covYY) : sv_fit::FitResults()""")
+    df = df.Define('SVfit_valid', 'entry_valid ? int(SVfit_result.has_valid_momentum) : -100.')
+    df = df.Define('SVfit_pt', 'entry_valid ? float(SVfit_result.momentum.pt()) : -100.')
+    df = df.Define('SVfit_eta', 'entry_valid ? float(SVfit_result.momentum.eta()) : -100.')
+    df = df.Define('SVfit_phi', 'entry_valid ? float(SVfit_result.momentum.phi()) : -100.')
+    df = df.Define('SVfit_m', 'entry_valid ? float(SVfit_result.momentum.mass()) : -100.')
+    df = df.Define('SVfit_pt_error', 'entry_valid ? float(SVfit_result.momentum_error.pt()) : -100.')
+    df = df.Define('SVfit_eta_error', 'entry_valid ? float(SVfit_result.momentum_error.eta()) : -100.')
+    df = df.Define('SVfit_phi_error', 'entry_valid ? float(SVfit_result.momentum_error.phi()) : -100.')
+    df = df.Define('SVfit_m_error', 'entry_valid ? float(SVfit_result.momentum_error.mass()) : -100.')
+    df = df.Define('SVfit_mt', 'entry_valid ? float(SVfit_result.transverseMass) : -100.')
+    df = df.Define('SVfit_mt_error', 'entry_valid ? float(SVfit_result.transverseMass_error) : -100.')
     return df,['SVfit_valid', 'SVfit_pt', 'SVfit_eta', 'SVfit_phi', 'SVfit_m', 'SVfit_pt_error', 'SVfit_eta_error', 'SVfit_phi_error', 'SVfit_m_error', 'SVfit_mt', 'SVfit_mt_error']
 
 

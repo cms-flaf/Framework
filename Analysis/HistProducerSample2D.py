@@ -17,12 +17,13 @@ if __name__ == "__main__":
     import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument('--histDir', required=True, type=str)
+    parser.add_argument('--suffix', required=False, type=str, default='')
     parser.add_argument('--test', required=False, type=bool, default=False)
     parser.add_argument('--remove-files', required=False, type=bool, default=False)
     parser.add_argument('--wantBTag', required=False, type=bool, default=False)
     parser.add_argument('--outDir', required=True, type=str)
     parser.add_argument('--hists', required=False, type=str, default='bbtautau_mass,dR_tautau,tautau_m_vis,tau1_pt')
-    parser.add_argument('--file-name-pattern', required=False, type=str, default="nano_{id}.root")
+    parser.add_argument('--file-name-pattern', required=False, type=str, default="nano_{id}2D.root")
     parser.add_argument('--file-ids', required=False, type=str, default='')
 
 
@@ -48,7 +49,7 @@ if __name__ == "__main__":
         outDirNameFinal=os.path.join(args.outDir, btag_dir)
         if not os.path.exists(outDirNameFinal):
             os.makedirs(outDirNameFinal)
-        outFileNameFinal = f'{outDirNameFinal}/{var}.root'
+        outFileNameFinal = f'{outDirNameFinal}/{var}2D{args.suffix}.root'
         hadd_str = f'hadd -f209 -j -O {outFileNameFinal} '
         hadd_str += ' '.join(f for f in all_files[var])
         if len(all_files[var]) > 1:

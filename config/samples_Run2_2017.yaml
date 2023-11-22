@@ -9,10 +9,95 @@ GLOBAL:
     - Flag_EcalDeadCellTriggerPrimitiveFilter
     - Flag_BadPFMuonFilter
     - Flag_BadPFMuonDzFilter
-    - Flag_hfNoisyHitsFilter
-    - Flag_BadChargedCandidateFilter
+    #- Flag_hfNoisyHitsFilter
+    #- Flag_BadChargedCandidateFilter
     - Flag_eeBadScFilter
     - Flag_ecalBadCalibFilter
+  triggerFile: config/triggers_2017.yaml
+  crossSectionsFile : config/crossSections13TeV.yaml
+  lumiFile: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/Legacy_2017/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt
+  signal_types:
+    - GluGluToRadion
+    - GluGluToBulkGraviton
+    - VBFToRadion
+    - VBFToBulkGraviton
+  genuineTau_SFtype:
+    eTau: dm
+    muTau: dm
+    tauTau: dm
+  deepTauWPs:
+    eTau:
+      VSe: VVLoose
+      VSmu: Tight
+      VSjet: Medium
+    muTau:
+      VSe: VVLoose
+      VSmu: Tight
+      VSjet: Medium
+    tauTau:
+      VSe: VVLoose
+      VSmu: Tight
+      VSjet: Medium
+  corrections:
+    - tauID
+    - tauES
+    - JEC_JER
+  deepTauVersion: 2p1
+  channelSelection:
+    - eTau
+    - muTau
+    - tauTau
+  QCDRegions:
+    - OS_Iso
+    - SS_Iso
+    - OS_AntiIso
+    - SS_AntiIso
+  categories:
+    - res1b
+    - res2b
+    - inclusive
+    #- boosted
+  storeExtraJets: False
+  sampleSelection:
+    - drop ^.*$
+    - keep ^GluGluToRadion*
+    - keep ^GluGluToBulkGraviton*
+    - keep ^VBFToRadion*
+    - keep ^VBFToBulkGraviton*
+    - keep ^TTTo*
+    - keep ^DYJetsToLL_M-50$
+    - keep ^DYJetsToLL_[0-2]J$
+    - keep ^DYJetsToLL_LHEFilterPtZ*
+    - keep ^EWKW(Minus|Plus)2Jets_WToLNu_M-50$
+    - keep ^EWKZ2Jets_ZToLL_M-50$
+    - keep ^ST_*
+    - drop ^.*NoFully
+    - keep ^WJetsToLNu$
+    - keep ^W[1-4]JetsToLNu$
+    - keep ^[W,Z]{1,3}$
+    - keep ^.*HToTauTau$
+    - keep ^ttHTo*
+    - drop ^ttHToNonbb$
+    - keep ^TTWJetsTo*
+    - keep ^TTZToLLNuNu_M-10$
+    - keep ^TTWW$
+    - keep ^TTZZ$
+    - keep ^TTWZ$
+    - keep ^GluGluToHHTo2B2Tau_node_SM$
+    - keep ^SingleMuon_2018*
+    - keep ^EGamma_2018*
+    - keep ^MET_2018*
+    #- keep ^JetHT_2018*
+    - keep ^Tau_2018*
+    - keep ^T{2,3}?
+    - drop ^TT[G*]
+    - drop ^TT4b
+    - drop ^TT[HZ]{1,2}To*
+    - drop ^TTHH$
+    - keep ^TTHHTo2B2Tau$
+    - keep ^QCD_Pt*
+    - drop ^.*Enriched
+
 GluGluToRadionToHHTo2B2Tau_M-250:
   miniAOD: /GluGluToRadionToHHTo2B2Tau_M-250_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM
   nanoAOD: /GluGluToRadionToHHTo2B2Tau_M-250_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v2/NANOAODSIM
@@ -657,7 +742,7 @@ ZZ:
 ZZTo2Q2L:
   miniAOD: /ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM
   nanoAOD: /ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM
-  sampleType:ZZ
+  sampleType: ZZ
 ZZTo2Q2Nu:
   miniAOD:
   nanoAOD:

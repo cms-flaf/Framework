@@ -4,18 +4,98 @@ tau1_pt:
   y_title: Events
   use_log_y: False
   max_y_sf: 1.5
-  divide_by_bin_width: False
+  divide_by_bin_width: True
+
+tau2_pt:
+  x_bins: [0, 40, 60, 80, 100, 150, 200, 250, 300]
+  x_title: tau_2 p_{T} (GeV)
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.5
+  divide_by_bin_width: True
+
+tau1_eta:
+  x_bins:  "50|-2.5:2.5"
+  x_title: tau_1 \eta
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.5
+  divide_by_bin_width: True
+
+tau2_eta:
+  x_bins:  "50|-2.5:2.5"
+  x_title: tau_2 \eta
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.5
+  divide_by_bin_width: True
+
+SelectedFatJet_pt_boosted:
+  x_bins: [0, 40, 60, 80, 100, 150, 200, 250, 300]
+  x_title: fatJet p_{T} (GeV)
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.5
+  divide_by_bin_width: True
+
+SelectedFatJet_eta_boosted:
+  x_bins:  "50|-2.5:2.5"
+  x_title: fatJet \eta
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.5
+  divide_by_bin_width: True
+
+b1_pt:
+  x_bins: [0, 40, 60, 80, 100, 150, 200, 250, 300]
+  x_title: b-jet_1 p_{T} (GeV)
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.5
+  divide_by_bin_width: True
+
+b2_pt:
+  x_bins: [0, 40, 60, 80, 100, 150, 200, 250, 300]
+  x_title: b-jet_2 p_{T} (GeV)
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.5
+  divide_by_bin_width: True
+
+b1_eta:
+  x_bins:  "50|-2.5:2.5"
+  x_title: b-jet_1 \eta
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.5
+  divide_by_bin_width: True
+
+b2_eta:
+  x_bins:  "50|-2.5:2.5"
+  x_title: b-jet_2 \eta
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.5
+  divide_by_bin_width: True
 
 tautau_m_vis:
-  x_bins: [0, 40, 80,120, 160,200, 250, 300, 350, 400, 450, 500, 1000]
-  x_title: M^{\tau\tau}_{vis} (GeV
+  x_bins: [0, 40, 60, 80, 100, 120, 140, 160,180, 200, 250, 300, 350, 400, 450, 500, 1000]
+  x_title: "M^{\tau\tau}_{vis} (GeV)"
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.5
+  divide_by_bin_width: True
+
+bb_m_vis:
+  x_bins: [0, 40, 60, 80, 100, 120, 140, 160,180, 200, 250, 300, 350, 400, 450, 500, 1000]
+  x_title: "M^{bb}(GeV)"
   y_title: Events
   use_log_y: False
   max_y_sf: 1.5
   divide_by_bin_width: True
 
 bbtautau_mass:
-  x_bins: "50|150:1500"
+  x_bins: "100|150:3000"
   x_title: "M^{HH}_{vis} (GeV)"
   y_title: Events
   use_log_y: False

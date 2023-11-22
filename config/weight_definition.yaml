@@ -47,28 +47,64 @@ norm:
     expression: weight_TauID_total{scale}_rel * final_weight
   bTagSF_Loose_btagSFbc_correlated:
     expression: weight_bTagSF_Loose_btagSFbc_correlated{scale}_rel * final_weight
+    requires_btag: True
   bTagSF_Loose_btagSFbc_uncorrelated:
     expression: weight_bTagSF_Loose_btagSFbc_uncorrelated{scale}_rel * final_weight
+    requires_btag: True
   bTagSF_Loose_btagSFlight_correlated:
     expression: weight_bTagSF_Loose_btagSFlight_correlated{scale}_rel * final_weight
+    requires_btag: True
   bTagSF_Loose_btagSFlight_uncorrelated:
     expression: weight_bTagSF_Loose_btagSFlight_uncorrelated{scale}_rel * final_weight
+    requires_btag: True
   bTagSF_Medium_btagSFbc_correlated:
     expression: weight_bTagSF_Medium_btagSFbc_correlated{scale}_rel * final_weight
+    requires_btag: True
   bTagSF_Medium_btagSFbc_uncorrelated:
     expression: weight_bTagSF_Medium_btagSFbc_uncorrelated{scale}_rel * final_weight
+    requires_btag: True
   bTagSF_Medium_btagSFlight_correlated:
     expression: weight_bTagSF_Medium_btagSFlight_correlated{scale}_rel * final_weight
+    requires_btag: True
   bTagSF_Medium_btagSFlight_uncorrelated:
     expression: weight_bTagSF_Medium_btagSFlight_uncorrelated{scale}_rel * final_weight
+    requires_btag: True
   bTagSF_Tight_btagSFbc_correlated:
     expression: weight_bTagSF_Tight_btagSFbc_correlated{scale}_rel * final_weight
+    requires_btag: True
   bTagSF_Tight_btagSFbc_uncorrelated:
     expression: weight_bTagSF_Tight_btagSFbc_uncorrelated{scale}_rel * final_weight
+    requires_btag: True
   bTagSF_Tight_btagSFlight_correlated:
     expression: weight_bTagSF_Tight_btagSFlight_correlated{scale}_rel * final_weight
+    requires_btag: True
   bTagSF_Tight_btagSFlight_uncorrelated:
     expression: weight_bTagSF_Tight_btagSFlight_uncorrelated{scale}_rel * final_weight
+    requires_btag: True
+  bTagShapeSF_lf:
+    expression: weight_bTagShapeSF_lf{scale}_rel * final_weight
+    requires_btag: False
+  bTagShapeSF_hf:
+    expression: weight_bTagShapeSF_hf{scale}_rel * final_weight
+    requires_btag: False
+  bTagShapeSF_lfstats1:
+    expression: weight_bTagShapeSF_lfstats1{scale}_rel * final_weight
+    requires_btag: False
+  bTagShapeSF_lfstats2:
+    expression: weight_bTagShapeSF_lfstats2{scale}_rel * final_weight
+    requires_btag: False
+  bTagShapeSF_hfstats1:
+    expression: weight_bTagShapeSF_hfstats1{scale}_rel * final_weight
+    requires_btag: False
+  bTagShapeSF_hfstats2:
+    expression: weight_bTagShapeSF_hfstats2{scale}_rel * final_weight
+    requires_btag: False
+  bTagShapeSF_cferr1:
+    expression: weight_bTagShapeSF_cferr1{scale}_rel * final_weight
+    requires_btag: False
+  bTagShapeSF_cferr2:
+    expression: weight_bTagShapeSF_cferr2{scale}_rel * final_weight
+    requires_btag: False
   PUJetID:
     expression: weight_Jet_PUJetID_eff{scale}_rel_b1 * weight_Jet_PUJetID_eff{scale}_rel_b2 * final_weight
   PileUp:
@@ -110,3 +146,5 @@ shape:
   - JES_EC2_2018
   - JES_HF_2018
   - JES_RelativeSample_2018
+
+shape_and_norm:

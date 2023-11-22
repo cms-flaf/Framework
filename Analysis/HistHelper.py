@@ -9,20 +9,24 @@ import Common.Utilities as Utilities
 
 scales = ['Up','Down']
 
-
 def GetUncNameTypes(unc_cfg_dict):
     uncNames = []
     uncNames.extend(list(unc_cfg_dict['norm'].keys()))
     uncNames.extend([unc for unc in unc_cfg_dict['shape']])
     return uncNames
 
-def GetSamplesStuff(sample_cfg_dict,histDir):
+def GetSamplesStuff(sample_cfg_dict,histDir,wantAllMasses=True,wantOneMass=True,mass=500):
     all_samples_list = []
     all_samples_types = {'data':['data'],}
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
     for sample in sample_cfg_dict.keys():
         if not os.path.isdir(os.path.join(histDir, sample)): continue
         sample_type = sample_cfg_dict[sample]['sampleType']
+        if wantOneMass:
+            if 'mass' in sample_cfg_dict[sample].keys():
+                if sample_type in signals and sample_cfg_dict[sample]['mass']!=mass : continue
+        if not wantAllMasses and not wantOneMass:
+            if 'mass' in sample_cfg_dict[sample].keys(): continue
         isSignal = False
         if sample_type in signals:
             isSignal = True
@@ -30,10 +34,28 @@ def GetSamplesStuff(sample_cfg_dict,histDir):
         if sample_type not in all_samples_types.keys() :
             all_samples_types[sample_type] = []
         all_samples_types[sample_type].append(sample)
-        if isSignal: continue
+        if not wantAllMasses and isSignal: continue
         if sample_type in all_samples_list: continue
         all_samples_list.append(sample_type)
     return all_samples_list, all_samples_types
+
+
+def CreateNamesDict(histNamesDict, sample_types, uncName, scales, sample_cfg_dict):
+    signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
+    for sample_key in sample_types.keys():
+        final_sampleKey=f"{sample_key}"
+        if sample_key == 'data':
+            histNamesDict[final_sampleKey] = (sample_key, 'Central','Central')
+            continue
+        else:
+            if uncName == 'Central':
+                histNamesDict[final_sampleKey] = (sample_key, 'Central','Central')
+                continue
+            else:
+                for scale in scales:
+                    histName = f"{final_sampleKey}_{uncName}{scale}"
+                    histKey = (sample_key,  uncName, scale)
+                    histNamesDict[histName] = histKey
 
 
 
@@ -42,22 +64,32 @@ def defineP4(df, name):
     return df
 
 def defineAllP4(df):
+    df = df.Define(f"SelectedFatJet_idx", f"CreateIndexes(SelectedFatJet_pt.size())")
+    df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")
     for idx in [0,1]:
         df = defineP4(df, f"tau{idx+1}")
         df = defineP4(df, f"b{idx+1}")
-        #df = defineP4(df, f"tau{idx+1}_seedingJet")
     return df
 
 def createInvMass(df):
-    df = df.Define("tautau_m_vis", "(tau1_p4+tau2_p4).M()")
-    df = df.Define("bb_m_vis", "(b1_p4+b2_p4).M()")
-    df = df.Define("bbtautau_mass", "(b1_p4+b2_p4+tau1_p4+tau2_p4).M()")
+    df = df.Define("tautau_m_vis", "static_cast<float>((tau1_p4+tau2_p4).M())")
+    df = df.Define("bb_m_vis", """
+                   if (!boosted){
+                       return static_cast<float>((b1_p4+b2_p4).M());
+                       }
+                    return static_cast<float>(SelectedFatJet_particleNet_mass_boosted);""")
+    df = df.Define("bbtautau_mass", """
+                   if (!boosted){
+                       return static_cast<float>((b1_p4+b2_p4+tau1_p4+tau2_p4).M());
+                       }
+                    return static_cast<float>((SelectedFatJet_p4_boosted+tau1_p4+tau2_p4).M());""")
     df = df.Define("dR_tautau", 'ROOT::Math::VectorUtil::DeltaR(tau1_p4, tau2_p4)')
     return df
 
 def RenormalizeHistogram(histogram, norm, include_overflows=True):
     integral = histogram.Integral(0, histogram.GetNbinsX()+1) if include_overflows else histogram.Integral()
-    histogram.Scale(norm / integral)
+    if integral!=0:
+        histogram.Scale(norm / integral)
 
 def FixNegativeContributions(histogram):
     correction_factor = 0.
@@ -131,6 +163,18 @@ def GetModel(hist_cfg, var):
         n_bins, bin_range = x_bins.split('|')
         start,stop = bin_range.split(':')
         model = ROOT.RDF.TH1DModel("", "",int(n_bins), float(start), float(stop))
+    return model
+
+
+def Get2DModel(hist_cfg, var):
+    x_bins = hist_cfg[var]['x_bins']
+    if type(hist_cfg[var]['x_bins'])==list:
+        x_bins_vec = Utilities.ListToVector(x_bins, "double")
+        model = ROOT.RDF.TH2DModel("", "", x_bins_vec.size()-1, x_bins_vec.data(), 11, -0.5, 10.5)
+    else:
+        n_bins, bin_range = x_bins.split('|')
+        start,stop = bin_range.split(':')
+        model = ROOT.RDF.TH2DModel("", "",int(n_bins), float(start), float(stop), 11, -0.5, 10.5)
     return model
 
 

@@ -44,13 +44,15 @@ FatJetObservablesMC = ["hadronFlavour","partonFlavour"]
 SubJetObservables = ["btagDeepB", "eta", "mass", "phi", "pt", "rawFactor"]
 SubJetObservablesMC = ["hadronFlavour","partonFlavour"]
 
-defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "X_spin", "isData","PuppiMET_pt", "PuppiMET_phi",
-                "DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi",
-                "PV_npvs"]
+defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "X_spin", "isData","PuppiMET_pt", "PuppiMET_phi", "nJet","DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi","PV_npvs"]
 
+def SelectBTagShapeSF(df,weight_name):
+    df = df.Define("weight_bTagShapeSF", weight_name)
+    return df
 
 def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
+    # qua va Select btagShapeWeight
     if mode == "HH":
         dfw.Apply(Baseline.RecoLeptonsSelection)
         dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
@@ -73,6 +75,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
         dfw.Define(f"Jet_genJet_idx", f" FindMatching(Jet_p4,GenJet_p4,0.3)")
         jet_obs.extend(JetObservablesMC)
 
+
+    dfw.DefineAndAppend(f"nBJets", f"Jet_p4[Jet_bCand].size()")
     if config["GLOBAL"]["storeExtraJets"]:
         dfw.DefineAndAppend(f"ExtraJet_pt", f"v_ops::pt(Jet_p4[ExtraJet_B1])")
         dfw.DefineAndAppend(f"ExtraJet_eta", f"v_ops::eta(Jet_p4[ExtraJet_B1])")
@@ -83,6 +87,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
             if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
             dfw.DefineAndAppend(f"ExtraJet_{jetVar}", f"Jet_{jetVar}[ExtraJet_B1]")
         dfw.DefineAndAppend(f"ExtraJet_HHbtag", f"Jet_HHBtagScore[ExtraJet_B1]")
+    else:
+        dfw.DefineAndAppend(f"nExtraJets", f"Jet_p4[ExtraJet_B1].size()")
 
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, nLegs, isData)
@@ -99,6 +105,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     if not isData:
         dfw.Define(f"FatJet_genJet_idx", f" FindMatching(FatJet_p4[FatJet_bbCand],GenJetAK8_p4,0.3)")
         fatjet_obs.extend(JetObservablesMC)
+        #dfw.DefineAndAppend("genchannelId","static_cast<int>(genHttCandidate.channel())")
     dfw.DefineAndAppend(f"SelectedFatJet_pt", f"v_ops::pt(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_phi", f"v_ops::phi(FatJet_p4[FatJet_bbCand])")
@@ -268,6 +275,18 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         dfw = Utilities.DataFrameWrapper(df_empty,defaultColToSave)
 
         addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs)
+        dfw.DefineAndAppend("weight_L1PreFiring_Down","L1PreFiringWeight_Dn")
+        #dfw.DefineAndAppend("weight_L1PreFiring_Dn","L1PreFiringWeight_Dn")
+        dfw.DefineAndAppend("weight_L1PreFiring_ECALDown","L1PreFiringWeight_ECAL_Dn")
+        dfw.DefineAndAppend("weight_L1PreFiring_ECAL_Central","L1PreFiringWeight_ECAL_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_ECALUp","L1PreFiringWeight_ECAL_Up")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_Central","L1PreFiringWeight_Muon_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_StatDown","L1PreFiringWeight_Muon_StatDn")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_StatUp","L1PreFiringWeight_Muon_StatUp")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystDown","L1PreFiringWeight_Muon_SystDn")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystUp","L1PreFiringWeight_Muon_SystUp")
+        dfw.DefineAndAppend("weight_L1PreFiring_Central","L1PreFiringWeight_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiringUp","L1PreFiringWeight_Up")
         if not isData:
             weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name, nLegs,
                                         return_variations=is_central and compute_unc_variations, isCentral=is_central,
@@ -275,13 +294,20 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
             weight_branches.extend(dfw.Apply(Corrections.trg.getTrgSF, trigger_class.trigger_dict.keys(), nLegs,
                                              is_central and compute_unc_variations, is_central))
             weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations, is_central))
+            SF_branches_core,SF_weight_jes=dfw.Apply(Corrections.jet.getBtagShapeSFs, syst_name, is_central)
+            syst_name_selected = 'Central' if SF_weight_jes=="" else syst_name
+            SF_branches_core.remove(f'weight_bTagShapeSF_Central')
+            weight_name = f'weight_bTagShapeSF_{syst_name_selected}'
+            dfw.df = SelectBTagShapeSF(dfw.df, weight_name)
+            if is_central: weight_branches.extend(SF_branches_core)
+            weight_branches.extend([f'weight_bTagShapeSF'])
             puIDbranches = ["weight_Jet_PUJetID_Central_tmp", "weight_Jet_PUJetID_effUp_rel_tmp", "weight_Jet_PUJetID_effDown_rel_tmp"]
             for puIDbranch in puIDbranches:
                 if puIDbranch in dfw.df.GetColumnNames():
                     new_branch_name= puIDbranch.strip("_tmp")
                     dfw.Define(f"""ExtraJet_{new_branch_name}""", f"{puIDbranch}[ExtraJet_B1]")
                     if config["GLOBAL"]["storeExtraJets"]:
-                        dfw.colToSave.extend.append(f"""ExtraJet_{new_branch_name}""")
+                        dfw.colToSave.append(f"""ExtraJet_{new_branch_name}""")
                     for bjet_idx in [1,2]:
                         dfw.DefineAndAppend(f"{new_branch_name}_b{bjet_idx}", f"Hbb_isValid ? {puIDbranch}[b{bjet_idx}_idx] : -100.f")
                 if puIDbranch in weight_branches: weight_branches.remove(puIDbranch)

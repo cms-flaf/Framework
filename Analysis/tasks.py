@@ -296,81 +296,24 @@ class HistSampleTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
             branches[n] = ('data',[0], var)
             n+=1
         return branches
-######################
-
-    def workflow_requires(self):
-        prod_branches = self.create_branch_map()
-        workflow_dict = {}
-        workflow_dict["anaTuple"] = {
-            idx: AnaTupleTask.req(self, branches=tuple((br,) for br in branches))
-            for idx, branches in prod_branches.items()
-        }
-        return workflow_dict
-
-    def requires(self):
-        prod_branches = self.branch_data
-        deps = [AnaTupleTask.req(self, max_runtime=AnaCacheTask.max_runtime._default, branch=prod_br) for prod_br in prod_branches ]
-        return deps
-
-
-    def create_branch_map(self):
-        anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
-        prod_branches = []
-        for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-            if sample_type != "data": continue
-            prod_branches.append(prod_br)
-        return { 0: prod_branches }
-
-    all_samples = {}
-        n=0
-        for br_idx, (sample_name, prod_br,var) in histProducerFile_map.items():
-            if sample_name not in all_samples:
-                all_samples[sample_name] = {}
-            if var not in all_samples[sample_name]:
-                all_samples[sample_name][var] = []
-            all_samples[sample_name][var].append(br_idx)
-        for sample_name,all_samples_sample in all_samples.items():
-            for var, idx_list in all_samples_sample.items():
-                branches[n] = (sample_name, idx_list, var)
-                n+=1
-        return branches
-
-
-####################
 
 
     def output(self):
-        sample_name, prod_br,var = self.branch_data
-        input_file = self.input()[0].path
-        fileName_split = os.path.basename(input_file).split('.')
-        if len(fileName_split)>2: print(f"fileName_split is {fileName_split}")
-        fileName_split[0]+='2D'
-        fileName=fileName_split[0]+'.'+fileName_split[1]
-        outFile_histProdSample = get2DOutFileName(var, sample_name, self.central_Histograms_path(), self.GetBTagDir(), '_onlyCentral')
-        #if os.path.exists(outFile_histProdSample):
-        #    return law.LocalFileTarget(outFile_histProdSample)
-        outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp2D_onlyCentral', var, self.GetBTagDir())
-        if not os.path.isdir(outDir):
-            os.makedirs(outDir)
-        outFile = os.path.join(outDir,fileName)
+        sample_name, idx_list,var = self.branch_data
+        outFile = getOutFileName(var, sample_name, self.central_Histograms_path(), self.GetBTagDir(),'_onlyCentral')
         return law.LocalFileTarget(outFile)
 
-
     def run(self):
-        sample_name, prod_br,var = self.branch_data
-        if len(self.input()) > 1:
-            raise RuntimeError(f"multple input files!! {' '.join(f.path for f in self.input())}")
-        input_file = self.input()[0].path
-        outFileName_split = os.path.basename(input_file).split('.')
-        if len(outFileName_split)>2: print(f"outFileName_split is {outFileName_split}")
-        outFileName_split[0]+='2D'
+        sample_name, prod_branches,var = self.branch_data
+        inDir = os.path.join(self.central_anaTuples_path(), sample_name)
         outFileName=outFileName_split[0]+'.'+outFileName_split[1]
         hist_config = self.hist_config
-        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
         sample_config = self.sample_config
-        HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile2D.py')
-        outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp2D_onlyCentral')
+        outDir = os.path.join(self.central_Histograms_path(), sample_name)
+        HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistSampleCentral.py')
         HistProducerFile_cmd = ['python3', HistProducerFile,'--inFile', input_file, '--outFileName',outFileName, '--dataset', sample_name, '--outDir', outDir, '--uncConfig', unc_config, '--histConfig', hist_config,'--sampleConfig', sample_config, '--var', var]
+        if self.version == 'v7_deepTau2p5':
+            HistProducerFile_cmd.extend([ '--deepTauVersion', '2p5'])
         if self.wantBTag:
             HistProducerFile_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
         sh_call(HistProducerFile_cmd,verbose=1)

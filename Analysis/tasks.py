@@ -24,14 +24,20 @@ def load_unc_config(unc_cfg):
         unc_cfg_dict = yaml.safe_load(f)
     return unc_cfg_dict
 
-def getOutFileName(var, sample_name, central_Histograms_path, btag_dir):
+def get2DOutFileName(var, sample_name, central_Histograms_path, btag_dir, suffix=''):
     outDir = os.path.join(central_Histograms_path, sample_name,btag_dir)
-    fileName = f'{var}.root'
+    fileName = f'{var}2D{suffix}.root'
+    outFile = os.path.join(outDir,fileName)
+    return outFile
+
+def getOutFileName(var, sample_name, central_Histograms_path, btag_dir, suffix=''):
+    outDir = os.path.join(central_Histograms_path, sample_name,btag_dir)
+    fileName = f'{var}{suffix}.root'
     outFile = os.path.join(outDir,fileName)
     return outFile
 
 class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
     hists = load_hist_config(hist_config)
@@ -44,54 +50,56 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         workflow_dict = {}
         workflow_dict["anaTuple"] = {
             idx: AnaTupleTask.req(self, branch=br, branches=())
-            for idx, (sample, br) in branch_map.items() if sample !='data'
+            for idx, (sample, br,var) in branch_map.items() if sample !='data' and var=='tau1_pt'
         }
         workflow_dict["dataMergeTuple"] = {
-            idx: DataMergeTask.req(self, branch=br, branches=())
-            for idx, (sample, br) in branch_map.items() if sample =='data'
+            idx: DataMergeTask.req(self, branch=0, branches=())
+            for idx, (sample, br,var) in branch_map.items() if sample =='data'
         }
-
         return workflow_dict
 
     def requires(self):
-        sample_name, prod_br = self.branch_data
+        sample_name, prod_br,var = self.branch_data
         if sample_name =='data':
             return [ DataMergeTask.req(self,max_runtime=DataMergeTask.max_runtime._default, branch=prod_br, branches=())]
         return [ AnaTupleTask.req(self, branch=prod_br, max_runtime=AnaTupleTask.max_runtime._default, branches=())]
 
     def create_branch_map(self):
         n = 0
+        k = 0
         branches = {}
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
-        sample_id_data = 0
-        for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-            if sample_type =='data' or 'QCD' in sample_name:
-                continue
-            branches[n] = (sample_name, prod_br)
+        vars_to_plot = ['bbtautau_mass']#list(hists.keys())# ['tau1_pt','tau2_pt','tau1_eta','tau2_eta','SelectedFatJet_pt_boosted','SelectedFatJet_eta_boosted'] #
+        #vars_to_plot = ['bbtautau_mass']#['tau1_pt','tau2_pt','tau1_eta','tau2_eta','SelectedFatJet_pt_boosted','SelectedFatJet_eta_boosted'] #
+        for var in vars_to_plot:
+            for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
+                if sample_type =='data' or 'QCD' in sample_name:
+                    continue
+                branches[n] = (sample_name, prod_br,var)
+                n+=1
+            branches[n] = ('data', 0, var)
             n+=1
-        branches[n+1] = ('data', 0)
         return branches
 
+
     def output(self):
-        sample_name, prod_br = self.branch_data
+        sample_name, prod_br,var = self.branch_data
         input_file = self.input()[0].path
         fileName  = os.path.basename(input_file)
         vars_to_plot = list(hists.keys())
         local_files_target = []
-        for var in vars_to_plot:
-            outFile_histProdSample = getOutFileName(var, sample_name, self.central_Histograms_path(), self.GetBTagDir())
-            if os.path.exists(outFile_histProdSample):
-                local_files_target.append(law.LocalFileTarget(outFile_histProdSample))
-                continue
-            outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp', var, self.GetBTagDir())
-            if not os.path.isdir(outDir):
-                os.makedirs(outDir)
-            outFile = os.path.join(outDir,fileName)
-            local_files_target.append(law.LocalFileTarget(outFile))
-        return local_files_target
+        outFile_histProdSample = get2DOutFileName(var, sample_name, self.central_Histograms_path(), self.GetBTagDir(), '_onlyCentral')
+        #if os.path.exists(outFile_histProdSample):
+        #    return law.LocalFileTarget(outFile_histProdSample)
+        outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp_onlyCentral', var, self.GetBTagDir())
+        if not os.path.isdir(outDir):
+            os.makedirs(outDir)
+        outFile = os.path.join(outDir,fileName)
+        return law.LocalFileTarget(outFile)
+
 
     def run(self):
-        sample_name, prod_br = self.branch_data
+        sample_name, prod_br,var = self.branch_data
         if len(self.input()) > 1:
             raise RuntimeError(f"multple input files!! {' '.join(f.path for f in self.input())}")
         input_file = self.input()[0].path
@@ -100,8 +108,8 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
         sample_config = self.sample_config
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
-        outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp')
-        HistProducerFile_cmd = ['python3', HistProducerFile,'--inFile', input_file, '--outFileName',outFileName, '--dataset', sample_name, '--outDir', outDir, '--compute_unc_variations', 'True', '--compute_rel_weights', 'True', '--uncConfig', unc_config, '--histConfig', hist_config,'--sampleConfig', sample_config]
+        outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp_onlyCentral')
+        HistProducerFile_cmd = ['python3', HistProducerFile,'--inFile', input_file, '--outFileName',outFileName, '--dataset', sample_name, '--outDir', outDir, '--uncConfig', unc_config, '--histConfig', hist_config,'--sampleConfig', sample_config, '--var', var]
         if self.wantBTag:
             HistProducerFile_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
         sh_call(HistProducerFile_cmd,verbose=1)
@@ -236,13 +244,9 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sh_call(MergerProducer_cmd,verbose=1)
 
 # ***********************************
-def get2DOutFileName(var, sample_name, central_Histograms_path, btag_dir, suffix=''):
-    outDir = os.path.join(central_Histograms_path, sample_name,btag_dir)
-    fileName = f'{var}2D{suffix}.root'
-    outFile = os.path.join(outDir,fileName)
-    return outFile
 
-class HistProducerFile2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
+
+class HistSampleTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
@@ -256,36 +260,84 @@ class HistProducerFile2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
         branch_map = self.create_branch_map()
         workflow_dict = {}
         workflow_dict["anaTuple"] = {
-            idx: AnaTupleTask.req(self, branch=br, branches=())
-            for idx, (sample, br,var) in branch_map.items() if sample !='data' and var=='tau1_pt'
+            idx: AnaTupleTask.req(self, branches=tuple((br,) for br in branches)) if sample !='data'
+            for idx, (sample,branches,var) in branch_map.items()
         }
         workflow_dict["dataMergeTuple"] = {
             idx: DataMergeTask.req(self, branch=0, branches=())
-            for idx, (sample, br,var) in branch_map.items() if sample =='data'
+            for idx, (sample, branches,var) in branch_map.items() if sample =='data'
         }
         return workflow_dict
 
     def requires(self):
-        sample_name, prod_br,var = self.branch_data
+        sample, prod_branches,var = self.branch_data
         if sample_name =='data':
-            return [ DataMergeTask.req(self,max_runtime=DataMergeTask.max_runtime._default, branch=prod_br, branches=())]
-        return [ AnaTupleTask.req(self, branch=prod_br, max_runtime=AnaTupleTask.max_runtime._default, branches=())]
+            return [ DataMergeTask.req(self,max_runtime=DataMergeTask.max_runtime._default, branch=0, branches=())]
+        return [AnaTupleTask.req(self, max_runtime=AnaCacheTask.max_runtime._default, branch=prod_br) for prod_br in prod_branches ]
 
     def create_branch_map(self):
-        n = 0
-        k = 0
+        n=0
         branches = {}
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
-        vars_to_plot = ['bbtautau_mass'] #list(hists.keys())
+        vars_to_plot = list(hists.keys())# ['bbtautau_mass']
         for var in vars_to_plot:
+            all_samples = {}
             for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-                if sample_type =='data' or 'QCD' in sample_name:
-                    continue
-                branches[n] = (sample_name, prod_br,var)
+                if sample_type=='data':continue
+                if sample_name not in all_samples:
+                    all_samples[sample_name] = {}
+                if var not in all_samples[sample_name]:
+                    all_samples[sample_name][var] = []
+                all_samples[sample_name][var].append(br_idx)
+            for sample_name,all_samples_sample in all_samples.items():
+                for var, idx_list in all_samples_sample.items():
+                    branches[n] = (sample_name, idx_list, var)
                 n+=1
-            branches[n] = ('data', 0, var)
+            branches[n] = ('data',[0], var)
             n+=1
         return branches
+######################
+
+    def workflow_requires(self):
+        prod_branches = self.create_branch_map()
+        workflow_dict = {}
+        workflow_dict["anaTuple"] = {
+            idx: AnaTupleTask.req(self, branches=tuple((br,) for br in branches))
+            for idx, branches in prod_branches.items()
+        }
+        return workflow_dict
+
+    def requires(self):
+        prod_branches = self.branch_data
+        deps = [AnaTupleTask.req(self, max_runtime=AnaCacheTask.max_runtime._default, branch=prod_br) for prod_br in prod_branches ]
+        return deps
+
+
+    def create_branch_map(self):
+        anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
+        prod_branches = []
+        for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
+            if sample_type != "data": continue
+            prod_branches.append(prod_br)
+        return { 0: prod_branches }
+
+    all_samples = {}
+        n=0
+        for br_idx, (sample_name, prod_br,var) in histProducerFile_map.items():
+            if sample_name not in all_samples:
+                all_samples[sample_name] = {}
+            if var not in all_samples[sample_name]:
+                all_samples[sample_name][var] = []
+            all_samples[sample_name][var].append(br_idx)
+        for sample_name,all_samples_sample in all_samples.items():
+            for var, idx_list in all_samples_sample.items():
+                branches[n] = (sample_name, idx_list, var)
+                n+=1
+        return branches
+
+
+####################
+
 
     def output(self):
         sample_name, prod_br,var = self.branch_data

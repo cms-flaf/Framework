@@ -51,13 +51,20 @@ def SelectBTagShapeSF(df,weight_name):
     return df
 
 def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
+    print(f"before applying anything: {dfw.df.Count().GetValue()}")
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
     # qua va Select btagShapeWeight
+    print(f"after SelectRecoP4: {dfw.df.Count().GetValue()}")
     if mode == "HH":
         dfw.Apply(Baseline.RecoLeptonsSelection)
+        print(dfw.df.Count().GetValue())
+        print(f"after RecoLeptonsSelection: {dfw.df.Count().GetValue()}")
         dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
+        print(f"after RecoHttCandidateSelection: {dfw.df.Count().GetValue()}")
         dfw.Apply(Baseline.RecoJetSelection)
+        print(f"after RecoJetSelection: {dfw.df.Count().GetValue()}")
         dfw.Apply(Baseline.ThirdLeptonVeto)
+        print(f"after ThirdLeptonVeto: {dfw.df.Count().GetValue()}")
     elif mode == 'ttHH':
         dfw.Apply(Baseline.RecottHttCandidateSelection_ttHH)
         dfw.Apply(Baseline.RecoJetSelection_ttHH)
@@ -66,11 +73,13 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     dfw.Apply(Baseline.DefineHbbCand)
     dfw.DefineAndAppend("Hbb_isValid" , "HbbCandidate.has_value()")
     dfw.Apply(Baseline.ExtraRecoJetSelection)
+    print(f"after ExtraRecoJetSelection: {dfw.df.Count().GetValue()}")
     dfw.Apply(Corrections.jet.getEnergyResolution)
     dfw.Apply(Corrections.btag.getWPid)
     jet_obs = []
     jet_obs.extend(JetObservables)
     dfw.Apply(Baseline.ApplyJetSelection)
+    print(f"after ApplyJetSelection: {dfw.df.Count().GetValue()}")
     if not isData:
         dfw.Define(f"Jet_genJet_idx", f" FindMatching(Jet_p4,GenJet_p4,0.3)")
         jet_obs.extend(JetObservablesMC)
@@ -92,6 +101,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
 
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, nLegs, isData)
+        print(f"after ApplyTriggers: {dfw.df.Count().GetValue()}")
         dfw.colToSave.extend(hltBranches)
     dfw.Define(f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
     dfw.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
@@ -100,12 +110,13 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     if mode == "HH":
         channel_to_select = " || ".join(f"HttCandidate.channel()==Channel::{ch}" for ch in config["GLOBAL"]["channelSelection"])
         dfw.Filter(channel_to_select, "select channels")
+        print(f"after {channel_to_select}: {dfw.df.Count().GetValue()}")
     fatjet_obs = []
     fatjet_obs.extend(FatJetObservables)
     if not isData:
         dfw.Define(f"FatJet_genJet_idx", f" FindMatching(FatJet_p4[FatJet_bbCand],GenJetAK8_p4,0.3)")
         fatjet_obs.extend(JetObservablesMC)
-        #dfw.DefineAndAppend("genchannelId","static_cast<int>(genHttCandidate.channel())")
+        dfw.DefineAndAppend("genchannelId","static_cast<int>(genHttCandidate.channel())")
     dfw.DefineAndAppend(f"SelectedFatJet_pt", f"v_ops::pt(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_phi", f"v_ops::phi(FatJet_p4[FatJet_bbCand])")
@@ -236,6 +247,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     df = ROOT.RDataFrame("Events", inFiles)
     if range is not None:
         df = df.Range(range)
+    print(f"at the beginning: {df.Count().GetValue()}")
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
 

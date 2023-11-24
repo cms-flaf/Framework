@@ -13,8 +13,8 @@ categories = ['res2b', 'res1b', 'inclusive', 'boosted', 'btag_shape','baseline']
 channels = {'eTau':13, 'muTau':23, 'tauTau':33}
 gen_channels = {'eTau':[3,5], 'muTau':[4,5], 'tauTau':[5,5]}
 triggers = {'eTau':'HLT_singleEle', 'muTau':'HLT_singleMu', 'tauTau':"HLT_ditau"}
-btag_wps = {'res2b':'Medium', 'res1b':'Medium', 'boosted':"Loose", 'inclusive':'','btag_shape':''}
-mass_cut_limits = {'bb_m_vis':[50,350],'tautau_m_vis':[50,350]}
+btag_wps = {'res2b':'Medium', 'res1b':'Medium', 'boosted':"Loose", 'inclusive':'','btag_shape':'','baseline':''}
+mass_cut_limits = {'bb_m_vis':[50,350],'tautau_m_vis':[20,280]}
 
 scales = ['Up', 'Down']
 bjet_vars = ["b1_pt","b2_pt","b1_eta","b2_eta"]
@@ -35,15 +35,19 @@ def createKeyFilterDict():
     for ch in channels:
         for reg in QCDregions:
             for cat in categories:
-                if cat =='boosted':
-                    filter_str =  f"gen_{ch}=={ch} && {ch} && {triggers[ch]} && {reg}"
+                filter_base = f"{ch} && {triggers[ch]} && {reg} && {cat}"
+                if cat =='boosted' :
+                    filter_str =  filter_base
+                elif cat == 'baseline':
+                    filter_str = f"b1_pt>0 && b2_pt>0 && {filter_base}"
                 else:
-                    filter_str = f"b1_pt>0 && b2_pt>0 && gen_{ch}=={ch} && {ch} && {triggers[ch]} && {reg}"
+                    filter_str = f"b1_pt>0 && b2_pt>0 && {filter_base}"
                     for mass_name,mass_limits in mass_cut_limits.items():
-                        filter_str+=f" && {mass_name} >= {mass_limits[0]} && {mass_name} <= {mass_limits[1]} && {cat}"
+                        filter_str+=f" && {mass_name} >= {mass_limits[0]} && {mass_name} <= {mass_limits[1]}"
                 key = (ch, reg, cat)
                 reg_dict[key] = filter_str
-                #print(filter_str)
+                #print(key, filter_str)
+                #print()
     return reg_dict
 
 def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, scale):
@@ -158,7 +162,7 @@ def AddQCDInHistDict(var, all_histograms, channels, categories, sample_type, unc
             all_histograms['QCD'] = {}
     for channel in channels:
         for cat in categories:
-            if cat == 'btag_shape': continue
+            #if cat == 'btag_shape': continue
             #key =( (channel, 'OS_Iso', cat), ('Central', 'Central'))
             #all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, 'Central', 'Central')
             for scale in scales + ['Central']:
@@ -228,12 +232,14 @@ class DataFrameBuilder(DataFrameBuilderBase):
     def defineChannels(self):
         for channel,ch_value in channels.items():
             self.df = self.df.Define(f"{channel}", f"channelId=={ch_value}")
-
+        '''
         for gen_channel,gen_ch_value in gen_channels.items():
-            if f"tau1_gen_kind" in self.df.GetColumnNames() and  f"tau2_gen_kind" in self.df.GetColumnNames():
+            if f"tau1_gen_kind" in self.df.GetColumnNames() and f"tau2_gen_kind" in self.df.GetColumnNames():
                 self.df = self.df.Define(f"gen_{gen_channel}", f"tau1_gen_kind == {gen_ch_value[0]} && tau2_gen_kind == {gen_ch_value[1]}")
+                print(f"gen_{gen_channel} && {gen_channel}",gen_channel, gen_ch_value, self.df.Filter(f"gen_{gen_channel} && {gen_channel}").Count().GetValue() )
             else:
                 self.df = self.df.Define(f"gen_{gen_channel}", f"{gen_channel}")
+        '''
 
 
     def defineQCDRegions(self):

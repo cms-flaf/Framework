@@ -145,16 +145,17 @@ action() {
     export DEFAULT_CMSSW_BASE="$ANALYSIS_PATH/soft/CentOS$os_version/$default_cmssw_ver"
     export CMB_CMSSW_BASE="$ANALYSIS_PATH/soft/CentOS$os_version/$cmb_cmssw_ver"
 
-    run_cmd install_cmssw slc7_amd64_gcc10 $default_cmssw_ver 7 ana
-    run_cmd install_cmssw el8_amd64_gcc10 $default_cmssw_ver 8 ana
-    run_cmd install_cmssw slc7_amd64_gcc10 $cmb_cmssw_ver 7 comb
-    run_cmd install_cmssw cc8_amd64_gcc9 $cmb_cmssw_ver 8 comb
-    run_cmd install_inference 7
+    #run_cmd install_cmssw slc7_amd64_gcc10 $default_cmssw_ver 7 ana
+    #run_cmd install_cmssw el8_amd64_gcc10 $default_cmssw_ver 8 ana
+    #run_cmd install_cmssw slc7_amd64_gcc10 $cmb_cmssw_ver 7 comb
+    #run_cmd install_cmssw cc8_amd64_gcc9 $cmb_cmssw_ver 8 comb
+    #run_cmd install_inference 7
 
     if [ ! -z $ZSH_VERSION ]; then
         autoload bashcompinit
         bashcompinit
     fi
+    source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.30.00/x86_64-centos9-gcc113-opt/bin/thisroot.sh
     export MAMBA_ROOT_PREFIX=/afs/cern.ch/work/k/kandroso/micromamba
     eval "$($MAMBA_ROOT_PREFIX/micromamba shell hook -s posix)"
     micromamba activate hh

@@ -88,9 +88,21 @@ def GetBTagWeightDict(var, all_histograms, sample_name, final_json_dict):
         ##print(type(ratio_num_hist))
         #print(type(ratio_den_hist))
         histlist =[]
-        final_json_dict[sample_name]={}
+        if sample_name not in final_json_dict.keys():
+            final_json_dict[sample_name]={}
         second_key = f'{ch}_{reg}_{cat}_{uncName}{scale}'
-        final_json_dict[sample_name][second_key] = {}
+        if sample_name not in final_json_dict[sample_name].keys():
+            final_json_dict[sample_name][second_key]={}
+        if 'yBin' not in final_json_dict[sample_name][second_key].keys():
+            final_json_dict[sample_name][second_key]['yBin']=[]
+        if 'nJets' not in final_json_dict[sample_name][second_key].keys():
+            final_json_dict[sample_name][second_key]['nJets']=[]
+        if 'num' not in final_json_dict[sample_name][second_key].keys():
+            final_json_dict[sample_name][second_key]['num']=[]
+        if 'den' not in final_json_dict[sample_name][second_key].keys():
+            final_json_dict[sample_name][second_key]['den']=[]
+        if 'ratio' not in final_json_dict[sample_name][second_key].keys():
+            final_json_dict[sample_name][second_key]['ratio']=[]
         for yBin in range(0, histogram.GetNbinsY()):
             histName = f"{sample_name}_{ch}_{reg}_{cat}_{uncName}{scale}"
             hist1D = histogram.ProjectionX(f"{histName}_pfx_{yBin}", yBin, yBin)
@@ -108,13 +120,11 @@ def GetBTagWeightDict(var, all_histograms, sample_name, final_json_dict):
                 ratio = 0.
                 if hist1DProjection_den.Integral(0,ratio_den_hist.GetNbinsX()+1) != 0 :
                     ratio = hist1DProjection_num.Integral(0,ratio_num_hist.GetNbinsX()+1)/hist1DProjection_den.Integral(0,ratio_den_hist.GetNbinsX()+1)
-
-                final_json_dict[sample_name][second_key]['nJets'] = ratio_num_hist.GetYaxis().GetBinCenter(yBin)
-                final_json_dict[sample_name][second_key]['num'] =  num
-                final_json_dict[sample_name][second_key]['den'] = den
-                final_json_dict[sample_name][second_key]['ratio'] = ratio
-
-
+                final_json_dict[sample_name][second_key]['yBin'].append(yBin)
+                final_json_dict[sample_name][second_key]['nJets'].append(ratio_num_hist.GetYaxis().GetBinCenter(yBin))
+                final_json_dict[sample_name][second_key]['num'].append(num)
+                final_json_dict[sample_name][second_key]['den'].append(den)
+                final_json_dict[sample_name][second_key]['ratio'].append(ratio)
                 if ratio == 0 and hist1D.Integral(0, hist1D.GetNbinsX()+1) ==0 :
                     continue
                 hist1D.Scale(ratio)

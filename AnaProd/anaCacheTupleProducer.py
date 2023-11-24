@@ -13,6 +13,7 @@ if __name__ == "__main__":
 
 from RunKit.sh_tools import sh_call
 ROOT.EnableThreadSafety()
+#ROOT.EnableImplicitMT()
 import Common.LegacyVariables as LegacyVariables
 import Common.Utilities as Utilities
 defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "X_spin", "isData"]
@@ -44,6 +45,7 @@ def createCentralQuantities(df_central, central_col_types, central_columns):
 
 def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, compute_unc_variations):
     start_time = datetime.datetime.now()
+    verbosity = ROOT.Experimental.RLogScopedVerbosity(ROOT.Detail.RDF.RDFLogChannel(), ROOT.Experimental.ELogLevel.kInfo)
     snaps = []
     all_files = []
     file_keys = getKeyNames(inFileName)
@@ -103,6 +105,7 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
     if snapshotOptions.fLazy == True:
         print("going to rungraph")
         ROOT.RDF.RunGraphs(snaps)
+    print(all_files)
     return all_files
 
 
@@ -130,6 +133,7 @@ if __name__ == "__main__":
     startTime = time.time()
     all_files = createAnaCacheTuple(args.inFileName, args.outFileName, unc_cfg_dict, snapshotOptions, args.compute_unc_variations)
     outFileNameFinal = f'{args.outFileName}.root'
+    print(outFileNameFinal)
     hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
     hadd_str += ' '.join(f for f in all_files)
     print(hadd_str)

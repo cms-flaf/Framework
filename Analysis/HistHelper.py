@@ -124,10 +124,20 @@ def FixNegativeContributions(histogram):
 
 class DataFrameBuilderBase:
     def CreateColumnTypes(self):
-        colNames = [str(c) for c in self.df.GetColumnNames()]
+        #colNames = [str(c) for c in self.df.GetColumnNames() if 'kinFit_result' not in str(c)]
+        colNames = [str(c) for c in self.df.GetColumnNames()]#if 'kinFit_result' not in str(c)]
         entryIndexIdx = colNames.index("entryIndex")
+        runIdx = colNames.index("run")
+        eventIdx = colNames.index("event")
+        lumiIdx = colNames.index("luminosityBlock")
         colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
+        colNames[runIdx], colNames[1] = colNames[1], colNames[runIdx]
+        colNames[eventIdx], colNames[2] = colNames[2], colNames[eventIdx]
+        colNames[lumiIdx], colNames[3] = colNames[3], colNames[lumiIdx]
         self.colNames = colNames
+
+        #if "kinFit_result" in self.colNames:
+        #    self.colNames.remove("kinFit_result")
         self.colTypes = [str(self.df.GetColumnType(c)) for c in self.colNames]
 
     def __init__(self, df):
@@ -147,12 +157,17 @@ class DataFrameBuilderBase:
             if central_columns[central_col_idx]!=var_name_forDelta:
                 raise RuntimeError(f"CreateFromDelta: {central_columns[central_col_idx]} != {var_name_forDelta}")
             self.df = self.df.Define(f"{var_name_forDelta}", f"""analysis::FromDelta({var_name},
-                                     analysis::GetEntriesMap()[entryIndex]->GetValue<{self.colTypes[var_idx]}>({central_col_idx}) )""")
+                                     analysis::GetEntriesMap()[std::make_tuple(entryIndex, run, event, luminosityBlock)]->GetValue<{self.colTypes[var_idx]}>({central_col_idx}) )""")
             var_list.append(f"{var_name_forDelta}")
         for central_col_idx,central_col in enumerate(central_columns):
             if central_col in var_list or central_col in self.colNames: continue
-            self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[entryIndex]->GetValue<{central_col_types[central_col_idx]}>({central_col_idx})""")
+            self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[std::make_tuple(entryIndex, run, event, luminosityBlock)]->GetValue<{central_col_types[central_col_idx]}>({central_col_idx})""")
 
+
+    def AddCacheColumns(self,cache_cols,cache_col_types):
+        for cache_col_idx,cache_col in enumerate(cache_cols):
+            if  cache_col in self.colNames: continue
+            self.df = self.df.Define(cache_col.replace('.','_'), f"""analysis::GetEntriesMap().at(std::make_tuple(entryIndex, run, event, luminosityBlock))->GetValue<{cache_col_types[cache_col_idx]}>({cache_col_idx})""")
 
 def GetModel(hist_cfg, var):
     x_bins = hist_cfg[var]['x_bins']

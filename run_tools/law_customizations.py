@@ -202,7 +202,8 @@ class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
         # render_variables are rendered into all files sent with a job
         config.render_variables["analysis_path"] = ana_path
         # force to run on CC7, https://batchdocs.web.cern.ch/local/submit.html
-        config.custom_content.append(("requirements", '( (OpSysAndVer =?= "CentOS7") || (OpSysAndVer =?= "CentOS8") )'))
+        config.custom_content.append(("requirements", 'TARGET.OpSysAndVer =?= "AlmaLinux9"'))
+
         # maximum runtime
         config.custom_content.append(("+MaxRuntime", int(math.floor(self.max_runtime * 3600)) - 1))
         config.custom_content.append(("RequestCpus", self.n_cpus))

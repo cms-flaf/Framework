@@ -13,22 +13,28 @@ from Analysis.HistHelper import *
 from Analysis.hh_bbtautau import *
 
 
+def createCacheQuantities(dfWrapped_cache):
+    df_cache = dfWrapped_cache.df
+    map_creator = ROOT.analysis.MapCreator(*dfWrapped_cache.colTypes)()
+    df_cache = map_creator.processCentral(ROOT.RDF.AsRNode(df_cache), Utilities.ListToVector(dfWrapped_cache.colNames))
+    return df_cache
+
+def AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache):
+    col_names_cache =  dfWrapped_cache.colNames
+    col_tpyes_cache =  dfWrapped_cache.colTypes
+    #if "kinFit_result" in col_names_cache:
+    #    col_names_cache.remove("kinFit_result")
+    dfWrapped_cache.df = createCacheQuantities(dfWrapped_cache)
+    if dfWrapped_cache.df.Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
+    dfWrapped_central.AddCacheColumns(col_names_cache,col_tpyes_cache)
+
 def SaveHists(histograms, out_file):
-    for key_tuple,hist_list in histograms.items():
-        (key_1, key_2) = key_tuple
+    for key_1,hist in histograms.items():
         ch, reg, cat = key_1
-        sample_type,uncName,scale = key_2
-        if cat == 'btag_shape': continue
         dir_name = '/'.join(key_1)
         dir_ptr = mkdir(out_file,dir_name)
-        merged_hist = hist_list[0].GetValue()
-        for hist in hist_list[1:] :
-            merged_hist.Add(hist.GetValue())
-        isCentral = 'Central' in key_2
         hist_name =  sample_type
-        if not isCentral:
-            hist_name+=f"_{uncName}{scale}"
-        dir_ptr.WriteTObject(merged_hist, hist_name, "Overwrite")
+        dir_ptr.WriteTObject(hist.GetValue(), hist_name, "Overwrite")
 
 def createModels(hist_cfg_dict):
     return { var : GetModel(hist_cfg_dict, var) for var in hist_cfg_dict.keys() }
@@ -42,26 +48,24 @@ def GetHistogramDictFromDataframes(var, df_central, key_filter_dict,hist_cfg_dic
         ch, reg, cat = key_1
         if key_1 in histograms.keys(): continue
         if cat == 'boosted' and var in bjet_vars: continue
-        if cat == 'boosted' and uncName in unc_to_not_consider_boosted: continue
         if cat != 'boosted' and var in var_to_add_boosted: continue
-        #print(var, cat, uncName)
-        weight_name = "final_weight"
+
         total_weight_expression = GetWeight(ch,cat) if sample_type!='data' else "1"
-
-        df_central
-        df_central = df_central.Filter(key_cut)
-        df_central=df_central.Define("final_weight_0", f"{total_weight_expression}")
-        final_string_weight = ApplyBTagWeight(cat,applyBtag=wantBTag, finalWeight_name = 'final_weight_0') if sample_type!='data' else "1"
-        df_central=df_central.Define("final_weight", f"{final_string_weight}")
-        df_central = df_central.Filter(f"{cat}")
+        print(df_central.GetColumnNames())
+        df_central_new = df_central.Filter(key_cut)
+        df_central_new=df_central_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}")
+        #print(f"final_weight_0_{ch}_{cat}_{reg} expression = {total_weight_expression}")
+        final_string_weight = ApplyBTagWeight(cat,applyBtag=wantBTag, finalWeight_name = f"final_weight_0_{ch}_{cat}_{reg}") if sample_type!='data' else "1"
+        df_central_new = df_central_new.Filter(f"{cat}")
+        weight_name = "final_weight"
         if cat == 'btag_shape':
-            weight_name = 'final_weight_0'
-
-        histograms[key_1]=df_central.Define("weight_for_hists", weight_name).Histo1D(GetModel(hist_cfg_dict, var), var, "weight_for_hists")
-        if want2D:
+            final_string_weight = f"final_weight_0_{ch}_{cat}_{reg}"
+        #print(ch, cat, final_string_weight)
+        histograms[key_1]=df_central_new.Define("weight_for_hists", f"{final_string_weight}").Histo1D(GetModel(hist_cfg_dict, var), var, "weight_for_hists")
+        if want2D and not wantBTag:
             #if 'nBJets' not in dataframe.GetColumnNames():
             #    dataframe = dataframe.Define("nBJets", "ExtraJet_pt[abs(ExtraJet_eta) < 2.5].size()")
-            histograms[key_1]=df_central.Define("weight_for_hists", weight_name)..Histo2D(Get2DModel(hist_cfg_dict, var), var, "nBJets", "weight_for_hists"))
+            histograms[key_1]=df_central_new.Define("weight_for_hists", f"{final_string_weight}").Histo2D(Get2DModel(hist_cfg_dict, var), var, "nBJets", "weight_for_hists")
 
     return histograms
 
@@ -72,6 +76,7 @@ if __name__ == "__main__":
     import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument('--inDir', required=True, type=str)
+    parser.add_argument('--cacheDir', required=False, type=str)
     parser.add_argument('--outDir', required=False, type=str)
     parser.add_argument('--dataset', required=True, type=str)
     parser.add_argument('--deepTauVersion', required=False, type=str, default='v2p1')
@@ -104,15 +109,23 @@ if __name__ == "__main__":
     finalDir = os.path.join(args.outDir, args.var, btag_dir)
     if not os.path.isdir(finalDir):
         os.makedirs(finalDir)
-    finalFileName =f'{finalDir}/{args.var}_onlyCentral.root'
+    finalFileName =f'{finalDir}/{args.var}2D_onlyCentral.root' if args.want2D else f'{finalDir}/{args.var}_onlyCentral.root'
+    print(finalFileName)
     outfile  = ROOT.TFile(finalFileName,'RECREATE')
 
     sample_type = sample_cfg_dict[args.dataset]['sampleType'] if args.dataset != 'data' else 'data'
     key_filter_dict = createKeyFilterDict()
 
     dfWrapped_central = DataFrameBuilder(ROOT.RDataFrame('Events',f'{args.inDir}/*.root'), args.deepTauVersion)
+    print(dfWrapped_central.df.Filter('entryIndex==149491').Count().GetValue())
 
-    central_histograms = GetHistogramDictFromDataframes(args.var, PrepareDfWrapped(dfWrapped_central).df, key_filter_dict,hist_cfg_dict, args.wantBTag,args.furtherCut)
+    if args.cacheDir:
+        dfWrapped_cache = DataFrameBuilder(ROOT.RDataFrame('Events',f'{args.cacheDir}/*.root'), args.deepTauVersion)
+        print(dfWrapped_cache.df.Filter('entryIndex==149491').Count().GetValue())
+        AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache)
+
+
+    central_histograms = GetHistogramDictFromDataframes(args.var, PrepareDfWrapped(dfWrapped_central).df, key_filter_dict,hist_cfg_dict, args.wantBTag,args.want2D,args.furtherCut)
     # central quantities definition
 
     # save histograms

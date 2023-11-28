@@ -60,23 +60,19 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
 
         for dataframe in dataframes:
             if furtherCut != '' : key_cut += f' && {furtherCut}'
-
-            #print(key_1, key_2, dataframe.Count().GetValue())
-            dataframe = dataframe.Filter(key_cut)
-            dataframe=dataframe.Define("final_weight_0", f"{total_weight_expression}")
-            final_string_weight = ApplyBTagWeight(cat,applyBtag=wantBTag, finalWeight_name = 'final_weight_0') if sample_type!='data' else "1"
-            dataframe=dataframe.Define("final_weight", f"{final_string_weight}")
-            dataframe = dataframe.Filter(f"{cat}")
+            dataframe_new = dataframe.Filter(key_cut)
+            dataframe_new= dataframe_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}")
+            final_string_weight = ApplyBTagWeight(cat,applyBtag=wantBTag, finalWeight_name = f"final_weight_0_{ch}_{cat}_{reg}") if sample_type!='data' else "1"
+            dataframe_new = dataframe_new.Filter(f"{cat}")
+            weight_name = "final_weight"
             if cat == 'btag_shape':
-                weight_name = 'final_weight_0'
-
-            if want2D:
-                #if 'nBJets' not in dataframe.GetColumnNames():
-                #    dataframe = dataframe.Define("nBJets", "ExtraJet_pt[abs(ExtraJet_eta) < 2.5].size()")
-                #print(key_1, key_2, dataframe.Define("weight_for_hists", weight_name).Sum("weight_for_hists").GetValue())
-                histograms[(key_1, key_2)].append(dataframe.Define("weight_for_hists", weight_name).Histo2D(Get2DModel(hist_cfg_dict, var), var, "nBJets", "weight_for_hists"))
+                final_string_weight = f"final_weight_0_{ch}_{cat}_{reg}"
+            #print(ch, cat, final_string_weight)
+            if want2D and not wantBTag:
+                histograms[(key_1, key_2)].append(dataframe_new.Define("weight_for_hists", f"{final_string_weight}").Histo2D(Get2DModel(hist_cfg_dict, var), var, "nBJets", "weight_for_hists"))
             else:
-                histograms[(key_1, key_2)].append(dataframe.Define("weight_for_hists", weight_name)..Histo1D(GetModel(hist_cfg_dict, var), var, "weight_for_hists"))
+                histograms[(key_1, key_2)].append(dataframe_new.Define("weight_for_hists", f"{final_string_weight}").Histo1D(GetModel(hist_cfg_dict, var), var, "weight_for_hists"))
+
     return histograms
 
 

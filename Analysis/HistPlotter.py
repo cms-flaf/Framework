@@ -30,6 +30,7 @@ if __name__ == "__main__":
     parser.add_argument('--category',required=False, type=str, default = 'inclusive')
     parser.add_argument('--uncSource',required=False, type=str, default = 'Central')
     parser.add_argument('--wantBTag', required=False, type=bool, default=False)
+    parser.add_argument('--want2D', required=False, type=bool, default=False)
     parser.add_argument('--suffix', required=False, type=str, default='')
     args = parser.parse_args()
 
@@ -59,7 +60,12 @@ if __name__ == "__main__":
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
     CreateNamesDict(histNamesDict, all_samples_types, args.uncSource, scales, sample_cfg_dict)
     inFileName=f'{args.inFileName}_{args.var}_{args.uncSource}{args.suffix}.root'
-    inFile = ROOT.TFile(os.path.join(args.histDir, 'all_histograms',args.var,btag_dir,inFileName),"READ")
+    inFileName_prefix =  f"{args.inFileName}_{args.var}2D" if args.want2D else f"{args.inFileName}_{args.var}"
+    if args.uncSource !='Central':
+        inFileName_prefix+={args.uncSource}
+    inFileName = f'{inFileName_prefix}{args.suffix}.root'
+    print(os.path.join(args.histDir, f'{args.inFileName}',args.var,btag_dir,inFileName))
+    inFile = ROOT.TFile(os.path.join(args.histDir, f'{args.inFileName}',args.var,btag_dir,inFileName),"READ")
     dir_0 = inFile.Get(args.channel)
     dir_1 = dir_0.Get(args.category)
     for key in dir_1.GetListOfKeys():
@@ -84,8 +90,8 @@ if __name__ == "__main__":
         key = ( args.uncSource, uncScale )
         if key not in all_histlist.keys(): continue
         samples_dict = all_histlist[key]
+        obj_list = ROOT.TList()
         for sample,hist in samples_dict.items():
-            obj_list = ROOT.TList()
             other_inputs = []
             #print(sample)
             if sample not in all_samples_separated+sample_cfg_dict['GLOBAL']['signal_types']:
@@ -94,24 +100,29 @@ if __name__ == "__main__":
                     other_obj = hist
                 other_inputs.append(sample)
                 #sample = 'Other'
+                print(f'{sample} in other has {hist.Integral(0, hist.GetNbinsX()+1)} entries')
                 obj_list.Add(hist)
-                other_obj.Merge(obj_list)
-                obj_list=ROOT.TList()
-                continue
-            hists_to_plot[sample] = hist
+                #obj_list=ROOT.TList()
+            else:
+                print(f'{sample} has {hist.Integral(0, hist.GetNbinsX()+1)} entries')
+                hists_to_plot[sample] = hist
+        other_obj.Merge(obj_list)
+        print(f'other have {other_obj.GetEntries()} entries')
         hists_to_plot['Other'] = other_obj
         if 'data' not in hists_to_plot.keys():
             hists_to_plot['data'] = all_histlist[ ('Central','Central' )]['data']
         cat_txt = args.category if args.category !='inclusive' else 'incl'
         custom1= {'cat_text':f"{cat_txt} m_{{X}}={args.mass} GeV/c^{{2}}", 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS data/simulation'}
-        outFile_suffix = f'{args.var}_{args.channel}_{args.category}'
+        outFile_prefix = f'{args.var}_{args.channel}_{args.category}'
+
         if(args.uncSource != 'Central'):
-            outFile_suffix += f'_{args.uncSource}{uncScale}'
-        outDir = os.path.join(args.outDir)
+            outFile_prefix += f'_{args.uncSource}{uncScale}'
+        tmpdir = 'from2D' if args.want2D else 'from1D'
+        outDir = os.path.join(args.outDir,args.var,btag_dir,tmpdir)
         #print(outDir)
         #print(hists_to_plot.keys())
         if not os.path.isdir(outDir):
             os.makedirs(outDir)
-        outFileName = f"{outFile_suffix}_XMass{args.mass}.pdf"
+        outFileName = f"{outFile_prefix}_XMass{args.mass}.pdf"
         outFileFullPath = os.path.join(outDir,outFileName)
         plotter.plot(args.var, hists_to_plot, outFileFullPath, custom=custom1)

@@ -243,6 +243,7 @@ class DataFrameBuilder(DataFrameBuilderBase):
 
 
     def defineQCDRegions(self):
+        print(self.deepTauVersion)
         tau2_iso_var = f"tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet"
         self.df = self.df.Define("OS", "tau1_charge*tau2_charge < 0")
         self.df = self.df.Define("Iso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")

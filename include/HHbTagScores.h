@@ -17,6 +17,7 @@ inline int PeriodToHHbTagInput (Period period)
     }
     return iter->second;
 }
+
 inline int ChannelToHHbTagInput (Channel channel)
 {
     static const std::map<Channel, int> channelHHBtag{
@@ -65,8 +66,9 @@ struct HHBtagWrapper{
 RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& jet_p4,const RVecF& Jet_deepFlavour, const float& met_pt, const float& met_phi,
                             const HTTCand<2>& HTT_Cand, const int& period, int event){
     const ULong64_t parity = event % 2;
+    RVecI JetIdxOrdered = ReorderObjects(Jet_deepFlavour, Jet_idx);
     int channelId = ChannelToHHbTagInput(HTT_Cand.channel());
-    RVecF all_scores(Jet_idx.size(), -1.);
+    RVecF all_scores(JetIdxOrdered.size(), -1.);
     std::vector<float> jet_pt;
     std::vector<float> jet_eta;
     std::vector<float> jet_deepFlavour;
@@ -86,23 +88,25 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
 
     // select good jets only
 
+    auto hhBtag_period = PeriodToHHbTagInput(static_cast<Period>(period));
     for (size_t jet_idx=0; jet_idx<jet_p4.size(); jet_idx++){
-        if(!Jet_sel[jet_idx]) continue;
-        goodJet_idx.push_back(jet_idx);
-        jet_pt.push_back(jet_p4.at(jet_idx).Pt());
-        jet_eta.push_back(jet_p4.at(jet_idx).Eta());
-        jet_deepFlavour.push_back(Jet_deepFlavour.at(jet_idx));
-        rel_jet_M_pt.push_back(jet_p4.at(jet_idx).M()/jet_p4.at(jet_idx).Pt());
-        rel_jet_E_pt.push_back(jet_p4.at(jet_idx).E()/jet_p4.at(jet_idx).Pt());
-        jet_htt_deta.push_back(static_cast<float>(jet_p4.at(jet_idx).Eta() - hTT_p4.Eta()) );
-        jet_htt_dphi.push_back(ROOT::Math::VectorUtil::DeltaPhi(hTT_p4,jet_p4.at(jet_idx)));
+        jet_idx_ordered = JetIdxOrdered[jet_idx];
+        if(!Jet_sel[jet_idx_ordered]) continue;
+        goodjet_idx_ordered.push_back(jet_idx_ordered);
+        jet_pt.push_back(jet_p4.at(jet_idx_ordered).Pt());
+        jet_eta.push_back(jet_p4.at(jet_idx_ordered).Eta());
+        jet_deepFlavour.push_back(Jet_deepFlavour.at(jet_idx_ordered));
+        rel_jet_M_pt.push_back(jet_p4.at(jet_idx_ordered).M()/jet_p4.at(jet_idx_ordered).Pt());
+        rel_jet_E_pt.push_back(jet_p4.at(jet_idx_ordered).E()/jet_p4.at(jet_idx_ordered).Pt());
+        jet_htt_deta.push_back(static_cast<float>(jet_p4.at(jet_idx_ordered).Eta() - hTT_p4.Eta()) );
+        jet_htt_dphi.push_back(ROOT::Math::VectorUtil::DeltaPhi(hTT_p4,jet_p4.at(jet_idx_ordered)));
     }
 
 
     RVecF goodJet_scores = HHBtagWrapper::Get().GetScore(jet_pt, jet_eta,
                                              rel_jet_M_pt, rel_jet_E_pt,
                                              jet_htt_deta, jet_deepFlavour,
-                                             jet_htt_dphi, period,
+                                             jet_htt_dphi, hhBtag_period,
                                              channelId, htt_pt,
                                              htt_eta, htt_met_dphi,
                                              rel_met_pt_htt_pt,

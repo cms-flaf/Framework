@@ -76,7 +76,7 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
     std::vector<float> rel_jet_E_pt;
     std::vector<float> jet_htt_deta;
     std::vector<float> jet_htt_dphi;
-    std::vector<int> goodJet_idx;
+    std::vector<int> goodjet_idx_ordered;
 
     LorentzVectorM hTT_p4 =HTT_Cand.leg_p4[0]+HTT_Cand.leg_p4[1];
     LorentzVectorM MET_p4(met_pt, 0, met_phi, 0);
@@ -98,7 +98,7 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
         jet_deepFlavour.push_back(Jet_deepFlavour.at(jet_idx_ordered));
         rel_jet_M_pt.push_back(jet_p4.at(jet_idx_ordered).M()/jet_p4.at(jet_idx_ordered).Pt());
         rel_jet_E_pt.push_back(jet_p4.at(jet_idx_ordered).E()/jet_p4.at(jet_idx_ordered).Pt());
-        jet_htt_deta.push_back(static_cast<float>(jet_p4.at(jet_idx_ordered).Eta() - hTT_p4.Eta()) );
+        jet_htt_deta.push_back(static_cast<float>( hTT_p4.Eta()- jet_p4.at(jet_idx_ordered).Eta()) );
         jet_htt_dphi.push_back(ROOT::Math::VectorUtil::DeltaPhi(hTT_p4,jet_p4.at(jet_idx_ordered)));
     }
 
@@ -112,8 +112,9 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
                                              rel_met_pt_htt_pt,
                                              htt_scalar_pt, parity);
 
-     for(size_t jet_idx=0; jet_idx<jet_pt.size(); jet_idx++){
-        all_scores[goodJet_idx[jet_idx]] = goodJet_scores[jet_idx] ;
+     for(size_t jet_idx=0; jet_idx<goodjet_idx_ordered.size(); jet_idx++){
+        jet_idx_ordered = goodjet_idx_ordered[jet_idx];
+        all_scores[jet_idx_ordered] = goodJet_scores[jet_idx] ;
     }
     return all_scores;
 

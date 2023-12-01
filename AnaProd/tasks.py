@@ -390,13 +390,13 @@ class DataCacheMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self, force_pre_output=False):
         outDir = os.path.join(self.central_anaCache_path(), 'data', self.version)
-        out = os.path.join(outDir, 'data','nano.root')
+        out = os.path.join(outDir, 'nano.root')
         return law.LocalFileTarget(out)
 
     def run(self):
         producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
         outDir = os.path.join(self.central_anaCache_path(), 'data', self.version)
-        tmpFile = os.path.join(outDir, 'data', 'data_tmp.root')
+        tmpFile = os.path.join(outDir, 'data_tmp.root')
         dataMerge_cmd = [ 'python3', producer_dataMerge, '--outFile', tmpFile ]
         dataMerge_cmd.extend([f.path for f in self.input()])
         sh_call(dataMerge_cmd,verbose=1)

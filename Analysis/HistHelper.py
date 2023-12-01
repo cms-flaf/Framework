@@ -166,7 +166,8 @@ class DataFrameBuilderBase:
 
     def AddCacheColumns(self,cache_cols,cache_col_types):
         for cache_col_idx,cache_col in enumerate(cache_cols):
-            if  cache_col in self.colNames: continue
+            if  cache_col in self.df.GetColumnNames(): continue
+            if cache_col.replace('.','_') in self.df.GetColumnNames(): continue
             self.df = self.df.Define(cache_col.replace('.','_'), f"""analysis::GetEntriesMap().at(std::make_tuple(entryIndex, run, event, luminosityBlock))->GetValue<{cache_col_types[cache_col_idx]}>({cache_col_idx})""")
 
 def GetModel(hist_cfg, var):

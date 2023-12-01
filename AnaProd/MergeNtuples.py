@@ -15,7 +15,16 @@ ROOT.gInterpreter.Declare(
     using lumiEventMapType = std::map < unsigned int, std::set <unsigned long long > >;
     using eventMapType =  std::map < unsigned int ,  lumiEventMapType >;
     using RunLumiEventSet = std::set < std::tuple < unsigned int, unsigned int, unsigned long long > > ;
-
+    namespace kin_fit{
+        struct FitResults {
+            double mass, chi2, probability;
+            int convergence;
+            bool HasValidMass() const { return convergence > 0; }
+            FitResults() : convergence(std::numeric_limits<int>::lowest()) {}
+            FitResults(double _mass, double _chi2, double _probability, int _convergence) :
+                mass(_mass), chi2(_chi2), probability(_probability), convergence(_convergence) {}
+        };
+    }
     bool saveEvent(unsigned int run, unsigned int lumi, unsigned long long event){
         static eventMapType eventMap;
         static std::mutex eventMap_mutex;
@@ -86,7 +95,7 @@ if __name__ == "__main__":
                 else:
                     obj_desc.objsToMerge.Add(obj)
 
-    tmpFileName = args.outFile + '.tmp.root'
+    tmpFileName = args.outFile #args.outFile + '.tmp.root'
     compression = ROOT.CompressionSettings(snapshotOptions.fCompressionAlgorithm, snapshotOptions.fCompressionLevel)
     outputFile = ROOT.TFile(tmpFileName, "RECREATE", "", compression)
     for obj_name, obj_desc in objects.items():
@@ -104,7 +113,7 @@ if __name__ == "__main__":
         df = ROOT.RDataFrame(obj_name, obj_desc.file_names)
         df = merge_ntuples(df)
         df.Snapshot(obj_name, tmpFileName, df.GetColumnNames(), snapshotOptions)
-
-    ConvertUproot.toUproot(tmpFileName, args.outFile)
-    if os.path.exists(args.outFile):
-        os.remove(tmpFileName)
+    #print(tmpFileName)
+    #ConvertUproot.toUproot(tmpFileName, args.outFile)
+    #if os.path.exists(args.outFile):
+    #    os.remove(tmpFileName)

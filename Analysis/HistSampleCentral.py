@@ -51,7 +51,7 @@ def GetHistogramDictFromDataframes(var, df_central, key_filter_dict,hist_cfg_dic
         if cat != 'boosted' and var in var_to_add_boosted: continue
 
         total_weight_expression = GetWeight(ch,cat) if sample_type!='data' else "1"
-        print(df_central.GetColumnNames())
+        #print(df_central.GetColumnNames())
         df_central_new = df_central.Filter(key_cut)
         df_central_new=df_central_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}")
         #print(f"final_weight_0_{ch}_{cat}_{reg} expression = {total_weight_expression}")
@@ -117,11 +117,11 @@ if __name__ == "__main__":
     key_filter_dict = createKeyFilterDict()
 
     dfWrapped_central = DataFrameBuilder(ROOT.RDataFrame('Events',f'{args.inDir}/*.root'), args.deepTauVersion)
-    print(dfWrapped_central.df.Filter('entryIndex==149491').Count().GetValue())
+    #print(dfWrapped_central.df.Filter('entryIndex==149491').Count().GetValue())
 
     if args.cacheDir:
         dfWrapped_cache = DataFrameBuilder(ROOT.RDataFrame('Events',f'{args.cacheDir}/*.root'), args.deepTauVersion)
-        print(dfWrapped_cache.df.Filter('entryIndex==149491').Count().GetValue())
+        #print(dfWrapped_cache.df.Filter('entryIndex==149491').Count().GetValue())
         AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache)
 
 

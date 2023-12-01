@@ -90,7 +90,7 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
 
     auto hhBtag_period = PeriodToHHbTagInput(static_cast<Period>(period));
     for (size_t jet_idx=0; jet_idx<jet_p4.size(); jet_idx++){
-        jet_idx_ordered = JetIdxOrdered[jet_idx];
+        int jet_idx_ordered = JetIdxOrdered[jet_idx];
         if(!Jet_sel[jet_idx_ordered]) continue;
         goodjet_idx_ordered.push_back(jet_idx_ordered);
         jet_pt.push_back(jet_p4.at(jet_idx_ordered).Pt());
@@ -113,7 +113,7 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
                                              htt_scalar_pt, parity);
 
      for(size_t jet_idx=0; jet_idx<goodjet_idx_ordered.size(); jet_idx++){
-        jet_idx_ordered = goodjet_idx_ordered[jet_idx];
+        int jet_idx_ordered = goodjet_idx_ordered[jet_idx];
         all_scores[jet_idx_ordered] = goodJet_scores[jet_idx] ;
     }
     return all_scores;

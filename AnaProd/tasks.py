@@ -113,10 +113,10 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def output(self, force_pre_output=False):
         sample_id, sample_name, sample_type, input_file = self.branch_data
         outFileName = os.path.basename(input_file)
-        outDir_tmp = os.path.join('/eos/user/a/androsov/valeria/','anaTuples', self.period, self.version)
+        #outDir_tmp = os.path.join('/eos/user/a/androsov/valeria/','anaTuples', self.period, self.version)
+        outDir_tmp = self.central_anaTuples_path()
         if not os.path.exists(outDir_tmp):
             os.makedirs(outDir_tmp)
-        if self.version == 'v7_deepTau2p1' or self.version=='v7_deepTau2p5' : outDir_tmp = self.central_anaTuples_path()
         out = os.path.join(outDir_tmp, sample_name,outFileName)
         return law.LocalFileTarget(out)
 
@@ -239,19 +239,12 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         workflow_dict = {}
         workflow_dict["anaTuple"] = {
             idx: AnaTupleTask.req(self, branch=br, branches=())
-            for idx, (sample, br) in branch_map.items() if sample !='data'
+            for idx, (sample, sample_type,br) in branch_map.items()
         }
-        workflow_dict["dataMergeTuple"] = {
-            idx: DataMergeTask.req(self, branch=br, branches=())
-            for idx, (sample, br) in branch_map.items() if sample =='data'
-        }
-
         return workflow_dict
 
     def requires(self):
-        sample_name, prod_br = self.branch_data
-        if sample_name =='data':
-            return [ DataMergeTask.req(self,max_runtime=DataMergeTask.max_runtime._default, branch=prod_br, branches=())]
+        sample_name,sample_type, prod_br = self.branch_data
         return [ AnaTupleTask.req(self, branch=prod_br, max_runtime=AnaTupleTask.max_runtime._default, branches=())]
 
     def create_branch_map(self):
@@ -260,15 +253,15 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
         sample_id_data = 0
         for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-            if sample_type =='data' or 'QCD' in sample_name:
+            if sample_type =='QCD' in sample_name:
                 continue
-            branches[n] = (sample_name, prod_br)
+            branches[n] = (sample_name, sample_type,prod_br)
             n+=1
-        branches[n+1] = ('data', 0)
+        #branches[n+1] = ('data', 0)
         return branches
 
     def output(self):
-        sample_name, prod_br = self.branch_data
+        sample_name, sample_type,prod_br = self.branch_data
         input_file = self.input()[0].path
         #print(f"inputFile is {input_file}")
         fileName  = os.path.basename(input_file)
@@ -280,13 +273,12 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return law.LocalFileTarget(outFileName)
 
     def run(self):
-
         thread = threading.Thread(target=update_kinit_thread)
         thread.start()
         finalFile = self.output().path
         try:
             job_home, remove_job_home = self.law_job_home()
-            sample_name, prod_br = self.branch_data
+            sample_name, sample_type,prod_br = self.branch_data
             if len(self.input()) > 1:
                 raise RuntimeError(f"multple input files!! {' '.join(f.path for f in self.input())}")
             input_file = self.input()[0].path
@@ -368,3 +360,50 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             kInit_cond.notify_all()
             kInit_cond.release()
             thread.join()
+
+
+class DataCacheMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
+
+    def workflow_requires(self):
+        prod_branches = self.create_branch_map()
+        workflow_dict = {}
+        workflow_dict["anaCacheTuple"] = {
+            idx: AnaCacheTupleTask.req(self, branches=tuple((br,) for br in branches))
+            for idx, branches in prod_branches.items()
+        }
+        return workflow_dict
+
+    def requires(self):
+        prod_branches = self.branch_data
+        deps = [AnaCacheTupleTask.req(self, max_runtime=AnaCacheTask.max_runtime._default, branch=prod_br) for prod_br in prod_branches ]
+        return deps
+
+
+    def create_branch_map(self):
+        anaProd_branch_map = AnaCacheTupleTask.req(self, branch=-1, branches=()).create_branch_map()
+        prod_branches = []
+        for prod_br, (sample_name, sample_type,branch) in anaProd_branch_map.items():
+            if sample_type != "data": continue
+            prod_branches.append(prod_br)
+        return { 0: prod_branches }
+
+    def output(self, force_pre_output=False):
+        outDir = os.path.join(self.central_anaCache_path(), 'data', self.version)
+        out = os.path.join(outDir, 'nano.root')
+        return law.LocalFileTarget(out)
+
+    def run(self):
+        producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
+        outDir = os.path.join(self.central_anaCache_path(), 'data', self.version)
+        tmpFile = os.path.join(outDir, 'data_tmp.root')
+        dataMerge_cmd = [ 'python3', producer_dataMerge, '--outFile', tmpFile ]
+        dataMerge_cmd.extend([f.path for f in self.input()])
+        sh_call(dataMerge_cmd,verbose=1)
+        finalFile = self.output().path
+        if self.test: print(f"finalFile is {finalFile}")
+        print(f"finalFile is {finalFile}")
+        shutil.copy(tmpFile, finalFile)
+        if os.path.exists(finalFile):
+            os.remove(tmpFile)
+

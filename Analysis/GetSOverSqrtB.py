@@ -74,6 +74,7 @@ if __name__ == "__main__":
     parser.add_argument('--sampleConfig', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--wantBTag', required=False, type=bool, default=False)
+    parser.add_argument('--want2D', required=False, type=bool, default=False)
     parser.add_argument('--suffix', required=False, type=str, default='')
     parser.add_argument('--var', required=False, type=str, default='bbtautau_mass')
     args = parser.parse_args()
@@ -108,7 +109,11 @@ if __name__ == "__main__":
                         sum_signal = 0
                         sum_bckg = 0
                         inDir = os.path.join(args.histDir,f'v7_deepTau{deepTauVersion}', 'all_histograms',args.var,btag_dir)
-                        inFileName=f'{args.inFileName}_{args.var}_Central{args.suffix}.root'
+                        TwoDTrue = args.want2D and not args.wantBTag
+                        inFileName_prefix =  f"all_histograms_{args.var}2D" if TwoDTrue else f"all_histograms_{args.var}"
+                        inFileName = os.path.join(inDir, f'{inFileName_prefix}{args.suffix}.root')
+
+                        print(os.path.join(inDir,inFileName))
                         if not os.path.exists(os.path.join(inDir,inFileName)): continue
                         #print('mass=',mass)
                         #print('channel=',channel)

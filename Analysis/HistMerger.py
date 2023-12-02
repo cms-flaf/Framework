@@ -3,6 +3,8 @@ import sys
 import os
 import math
 import shutil
+import json
+import time
 from RunKit.sh_tools import sh_call
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
@@ -27,13 +29,21 @@ def CreateNamesDict(histNamesDict, sample_types, uncName, scales, sample_cfg_dic
 
 
 
-def fillHistDict(inFileRoot, all_histograms, unc_source,channels, QCDregions, categories, sample_type, histNamesDict,signals):
+
+def fillHistDict(var, inFileRoot, all_histograms, unc_source,channels, QCDregions, categories, sample_type, histNamesDict,signals):
+    print(sample_type)
     for channel in channels:
         dir_0 = inFileRoot.Get(channel)
+        #print(dir_0.GetListOfKeys())
         for qcdRegion in QCDregions:
             dir_1 = dir_0.Get(qcdRegion)
+            #print(dir_1.GetListOfKeys())
             for cat in categories:
+                if cat == 'boosted' and var in bjet_vars: continue
+                if cat != 'boosted' and var in var_to_add_boosted: continue
+                #print(cat, var)
                 dir_2 = dir_1.Get(cat)
+                #print(dir_2.GetListOfKeys())
                 for key in dir_2.GetListOfKeys():
                     obj = key.ReadObj()
                     if not obj.IsA().InheritsFrom(ROOT.TH1.Class()): continue
@@ -47,6 +57,7 @@ def fillHistDict(inFileRoot, all_histograms, unc_source,channels, QCDregions, ca
                             key_name += '_'.join(ks for ks in key_name_split[1:])
                     if key_name not in histNamesDict.keys(): continue
                     sample,uncNameType,scale = histNamesDict[key_name]
+                    if cat == 'boosted' and uncNameType in unc_to_not_consider_boosted: continue
                     if sample=='data' and uncNameType!='Central':continue
                     if sample!='data' and uncNameType!=unc_source:continue
                     key_total = ((channel, qcdRegion, cat), (uncNameType, scale))
@@ -56,6 +67,7 @@ def fillHistDict(inFileRoot, all_histograms, unc_source,channels, QCDregions, ca
 
 def MergeHistogramsPerType(all_histograms):
     for key_name,histlist in all_histograms.items():
+        #print(key_name, histlist)
         final_hist =  histlist[0]
         objsToMerge = ROOT.TList()
         for hist in histlist[1:]:
@@ -63,8 +75,106 @@ def MergeHistogramsPerType(all_histograms):
         final_hist.Merge(objsToMerge)
         all_histograms[key_name] = final_hist
 
-def ApplyBTagWeight(all_histograms):
+
+
+def GetBTagWeightDict(var, all_histograms, sample_name, final_json_dict, want2D, wantBTag):
+    all_histograms_1D = {}
     for key_name,histogram in all_histograms.items():
+        (key_1, key_2) = key_name
+        ch, reg, cat = key_1
+        uncName,scale = key_2
+        key_tuple_num = ((ch, reg, 'btag_shape'), key_2)
+        key_tuple_den = ((ch, reg, 'inclusive'), key_2)
+        ratio_num_hist = all_histograms[key_tuple_num] if key_tuple_num in all_histograms.keys() else None
+        #print(key_name)
+        ratio_den_hist = all_histograms[key_tuple_den] if key_tuple_den in all_histograms.keys() else None
+        ##print(type(ratio_num_hist))
+        #print(type(ratio_den_hist))
+        histlist =[]
+        if sample_name not in final_json_dict.keys():
+            final_json_dict[sample_name]={}
+        second_key = f'{ch}_{reg}_{cat}_{uncName}{scale}'
+        if second_key not in final_json_dict[sample_name].keys():
+            final_json_dict[sample_name][second_key]={}
+        if 'yBin' not in final_json_dict[sample_name][second_key].keys():
+            final_json_dict[sample_name][second_key]['yBin']=[]
+        if 'nJets' not in final_json_dict[sample_name][second_key].keys():
+            final_json_dict[sample_name][second_key]['nJets']=[]
+        if 'num' not in final_json_dict[sample_name][second_key].keys():
+            final_json_dict[sample_name][second_key]['num']=[]
+        if 'den' not in final_json_dict[sample_name][second_key].keys():
+            final_json_dict[sample_name][second_key]['den']=[]
+        if 'ratio' not in final_json_dict[sample_name][second_key].keys():
+            final_json_dict[sample_name][second_key]['ratio']=[]
+        if want2D:
+            for yBin in range(0, histogram.GetNbinsY()+1):
+                histName = f"{sample_name}_{ch}_{reg}_{cat}_{uncName}{scale}"
+                hist1D = histogram.ProjectionX(f"{histName}_pfx_{yBin}", yBin, yBin)
+                if sample_type != "data" and cat not in ['boosted','inclusive'] and var not in var_to_add_boosted:
+                    if (ratio_num_hist.GetYaxis().GetBinCenter(yBin) != ratio_den_hist.GetYaxis().GetBinCenter(yBin)):
+                        print(f"bin centers are different, for num it's: {ratio_num_hist.GetYaxis().GetBinCenter(yBin)} and for den it's {ratio_den_hist.GetYaxis().GetBinCenter(yBin)}")
+
+                    histName_num = f"{sample_name}_{ch}_{reg}_{cat}_{uncName}{scale}_num"
+                    hist1DProjection_num = ratio_num_hist.ProjectionX(f"{histName_num}_pfx", yBin, yBin)
+                    histName_den = f"{sample_name}_{ch}_{reg}_{cat}_{uncName}{scale}_den"
+                    hist1DProjection_den = ratio_den_hist.ProjectionX(f"{histName_den}_pfx", yBin, yBin)
+
+                    num = hist1DProjection_num.Integral(0,hist1DProjection_num.GetNbinsX()+1)
+                    den = hist1DProjection_den.Integral(0,hist1DProjection_den.GetNbinsX()+1)
+                    ratio = 0.
+                    if hist1DProjection_den.Integral(0,ratio_den_hist.GetNbinsX()+1) != 0 :
+                        ratio = hist1DProjection_num.Integral(0,ratio_num_hist.GetNbinsX()+1)/hist1DProjection_den.Integral(0,ratio_den_hist.GetNbinsX()+1)
+                    final_json_dict[sample_name][second_key]['yBin'].append(yBin)
+                    final_json_dict[sample_name][second_key]['nJets'].append(ratio_num_hist.GetYaxis().GetBinCenter(yBin))
+                    final_json_dict[sample_name][second_key]['num'].append(num)
+                    final_json_dict[sample_name][second_key]['den'].append(den)
+                    final_json_dict[sample_name][second_key]['ratio'].append(ratio)
+                    if ratio == 0 and hist1D.Integral(0, hist1D.GetNbinsX()+1) ==0 :
+                        continue
+                    hist1D.Scale(ratio)
+                histlist.append(hist1D)
+            if not histlist:
+                all_histograms_1D[key_name]= hist1D
+            else:
+                final_hist =  histlist[0]
+                objsToMerge = ROOT.TList()
+                for hist in histlist[1:]:
+                    objsToMerge.Add(hist)
+                final_hist.Merge(objsToMerge)
+                all_histograms_1D[key_name] = final_hist
+        else:
+            num = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)
+            den = ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
+            ratio = 0.
+            if ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1) != 0 :
+                ratio = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)/ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
+            final_json_dict[sample_name][second_key]['num'].append(num)
+            final_json_dict[sample_name][second_key]['den'].append(den)
+            final_json_dict[sample_name][second_key]['ratio'].append(ratio)
+            #if ratio == 0 and hist1D.Integral(0, hist1D.GetNbinsX()+1) ==0 :
+            #    continue
+            if not wantBTag : histogram.Scale(ratio)
+            all_histograms_1D[key_name] = histogram
+
+    return all_histograms_1D
+
+
+def ApplyBTagWeight(var,all_histograms,sample_name, final_json_dict):
+    all_histograms_1D = {}
+    if sample_name not in final_json_dict.keys():
+        final_json_dict[sample_name]={}
+
+    for key_name,histogram in all_histograms.items():
+        second_key = f'{ch}_{reg}_{cat}_{uncName}{scale}'
+        if second_key not in final_json_dict[sample_name].keys():
+            final_json_dict[sample_name][second_key]={}
+        if 'num' not in final_json_dict[sample_name][second_key].keys():
+            final_json_dict[sample_name][second_key]['num']=[]
+        if 'den' not in final_json_dict[sample_name][second_key].keys():
+            final_json_dict[sample_name][second_key]['den']=[]
+        if 'ratio' not in final_json_dict[sample_name][second_key].keys():
+            final_json_dict[sample_name][second_key]['ratio']=[]
+
         (key_1, key_2) = key_name
         ch, reg, cat = key_1
         uncName,scale = key_2
@@ -73,21 +183,45 @@ def ApplyBTagWeight(all_histograms):
         ratio_num_hist = all_histograms[key_tuple_num]
         ratio_den_hist = all_histograms[key_tuple_den]
         ratio = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)/ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
+
+        num = hist1DProjection_num.Integral(0,hist1DProjection_num.GetNbinsX()+1)
+        den = hist1DProjection_den.Integral(0,hist1DProjection_den.GetNbinsX()+1)
+        ratio = 0.
+        if hist1DProjection_den.Integral(0,ratio_den_hist.GetNbinsX()+1) != 0 :
+            ratio = hist1DProjection_num.Integral(0,ratio_num_hist.GetNbinsX()+1)/hist1DProjection_den.Integral(0,ratio_den_hist.GetNbinsX()+1)
+        final_json_dict[sample_name][second_key]['yBin'].append(yBin)
+        final_json_dict[sample_name][second_key]['nJets'].append(ratio_num_hist.GetYaxis().GetBinCenter(yBin))
+        final_json_dict[sample_name][second_key]['num'].append(num)
+        final_json_dict[sample_name][second_key]['den'].append(den)
+        final_json_dict[sample_name][second_key]['ratio'].append(ratio)
+        if ratio == 0 and hist1D.Integral(0, hist1D.GetNbinsX()+1) ==0 :
+            continue
+        hist1D.Scale(ratio)
+        final_json_dict[sample_name][second_key]['num'].append(num)
+        final_json_dict[sample_name][second_key]['den'].append(den)
+        final_json_dict[sample_name][second_key]['ratio'].append(ratio)
         histogram.Scale(ratio)
         all_histograms[key_name] = histogram
+
+    return all_histograms_1D
+
 
 if __name__ == "__main__":
     import argparse
     import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument('--histDir', required=True, type=str)
-    parser.add_argument('--hists', required=True, type=str)
+    parser.add_argument('--jsonDir', required=True, type=str)
+    parser.add_argument('--suffix', required=False, type=str, default='')
+    parser.add_argument('--var', required=True, type=str)
     parser.add_argument('--sampleConfig', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
     parser.add_argument('--wantBTag', required=False, type=bool, default=False)
+    parser.add_argument('--want2D', required=False, type=bool, default=False)
 
     args = parser.parse_args()
+    startTime = time.time()
     with open(args.uncConfig, 'r') as f:
         unc_cfg_dict = yaml.safe_load(f)
     with open(args.sampleConfig, 'r') as f:
@@ -100,65 +234,86 @@ if __name__ == "__main__":
     if args.uncSource != 'Central' and args.uncSource not in uncNameTypes:
         print("unknown unc source {args.uncSource}")
     CreateNamesDict(histNamesDict, all_samples_types, args.uncSource, scales, sample_cfg_dict)
-    all_vars = args.hists.split(',')
+
     categories = list(sample_cfg_dict['GLOBAL']['categories'])
     QCDregions = list(sample_cfg_dict['GLOBAL']['QCDRegions'])
     channels = list(sample_cfg_dict['GLOBAL']['channelSelection'])
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
     all_files = {}
-    for var in all_vars:
-        fileName =  f"{var}.root"
-        if var not in all_files.keys():
-            all_files[var] = {}
-        for sample_type in all_samples_types.keys():
-            samples = all_samples_types[sample_type]
-            histDirs = [os.path.join(args.histDir, sample,btag_dir) for sample in samples]
-            all_files[var][sample_type] = [os.path.join(hist_dir,fileName) for hist_dir in histDirs]
-    # 1. get Histograms
     all_histograms ={}
-    for var in all_files.keys():
-        if var not in all_histograms.keys():
-            all_histograms[var] = {}
-        for sample_type in all_files[var].keys():
-            if sample_type not in all_histograms[var].keys():
-                all_histograms[var][sample_type] = {}
-            for inFileName in all_files[var][sample_type]:
-                if not os.path.exists(inFileName): continue
-                inFileRoot = ROOT.TFile.Open(inFileName, "READ")
-                if inFileRoot.IsZombie():
-                    raise RuntimeError(f"{inFile} is Zombie")
-                fillHistDict(inFileRoot, all_histograms[var][sample_type],args.uncSource, channels, QCDregions, categories, sample_type, histNamesDict, signals)
-                inFileRoot.Close()
-            MergeHistogramsPerType(all_histograms[var][sample_type])
-            if args.wantBTag == False: ApplyBTagWeight(all_histograms[var][sample_type])
-        AddQCDInHistDict(all_histograms[var], channels, categories, sample_type, args.uncSource, all_samples_list, scales)
-    for var in all_histograms.keys():
-        outDir = os.path.join(args.histDir,'all_histograms',var, btag_dir)
-        if not os.path.exists(outDir):
-            os.makedirs(outDir)
-        outFileName = os.path.join(outDir, f'all_histograms_{var}_{args.uncSource}.root')
-        if os.path.exists(outFileName):
-            os.remove(outFileName)
-        outFile = ROOT.TFile(outFileName, "RECREATE")
-        for sample_type in all_histograms[var].keys():
-            for key in all_histograms[var][sample_type]:
-                (channel, qcdRegion, cat), (uncNameType, uncScale) = key
+    all_histograms_1D ={}
+    final_json_dict = {}
 
-                if qcdRegion != 'OS_Iso': continue
-                dirStruct = (channel, cat)
-                dir_name = '/'.join(dirStruct)
-                dir_ptr = mkdir(outFile,dir_name)
-                hist = all_histograms[var][sample_type][key]
+    TwoDTrue = args.want2D and not args.wantBTag
+    fileName =  f"{args.var}2D{args.suffix}.root" if TwoDTrue else f"{args.var}{args.suffix}.root"
 
-                hist_name =  sample_type
-                if uncNameType!=args.uncSource: continue
-                if uncNameType != 'Central':
-                    if sample_type == 'data' : continue
-                    if uncScale == 'Central': continue
-                    hist_name+=f"_{uncNameType}{uncScale}"
-                else:
-                    if uncScale!='Central':continue
-                hist.SetTitle(hist_name)
-                hist.SetName(hist_name)
-                dir_ptr.WriteTObject(hist, hist_name, "Overwrite")
-        outFile.Close()
+    all_files = {}
+    for sample_type in all_samples_types.keys():
+        samples = all_samples_types[sample_type]
+        histDirs = [os.path.join(args.histDir,sample,  args.var,  btag_dir) for sample in samples]
+        all_files[sample_type] = [os.path.join(hist_dir,fileName) for hist_dir in histDirs]
+        # 1. get Histograms
+        if sample_type not in all_histograms.keys():
+            all_histograms[sample_type] = {}
+            all_histograms_1D[sample_type] = {}
+        for inFileName in all_files[sample_type]:
+            if 'VBFToBulkGraviton' in inFileName: continue
+            if 'VBFToRadion' in inFileName: continue
+            print(inFileName)
+            if not os.path.exists(inFileName):
+                print(f"{inFileName} removed")
+                continue
+            inFileRoot = ROOT.TFile.Open(inFileName, "READ")
+            if inFileRoot.IsZombie():
+                raise RuntimeError(f"{inFile} is Zombie")
+            fillHistDict(args.var, inFileRoot, all_histograms[sample_type],args.uncSource, channels, QCDregions, categories, sample_type, histNamesDict, signals)
+            inFileRoot.Close()
+        MergeHistogramsPerType(all_histograms[sample_type])
+        all_histograms_1D[sample_type]=GetBTagWeightDict(args.var,all_histograms[sample_type],sample_type,final_json_dict,TwoDTrue, args.wantBTag)
+
+    #print(all_histograms)
+    AddQCDInHistDict(args.var,all_histograms_1D, channels, categories, sample_type, args.uncSource, all_samples_list, scales)
+    if not os.path.exists(args.jsonDir):
+        os.makedirs(args.jsonDir)
+    json_fileName_prefix =  f"all_ratios_{args.var}2D" if TwoDTrue else f"all_ratios_{args.var}"
+    if args.uncSource !='Central':
+        json_fileName_prefix+={args.uncSource}
+    json_file = os.path.join(args.jsonDir, f'{json_fileName_prefix}{args.suffix}.json')
+    with open(f"{json_file}", "w") as write_file:
+        json.dump(final_json_dict, write_file, indent=4)
+
+    outDir = os.path.join(args.histDir,'all_histograms',args.var, btag_dir)
+    if not os.path.exists(outDir):
+        os.makedirs(outDir)
+    outFileName_prefix =  f"all_histograms_{args.var}2D" if TwoDTrue else f"all_histograms_{args.var}"
+    if args.uncSource !='Central':
+        outFileName_prefix+={args.uncSource}
+    outFileName = os.path.join(outDir, f'{outFileName_prefix}{args.suffix}.root')
+    if os.path.exists(outFileName):
+        os.remove(outFileName)
+    outFile = ROOT.TFile(outFileName, "RECREATE")
+
+    for sample_type in all_histograms_1D.keys():
+        for key in all_histograms_1D[sample_type]:
+            (channel, qcdRegion, cat), (uncNameType, uncScale) = key
+
+            if qcdRegion != 'OS_Iso': continue
+            dirStruct = (channel, cat)
+            dir_name = '/'.join(dirStruct)
+            dir_ptr = mkdir(outFile,dir_name)
+            hist = all_histograms_1D[sample_type][key]
+            #print(sample_type, key, hist.GetEntries())
+            hist_name =  sample_type
+            if uncNameType!=args.uncSource: continue
+            if uncNameType != 'Central':
+                if sample_type == 'data' : continue
+                if uncScale == 'Central': continue
+                hist_name+=f"_{uncNameType}{uncScale}"
+            else:
+                if uncScale!='Central':continue
+            hist.SetTitle(hist_name)
+            hist.SetName(hist_name)
+            dir_ptr.WriteTObject(hist, hist_name, "Overwrite")
+    outFile.Close()
+    executionTime = (time.time() - startTime)
+    print('Execution time in seconds: ' + str(executionTime))

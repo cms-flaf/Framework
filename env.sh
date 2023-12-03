@@ -146,6 +146,7 @@ action() {
         autoload bashcompinit
         bashcompinit
     fi
+    source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.30.02/x86_64-almalinux9.3-gcc114-opt/bin/thisroot.sh
     export MAMBA_ROOT_PREFIX=/afs/cern.ch/work/k/kandroso/micromamba
     eval "$($MAMBA_ROOT_PREFIX/micromamba shell hook -s posix)"
     micromamba activate hh

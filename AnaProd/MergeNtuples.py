@@ -56,6 +56,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('inputFile', nargs='+', type=str)
     parser.add_argument('--outFile', required=True, type=str)
+    parser.add_argument('--useUproot', type=bool, default=False)
     args = parser.parse_args()
     headers_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -95,7 +96,9 @@ if __name__ == "__main__":
                 else:
                     obj_desc.objsToMerge.Add(obj)
 
-    tmpFileName = args.outFile #args.outFile + '.tmp.root'
+    tmpFileName = args.outFile 
+    if args.useUproot:
+        tmpFileName+= '.tmp.root'
     compression = ROOT.CompressionSettings(snapshotOptions.fCompressionAlgorithm, snapshotOptions.fCompressionLevel)
     outputFile = ROOT.TFile(tmpFileName, "RECREATE", "", compression)
     for obj_name, obj_desc in objects.items():
@@ -114,6 +117,7 @@ if __name__ == "__main__":
         df = merge_ntuples(df)
         df.Snapshot(obj_name, tmpFileName, df.GetColumnNames(), snapshotOptions)
     #print(tmpFileName)
-    #ConvertUproot.toUproot(tmpFileName, args.outFile)
-    #if os.path.exists(args.outFile):
-    #    os.remove(tmpFileName)
+    if args.useUproot:
+        ConvertUproot.toUproot(tmpFileName, args.outFile)
+        if os.path.exists(args.outFile):
+            os.remove(tmpFileName)

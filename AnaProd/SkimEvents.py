@@ -50,7 +50,7 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Event
 
   colToSave_diff= []
   colToNotToMakeDiff=  ["period","run", "sample_name", "sample_type", "channelId", "entryIndex", "event", "isData", "luminosityBlock", "X_mass", "X_spin"]
-  colToSave_noDiff= [ "entryIndex"]
+  
 
   condition_noDiff_list = []
   condition_Valid_list = []
@@ -76,8 +76,8 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Event
   snapshotOptions.fMode="RECREATE"
   snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + 'ZLIB')
   snapshotOptions.fCompressionLevel = 4
-  colToSave_noDiff_v = ListToVector(colToSave_noDiff)
-  colToSave_diff_v = ListToVector(colToSave_diff+["entryIndex"])
+  colToSave_noDiff_v = ListToVector(colToNotToMakeDiff)
+  colToSave_diff_v = ListToVector(colToSave_diff+colToNotToMakeDiff)
   colNames_v = ListToVector(colNames)
   outFile_Valid = os.path.join(outDir, f"{treeName}_Valid.root")
   outFile_nonValid = os.path.join(outDir, f"{treeName}_nonValid.root")

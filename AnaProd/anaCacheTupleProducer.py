@@ -8,6 +8,7 @@ import shutil
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
+    ROOT.gInterpreter.Declare(f'#include "include/KinFitInterface.h"')
     ROOT.gInterpreter.Declare(f'#include "include/HistHelper.h"')
     ROOT.gInterpreter.Declare(f'#include "include/Utilities.h"')
 
@@ -27,8 +28,11 @@ def getKeyNames(root_file_name):
     root_file.Close()
     return key_names
 
+
+
 def applyLegacyVariables(dfw, is_central=True):
-    dfw.DefineAndAppend("entry_valid","((b1_pt > 0) & (b2_pt > 0)) & (((channelId == 13) & (HLT_singleEle)) | ((channelId == 23) & (HLT_singleMu)) | ((channelId == 33) & (HLT_ditau)))")
+    entryvalid_stri = ' || '.join(f'({ch} && ({triggers[ch]}))' for ch in channels)
+    dfw.DefineAndAppend("entry_valid",f"((b1_pt > 0) & (b2_pt > 0)) && {entryvalid_stri}")
     MT2Branches = dfw.Apply(LegacyVariables.GetMT2)
     dfw.colToSave.extend(MT2Branches)
     KinFitBranches = dfw.Apply(LegacyVariables.GetKinFit)
@@ -43,7 +47,7 @@ def createCentralQuantities(df_central, central_col_types, central_columns):
     #df_central = map_creator.getEventIdxFromShifted(ROOT.RDF.AsRNode(df_central))
     return df_central
 
-def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, compute_unc_variations):
+def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, compute_unc_variations, deepTauVersion):
     start_time = datetime.datetime.now()
     verbosity = ROOT.Experimental.RLogScopedVerbosity(ROOT.Detail.RDF.RDFLogChannel(), ROOT.Experimental.ELogLevel.kInfo)
     snaps = []
@@ -60,7 +64,7 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
     print("append the central snapshot")
 
     if compute_unc_variations:
-        dfWrapped_central = DataFrameBuilder(df_begin)
+        dfWrapped_central = DataFrameBuilder(df_begin, deepTauVersion)
         colNames =  dfWrapped_central.colNames
         colTypes =  dfWrapped_central.colTypes
         dfWrapped_central.df = createCentralQuantities(df_begin, colTypes, colNames)
@@ -72,7 +76,8 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
                 treeName = f"Events_{uncName}{scale}"
                 treeName_noDiff = f"{treeName}_noDiff"
                 if treeName_noDiff in file_keys:
-                    dfWrapped_noDiff = DataFrameBuilder(ROOT.RDataFrame(treeName_noDiff, inFileName))
+                    print(treeName_noDiff)
+                    dfWrapped_noDiff = DataFrameBuilder(ROOT.RDataFrame(treeName_noDiff, inFileName), deepTauVersion)
                     dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
                     dfW_noDiff = Utilities.DataFrameWrapper(dfWrapped_noDiff.df,defaultColToSave)
                     applyLegacyVariables(dfW_noDiff,False)
@@ -82,8 +87,9 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
                     dfW_noDiff.df.Snapshot(treeName_noDiff, f'{outFileName}_{uncName}{scale}_noDiff.root', varToSave, snapshotOptions)
                 treeName_Valid = f"{treeName}_Valid"
                 if treeName_Valid in file_keys:
+                    print(treeName_Valid)
                     df_Valid = ROOT.RDataFrame(treeName_Valid, inFileName)
-                    dfWrapped_Valid = DataFrameBuilder(df_Valid)
+                    dfWrapped_Valid = DataFrameBuilder(df_Valid, deepTauVersion)
                     dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
                     dfW_Valid = Utilities.DataFrameWrapper(dfWrapped_Valid.df,defaultColToSave)
                     applyLegacyVariables(dfW_Valid,False)
@@ -93,7 +99,8 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
                     dfW_Valid.df.Snapshot(treeName_Valid, f'{outFileName}_{uncName}{scale}_Valid.root', varToSave, snapshotOptions)
                 treeName_nonValid = f"{treeName}_nonValid"
                 if treeName_nonValid in file_keys:
-                    dfWrapped_nonValid = DataFrameBuilder(ROOT.RDataFrame(treeName_nonValid, inFileName))
+                    print(treeName_nonValid)
+                    dfWrapped_nonValid = DataFrameBuilder(ROOT.RDataFrame(treeName_nonValid, inFileName), deepTauVersion)
                     dfW_nonValid = Utilities.DataFrameWrapper(dfWrapped_nonValid.df,defaultColToSave)
                     applyLegacyVariables(dfW_nonValid,False)
                     #print(f"number of events in dfW_nonValid is {dfW_nonValid.df.Count().GetValue()}")
@@ -119,6 +126,7 @@ if __name__ == "__main__":
     parser.add_argument('--compute_unc_variations', type=bool, default=False)
     parser.add_argument('--compressionLevel', type=int, default=4)
     parser.add_argument('--compressionAlgo', type=str, default="ZLIB")
+    parser.add_argument('--deepTauVersion', type=str, default="v2p1")
     args = parser.parse_args()
 
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
@@ -131,7 +139,7 @@ if __name__ == "__main__":
     with open(args.uncConfig, 'r') as f:
         unc_cfg_dict = yaml.safe_load(f)
     startTime = time.time()
-    all_files = createAnaCacheTuple(args.inFileName, args.outFileName, unc_cfg_dict, snapshotOptions, args.compute_unc_variations)
+    all_files = createAnaCacheTuple(args.inFileName, args.outFileName, unc_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion)
     outFileNameFinal = f'{args.outFileName}.root'
     print(outFileNameFinal)
     hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '

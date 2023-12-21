@@ -150,10 +150,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             if sample_type=='data':
                 tmpFile = os.path.join(outdir_anatuples, outFileName)
 
-            outDir_tmp = os.path.join('/eos/user/a/androsov/valeria/','anaTuples', self.period, self.version)
-            if not os.path.exists(outDir_tmp):
-                os.makedirs(outDir_tmp)
-            if self.version == 'v7_deepTau2p1' or self.version=='v7_deepTau2p5' : outDir_tmp = self.central_anaTuples_path()
+            outDir_tmp = self.central_anaTuples_path()
             outdir_final = os.path.join(outDir_tmp, sample_name)
             os.makedirs(outdir_final, exist_ok=True)
             finalFile = self.output().path
@@ -204,21 +201,15 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return { 0: prod_branches }
 
     def output(self, force_pre_output=False):
-        outDir_tmp = os.path.join('/eos/user/a/androsov/valeria/','anaTuples', self.period, self.version)
-        if not os.path.exists(outDir_tmp):
-            os.makedirs(outDir_tmp)
-        if self.version == 'v7_deepTau2p1' or self.version=='v7_deepTau2p5' : outDir_tmp = self.central_anaTuples_path()
+        outDir_tmp = self.central_anaTuples_path()
         out = os.path.join(outDir_tmp, 'data','nano.root')
         return law.LocalFileTarget(out)
 
     def run(self):
         producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
-        outDir_tmp = os.path.join('/eos/user/a/androsov/valeria/','anaTuples', self.period, self.version)
-        if not os.path.exists(outDir_tmp):
-            os.makedirs(outDir_tmp)
-        if self.version == 'v7_deepTau2p1' or self.version=='v7_deepTau2p5' : outDir_tmp = self.central_anaTuples_path()
+        outDir_tmp = self.central_anaTuples_path()
         tmpFile = os.path.join(outDir_tmp, 'data', 'data_tmp.root')
-        dataMerge_cmd = [ 'python3', producer_dataMerge, '--outFile', tmpFile ]
+        dataMerge_cmd = [ 'python3', producer_dataMerge, '--outFile', tmpFile, '--useUproot', 'True']
         dataMerge_cmd.extend([f.path for f in self.input()])
         sh_call(dataMerge_cmd,verbose=1)
         finalFile = self.output().path
@@ -253,7 +244,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
         sample_id_data = 0
         for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-            if sample_type =='QCD' in sample_name:
+            if sample_type =='QCD':
                 continue
             branches[n] = (sample_name, sample_type,prod_br)
             n+=1
@@ -303,6 +294,8 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             anaCacheTupleProducer_cmd = ['python3', anaCacheTupleProducer,'--inFileName', input_file, '--outFileName',outFileName_anacacheTuples,  '--uncConfig', unc_config]
             if sample_name !='data':
                 anaCacheTupleProducer_cmd.extend(['--compute_unc_variations', 'True'])
+            if self.version == 'v9_deepTau2p5':
+                anaCacheTupleProducer_cmd.extend([ '--deepTauVersion', 'v2p5'])
             sh_call(anaCacheTupleProducer_cmd, env=self.cmssw_env(),verbose=1)
             print(f"finished to produce anacachetuple")
             outdir_final = os.path.join(self.central_anaCache_path(), sample_name, self.version)

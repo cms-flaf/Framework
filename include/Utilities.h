@@ -69,31 +69,30 @@ namespace detail {
   };
 }
 namespace analysis{
-template<typename T>
-bool IsSame(const T& shifted, const T& central)
-{
-  return detail::IsSameImpl<T>::IsSame(shifted, central);
-}
-template<typename T>
-T Delta(const T& shifted, const T& central)
-{
-  return detail::DeltaImpl<T>::Delta(shifted, central);
-}
-template<>
-bool Delta<bool>(const bool& shifted, const bool& central)
-{
-  return shifted == central;
-}
-template<typename T>
-T FromDelta(const T& shifted, const T& central)
-{
-  return detail::DeltaImpl<T>::FromDelta(shifted, central);
-}
-template<>
-bool FromDelta<bool>(const bool& delta, const bool& central)
-{
-  return delta ? central : !central ;
-}
-
+  template<typename T>
+  bool IsSame(const T& shifted, const T& central)
+  {
+    return ::detail::IsSameImpl<T>::IsSame(shifted, central);
+  }
+  template<typename T>
+  T Delta(const T& shifted, const T& central)
+  {
+    return ::detail::DeltaImpl<T>::Delta(shifted, central);
+  }
+  template<>
+  bool Delta<bool>(const bool& shifted, const bool& central)
+  {
+    return shifted == central;
+  }
+  template<typename T>
+  T FromDelta(const T& shifted, const T& central)
+  {
+    return ::detail::DeltaImpl<T>::FromDelta(shifted, central);
+  }
+  template<>
+  bool FromDelta<bool>(const bool& delta, const bool& central)
+  {
+    return delta ? central : !central ;
+  }
 
 } //namespace analysis

@@ -184,6 +184,7 @@ if __name__ == "__main__":
     headers_dir = os.path.dirname(os.path.abspath(__file__))
     ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
     ROOT.gInterpreter.Declare(f'#include "include/HistHelper.h"')
+    ROOT.gInterpreter.Declare(f'#include "include/KinFitNamespace.h"')
     ROOT.gInterpreter.Declare(f'#include "include/Utilities.h"')
     ROOT.gROOT.ProcessLine('#include "include/AnalysisTools.h"')
     if not os.path.isdir(args.outDir):
@@ -199,21 +200,68 @@ if __name__ == "__main__":
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
 
-    #models = createModels(hist_cfg_dict)
-
-
-
     btag_dir= "bTag_WP" if args.wantBTag else "bTag_shape"
 
     finalDir = os.path.join(args.outDir, args.var, btag_dir)
     if not os.path.isdir(finalDir):
         os.makedirs(finalDir)
-    finalFileName =f'{finalDir}/{args.outFileName}'
+    
+    finalFileName =f'{finalDir}/{args.var}2D.root' if args.want2D else f'{finalDir}/{args.var}.root'
+    print(finalFileName)
     outfile  = ROOT.TFile(finalFileName,'RECREATE')
 
-    GetHistograms(args.var,args.inFile, args.dataset, outfile, unc_cfg_dict, sample_cfg_dict,
-                                       args.deepTauVersion, args.compute_unc_variations, args.compute_rel_weights, args.furtherCut, args.wantBTag args.want2D)
 
+    sample_type = sample_cfg_dict[args.dataset]['sampleType'] if args.dataset != 'data' else 'data'
+    key_central = (sample_type, "Central", "Central")
+
+    all_dataframes = {}
+    all_histograms = {}
+    key_filter_dict = createKeyFilterDict()
+
+    # central hist definition
+    #dfWrapped_central = dfWrapped_central = DataFrameBuilder(ROOT.RDataFrame('Events', inFile), deepTauVersion)
+    dfWrapped_central = DataFrameBuilder(ROOT.RDataFrame('Events',f'{args.inDir}/*.root'), args.deepTauVersion)
+    col_names_central =  dfWrapped_central.colNames
+    col_tpyes_central =  dfWrapped_central.colTypes
+
+    if args.cacheDir:
+        dfWrapped_cache_central = DataFrameBuilder(ROOT.RDataFrame('Events',f'{args.cacheDir}/*.root'), args.deepTauVersion)
+        #print(dfWrapped_cache_central.df.Filter('entryIndex==149491').Count().GetValue())
+        AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache_central)
+
+
+    if key_central not in all_dataframes:
+        all_dataframes[key_central] = [PrepareDfWrapped(dfWrapped_central).df]
+    central_histograms = GetHistogramDictFromDataframes(args.var, PrepareDfWrapped(dfWrapped_central).df,  key_central , key_filter_dict, unc_cfg_dict['norm'],hist_cfg_dict, args.wantBTag,args.want2D,args.furtherCut)
+    
+    # central quantities definition
+    compute_variations = ( args.compute_unc_variations or args.compute_rel_weights ) and args.dataset != 'data'
+    if compute_variations:
+        all_dataframes[key_central][0] = createCentralQuantities(all_dataframes[key_central][0], col_tpyes_central, col_names_central)
+        if all_dataframes[key_central][0].Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
+
+    # norm weight histograms
+    if args.compute_rel_weights and args.dataset!='data':
+        for uncName in unc_cfg_dict['norm'].keys():
+            for scale in scales:
+                key_2 = (sample_type, uncName, scale)
+                if key_2 not in all_dataframes.keys():
+                    all_dataframes[key_2] = []
+                all_dataframes[key_2] = all_dataframes[key_central]
+                norm_histograms =  GetHistogramDictFromDataframes(args.var,all_dataframes, key_2, key_filter_dict,unc_cfg_dict['norm'], hist_cfg_dict, args.wantBTag, args.want2D, args.furtherCut)
+                central_histograms.update(norm_histograms)
+
+    # save histograms
+    SaveHists(central_histograms, outfile)
+
+    # shape weight  histograms
+    if args.compute_unc_variations and args.dataset!='data':
+        for uncName in unc_cfg_dict['shape']:
+            for scale in scales:
+                key_2 = (sample_type, uncName, scale)
+                GetShapeDataFrameDict(all_dataframes, key_2, key_central, inFile, compute_variations, deepTauVersion, col_names_central, col_tpyes_central )
+                shape_histograms=  GetHistogramDictFromDataframes(args.var, all_dataframes, key_2 , key_filter_dict,unc_cfg_dict['shape'], hist_cfg_dict, args.wantBTag, args.want2D, args.furtherCut)
+                SaveHists(shape_histograms, outfile)
 
 
     outfile.Close()

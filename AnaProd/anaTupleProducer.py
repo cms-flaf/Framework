@@ -116,7 +116,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     if not isData:
         dfw.Define(f"FatJet_genJet_idx", f" FindMatching(FatJet_p4[FatJet_bbCand],GenJetAK8_p4,0.3)")
         fatjet_obs.extend(JetObservablesMC)
-        dfw.DefineAndAppend("genchannelId","static_cast<int>(genHttCandidate.channel())")
+        #dfw.DefineAndAppend("genchannelId","static_cast<int>(genHttCandidate.channel())")
     dfw.DefineAndAppend(f"SelectedFatJet_pt", f"v_ops::pt(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_phi", f"v_ops::phi(FatJet_p4[FatJet_bbCand])")

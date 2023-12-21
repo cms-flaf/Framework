@@ -10,6 +10,9 @@
 #include <typeindex>
 
 #include "EntryQueue.h"
+
+
+  /*
 namespace kin_fit {
 struct FitResults {
     double mass, chi2, probability;
@@ -19,7 +22,7 @@ struct FitResults {
     FitResults(double _mass, double _chi2, double _probability, int _convergence) :
         mass(_mass), chi2(_chi2), probability(_probability), convergence(_convergence) {}
 };
-}
+}*/
 
 using RVecF = ROOT::VecOps::RVec<float>;
 using RVecI = ROOT::VecOps::RVec<int>;

@@ -276,9 +276,11 @@ if __name__ == "__main__":
     if not os.path.exists(args.jsonDir):
         os.makedirs(args.jsonDir)
     json_fileName_prefix =  f"all_ratios_{args.var}2D" if TwoDTrue else f"all_ratios_{args.var}"
+    print(json_fileName_prefix)
+    print(args.uncSource)
     if args.uncSource !='Central':
-        json_fileName_prefix+={args.uncSource}
-    json_file = os.path.join(args.jsonDir, f'{json_fileName_prefix}{args.suffix}.json')
+        json_fileName_prefix+=f"_{args.uncSource}"
+    json_file = os.path.join(args.jsonDir, 'all_ratios', f'{json_fileName_prefix}{args.suffix}.json')
     with open(f"{json_file}", "w") as write_file:
         json.dump(final_json_dict, write_file, indent=4)
 
@@ -286,8 +288,8 @@ if __name__ == "__main__":
     if not os.path.exists(outDir):
         os.makedirs(outDir)
     outFileName_prefix =  f"all_histograms_{args.var}2D" if TwoDTrue else f"all_histograms_{args.var}"
-    if args.uncSource !='Central':
-        outFileName_prefix+={args.uncSource}
+    #if args.uncSource !='Central':
+    #    outFileName_prefix+=f"_onlyCentral"
     outFileName = os.path.join(outDir, f'{outFileName_prefix}{args.suffix}.root')
     if os.path.exists(outFileName):
         os.remove(outFileName)

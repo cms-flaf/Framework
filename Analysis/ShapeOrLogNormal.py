@@ -54,7 +54,7 @@ def GetChi2(histogram):
 
 
 def GetChi2Method(hist_central,hist_up_ratio,hist_up,hist_down_ratio,hist_down, sample, ch, cat, unc, unc_dict):
-    print(sample,ch,cat,unc)
+    #print(sample,ch,cat,unc)
     chi2_up,p_value_up,fit_param_up,fit_param_error_up=GetChi2(hist_up_ratio)
     chi2_down,p_value_down,fit_param_down,fit_param_error_down=GetChi2(hist_down_ratio)
     #if p_value_up < 0.05 or p_value_down < 0.05:
@@ -66,17 +66,23 @@ def GetChi2Method(hist_central,hist_up_ratio,hist_up,hist_down_ratio,hist_down, 
     hist_ratio_integral_down = hist_down_ratio.Integral(0, hist_down_ratio.GetNbinsX())
     if sample not in unc_dict.keys():
         unc_dict[sample]={}
-    if ch not in unc_dict[sample].keys():
-        unc_dict[sample][ch]={}
-    if cat not in unc_dict[sample][ch].keys():
-        unc_dict[sample][ch][cat] = {}
-    if unc not in unc_dict[sample][ch][cat].keys():
-        unc_dict[sample][ch][cat][unc] = {}
-    print(unc_dict[sample][ch][cat][unc])
-    unc_dict[sample][ch][cat][unc]= {
+
+    if unc not in unc_dict[sample].keys():
+        unc_dict[sample][unc] = {}
+    if ch not in unc_dict[sample][unc].keys():
+        unc_dict[sample][unc][ch]={}
+
+    if cat not in unc_dict[sample][unc][ch].keys():
+        unc_dict[sample][unc][ch][cat] = {}
+    #print(unc_dict[sample][unc][ch][cat])
+    unc_dict[sample][unc][ch][cat]= {
         'Up':
         {
+            'number_bins_central':hist_central.GetNbinsX(),
+            'number_bins':hist_up.GetNbinsX(),
+            'number_bins_ratio':hist_up_ratio.GetNbinsX(),
             'p_value':p_value_up,
+            'p_value_interestng':p_value_up < 0.05 ,
             'chi2':chi2_up,
             'integral': hist_integral_up,
             'integral_central':hist_integral_central,
@@ -86,7 +92,11 @@ def GetChi2Method(hist_central,hist_up_ratio,hist_up,hist_down_ratio,hist_down, 
         },
         'Down':
         {
+            'number_bins_central':hist_central.GetNbinsX(),
+            'number_bins':hist_down.GetNbinsX(),
+            'number_bins_ratio':hist_down_ratio.GetNbinsX(),
             'p_value':p_value_down,
+            'p_value_interestng':p_value_down < 0.05 ,
             'chi2':chi2_down,
             'integral': hist_integral_down,
             'integral_central':hist_integral_central,
@@ -95,7 +105,7 @@ def GetChi2Method(hist_central,hist_up_ratio,hist_up,hist_down_ratio,hist_down, 
             'intercept_error':fit_param_error_down
         },
     }
-
+    #print(unc_dict)
 
     '''
     canvas = ROOT.TCanvas("canvas", "Fit Plot")
@@ -134,27 +144,35 @@ if __name__ == "__main__":
     all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir,False,False)
     all_histlist = {}
     histNamesDict = {}
-    all_vars = list(hist_cfg_dict.keys())
+    #all_vars = list(hist_cfg_dict.keys())
     unc_cfg_dict = {}
     with open(args.uncConfig, 'r') as f:
         unc_cfg_dict = yaml.safe_load(f)
     all_uncertainties = list(unc_cfg_dict['norm'].keys())
     all_uncertainties.extend(unc_cfg_dict['shape'])
+    #print(all_uncertainties)
 
-
+    categories = list(sample_cfg_dict['GLOBAL']['categories'])
+    #print(categories)
     btag_dir= "bTag_WP" if args.wantBTag else "bTag_shape"
-
+    #print(btag_dir)
+    #print(args.histDir,all_samples_types)
     unc_dict = {}
     for sample in all_samples_list:
         if sample == 'data': continue
-        for channel in ['tauTau']: #['eTau', 'muTau', 'tauTau']:
-            for category in ['inclusive','res2b','res1b']: #['inclusive','res2b','res1b','boosted']:
-                for uncSource in all_uncertainties:
-                    inFileName=f'{args.inFileName}_{args.var}_{uncSource}{args.suffix}.root'
-                    inDir = os.path.join(args.histDir, 'all_histograms',args.var,btag_dir)
-                    if not os.path.exists(os.path.join(inDir,inFileName)): continue
-                    inFileName_Central=f'{args.inFileName}_{args.var}_Central{args.suffix}.root'
-                    sample_name = sample
+        for uncSource in all_uncertainties:
+            #print(uncSource)
+            inFileName=f'{args.inFileName}_{args.var}_{uncSource}{args.suffix}.root'
+            #print(inFileName)
+            inDir = os.path.join(args.histDir, 'all_histograms',args.var,btag_dir)
+            #print(inDir)
+            if not os.path.exists(os.path.join(inDir,inFileName)): continue
+            inFileName_Central=f'{args.inFileName}_{args.var}_Central.root'
+            #inFileName_Central=f'{args.inFileName}_{args.var}_Central{args.suffix}.root'
+            sample_name = sample
+            for channel in ['eTau', 'muTau', 'tauTau']:
+                for category in categories: #['inclusive','res2b','res1b','boosted']:
+                    if category=='boosted': continue
                     hist_central,hist_up_ratio,hist_up,hist_down_ratio,hist_down = GetShiftedRatios(channel, category, inFileName_Central, inDir, sample_name,uncSource)
                     GetChi2Method(hist_central,hist_up_ratio,hist_up,hist_down_ratio,hist_down, sample_name, channel, category, uncSource, unc_dict)
     outDir = os.path.join(args.outDir, args.var, btag_dir)

@@ -15,7 +15,7 @@ if __name__ == "__main__":
     import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument('--histDir', required=True, type=str)
-    parser.add_argument('--remove-files', required=False, type=bool, default=False)
+    parser.add_argument('--remove-files', required=False, type=bool, default=True)
     parser.add_argument('--hists', required=False, type=str, default='bbtautau_mass,dR_tautau,tautau_m_vis,tau1_pt')
     parser.add_argument('--file-name-pattern', required=False, type=str, default='all_histograms')
     parser.add_argument('--uncConfig', required=True, type=str)
@@ -39,10 +39,9 @@ if __name__ == "__main__":
         for uncName in uncNameTypes:
             all_files[var].append(os.path.join(inDir, f"{args.file_name_pattern}_{var}_{uncName}.root"))
         outFileNameFinal = os.path.join(inDir, f'{args.file_name_pattern}_{var}.root')
-        hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
+        hadd_str = f'hadd -f209 {outFileNameFinal} '
         hadd_str += ' '.join(f for f in all_files[var])
         print(hadd_str)
-        '''
         if len(all_files[var]) > 1:
             sh_call([hadd_str], True)
         else:
@@ -51,4 +50,3 @@ if __name__ == "__main__":
             for histFile in all_files[var]:
                 if histFile == outFileNameFinal: continue
                 os.remove(histFile)
-        '''

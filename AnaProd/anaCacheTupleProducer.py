@@ -31,8 +31,13 @@ def getKeyNames(root_file_name):
 
 
 def applyLegacyVariables(dfw, is_central=True):
-    entryvalid_stri = ' || '.join(f'({ch} && ({triggers[ch]}))' for ch in channels)
-    dfw.DefineAndAppend("entry_valid",f"((b1_pt > 0) & (b2_pt > 0)) && {entryvalid_stri}")
+    for channel,ch_value in channels.items():
+            dfw.df = dfw.df.Define(f"{channel}", f"channelId=={ch_value}")
+    entryvalid_stri = '((b1_pt > 0) & (b2_pt > 0)) & ('
+    entryvalid_stri += ' || '.join(f'({ch} & {triggers[ch]})' for ch in channels)
+    entryvalid_stri += ')'
+    #print(entryvalid_stri)
+    dfw.DefineAndAppend("entry_valid",entryvalid_stri)
     MT2Branches = dfw.Apply(LegacyVariables.GetMT2)
     dfw.colToSave.extend(MT2Branches)
     KinFitBranches = dfw.Apply(LegacyVariables.GetKinFit)

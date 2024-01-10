@@ -12,7 +12,7 @@ QCDregions = ['OS_Iso', 'SS_Iso', 'OS_AntiIso', 'SS_AntiIso']
 categories = ['res2b', 'res1b', 'inclusive', 'boosted', 'btag_shape','baseline']
 gen_channels = {'eTau':[3,5], 'muTau':[4,5], 'tauTau':[5,5]}
 channels = {'eTau':13, 'muTau':23, 'tauTau':33}
-triggers = {'eTau':  'HLT_singleTau || HLT_singleEle || HLT_etau || HLT_MET' , 'muTau': 'HLT_singleTau || HLT_singleMu || HLT_mutau || HLT_MET', 'tauTau' : 'HLT_singleTau || HLT_ditau || HLT_MET' }
+triggers = {'eTau':  '(HLT_singleTau || HLT_singleEle || HLT_etau || HLT_MET)' , 'muTau': '(HLT_singleTau || HLT_singleMu || HLT_mutau || HLT_MET)', 'tauTau' : '(HLT_singleTau || HLT_ditau || HLT_MET)' }
 btag_wps = {'res2b':'Medium', 'res1b':'Medium', 'boosted':"Loose", 'inclusive':'','btag_shape':'','baseline':''}
 mass_cut_limits = {'bb_m_vis':[50,350],'tautau_m_vis':[20,280]}
 
@@ -243,7 +243,7 @@ class DataFrameBuilder(DataFrameBuilderBase):
 
 
     def defineQCDRegions(self):
-        print(self.deepTauVersion)
+        #print(self.deepTauVersion)
         tau2_iso_var = f"tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet"
         self.df = self.df.Define("OS", "tau1_charge*tau2_charge < 0")
         self.df = self.df.Define("Iso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")

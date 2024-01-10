@@ -15,20 +15,32 @@ from Analysis.HistHelper import *
 from Analysis.hh_bbtautau import *
 
 
-def createCacheQuantities(dfWrapped_cache):
+def createCacheQuantities(dfWrapped_cache, cache_map_name):
     df_cache = dfWrapped_cache.df
-    map_creator = ROOT.analysis.MapCreator(*dfWrapped_cache.colTypes)()
-    df_cache = map_creator.processCentral(ROOT.RDF.AsRNode(df_cache), Utilities.ListToVector(dfWrapped_cache.colNames))
+    map_creator_cache = ROOT.analysis.CacheCreator(*dfWrapped_cache.colTypes)()
+    df_cache = map_creator_cache.processCache(ROOT.RDF.AsRNode(df_cache), Utilities.ListToVector(dfWrapped_cache.colNames), cache_map_name)
+
     return df_cache
 
-def AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache):
+def clean_map_placeholder(dfWrapped_cache):
+    map_creator_cache = ROOT.analysis.CacheCreator(*dfWrapped_cache.colTypes)()
+    map_creator_cache.clean_map()
+
+def AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache,cache_map_name="cache_map_placeholder"):
     col_names_cache =  dfWrapped_cache.colNames
+    print("A")
     col_tpyes_cache =  dfWrapped_cache.colTypes
+    print("B")
+    print(dfWrapped_cache.df.Count().GetValue())
     #if "kinFit_result" in col_names_cache:
     #    col_names_cache.remove("kinFit_result")
-    dfWrapped_cache.df = createCacheQuantities(dfWrapped_cache)
-    if dfWrapped_cache.df.Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
+    dfWrapped_cache.df = createCacheQuantities(dfWrapped_cache,cache_map_name)
+    print("C")
+    if dfWrapped_cache.df.Filter(f"{cache_map_name} > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
+    print("D")
     dfWrapped_central.AddCacheColumns(col_names_cache,col_tpyes_cache)
+    print("E")
+    #ROOT.gInterpreter.ProcessLine("""delete analysis::GetEntriesMap();""")
 
 def SaveHists(histograms, out_file):
     for key_1,hist in histograms.items():
@@ -130,9 +142,10 @@ if __name__ == "__main__":
     if args.cacheDir:
         dfWrapped_cache = DataFrameBuilder(ROOT.RDataFrame('Events',f'{args.cacheDir}/*.root'), args.deepTauVersion)
         #print("df wrapped cache created")
-        #print(dfWrapped_cache.df.Count().GetValue())
-        AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache)
+        print(dfWrapped_cache.df.Count().GetValue())
+        AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache, "cache_map_Central")
         print("cache columns added")
+
 
 
     central_histograms = GetHistogramDictFromDataframes(args.var, PrepareDfWrapped(dfWrapped_central).df, key_filter_dict,hist_cfg_dict, args.wantBTag,args.want2D,args.furtherCut)

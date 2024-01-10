@@ -6,7 +6,7 @@
 (E) json files /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/jsonFiles/Run2_2018/
 
 ##################### ENVIRONMENT SETTING #######################
-bbtt && source env.sh && law index
+cd /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework && source env.sh && law index
 
 ##################### ANACACHE PRODUCTION #####################
 

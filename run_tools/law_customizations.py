@@ -129,6 +129,10 @@ class Task(law.Task):
     def central_nanoAOD_path(self):
         return os.path.join(self.central_path(), 'nanoAOD', self.period)
 
+
+    def central_nanoAOD_path_HLepRare(self):
+        return os.path.join('/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/', self.period)
+
     def central_anaTuples_path(self):
         return os.path.join(self.central_path(), 'anaTuples', self.period, self.version)
 

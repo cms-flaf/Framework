@@ -4,7 +4,8 @@ from .Utilities import *
 
 initialized = False
 
-ana_reco_object_collections = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau", "MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune","SubJet"]
+#ana_reco_object_collections = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau", "MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune","SubJet"]
+ana_reco_object_collections = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune","SubJet"]
 deepTauVersions = {"2p1":"2017", "2p5":"2018"}
 
 def Initialize(loadTF=False, loadHHBtag=False):
@@ -31,7 +32,8 @@ def Initialize(loadTF=False, loadHHBtag=False):
             ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 1)')
         initialized = True
 
-leg_names = [ "Electron", "Muon", "Tau", "boostedTau" ]
+#leg_names = [ "Electron", "Muon", "Tau", "boostedTau" ]
+leg_names = [ "Electron", "Muon", "Tau" ]
 
 channels = [ 'muMu', 'eMu', 'eE', 'muTau', 'eTau', 'tauTau' ] # in order of importance during the channel selection
 
@@ -152,10 +154,10 @@ def RecoLeptonsSelection(df, apply_filter=True):
            )
     """)
 
-    df = df.Define("boostedTau_B0", f"""
-        v_ops::pt(boostedTau_p4) > 40 && abs(v_ops::eta(boostedTau_p4)) < 2.3 && abs(boostedTau_dz) < 0.2 && boostedTau_decayMode != 5
-        && boostedTau_decayMode != 6 && boostedTau_idMVAnewDM2017v2 >= {WorkingPointsBoostedTauVSjet.VVLoose.value}
-    """)
+    #df = df.Define("boostedTau_B0", f"""
+    #    v_ops::pt(boostedTau_p4) > 40 && abs(v_ops::eta(boostedTau_p4)) < 2.3 && abs(boostedTau_dz) < 0.2 && boostedTau_decayMode != 5
+    #    && boostedTau_decayMode != 6 && boostedTau_idMVAnewDM2017v2 >= {WorkingPointsBoostedTauVSjet.VVLoose.value}
+    #""")
 
     df = df.Define("Electron_B0T", """
         Electron_B0 && (Electron_mvaIso_WP80
@@ -173,9 +175,9 @@ def RecoLeptonsSelection(df, apply_filter=True):
                    || Tau_idDeepTau2018v2p5VSjet >= {WorkingPointsTauVSjet.Loose.value} )
     """)
 
-    df = df.Define("boostedTau_B0T", f"""
-        boostedTau_B0 && boostedTau_idMVAnewDM2017v2 >= {WorkingPointsBoostedTauVSjet.Medium.value}
-    """)
+    #df = df.Define("boostedTau_B0T", f"""
+    #    boostedTau_B0 && boostedTau_idMVAnewDM2017v2 >= {WorkingPointsBoostedTauVSjet.Medium.value}
+    #""")
 
     met_cuts = DefineMETCuts(80, ["MET", "DeepMETResolutionTune", "DeepMETResponseTune", "PuppiMET"])
 
@@ -183,7 +185,7 @@ def RecoLeptonsSelection(df, apply_filter=True):
     for leg1_idx in range(len(leg_names)):
         for leg2_idx in range(max(1, leg1_idx), len(leg_names)):
             leg1, leg2 = leg_names[leg1_idx], leg_names[leg2_idx]
-            if leg1 == 'Tau' and leg2 == 'boostedTau': continue
+            #if leg1 == 'Tau' and leg2 == 'boostedTau': continue
             ch_filter = f"{leg1}{leg2}_B0"
             ch_filters.append(ch_filter)
             if leg1 == leg2:

@@ -91,9 +91,9 @@ TTZZ:
   reference: Higgs_XSBR_YR4
   unc: 1.28e-06
 WJetsToLNu_NNLO:
-  crossSec: 67350.0
-  reference: XSDB WJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-pythia8
-  unc: 286.2
+  crossSec: 66680.0 #67350.0
+  reference: XSDB WJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2023-02-13 12:26:36 #2021-10-11 11:27:01
+  unc: 792.7 #286.2
 WJetsToLNu_LO:
   crossSec: 53870.0
   reference: XSDB WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-06-21 10:00:29
@@ -243,9 +243,9 @@ WW:
   ref: XSDB WW_TuneCP5_13TeV-pythia8 modifiedOn 2021-06-21 10:00:53
   unc: 0.1124
 WWTo1L1Nu2Q:
-  crossSec: 51.09
+  crossSec: 51.65
   reference: XSDB WWTo1L1Nu2Q_4f_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-11-14 11:13:58
-  unc: 0.1353
+  unc: 0.5404
 WZ:
   crossSec: 27.59
   reference: XSDB WZ_TuneCP5_13TeV-pythia8 modifiedOn 2021-06-21 10:01:15

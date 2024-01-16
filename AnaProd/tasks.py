@@ -44,6 +44,8 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         else:
             producer = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheProducer.py')
             inDir = os.path.join(self.central_nanoAOD_path(), sample_name)
+            if self.period!='Run2_2018':
+             inDir = os.path.join(self.central_nanoAOD_path_HLepRare(), sample_name)
             os.makedirs(os.path.dirname(self.output().path), exist_ok=True)
             sh_call(['python3', producer, '--config', self.sample_config, '--inDir', inDir, '--sample', sample_name,
                     '--outFile', self.output().path, '--customisations', self.customisations ], env=self.cmssw_env())
@@ -67,16 +69,20 @@ class InputFileTask(Task, law.LocalWorkflow):
 
     def run(self):
         sample_name = self.branch_data
-        print(f'Creating anaCache for sample {sample_name} into {self.output().path}')
+        print(f'Creating inputFile for sample {sample_name} into {self.output().path}')
         os.makedirs(os.path.join(self.local_path(),sample_name), exist_ok=True)
         txtFile_tmp = os.path.join(self.local_path(), sample_name, "tmp.txt")
         inDir = os.path.join(self.central_nanoAOD_path(), sample_name)
+        if self.period!='Run2_2018':
+            inDir = os.path.join(self.central_nanoAOD_path_HLepRare(), sample_name)
+        #print(f"inDir is {inDir}")
         input_files = []
         for root, dirs, files in os.walk(inDir):
             for file in files:
                 if file.endswith('.root') and not file.startswith('.'):
                     if os.path.join(root, file) not in input_files:
                         input_files.append(os.path.join(root, file))
+        #print(f"inDir is {input_files}")
         with open(txtFile_tmp, 'w') as inputFileTxt:
             for input_line in input_files:
                 inputFileTxt.write(input_line+'\n')

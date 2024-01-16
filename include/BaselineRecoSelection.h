@@ -202,6 +202,7 @@ bool _HasOOMatching(const RVecMatching& legVector, size_t legIndex,
         for(int onlineIndex : legVector[legIndex].second[offlineIndex]) {
             if(onlineSelected.count(onlineIndex)) continue;
             onlineSelected.insert(onlineIndex);
+            //std::cout<< onlineIndex<<std::endl;
             if(_HasOOMatching(legVector, legIndex + 1, onlineSelected, offlineSelected))
                 return true;
             onlineSelected.erase(onlineIndex);

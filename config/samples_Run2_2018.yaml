@@ -12,7 +12,10 @@ GLOBAL:
     - Flag_eeBadScFilter
     - Flag_ecalBadCalibFilter
   triggerFile: config/triggers_2018.yaml
-  crossSectionsFile : config/crossSections13TeV.yaml
+  crossSectionsFile : config/crossSections13TeV_2018.yaml
+  # https://twiki.cern.ch/twiki/bin/viewauth/CMS/DCUserPage
+  # https://twiki.cern.ch/twiki/bin/view/CMS/DCUserPage2018Analysis
+  #lumiFile: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt
   lumiFile: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt
   signal_types:
     - GluGluToRadion

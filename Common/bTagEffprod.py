@@ -1,23 +1,32 @@
+import os
+import sys
 import ROOT
 import numpy as np
+
+if __name__ == "__main__":
+    sys.path.append(os.environ['ANALYSIS_PATH'])
+
+
 import Common.BaselineSelection as Baseline
 import Common.Utilities as Utilities
 import Common.triggerSel as Triggers
 import Corrections.Corrections as Corrections
 
 
-def bTagProdEff(inFile, config, sample_name, range, evtIds):
+def bTagProdEff(inDir, config, sample_name, range, evtIds):
 
     period = config["GLOBAL"]["era"]
     mass = -1 if 'mass' not in config[sample_name] else config[sample_name]['mass']
     isHH = True if mass > 0 else False
     Baseline.Initialize(False, False)
-    Corrections.Initialize(config=config['GLOBAL'],loadBTagEff=False)
+    isData = True if config[sample_name]['sampleType'] == 'data' else False
+    #Corrections.Initialize(config=config['GLOBAL'], isData=isData, load_corr_lib=False, load_pu=False, load_tau=False, load_trg=False, load_btag=True, loadBTagEff=False, load_met=False, load_mu = False, load_ele=False, load_puJetID=False, load_jet=False)
+    Corrections.Initialize(config=config['GLOBAL'], isData=isData, load_pu=False, load_tau=False, load_trg=False, load_btag=True, loadBTagEff=False, load_met=False, load_mu = False, load_ele=False, load_puJetID=False, load_jet=False)
     wpValues = Corrections.btag.getWPValues()
 
     triggerFile = config['GLOBAL']['triggerFile']
     trigger_class = Triggers.Triggers(triggerFile) if triggerFile is not None else None
-    df = ROOT.RDataFrame("Events", inFile)
+    df = ROOT.RDataFrame("Events", f'{inDir}/*.root')
     if range is not None:
         df = df.Range(range)
     if len(evtIds) > 0:
@@ -55,26 +64,26 @@ def bTagProdEff(inFile, config, sample_name, range, evtIds):
 
 if __name__ == "__main__":
     import argparse
-    import os
     import yaml
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--configFile', type=str)
-    parser.add_argument('--inFile', type=str)
+    parser.add_argument('--inDir', type=str)
     parser.add_argument('--sample', type=str)
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--outFile', type=str)
 
     args = parser.parse_args()
+    ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
+    ROOT.gROOT.ProcessLine('#include "include/GenTools.h"')
     if os.path.exists(args.outFile):
         os.remove(args.outFile)
 
-    ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
-    ROOT.gROOT.ProcessLine('#include "include/GenTools.h"')
     isHH=False
     with open(args.configFile, 'r') as f:
         config = yaml.safe_load(f)
-    hists = bTagProdEff(args.inFile, config, args.sample, args.nEvents,args.evtIds)
+    hists = bTagProdEff(args.inDir, config, args.sample, args.nEvents,args.evtIds)
     fileToSave = ROOT.TFile(args.outFile, 'RECREATE')
     for hist_name, hist in hists.items():
         hist.SetTitle(hist_name)

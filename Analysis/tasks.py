@@ -16,12 +16,12 @@ def load_vars_to_plot(hists):
     global vars_to_plot
     ##vars_to_plot = list(hists.keys())# ['bbtautau_mass']
     #vars_to_plot = ["tau1_pt", "tau1_eta", "tau1_phi", "tau1_mass", "tau1_idDeepTau2017v2p1VSe", "tau1_idDeepTau2017v2p1VSmu", "tau1_idDeepTau2017v2p1VSjet", "tau1_idDeepTau2018v2p5VSe", "tau1_idDeepTau2018v2p5VSmu", "tau1_idDeepTau2018v2p5VSjet", "tau1_charge", "tau1_iso"]
-    vars_to_plot = ["tau1_pt", "tau1_eta", "tau1_phi", "tau1_mass", "tau1_idDeepTau2017v2p1VSe", "tau1_idDeepTau2017v2p1VSmu", "tau1_idDeepTau2017v2p1VSjet", "tau1_charge", "tau1_iso"]
-    vars_to_plot += ["tau2_pt", "tau2_eta", "tau2_phi", "tau2_mass", "tau2_idDeepTau2017v2p1VSe", "tau2_idDeepTau2017v2p1VSmu", "tau2_idDeepTau2017v2p1VSjet", "tau2_charge", "tau2_iso"]
+    #vars_to_plot = ["tau1_pt", "tau1_eta", "tau1_phi", "tau1_mass", "tau1_idDeepTau2017v2p1VSe", "tau1_idDeepTau2017v2p1VSmu", "tau1_idDeepTau2017v2p1VSjet", "tau1_charge", "tau1_iso"]
+    #vars_to_plot += ["tau2_pt", "tau2_eta", "tau2_phi", "tau2_mass", "tau2_idDeepTau2017v2p1VSe", "tau2_idDeepTau2017v2p1VSmu", "tau2_idDeepTau2017v2p1VSjet", "tau2_charge", "tau2_iso"]
     #vars_to_plot += ["tau2_pt", "tau2_eta", "tau2_phi", "tau2_mass", "tau2_idDeepTau2017v2p1VSe", "tau2_idDeepTau2017v2p1VSmu", "tau2_idDeepTau2017v2p1VSjet", "tau2_idDeepTau2018v2p5VSe", "tau2_idDeepTau2018v2p5VSmu", "tau2_idDeepTau2018v2p5VSjet", "tau2_charge", "tau2_iso"]
     #vars_to_plot += ["b1_pt", "b1_eta", "b1_phi", "b1_mass", "b1_btagDeepFlavB", "b1_btagDeepFlavCvB", "b1_btagDeepFlavCvL", "b1_particleNetAK4_B", "b1_particleNetAK4_CvsB", "b1_particleNetAK4_CvsL", "b1_HHbtag"]#, "b1_hadronFlavour"]
     #vars_to_plot += ["b2_pt", "b2_eta", "b2_phi", "b2_mass", "b2_btagDeepFlavB", "b2_btagDeepFlavCvB", "b2_btagDeepFlavCvL", "b2_particleNetAK4_B", "b2_particleNetAK4_CvsB", "b2_particleNetAK4_CvsL", "b2_HHbtag"]#, "b2_hadronFlavour"]
-    #vars_to_plot += ["tautau_m_vis", "bb_m_vis", "bbtautau_mass", "dR_tautau", "nBJets", "met_pt", "met_phi", "kinFit_convergence", "kinFit_result_probability", "kinFit_m", "kinFit_chi2"]
+    vars_to_plot = ["tautau_m_vis", "bb_m_vis", "bbtautau_mass", "dR_tautau", "nBJets", "met_pt", "met_phi", "kinFit_convergence", "kinFit_result_probability", "kinFit_m", "kinFit_chi2"]
     #vars_to_plot += ["SVfit_valid", "SVfit_pt", "SVfit_pt_error", "SVfit_eta", "SVfit_eta_error", "SVfit_phi", "SVfit_phi_error", "SVfit_m", "SVfit_m_error", "SVfit_mt", "SVfit_mt_error", "MT2"]
     return vars_to_plot
 
@@ -83,6 +83,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         n = 0
         k = 0
         branches = {}
+        #codeprint(vars_to_plot)
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
         #vars_to_plot = ['bbtautau_mass']#list(hists.keys())# ['tau1_pt','tau2_pt','tau1_eta','tau2_eta','SelectedFatJet_pt_boosted','SelectedFatJet_eta_boosted'] #
         #vars_to_plot = ['bbtautau_mass']#['tau1_pt','tau2_pt','tau1_eta','tau2_eta','SelectedFatJet_pt_boosted','SelectedFatJet_eta_boosted'] #
@@ -175,20 +176,22 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if var == vars_to_plot[0]:
                     branches[k] = (smpl_name, idx_list, var)
                     k+=1
+        print(branches)
         return branches
 
     def output(self):
         sample_name, idx_list,var  = self.branch_data
         local_files_target = []
-        outFile = getOutFileName(var, sample_name, self.central_Histograms_path(), self.GetBTagDir())
-        #local_files_target.append(law.LocalFileTarget(outFile))
-        return law.LocalFileTarget(outFile)
+        for obs in vars_to_plot:
+            outFile = getOutFileName(obs, sample_name, self.central_Histograms_path(), self.GetBTagDir())
+            local_files_target.append(law.LocalFileTarget(outFile))
+        return local_files_target #law.LocalFileTarget(outFile)
 
     def run(self):
         sample_name, idx_list,var  = self.branch_data
         #print(histProducerFile_map)
-        files_idx = []
         hists_str = ','.join(var for var in vars_to_plot)
+        files_idx = []
         file_ids_str = ''
         file_name_pattern = 'nano'
         if(len(idx_list)>1):

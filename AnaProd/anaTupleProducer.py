@@ -29,15 +29,56 @@ Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all"]
 Electron_observables = ["Electron_mvaNoIso_WP90", "Electron_mvaIso_WP90", "Electron_pfRelIso03_all"]
 JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",
-                "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL", "bRegCorr", "bRegRes", "idbtagDeepFlavB"]
+                "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL", "bRegCorr", "bRegRes", "idbtagDeepFlavB",
+                "btagPNetB", "btagPNetCvL", "btagPNetCvB", "btagPNetQvG", "btagPNetTauVJet", "PNetRegPtRawCorr", "PNetRegPtRawCorrNeutrino", "PNetRegPtRawRes"] # 2016]
 JetObservablesMC = ["hadronFlavour","partonFlavour"]
-
 FatJetObservables = ["area", "btagCSVV2", "btagDDBvLV2", "btagDeepB", "btagHbb", "deepTagMD_HbbvsQCD",
                      "deepTagMD_ZHbbvsQCD", "deepTagMD_ZbbvsQCD", "deepTagMD_bbvsLight", "deepTag_H",
-                     "jetId", "msoftdrop", "nBHadrons", "nCHadrons",
-                     "nConstituents", "particleNetMD_QCD", "particleNetMD_Xbb", "particleNet_HbbvsQCD",
-                     "particleNet_mass", "rawFactor" ]
+                     "jetId", "msoftdrop", "nBHadrons", "nCHadrons", "nConstituents","rawFactor",
+                      "particleNetMD_QCD", "particleNetMD_Xbb", "particleNet_HbbvsQCD", "particleNet_mass", # 2018
+                     "particleNet_QCD","particleNet_XbbVsQCD", # 2016
+                     "particleNetLegacy_QCD", "particleNetLegacy_Xbb", "particleNetLegacy_mass", # 2016
+                     "particleNetWithMass_QCD", "particleNetWithMass_HbbvsQCD", "particleNet_massCorr" # 2016
+                     ]
 
+# in this PR https://github.com/cms-sw/cmssw/commit/17457a557bd75ab479dfb78013edf9e551ecd6b7, particleNet MD have been removed therefore we will switch to take
+
+
+# # New ParticleNet trainings are not available in MiniAOD until Run3 13X
+'''
+particleNetWithMass_QCD YES
+particleNetWithMass_TvsQCD NO
+particleNetWithMass_WvsQCD NO
+particleNetWithMass_ZvsQCD NO
+particleNetWithMass_H4qvsQCD NO
+particleNetWithMass_HbbvsQCD YES
+particleNetWithMass_HccvsQCD NO
+particleNet_QCD YES
+particleNet_QCD2HF NO
+particleNet_QCD1HF NO
+particleNet_QCD0HF NO
+particleNet_massCorr YES
+particleNet_XbbVsQCD YES
+particleNet_XccVsQCD NO
+particleNet_XqqVsQCD NO
+particleNet_XggVsQCD NO
+particleNet_XttVsQCD NO
+particleNet_XtmVsQCD NO
+particleNet_XteVsQCD NO
+'''
+# Restore taggers that were decommisionned for Run-3
+'''
+particleNetLegacy_mass YES
+particleNetLegacy_Xbb YES
+particleNetLegacy_Xcc NO
+particleNetLegacy_Xqq NO
+particleNetLegacy_QCD YES
+'''
+
+# ParticleNet legacy jet tagger is already in 106Xv2 MINIAOD,
+# add PartlceNet legacy mass regression and new combined tagger + mass regression
+
+# for more info: ---> https://github.com/cms-sw/cmssw/blob/master/PhysicsTools/NanoAOD/python/jetsAK8_cff.py
 
 FatJetObservablesMC = ["hadronFlavour","partonFlavour"]
 
@@ -238,6 +279,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     Baseline.Initialize(loadTF, loadHHBtag)
     Corrections.Initialize(config=config['GLOBAL'],isData=isData)
     triggerFile = config['GLOBAL'].get('triggerFile')
+    #print(triggerFile)
     if triggerFile is not None:
         triggerFile = os.path.join(os.environ['ANALYSIS_PATH'], triggerFile)
         trigger_class = Triggers.Triggers(triggerFile)

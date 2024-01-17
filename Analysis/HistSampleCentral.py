@@ -28,18 +28,18 @@ def clean_map_placeholder(dfWrapped_cache):
 
 def AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache,cache_map_name="cache_map_placeholder"):
     col_names_cache =  dfWrapped_cache.colNames
-    print("A")
+    #print("A")
     col_tpyes_cache =  dfWrapped_cache.colTypes
-    print("B")
-    print(dfWrapped_cache.df.Count().GetValue())
+    #print("B")
+    #print(dfWrapped_cache.df.Count().GetValue())
     #if "kinFit_result" in col_names_cache:
     #    col_names_cache.remove("kinFit_result")
     dfWrapped_cache.df = createCacheQuantities(dfWrapped_cache,cache_map_name)
-    print("C")
+    #print("C")
     if dfWrapped_cache.df.Filter(f"{cache_map_name} > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
-    print("D")
+    #print("D")
     dfWrapped_central.AddCacheColumns(col_names_cache,col_tpyes_cache)
-    print("E")
+    #print("E")
     #ROOT.gInterpreter.ProcessLine("""delete analysis::GetEntriesMap();""")
 
 def SaveHists(histograms, out_file):
@@ -142,9 +142,9 @@ if __name__ == "__main__":
     if args.cacheDir:
         dfWrapped_cache = DataFrameBuilder(ROOT.RDataFrame('Events',f'{args.cacheDir}/*.root'), args.deepTauVersion)
         #print("df wrapped cache created")
-        print(dfWrapped_cache.df.Count().GetValue())
+        #print(dfWrapped_cache.df.Count().GetValue())
         AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache, "cache_map_Central")
-        print("cache columns added")
+        #print("cache columns added")
 
 
 

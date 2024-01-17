@@ -72,12 +72,13 @@ def defineAllP4(df):
     return df
 
 def createInvMass(df):
+    particleNet_mass = 'particleNet_mass' if 'SelectedFatJet_particleNet_mass_boosted' in df.GetColumnNames() else 'particleNetLegacy_mass'
     df = df.Define("tautau_m_vis", "static_cast<float>((tau1_p4+tau2_p4).M())")
-    df = df.Define("bb_m_vis", """
-                   if (!boosted){
+    df = df.Define("bb_m_vis", f"""
+                   if (!boosted){{
                        return static_cast<float>((b1_p4+b2_p4).M());
-                       }
-                    return static_cast<float>(SelectedFatJet_particleNet_mass_boosted);""")
+                       }}
+                    return static_cast<float>(SelectedFatJet_{particleNet_mass}_boosted);""")
     df = df.Define("bbtautau_mass", """
                    if (!boosted){
                        return static_cast<float>((b1_p4+b2_p4+tau1_p4+tau2_p4).M());

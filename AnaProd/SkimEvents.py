@@ -26,6 +26,7 @@ col_type_dict = {
   'ULong64_t' :'unsigned long long',
   'ULong_t' :'unsigned long',
   'Long_t' :'long',
+  'UChar_t':'unsigned char',
   'UInt_t' :'unsigned int',
   'ROOT::VecOps::RVec<float>':'ROOT::VecOps::RVec<float>',
   'ROOT::VecOps::RVec<int>':'ROOT::VecOps::RVec<int>',
@@ -50,7 +51,7 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Event
 
   colToSave_diff= []
   colToNotToMakeDiff=  ["period","run", "sample_name", "sample_type", "channelId", "entryIndex", "event", "isData", "luminosityBlock", "X_mass", "X_spin"]
-  
+
 
   condition_noDiff_list = []
   condition_Valid_list = []

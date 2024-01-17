@@ -12,8 +12,16 @@ QCDregions = ['OS_Iso', 'SS_Iso', 'OS_AntiIso', 'SS_AntiIso']
 categories = ['res2b', 'res1b', 'inclusive', 'boosted', 'btag_shape','baseline']
 gen_channels = {'eTau':[3,5], 'muTau':[4,5], 'tauTau':[5,5]}
 channels = {'eTau':13, 'muTau':23, 'tauTau':33}
-#triggers = {'eTau':  '(HLT_singleTau || HLT_singleEle || HLT_etau || HLT_MET)' , 'muTau': '(HLT_singleTau || HLT_singleMu || HLT_mutau || HLT_MET)', 'tauTau' : '(HLT_singleTau || HLT_ditau || HLT_MET)' }
-triggers = {'eTau':  '( HLT_singleEle || HLT_etau )' , 'muTau': '( HLT_singleMu || HLT_mutau )', 'tauTau' : '( HLT_ditau )' }
+triggers = {
+    'eTau':  '(HLT_singleTau || HLT_singleEle || HLT_etau || HLT_MET)' ,
+    'muTau': '(HLT_singleTau || HLT_singleMu || HLT_mutau || HLT_MET)',
+    'tauTau' : '(HLT_singleTau || HLT_ditau || HLT_MET)'
+}
+trigger_list = {
+    'eTau':  ['HLT_singleTau', 'HLT_singleEle', 'HLT_etau', 'HLT_MET'] ,
+    'muTau': ['HLT_singleTau', 'HLT_singleMu', 'HLT_mutau', 'HLT_MET'],
+    'tauTau' : ['HLT_singleTau' , 'HLT_ditau', 'HLT_MET']
+ }
 btag_wps = {'res2b':'Medium', 'res1b':'Medium', 'boosted':"Loose", 'inclusive':'','btag_shape':'','baseline':''}
 mass_cut_limits = {'bb_m_vis':[50,350],'tautau_m_vis':[20,280]}
 
@@ -29,6 +37,7 @@ filters = {
         'QCD_regions':[('OS_Iso','OS_Iso'),('SS_Iso','SS_Iso'),('OS_AntiIso','OS_AntiIso'),('SS_AntiIso','SS_AntiIso')] ,
         'categories': [('res2b', 'res2b'), ('res1b', 'res1b'), ('inclusive', 'return true;'),('btag_shape', 'return true;')],
         }
+
 
 def createKeyFilterDict():
     reg_dict = {}
@@ -202,16 +211,25 @@ def GetWeight(channel, cat):
 class DataFrameBuilder(DataFrameBuilderBase):
 
     def defineBoostedVariables(self):
+        #FatJetObservables = ["area", "btagCSVV2", "btagDDBvLV2", "btagDeepB", "btagHbb", "deepTagMD_HbbvsQCD",
+        #             "deepTagMD_ZHbbvsQCD", "deepTagMD_ZbbvsQCD", "deepTagMD_bbvsLight", "deepTag_H",
+        #             "jetId", "msoftdrop", "nBHadrons", "nCHadrons",
+        #             "nConstituents", "particleNetMD_QCD", "particleNetMD_Xbb", "particleNet_HbbvsQCD",
+        #             "particleNet_mass", "rawFactor", "p4","pt","eta","phi","mass" ]
         FatJetObservables = ["area", "btagCSVV2", "btagDDBvLV2", "btagDeepB", "btagHbb", "deepTagMD_HbbvsQCD",
                      "deepTagMD_ZHbbvsQCD", "deepTagMD_ZbbvsQCD", "deepTagMD_bbvsLight", "deepTag_H",
-                     "jetId", "msoftdrop", "nBHadrons", "nCHadrons",
-                     "nConstituents", "particleNetMD_QCD", "particleNetMD_Xbb", "particleNet_HbbvsQCD",
-                     "particleNet_mass", "rawFactor", "p4","pt","eta","phi","mass" ]
+                     "jetId", "msoftdrop", "nBHadrons", "nCHadrons", "nConstituents","rawFactor",
+                      "particleNetMD_QCD", "particleNetMD_Xbb", "particleNet_HbbvsQCD", "particleNet_mass", # 2018
+                     "particleNet_QCD","particleNet_XbbVsQCD", # 2016
+                     "particleNetLegacy_QCD", "particleNetLegacy_Xbb", "particleNetLegacy_mass", # 2016
+                     "particleNetWithMass_QCD", "particleNetWithMass_HbbvsQCD", "particleNet_massCorr", "p4","pt","eta","phi","mass"  # 2016
+                     ]
         self.df = self.df.Define("SelectedFatJet_size_boosted","SelectedFatJet_p4[fatJet_sel].size()")
         # def the correct discriminator
-        self.df = self.df.Define("SelectedFatJet_particleNetMD_Xbb_boosted_vec","SelectedFatJet_particleNetMD_Xbb[fatJet_sel]")
+        particleNet_Xbb= 'particleNetMD_Xbb' if 'SelectedFatJet_particleNetMD_Xbb' in self.df.GetColumnNames() else 'particleNetLegacy_Xbb'
+        self.df = self.df.Define(f"SelectedFatJet_{particleNet_Xbb}_boosted_vec",f"SelectedFatJet_{particleNet_Xbb}[fatJet_sel]")
         self.df = self.df.Define("SelectedFatJet_idxUnordered", "CreateIndexes(SelectedFatJet_p4[fatJet_sel].size())")
-        self.df = self.df.Define("SelectedFatJet_idxOrdered", "ReorderObjects(SelectedFatJet_particleNetMD_Xbb_boosted_vec, SelectedFatJet_idxUnordered)")
+        self.df = self.df.Define("SelectedFatJet_idxOrdered", f"ReorderObjects(SelectedFatJet_{particleNet_Xbb}_boosted_vec, SelectedFatJet_idxUnordered)")
         for fatJetVar in FatJetObservables:
             if f'SelectedFatJet_{fatJetVar}' in self.df.GetColumnNames() and f'SelectedFatJet_{fatJetVar}_boosted_vec' not in self.df.GetColumnNames():
                 self.df = self.df.Define(f'SelectedFatJet_{fatJetVar}_boosted_vec',f""" SelectedFatJet_{fatJetVar}[fatJet_sel];""")
@@ -220,10 +238,17 @@ class DataFrameBuilder(DataFrameBuilderBase):
                                    """)
         #self.df.Display({"SelectedFatJet_p4_boosted", "SelectedFatJet_size_boosted"}).Print()
 
+    def defineTriggers(self):
+        for ch in channels:
+            for trg in trigger_list[ch]:
+                #print(trg)
+                if trg not in self.df.GetColumnNames():
+                    self.df = self.df.Define(trg, "1")
 
     def defineSelectionRegions(self):
         self.df = self.df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {self.bTagWP}) + int(b2_idbtagDeepFlavB >= {self.bTagWP})")
-        self.df = self.df.Define("fatJet_presel", "SelectedFatJet_pt>250 && SelectedFatJet_particleNet_HbbvsQCD>=0.9734").Define("fatJet_sel"," RemoveOverlaps(SelectedFatJet_p4, fatJet_presel, { {tau1_p4, tau2_p4},}, 2, 0.8)").Define("boosted", "SelectedFatJet_p4[fatJet_sel].size()>0")
+        particleNet_HbbvsQCD = 'particleNet_HbbvsQCD' if 'SelectedFatJet_particleNet_HbbvsQCD' in self.df.GetColumnNames() else 'particleNetWithMass_HbbvsQCD'
+        self.df = self.df.Define("fatJet_presel", f"SelectedFatJet_pt>250 && SelectedFatJet_{particleNet_HbbvsQCD}>=0.9734").Define("fatJet_sel"," RemoveOverlaps(SelectedFatJet_p4, fatJet_presel, { {tau1_p4, tau2_p4},}, 2, 0.8)").Define("boosted", "SelectedFatJet_p4[fatJet_sel].size()>0")
         self.df = self.df.Define("res1b", f"!boosted && nSelBtag == 1")
         self.df = self.df.Define("res2b", f"!boosted && nSelBtag == 2")
         self.df = self.df.Define("inclusive", f"!boosted")
@@ -280,5 +305,6 @@ def PrepareDfWrapped(dfWrapped):
     dfWrapped.defineSelectionRegions()
     dfWrapped.defineBoostedVariables()
     dfWrapped.defineChannels()
+    dfWrapped.defineTriggers()
     dfWrapped.df = createInvMass(dfWrapped.df)
     return dfWrapped

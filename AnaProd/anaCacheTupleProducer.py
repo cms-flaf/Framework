@@ -33,6 +33,9 @@ def getKeyNames(root_file_name):
 def applyLegacyVariables(dfw, is_central=True):
     for channel,ch_value in channels.items():
             dfw.df = dfw.df.Define(f"{channel}", f"channelId=={ch_value}")
+            for trigger in trigger_list[channel]:
+                if trigger not in dfw.df.GetColumnNames():
+                    dfw.df = dfw.df.Define(trigger, "1")
     entryvalid_stri = '((b1_pt > 0) & (b2_pt > 0)) & ('
     entryvalid_stri += ' || '.join(f'({ch} & {triggers[ch]})' for ch in channels)
     entryvalid_stri += ')'
@@ -76,9 +79,11 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
         if dfWrapped_central.df.Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
         #print("finished defining central quantities")
         snapshotOptions.fLazy=False
+        print(file_keys)
         for uncName in unc_cfg_dict['shape']:
             for scale in scales:
                 treeName = f"Events_{uncName}{scale}"
+                treeName = f"Events_nanoHTT_{uncName}{scale}"
                 treeName_noDiff = f"{treeName}_noDiff"
                 if treeName_noDiff in file_keys:
                     print(treeName_noDiff)

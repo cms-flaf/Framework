@@ -5,7 +5,7 @@ import yaml
 import numpy as np
 import matplotlib; import matplotlib.pyplot as plt
 import matplotlib.colors as colors
-
+import mplhep as hep
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
@@ -19,7 +19,8 @@ inFiles = Utilities.ListToVector(["/eos/home-k/kandroso/cms-hh-bbtautau/anaTuple
 df_initial = ROOT.RDataFrame("Events", inFiles)
 
 df_initial = df_initial.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >=2) + int(b2_idbtagDeepFlavB >=2)")
-df_resolved = df_initial.Filter(f"b1_pt >0 && b2_pt>0 && b1_hadronFlavour==5 && b2_hadronFlavour==5 && tau2_idDeepTau2017v2p1VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value} && nSelBtag >1")
+df_initial = df_initial.Define("OS", "tau1_charge*tau2_charge < 0")
+df_resolved = df_initial.Filter(f"b1_pt >0 && b2_pt>0 && b1_hadronFlavour==5 && b2_hadronFlavour==5 && tau2_idDeepTau2017v2p1VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value} && OS && nSelBtag >1")
 for idx in [0,1]:
     df_resolved = defineP4(df_resolved, f"tau{idx+1}")
     df_resolved = defineP4(df_resolved, f"b{idx+1}")
@@ -28,10 +29,16 @@ df_resolved = df_resolved.Define("bb_m_vis", """static_cast<float>((b1_p4+b2_p4)
 np_dict_resolved = df_resolved.AsNumpy(["tautau_m_vis","bb_m_vis"])
 np_array_mass_bb_resolved = np_dict_resolved["bb_m_vis"]
 np_array_mass_tt_resolved = np_dict_resolved["tautau_m_vis"]
-print("quantile max for bb mass resolved = ", np.quantile(np_array_mass_bb_resolved, 1-0.005))
-print("quantile min for bb mass resolved = ", np.quantile(np_array_mass_bb_resolved, 0.005))
-print("quantile max for tautau mass resolved = ",np.quantile(np_array_mass_tt_resolved, 1-0.005))
-print("quantile min for tautau mass resolved = ",np.quantile(np_array_mass_tt_resolved, 0.005))
+print("quantile max (95%) for bb mass resolved = ", np.quantile(np_array_mass_bb_resolved, 1-0.05))
+print("quantile min (95%) for bb mass resolved = ", np.quantile(np_array_mass_bb_resolved, 0.05))
+print("quantile max (95%)  for tautau mass resolved = ",np.quantile(np_array_mass_tt_resolved, 1-0.05))
+print("quantile min (95%)  for tautau mass resolved = ",np.quantile(np_array_mass_tt_resolved, 0.05))
+print()
+
+print("quantile max (99.5%) for bb mass resolved = ", np.quantile(np_array_mass_bb_resolved, 1-0.005))
+print("quantile min (99.5%) for bb mass resolved = ", np.quantile(np_array_mass_bb_resolved, 0.005))
+print("quantile max (99.5%) for tautau mass resolved = ",np.quantile(np_array_mass_tt_resolved, 1-0.005))
+print("quantile min (99.5%) for tautau mass resolved = ",np.quantile(np_array_mass_tt_resolved, 0.005))
 
 histcfg = '/afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/plot/histograms.yaml'
 hist_cfg_dict = {}

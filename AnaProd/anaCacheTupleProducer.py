@@ -83,7 +83,6 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, 
         for uncName in unc_cfg_dict['shape']:
             for scale in scales:
                 treeName = f"Events_{uncName}{scale}"
-                treeName = f"Events_nanoHTT_{uncName}{scale}"
                 treeName_noDiff = f"{treeName}_noDiff"
                 if treeName_noDiff in file_keys:
                     print(treeName_noDiff)

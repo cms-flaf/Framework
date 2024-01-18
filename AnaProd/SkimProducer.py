@@ -12,9 +12,11 @@ import Common.ConvertUproot as ConvertUproot
 
 def getTreeName(systFile):
   treeName_elements = systFile.split('.')[0].split('_')
+  print(systFile)
   good_treeName = []
   for element in treeName_elements:
-    if element == 'nano' or 'Events' in element or element in [str(k) for k in range(0,10000)]: continue
+    print (element)
+    if 'nano' in element or 'Events' in element or element in [str(k) for k in range(0,10000)]: continue
     good_treeName.append(element)
   if args.test : print(f"good_treename elements are {good_treeName}")
   treeName = 'Events_'

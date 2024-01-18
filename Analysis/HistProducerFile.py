@@ -118,8 +118,8 @@ def GetShapeDataFrameDict(all_dataframes, key, key_central, inFile, inFileCache,
         fileToOpen.Close()
         #print(file_keys)
         treeName = f"Events_{uncName}{scale}"
-        treeName = f"Events_nanoHTT_{uncName}{scale}"
-        print(treeName)
+        #treeName = f"Events_nanoHTT_{uncName}{scale}"
+        #print(treeName)
         treeName_noDiff = f"{treeName}_noDiff"
         if treeName_noDiff in file_keys:
             #print(treeName_noDiff)
@@ -308,7 +308,7 @@ if __name__ == "__main__":
         for uncName in unc_cfg_dict['shape']:
             for scale in scales:
                 key_2 = (sample_type, uncName, scale)
-                print(key_2)
+                #print(key_2)
                 GetShapeDataFrameDict(all_dataframes, key_2, key_central, args.inFile, args.cacheFile, compute_variations, args.deepTauVersion, col_names_central, col_tpyes_central )
                 if key_2 not in all_dataframes.keys(): continue
                 if not all_dataframes[key_2] : continue

@@ -126,7 +126,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         cacheFile = f'/eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/{sample_name}/{self.version}/{outFileName}'
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
         HistProducerFile_cmd = ['python3', HistProducerFile,'--inFile', input_file, '--cacheFile', cacheFile, '--outFileName',outFileName_split, '--dataset', sample_name, '--outDir', outDir, '--compute_unc_variations', 'True', '--compute_rel_weights', 'True', '--uncConfig', unc_config, '--histConfig', hist_config,'--sampleConfig', sample_config, '--var', var]
-        if self.version == 'v9_deepTau2p5':
+        if self.version.split('_') == 'deepTau2p5':
             HistProducerFile_cmd.extend([ '--deepTauVersion', '2p5'])
         if self.wantBTag:
             HistProducerFile_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
@@ -353,7 +353,7 @@ class HistSampleTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
             cacheDir = f'/eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/{sample_name}/{self.version}'
             HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistSampleCentral.py')
             HistProducerFile_cmd = ['python3', HistProducerFile,'--inDir', inDir, '--cacheDir', cacheDir, '--outDir', outDir, '--dataset', sample_name, '--histConfig', hist_config,'--sampleConfig', sample_config, '--var', var]
-            if self.version == 'v9_deepTau2p5':
+            if self.version.split('_') == 'deepTau2p5':
                 HistProducerFile_cmd.extend([ '--deepTauVersion', 'v2p5'])
             if self.wantBTag:
                 HistProducerFile_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
@@ -454,7 +454,8 @@ class HistSample2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
         for var in vars_to_plot:
             all_samples = {}
             for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-                if sample_type=='data' or 'QCD' in sample_type :continue
+                if sample_type=='data' or sample_type=='VBFToRadion' or sample_type=='VBFToBulkGraviton' or 'QCD' in sample_type : continue
+
                 if sample_name not in all_samples:
                     all_samples[sample_name] = {}
                 if var not in all_samples[sample_name]:
@@ -471,7 +472,7 @@ class HistSample2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         sample_name, idx_list,var = self.branch_data
-        outFile = getOutFileName(var, sample_name, self.central_Histograms_path(), self.GetBTagDir(),'_onlyCentral')
+        outFile = get2DOutFileName(var, sample_name, self.central_Histograms_path(), self.GetBTagDir(),'_onlyCentral')
         return law.LocalFileTarget(outFile)
 
     def run(self):
@@ -486,7 +487,7 @@ class HistSample2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
             cacheDir+='/data/'
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistSampleCentral.py')
         HistProducerFile_cmd = ['python3', HistProducerFile,'--inDir', inDir, '--cacheDir', cacheDir, '--outDir', outDir, '--dataset', sample_name, '--histConfig', hist_config,'--sampleConfig', sample_config, '--var', var,'--want2D','True']
-        if self.version == 'v9_deepTau2p5':
+        if self.version.split('_') == 'deepTau2p5':
             HistProducerFile_cmd.extend([ '--deepTauVersion', 'v2p5'])
         sh_call(HistProducerFile_cmd,verbose=1)
 
@@ -724,7 +725,7 @@ class HistProducerFile2DTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
         outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp2D')
         HistProducerFile_cmd = ['python3', HistProducerFile,'--inFile', input_file, '--outFileName',outFileName, '--dataset', sample_name, '--outDir', outDir, '--compute_unc_variations', 'True', '--compute_rel_weights', 'True', '--uncConfig', unc_config, '--histConfig', hist_config,'--sampleConfig', sample_config, '--var', var, '--want2D', 'True']
-        if self.version == 'v9_deepTau2p5':
+        if self.version.split('_') == 'deepTau2p5':
             HistProducerFile_cmd.extend([ '--deepTauVersion', '2p5'])
         if self.wantBTag:
             HistProducerFile_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])

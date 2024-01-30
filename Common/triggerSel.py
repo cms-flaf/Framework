@@ -52,8 +52,7 @@ class Triggers():
                     df = df.Define(var_name_online, ' && '.join(cut_vars))
                     matching_var = f'{leg_dict_offline["type"]}_Matching_{leg_id+1}_{path}'
 
-                    df = df.Define(matching_var, f"""FindMatchingSet( {type_name_offline}_{var_name_offline}_sel,{var_name_online},
-                                                                            {leg_dict_offline["type"]}_p4, TrigObj_p4,{self.deltaR_matching} )""")
+                    df = df.Define(matching_var, f"""FindMatchingSet( {type_name_offline}_{var_name_offline}_sel,{var_name_online},{leg_dict_offline["type"]}_p4, TrigObj_p4,{self.deltaR_matching} )""")
                     total_objects_matched.append(f'{{ {self.dict_legtypes[type_name_offline]}, {matching_var} }}')
             #print("A")
             #print(total_objects_matched)

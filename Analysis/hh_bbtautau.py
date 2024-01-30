@@ -12,18 +12,31 @@ QCDregions = ['OS_Iso', 'SS_Iso', 'OS_AntiIso', 'SS_AntiIso']
 categories = ['res2b', 'res1b', 'inclusive', 'boosted', 'btag_shape','baseline']
 gen_channels = {'eTau':[3,5], 'muTau':[4,5], 'tauTau':[5,5]}
 channels = {'eTau':13, 'muTau':23, 'tauTau':33}
+'''
 triggers = {
     'eTau':  '(HLT_singleTau || HLT_singleEle || HLT_etau || HLT_MET)' ,
     'muTau': '(HLT_singleTau || HLT_singleMu || HLT_mutau || HLT_MET)',
     'tauTau' : '(HLT_singleTau || HLT_ditau || HLT_MET)'
 }
+
 trigger_list = {
     'eTau':  ['HLT_singleTau', 'HLT_singleEle', 'HLT_etau', 'HLT_MET'] ,
     'muTau': ['HLT_singleTau', 'HLT_singleMu', 'HLT_mutau', 'HLT_MET'],
     'tauTau' : ['HLT_singleTau' , 'HLT_ditau', 'HLT_MET']
  }
+'''
+triggers = {
+    'eTau':  '( HLT_singleEle || HLT_etau )' ,
+    'muTau': '( HLT_singleMu || HLT_mutau )',
+    'tauTau' : '( HLT_ditau )'
+}
+trigger_list = {
+    'eTau':  [ 'HLT_singleEle', 'HLT_etau'] ,
+    'muTau': [ 'HLT_singleMu', 'HLT_mutau'],
+    'tauTau' : [ 'HLT_ditau']
+ }
 btag_wps = {'res2b':'Medium', 'res1b':'Medium', 'boosted':"Loose", 'inclusive':'','btag_shape':'','baseline':''}
-mass_cut_limits = {'bb_m_vis':[50,350],'tautau_m_vis':[20,280]}
+mass_cut_limits = {'bb_m_vis':[50,270],'tautau_m_vis':[20,130]}
 
 scales = ['Up', 'Down']
 bjet_vars = ["b1_pt","b2_pt","b1_eta","b2_eta"]
@@ -195,12 +208,21 @@ def ApplyBTagWeight(cat,applyBtag=True, finalWeight_name = 'final_weight_0'):
 
 
 def GetWeight(channel, cat):
+
+    trg_weights_dict = {
+        'eTau':["weight_tau1_TrgSF_singleEle_Central","weight_tau2_TrgSF_singleEle_Central", "weight_tau1_TrgSF_etau_Central", "weight_tau2_TrgSF_etau_Central"],
+        'muTau':["weight_tau1_TrgSF_singleMu_Central","weight_tau2_TrgSF_singleMu_Central", "weight_tau1_TrgSF_mutau_Central", "weight_tau2_TrgSF_mutau_Central"],
+        'tauTau':["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central"]
+        }
+    '''
+
     trg_weights_dict = {
         'eTau':["weight_tau1_TrgSF_singleEle_Central","weight_tau2_TrgSF_singleEle_Central"],
         'muTau':["weight_tau1_TrgSF_singleMu_Central","weight_tau2_TrgSF_singleMu_Central"],
         'tauTau':["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central"]
         }
-    weights_to_apply = [ "weight_TauID_Central", "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total"]
+    '''
+    weights_to_apply = [ "weight_TauID_Central", "weight_tau1_EleidSF_Central", "weight_tau1_MuidSF_Central", "weight_tau2_EleidSF_Central", "weight_tau2_MuidSF_Central","weight_total", "weight_L1PreFiring_Central","weight_L1PreFiring_ECAL_Central"]
     if cat != 'boosted':
          weights_to_apply.extend(["weight_Jet_PUJetID_Central_b1", "weight_Jet_PUJetID_Central_b2"])
     weights_to_apply.extend(trg_weights_dict[channel])
@@ -267,6 +289,21 @@ class DataFrameBuilder(DataFrameBuilderBase):
                 self.df = self.df.Define(f"gen_{gen_channel}", f"{gen_channel}")
         '''
 
+    def defineL1PrefiringRelativeWeights(self):
+        if "weight_L1PreFiringDown_rel" not in self.df.GetColumnNames():
+            self.df = self.df.Define("weight_L1PreFiringDown_rel","weight_L1PreFiring_Down/weight_L1PreFiring_Central")
+        if "weight_L1PreFiringUp_rel" not in self.df.GetColumnNames():
+            self.df = self.df.Define("weight_L1PreFiringUp_rel","weight_L1PreFiringUp/weight_L1PreFiring_Central")
+        if "weight_L1PreFiring_ECALDown_rel" not in self.df.GetColumnNames():
+            self.df = self.df.Define("weight_L1PreFiring_ECALDown_rel","weight_L1PreFiring_ECALDown/weight_L1PreFiring_ECAL_Central")
+        if "weight_L1PreFiring_Muon_StatUp_rel" not in self.df.GetColumnNames():
+            self.df = self.df.Define("weight_L1PreFiring_Muon_StatUp_rel","weight_L1PreFiring_Muon_StatUp/weight_L1PreFiring_Muon_Central")
+        if "weight_L1PreFiring_Muon_StatDown_rel" not in self.df.GetColumnNames():
+            self.df = self.df.Define("weight_L1PreFiring_Muon_StatDown_rel","weight_L1PreFiring_Muon_StatDown/weight_L1PreFiring_Muon_Central")
+        if "weight_L1PreFiring_Muon_SystUp_rel" not in self.df.GetColumnNames():
+            self.df = self.df.Define("weight_L1PreFiring_Muon_SystUp_rel","weight_L1PreFiring_Muon_SystUp/weight_L1PreFiring_Muon_Central")
+        if "weight_L1PreFiring_Muon_SystDown_rel" not in self.df.GetColumnNames():
+            self.df = self.df.Define("weight_L1PreFiring_Muon_SystDown_rel","weight_L1PreFiring_Muon_SystDown/weight_L1PreFiring_Muon_Central")
 
     def defineQCDRegions(self):
         #print(self.deepTauVersion)
@@ -301,6 +338,7 @@ class DataFrameBuilder(DataFrameBuilderBase):
 
 def PrepareDfWrapped(dfWrapped):
     dfWrapped.df = defineAllP4(dfWrapped.df)
+    dfWrapped.defineL1PrefiringRelativeWeights()
     dfWrapped.defineQCDRegions()
     dfWrapped.defineSelectionRegions()
     dfWrapped.defineBoostedVariables()

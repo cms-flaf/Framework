@@ -125,7 +125,32 @@ norm:
     expression: weight_tau1_TrgSF_singleEle{scale}_rel * weight_tau2_TrgSF_singleEle{scale}_rel * final_weight
   TrigSF_singleMu:
     expression: weight_tau1_TrgSF_singleMu{scale}_rel * weight_tau2_TrgSF_singleMu{scale}_rel * final_weight
-
+  TrigSF_eTau_Ele:
+    expression: weight_tau1_TrgSF_etau_ele{scale}_rel * weight_tau2_TrgSF_etau_ele{scale}_rel * final_weight
+  TrigSF_eTau_DM0:
+    expression: weight_tau1_TrgSF_etau_DM0{scale}_rel * weight_tau2_TrgSF_etau_DM0{scale}_rel * final_weight
+  TrigSF_eTau_DM1:
+    expression: weight_tau1_TrgSF_etau_DM1{scale}_rel * weight_tau2_TrgSF_etau_DM1{scale}_rel * final_weight
+  TrigSF_eTau_3Prong:
+    expression: weight_tau1_TrgSF_etau_3Prong{scale}_rel * weight_tau2_TrgSF_etau_3Prong{scale}_rel * final_weight
+  TrigSF_muTau_Mu:
+    expression: weight_tau1_TrgSF_mutau_mu{scale}_rel * weight_tau2_TrgSF_mutau_mu{scale}_rel * final_weight
+  TrigSF_muTau_DM0:
+    expression: weight_tau1_TrgSF_mutau_DM0{scale}_rel * weight_tau2_TrgSF_mutau_DM0{scale}_rel * final_weight
+  TrigSF_muTau_DM1:
+    expression: weight_tau1_TrgSF_mutau_DM1{scale}_rel * weight_tau2_TrgSF_mutau_DM1{scale}_rel * final_weight
+  TrigSF_muTau_3Prong:
+    expression: weight_tau1_TrgSF_mutau_3Prong{scale}_rel * weight_tau2_TrgSF_mutau_3Prong{scale}_rel * final_weight
+  #TrigSF_singleTau:
+  #  expression: weight_tau1_TrgSF_singleTau{scale}_rel * weight_tau2_TrgSF_singleTau{scale}_rel * final_weight
+  #L1Prefiring:
+  #  expression: weight_L1Prefiring{scale}_rel * final_weight
+  #L1Prefiring_ECAL:
+  #  expression: weight_L1Prefiring_ECAL{scale}_rel * final_weight
+  #L1Prefiring_Muon_Stat:
+  #  expression: weight_L1Prefiring_Muon_Stat{scale}_rel * final_weight
+  #L1Prefiring_Muon_Syst:
+  #  expression: weight_L1Prefiring_Muon_Syst{scale}_rel * final_weight
 shape:
   - TauES_DM0
   - TauES_DM1
@@ -161,5 +186,3 @@ shape:
   - JES_EC2_2016postVFP
   - JES_HF_2016postVFP
   - JES_RelativeSample_2016postVFP
-
-shape_and_norm:

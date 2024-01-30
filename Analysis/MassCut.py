@@ -20,7 +20,8 @@ df_initial = ROOT.RDataFrame("Events", inFiles)
 
 df_initial = df_initial.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >=1) + int(b2_idbtagDeepFlavB >=1)")
 df_initial = df_initial.Define("OS", "tau1_charge*tau2_charge < 0")
-df_resolved = df_initial.Filter(f"b1_pt >0 && b2_pt>0 && b1_hadronFlavour==5 && b2_hadronFlavour==5 && tau2_idDeepTau2017v2p1VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value} && OS && nSelBtag >1")
+#df_resolved = df_initial.Filter(f"b1_pt >0 && b2_pt>0 && b1_hadronFlavour==5 && b2_hadronFlavour==5 && tau2_idDeepTau2017v2p1VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value} && OS && nSelBtag >1")
+df_resolved = df_initial.Filter(f"b1_pt >0 && b2_pt>0 && b1_hadronFlavour==5 && b2_hadronFlavour==5 && nSelBtag >1 ")
 for idx in [0,1]:
     df_resolved = defineP4(df_resolved, f"tau{idx+1}")
     df_resolved = defineP4(df_resolved, f"b{idx+1}")
@@ -53,12 +54,26 @@ plt.style.use(hep.style.ROOT)
 ylabel = r"$m_{{\tau\tau}}^{{vis}}$  [GeV]"
 xlabel = r"$m_{{bb}}^{{vis}}$  [GeV]"
 #cmin=10,
-plt.hist2d(np_array_mass_bb_resolved, np_array_mass_tt_resolved, bins=(100, 100), range = [[0, 300.],[0,300.]], cmap=plt.cm.jet)
+hep.cms.text('Preliminary', fontsize=40)
+hep.cms.lumitext((r"138 $fb^{-1}$ (13 TeV)"))
+fig, ax = plt.subplots()
 
-plt.xlabel(xlabel)
-plt.ylabel(ylabel)
+ax.hist2d(np_array_mass_bb_resolved, np_array_mass_tt_resolved, bins=(100, 100), range = [[0, 1000.],[0,1000.]], cmap=plt.cm.jet)
 
-x_p = [50,50,275, 275]
+cbar = hep.hist2dplot(values, histogram.axes[0].edges, histogram.axes[1].edges,
+                        flow=None, norm=colors.LogNorm(vmin=1, vmax=values.max()))
+cbar.cbar.ax.set_ylabel("No. Events", rotation=90, labelpad=0.5, loc='top')
+rect = matplotlib.patches.Rectangle((245,473), 100, 20, color='white')
+fig = plt.figure(figsize=(wsize, hsize),)
+ax = plt.subplot(111)
+ax.title.set_size(100)
+ax.add_patch(rect)
+
+plt.legend(loc="upper right", facecolor="white", edgecolor="white", framealpha=1)
+ax.set_xlabel(xlabel)
+ax.set_ylabel(ylabel)
+
+x_p = [50,50,270, 270]
 y_p = [20,130,130,20]
 x_p = np.append(x_p, x_p[0])
 y_p = np.append(y_p, y_p[0])

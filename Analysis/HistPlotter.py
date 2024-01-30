@@ -52,7 +52,7 @@ if __name__ == "__main__":
     plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg_dict, inputs_cfg=inputs_cfg_dict)
     btag_dir= "bTag_WP" if args.wantBTag else "bTag_shape"
 
-    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir,False,True,args.mass)
+    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir,True,False,True,args.mass)
 
     all_samples_types.update({"QCD":"QCD"})
     histNamesDict = {}
@@ -100,14 +100,14 @@ if __name__ == "__main__":
                     other_obj = hist
                 other_inputs.append(sample)
                 #sample = 'Other'
-                print(f'{sample} in other has {hist.Integral(0, hist.GetNbinsX()+1)} entries')
+                #print(f'{sample} in other has {hist.Integral(0, hist.GetNbinsX()+1)} entries')
                 obj_list.Add(hist)
                 #obj_list=ROOT.TList()
             else:
-                print(f'{sample} has {hist.Integral(0, hist.GetNbinsX()+1)} entries')
+                #print(f'{sample} has {hist.Integral(0, hist.GetNbinsX()+1)} entries')
                 hists_to_plot[sample] = hist
         other_obj.Merge(obj_list)
-        print(f'other have {other_obj.GetEntries()} entries')
+        #print(f'other have {other_obj.GetEntries()} entries')
         hists_to_plot['Other'] = other_obj
         if 'data' not in hists_to_plot.keys():
             hists_to_plot['data'] = all_histlist[ ('Central','Central' )]['data']

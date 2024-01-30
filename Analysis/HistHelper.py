@@ -15,7 +15,7 @@ def GetUncNameTypes(unc_cfg_dict):
     uncNames.extend([unc for unc in unc_cfg_dict['shape']])
     return uncNames
 
-def GetSamplesStuff(sample_cfg_dict,histDir,wantAllMasses=True,wantOneMass=True,mass=500):
+def GetSamplesStuff(sample_cfg_dict,histDir,wantSignals=True,wantAllMasses=True,wantOneMass=True,mass=500):
     all_samples_list = []
     all_samples_types = {'data':['data'],}
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
@@ -31,6 +31,7 @@ def GetSamplesStuff(sample_cfg_dict,histDir,wantAllMasses=True,wantOneMass=True,
         if sample_type in signals:
             isSignal = True
             sample_type=sample
+            if not wantSignals: continue
         if sample_type not in all_samples_types.keys() :
             all_samples_types[sample_type] = []
         all_samples_types[sample_type].append(sample)
@@ -185,11 +186,11 @@ def Get2DModel(hist_cfg, var):
     x_bins = hist_cfg[var]['x_bins']
     if type(hist_cfg[var]['x_bins'])==list:
         x_bins_vec = Utilities.ListToVector(x_bins, "double")
-        model = ROOT.RDF.TH2DModel("", "", x_bins_vec.size()-1, x_bins_vec.data(), 11, -0.5, 10.5)
+        model = ROOT.RDF.TH2DModel("", "", x_bins_vec.size()-1, x_bins_vec.data(), 13, -0.5, 12.5)
     else:
         n_bins, bin_range = x_bins.split('|')
         start,stop = bin_range.split(':')
-        model = ROOT.RDF.TH2DModel("", "",int(n_bins), float(start), float(stop), 11, -0.5, 10.5)
+        model = ROOT.RDF.TH2DModel("", "",int(n_bins), float(start), float(stop), 13, -0.5, 12.5)
     return model
 
 

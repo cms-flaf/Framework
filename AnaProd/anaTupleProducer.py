@@ -329,18 +329,19 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         dfw = Utilities.DataFrameWrapper(df_empty,defaultColToSave)
 
         addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs)
-        dfw.DefineAndAppend("weight_L1PreFiring_Down","L1PreFiringWeight_Dn")
-        #dfw.DefineAndAppend("weight_L1PreFiring_Dn","L1PreFiringWeight_Dn")
-        dfw.DefineAndAppend("weight_L1PreFiring_ECALDown","L1PreFiringWeight_ECAL_Dn")
-        dfw.DefineAndAppend("weight_L1PreFiring_ECAL_Central","L1PreFiringWeight_ECAL_Nom")
-        dfw.DefineAndAppend("weight_L1PreFiring_ECALUp","L1PreFiringWeight_ECAL_Up")
-        dfw.DefineAndAppend("weight_L1PreFiring_Muon_Central","L1PreFiringWeight_Muon_Nom")
-        dfw.DefineAndAppend("weight_L1PreFiring_Muon_StatDown","L1PreFiringWeight_Muon_StatDn")
-        dfw.DefineAndAppend("weight_L1PreFiring_Muon_StatUp","L1PreFiringWeight_Muon_StatUp")
-        dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystDown","L1PreFiringWeight_Muon_SystDn")
-        dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystUp","L1PreFiringWeight_Muon_SystUp")
+
+        dfw.DefineAndAppend("weight_L1PreFiringDown_rel","L1PreFiringWeight_Dn/L1PreFiringWeight_Nom")
         dfw.DefineAndAppend("weight_L1PreFiring_Central","L1PreFiringWeight_Nom")
-        dfw.DefineAndAppend("weight_L1PreFiringUp","L1PreFiringWeight_Up")
+        dfw.DefineAndAppend("weight_L1PreFiringUp_rel","L1PreFiringWeight_Up/L1PreFiringWeight_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_ECALDown_rel","L1PreFiringWeight_ECAL_Dn/L1PreFiringWeight_ECAL_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_ECAL_Central","L1PreFiringWeight_ECAL_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_ECALUp_rel","L1PreFiringWeight_ECAL_Up/L1PreFiringWeight_ECAL_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_StatDown_rel","L1PreFiringWeight_Muon_Stat_Dn/L1PreFiringWeight_Muon_Stat_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_Stat_Central","L1PreFiringWeight_Muon_Stat_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_StatUp_rel","L1PreFiringWeight_Muon_Stat_Up/L1PreFiringWeight_Muon_Stat_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystDown_rel","L1PreFiringWeight_Muon_Syst_Dn/L1PreFiringWeight_Muon_Syst_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_Syst_Central","L1PreFiringWeight_Muon_Syst_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystUp_rel","L1PreFiringWeight_Muon_Syst_Up/L1PreFiringWeight_Muon_Syst_Nom")
         if not isData:
             weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name, nLegs,
                                         return_variations=is_central and compute_unc_variations, isCentral=is_central,

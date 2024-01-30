@@ -103,7 +103,7 @@ class Task(law.Task):
     customisations =luigi.Parameter(default="")
     test = luigi.BoolParameter(default=False)
     wantBTag = luigi.BoolParameter(default=False)
-    mass = luigi.Parameter(default="500")
+    mass = luigi.Parameter(default="1250")
 
     def __init__(self, *args, **kwargs):
         super(Task, self).__init__(*args, **kwargs)

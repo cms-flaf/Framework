@@ -124,5 +124,7 @@ if __name__ == "__main__":
         if not os.path.isdir(outDir):
             os.makedirs(outDir)
         outFileName = f"{outFile_prefix}_XMass{args.mass}.pdf"
+
         outFileFullPath = os.path.join(outDir,outFileName)
+        print(outFileFullPath)
         plotter.plot(args.var, hists_to_plot, outFileFullPath, custom=custom1)

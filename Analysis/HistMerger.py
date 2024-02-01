@@ -301,10 +301,12 @@ if __name__ == "__main__":
                 raise RuntimeError(f"{inFileName} removed")
             inFileRoot = ROOT.TFile.Open(inFileName, "READ")
             if inFileRoot.IsZombie():
+                inFileRoot.Close()
+                os.remove(inFileName)
                 raise RuntimeError(f"{inFileName} is Zombie")
             if  not checkFile(inFileRoot, channels, QCDregions, categories,args.var):
                 inFileRoot.Close()
-                #os.remove(inFileName)
+                os.remove(inFileName)
                 raise RuntimeError(f"{inFileName} has problems")
             fillHistDict(args.var, inFileRoot, all_histograms[sample_type],args.uncSource, channels, QCDregions, categories, sample_type, histNamesDict, signals)
             inFileRoot.Close()

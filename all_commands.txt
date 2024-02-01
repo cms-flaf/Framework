@@ -260,3 +260,42 @@ IMPORTANT NOTES:
 3. if you want the workflow to be local replace from the command lines: ‹‹--workflow htcondor --transfer-logs››  with ‹‹--workflow local››
 
 
+
+
+
+
+
+ dir=v9_deepTau2p5; law run HistSampleTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSampleTaskCentral_2p5.txt
+dir=v9_deepTau2p5; law run MergeTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > MergeTaskCentral_2p5.txt
+ dir=v9_deepTau2p5; law run PlotterTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --mass 1250 --print-status 2,2 > PlotterTaskCentral_2p5.txt
+ dir=v9_deepTau2p5; law run PlotterTaskCentral --period Run2_2018 --version ${dir} --workflow local --mass 1250 --print-status 2,2 > PlotterTaskCentral_2p5.txt
+
+
+dir=v9_deepTau2p1; law run HistSampleTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSampleTaskCentral_2p1.txt
+dir=v9_deepTau2p1; law run MergeTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > MergeTaskCentral_2p1.txt
+
+ dir=v9_deepTau2p1; law run PlotterTaskCentral --period Run2_2018 --version ${dir} --workflow local --mass 1250 --print-status 2,2 > PlotterTaskCentral_2p1.txt
+
+------------------------------------------------------------------------------------------------------
+
+ dir=v9_deepTau2p5; law run HistSampleTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSampleTaskCentralBTag_2p5.txt
+dir=v9_deepTau2p5; law run MergeTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > MergeTaskCentralBTag_2p5.txt
+ dir=v9_deepTau2p5; law run PlotterTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow htcondor --transfer-logs --mass 1250 --print-status 2,2 > PlotterTaskCentralBTag_2p5.txt
+
+
+dir=v9_deepTau2p1; law run HistSampleTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSampleTaskCentralBTag_2p1.txt
+dir=v9_deepTau2p1; law run MergeTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > MergeTaskCentralBTag_2p1.txt
+ dir=v9_deepTau2p1; law run PlotterTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow local --mass 1250 --print-status 2,2 > PlotterTaskCentralBTag_2p1.txt
+
+
+------------------------------------------------------------------------------------------------------
+
+ dir=v9_deepTau2p5; law run HistSample2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSample2DTaskCentral_2p5.txt
+dir=v9_deepTau2p5; law run Merge2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > Merge2DTaskCentral_2p5.txt
+ dir=v9_deepTau2p5; law run Plotter2DTaskCentral --period Run2_2018 --version ${dir} --workflow local --mass 1250 --print-status 2,2 > Plotter2DTaskCentral_2p5.txt
+
+
+dir=v9_deepTau2p1; law run HistSample2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSample2DTaskCentral_2p1.txt
+dir=v9_deepTau2p1; law run Merge2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > Merge2DTaskCentral_2p1.txt
+ dir=v9_deepTau2p1; law run Plotter2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --mass 1250 --print-status 2,2 > Plotter2DTaskCentral_2p1.txt
+ dir=v9_deepTau2p1; law run Plotter2DTaskCentral --period Run2_2018 --version ${dir} --workflow local --mass 1250 --print-status 2,2 > Plotter2DTaskCentral_2p1.txt

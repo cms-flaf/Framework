@@ -123,14 +123,14 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
         return ROOT.TH1D()
         #raise  RuntimeError(f"transfer factor <=0 ! {kappa}")
     hist_data_B.Scale(kappa)
-    fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(hist_data_B)
-    if not fix_negative_contributions:
-        #return hist_data_B
-        print(debug_info)
-        print(negative_bins_info)
-        print("Unable to estimate QCD")
+    #fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(hist_data_B)
+    #if not fix_negative_contributions:
+    #    #return hist_data_B
+    #    print(debug_info)
+    #    print(negative_bins_info)
+    #    print("Unable to estimate QCD")
 
-        return ROOT.TH1D()
+    #    return ROOT.TH1D()
         #raise RuntimeError("Unable to estimate QCD")
     return hist_data_B
 

@@ -9,8 +9,17 @@ from RunKit.checkRootFile import checkRootFileSafe
 
 from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
 from AnaProd.tasks import AnaTupleTask, DataMergeTask
+unc_2018 = ['JES_BBEC1_2018', 'JES_Absolute_2018', 'JES_EC2_2018', 'JES_HF_2018', 'JES_RelativeSample_2018' ]
+unc_2017 = ['JES_BBEC1_2017', 'JES_Absolute_2017', 'JES_EC2_2017', 'JES_HF_2017', 'JES_RelativeSample_2017' ]
+unc_2016preVFP = ['JES_BBEC1_2016preVFP', 'JES_Absolute_2016preVFP', 'JES_EC2_2016preVFP', 'JES_HF_2016preVFP', 'JES_RelativeSample_2016preVFP' ]
+unc_2016postVFP = ['JES_BBEC1_2016postVFP', 'JES_Absolute_2016postVFP', 'JES_EC2_2016postVFP', 'JES_HF_2016postVFP', 'JES_RelativeSample_2016postVFP' ]
 
-
+uncs_to_exclude = {
+    'Run2_2018': unc_2017+ unc_2016preVFP + unc_2016postVFP,
+    'Run2_2017': unc_2018+ unc_2016preVFP + unc_2016postVFP,
+    'Run2_2016': unc_2017+ unc_2018 + unc_2016preVFP,
+    'Run2_2016_HIPM':unc_2017+ unc_2018 + unc_2016postVFP,
+    }
 vars_to_plot = None
 def load_vars_to_plot(hists):
     global vars_to_plot
@@ -247,15 +256,16 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         #vars_to_plot += ["tau2_pt", "tau2_eta", "tau2_phi", "tau2_mass", "tau2_idDeepTau2017v2p1VSe", "tau2_idDeepTau2017v2p1VSmu", "tau2_idDeepTau2017v2p1VSjet", "tau2_charge", "tau2_iso"]
         for var in vars_to_plot :
             for uncName in uncNames:
+                if uncName in uncs_to_exclude[self.period]: continue
                 branches[n] = (var, uncName)
                 n += 1
         return branches
 
     def output(self):
         var, uncName = self.branch_data
-        outFile_haddMergedFiles = os.path.join(self.central_Histograms_path(), 'all_histograms',var,self.GetBTagDir(),f'all_histograms_{var}.root')
-        if os.path.exists(outFile_haddMergedFiles):
-            return law.LocalFileTarget((outFile_haddMergedFiles))
+        #outFile_haddMergedFiles = os.path.join(self.central_Histograms_path(), 'all_histograms',var,self.GetBTagDir(),f'all_histograms_{var}.root')
+        #if os.path.exists(outFile_haddMergedFiles):
+        #    return law.LocalFileTarget((outFile_haddMergedFiles))
         local_file_target = os.path.join(self.central_Histograms_path(), 'all_histograms',var,self.GetBTagDir(),f'all_histograms_{var}_{uncName}.root')
         return law.LocalFileTarget(local_file_target)
 
@@ -272,6 +282,69 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             MergerProducer_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
         sh_call(MergerProducer_cmd,verbose=1)
         #print(MergerProducer_cmd)
+
+
+
+
+class HistRebinnerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)
+    hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
+    hists = load_hist_config(hist_config)
+    unc_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'weight_definition.yaml')
+    unc_cfg_dict = load_unc_config(unc_config)
+
+    def GetBTagDir(self):
+        return "bTag_WP" if self.wantBTag else "bTag_shape"
+
+
+    def workflow_requires(self):
+        workflow_dict = {}
+        workflow_dict["MergeTask"] = {
+            0: MergeTask.req(self,  branch=-1, branches=())
+        }
+        return workflow_dict
+
+    def requires(self):
+        deps = [MergeTask.req(self, branch=-1, branches=()) ]
+        return deps
+
+
+    def create_branch_map(self):
+        uncNames = ['Central']
+        uncNames.extend(list(unc_cfg_dict['norm'].keys()))
+        uncNames.extend([unc for unc in unc_cfg_dict['shape']])
+        #vars_to_plot = list(hists.keys())
+        n = 0
+        branches = {}
+        #vars_to_plot = ["tau1_pt", "tau1_eta", "tau1_phi", "tau1_mass", "tau1_idDeepTau2017v2p1VSe", "tau1_idDeepTau2017v2p1VSmu", "tau1_idDeepTau2017v2p1VSjet", "tau1_charge", "tau1_iso"]
+        #vars_to_plot += ["tau2_pt", "tau2_eta", "tau2_phi", "tau2_mass", "tau2_idDeepTau2017v2p1VSe", "tau2_idDeepTau2017v2p1VSmu", "tau2_idDeepTau2017v2p1VSjet", "tau2_charge", "tau2_iso"]
+        for var in vars_to_plot :
+            for uncName in uncNames:
+                if uncName in uncs_to_exclude[self.period]: continue
+                branches[n] = (var, uncName)
+                n += 1
+        return branches
+
+    def output(self):
+        var, uncName = self.branch_data
+        local_file_target = os.path.join(self.central_Histograms_path(), 'all_histograms',var,self.GetBTagDir(),f'all_histograms_{var}_{uncName}_Rebinned.root')
+        return law.LocalFileTarget(local_file_target)
+
+    #python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistRebinner.py --histDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v9_deepTau2p1 --inFileName all_histograms --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var kinFit_m --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --histConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/plot/histograms.yaml --uncSource TauID_stat1_DM0
+
+    def run(self):
+        var, uncName = self.branch_data
+        print(f"outFile is {self.output().path}")
+        sample_config = self.sample_config
+        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
+        json_dir= os.path.join(self.valeos_path(), 'jsonFiles', self.period, self.version)
+        RebinnerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistRebinner.py')
+        RebinnerProducer_cmd = ['python3', RebinnerProducer,'--histDir', self.central_Histograms_path(), '--inFileName', 'all_histograms', '--sampleConfig', sample_config, '--var', var,'--uncConfig', unc_config, '--histConfig', self.hist_config, '--uncSource', uncName]
+        if self.wantBTag:
+            RebinnerProducer_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
+        sh_call(RebinnerProducer_cmd,verbose=1)
+        #print(MergerProducer_cmd)
+
 
 # ************* CENTRAL ONLY **********************
 
@@ -854,6 +927,7 @@ class Merge2DTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branches = {}
         for var in vars_to_plot :
             for uncName in uncNames:
+                if uncName in uncs_to_exclude[self.period]: continue
                 branches[n] = (var, uncName)
                 n += 1
         return branches
@@ -954,6 +1028,7 @@ class PlotterTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         n = 0
         branches = {}
         for uncName in uncNames:
+            if uncName in uncs_to_exclude[self.period]: continue
             for channel in channels:
                 for category in categories:
                     branches[n] = (channel, QCD_region, category, uncName)

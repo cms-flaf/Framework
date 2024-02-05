@@ -331,7 +331,7 @@ if __name__ == "__main__":
         os.makedirs(outDir)
     outFileName_prefix =  f"all_histograms_{args.var}2D" if TwoDTrue else f"all_histograms_{args.var}"
     #if args.uncSource !='Central':
-    #    outFileName_prefix+=f"_onlyCentral"
+    outFileName_prefix+=f"_{args.uncSource}"
     outFileName = os.path.join(outDir, f'{outFileName_prefix}{args.suffix}.root')
     if os.path.exists(outFileName):
         os.remove(outFileName)

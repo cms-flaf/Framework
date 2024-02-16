@@ -36,6 +36,7 @@ trigger_list = {
     'tauTau' : [ 'HLT_ditau']
  }
 btag_wps = {'res2b':'Medium', 'res1b':'Medium', 'boosted':"Loose", 'inclusive':'','btag_shape':'','baseline':''}
+
 mass_cut_limits = {'bb_m_vis':[50,270],'tautau_m_vis':[20,130]}
 
 scales = ['Up', 'Down']
@@ -62,11 +63,11 @@ def createKeyFilterDict():
                 if cat =='boosted' :
                     filter_str =  filter_base
                 elif cat == 'baseline':
-                    filter_str = f"b1_pt>0 && b2_pt>0 && {filter_base}"
+                    filter_str = f"{filter_base}"
                 else:
                     filter_str = f"b1_pt>0 && b2_pt>0 && {filter_base}"
-                    for mass_name,mass_limits in mass_cut_limits.items():
-                        filter_str+=f" && {mass_name} >= {mass_limits[0]} && {mass_name} <= {mass_limits[1]}"
+                    #for mass_name,mass_limits in mass_cut_limits.items():
+                    #    filter_str+=f" && {mass_name} >= {mass_limits[0]} && {mass_name} <= {mass_limits[1]}"
                 key = (ch, reg, cat)
                 reg_dict[key] = filter_str
                 #print(key, filter_str)
@@ -270,7 +271,8 @@ class DataFrameBuilder(DataFrameBuilderBase):
     def defineSelectionRegions(self):
         self.df = self.df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {self.bTagWP}) + int(b2_idbtagDeepFlavB >= {self.bTagWP})")
         particleNet_HbbvsQCD = 'particleNet_HbbvsQCD' if 'SelectedFatJet_particleNet_HbbvsQCD' in self.df.GetColumnNames() else 'particleNetWithMass_HbbvsQCD'
-        self.df = self.df.Define("fatJet_presel", f"SelectedFatJet_pt>250 && SelectedFatJet_{particleNet_HbbvsQCD}>=0.9734").Define("fatJet_sel"," RemoveOverlaps(SelectedFatJet_p4, fatJet_presel, { {tau1_p4, tau2_p4},}, 2, 0.8)").Define("boosted", "SelectedFatJet_p4[fatJet_sel].size()>0")
+
+        self.df = self.df.Define("fatJet_presel", f"SelectedFatJet_pt>250 && SelectedFatJet_{particleNet_HbbvsQCD}>={self.pNetWP}").Define("fatJet_sel"," RemoveOverlaps(SelectedFatJet_p4, fatJet_presel, { {tau1_p4, tau2_p4},}, 2, 0.8)").Define("boosted", "SelectedFatJet_p4[fatJet_sel].size()>0")
         self.df = self.df.Define("res1b", f"!boosted && nSelBtag == 1")
         self.df = self.df.Define("res2b", f"!boosted && nSelBtag == 2")
         self.df = self.df.Define("inclusive", f"!boosted")
@@ -331,10 +333,11 @@ class DataFrameBuilder(DataFrameBuilderBase):
             self.df = self.df.Filter(f"{mass_name} >= {mass_limits[0]} && {mass_name} <= {mass_limits[1]}")
 
 
-    def __init__(self, df, deepTauVersion='v2p1', bTagWP = 2):
+    def __init__(self, df, deepTauVersion='v2p1', bTagWP = 2, pNetWP = 0.9172):
         super(DataFrameBuilder, self).__init__(df)
         self.deepTauVersion = deepTauVersion
         self.bTagWP = bTagWP
+        self.pNetWP = pNetWP
 
 def PrepareDfWrapped(dfWrapped):
     dfWrapped.df = defineAllP4(dfWrapped.df)

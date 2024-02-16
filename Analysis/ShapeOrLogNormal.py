@@ -141,7 +141,7 @@ if __name__ == "__main__":
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
-    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir,False,False)
+    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir,True,True,False)
     all_histlist = {}
     histNamesDict = {}
     #all_vars = list(hist_cfg_dict.keys())

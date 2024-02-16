@@ -75,6 +75,7 @@ class Triggers():
             #print()
             fullPathSelection = f'{or_paths} &&  hasOOMatching_{path}'
             fullPathSelection += ' && '.join(additional_conditions)
+            #print(fullPathSelection)
             hltBranch = f'HLT_{path}'
             hltBranches.append(hltBranch)
             df = df.Define(hltBranch, fullPathSelection)

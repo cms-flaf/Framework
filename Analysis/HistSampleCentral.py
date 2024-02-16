@@ -19,27 +19,20 @@ def createCacheQuantities(dfWrapped_cache, cache_map_name):
     df_cache = dfWrapped_cache.df
     map_creator_cache = ROOT.analysis.CacheCreator(*dfWrapped_cache.colTypes)()
     df_cache = map_creator_cache.processCache(ROOT.RDF.AsRNode(df_cache), Utilities.ListToVector(dfWrapped_cache.colNames), cache_map_name)
-
     return df_cache
 
-def clean_map_placeholder(dfWrapped_cache):
-    map_creator_cache = ROOT.analysis.CacheCreator(*dfWrapped_cache.colTypes)()
-    map_creator_cache.clean_map()
+#def clean_map_placeholder(dfWrapped_cache):
+#    map_creator_cache = ROOT.analysis.CacheCreator(*dfWrapped_cache.colTypes)()
+#    map_creator_cache.clean_map()
 
 def AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache,cache_map_name="cache_map_placeholder"):
     col_names_cache =  dfWrapped_cache.colNames
-    #print("A")
     col_tpyes_cache =  dfWrapped_cache.colTypes
-    #print("B")
-    #print(dfWrapped_cache.df.Count().GetValue())
     #if "kinFit_result" in col_names_cache:
     #    col_names_cache.remove("kinFit_result")
     dfWrapped_cache.df = createCacheQuantities(dfWrapped_cache,cache_map_name)
-    #print("C")
     if dfWrapped_cache.df.Filter(f"{cache_map_name} > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
-    #print("D")
     dfWrapped_central.AddCacheColumns(col_names_cache,col_tpyes_cache)
-    #print("E")
     #ROOT.gInterpreter.ProcessLine("""delete analysis::GetEntriesMap();""")
 
 def SaveHists(histograms, out_file):
@@ -51,10 +44,6 @@ def SaveHists(histograms, out_file):
         hist_name =  sample_type
         dir_ptr.WriteTObject(hist.GetValue(), hist_name, "Overwrite")
         print("written")
-
-def createModels(hist_cfg_dict):
-    return { var : GetModel(hist_cfg_dict, var) for var in hist_cfg_dict.keys() }
-
 
 def GetHistogramDictFromDataframes(var, df_central, key_filter_dict,hist_cfg_dict, wantBTag=False, want2D=False, furtherCut=''):
 

@@ -45,15 +45,16 @@ def getNewBins(bins):
             bin_center = bin_center + bin_width
     return final_bins
 
-def SaveHists(hist_rebinned_dict, outFileName):
-    outfile  = ROOT.TFile(outFileName,'RECREATE')
+def SaveHists(hist_rebinned_dict, outfile):
     for key_1,hist_dict in hist_rebinned_dict.items():
         ch, cat,uncSource, uncScale = key_1
+        key_dir = ch, cat
         #if cat == 'btag_shape': continue
-        dir_name = '/'.join(key_1)
+        dir_name = '/'.join(key_dir)
         dir_ptr = mkdir(outfile,dir_name)
-        outfile.WriteTObject(hist_dict["histogram"], hist_dict["name"], "Overwrite")
-    outfile.Close()
+        dir_ptr.WriteTObject(hist_dict["histogram"], hist_dict["name"], "Overwrite")
+
+
 
 if __name__ == "__main__":
     import argparse
@@ -68,6 +69,8 @@ if __name__ == "__main__":
     parser.add_argument('--suffix', required=False, type=str, default='')
     parser.add_argument('--uncSource', required=False, type=str, default='')
     parser.add_argument('--var', required=False, type=str, default='kinFit_m')
+    parser.add_argument('--category', required=False, type=str, default='')
+    parser.add_argument('--channel', required=False, type=str, default='')
     parser.add_argument('--wantBTag', required=False, type=bool, default=False)
     args = parser.parse_args()
     ROOT.gStyle.SetOptFit(0)
@@ -86,8 +89,6 @@ if __name__ == "__main__":
 
     with open(args.histConfig, 'r') as f:
         hist_cfg_dict = yaml.safe_load(f)
-    bins_to_compute = hist_cfg_dict[args.var]['x_bins']
-    new_bins = getNewBins(bins_to_compute)
     all_uncertainties = list(unc_cfg_dict['norm'].keys())
     all_uncertainties.extend(unc_cfg_dict['shape'])
 
@@ -98,6 +99,8 @@ if __name__ == "__main__":
     inFileName=f'{args.inFileName}_{args.var}_{args.uncSource}{args.suffix}.root'
 
     outFileName=f'{args.inFileName}_{args.var}_{args.uncSource}{args.suffix}_Rebinned.root'
+    outfile  = ROOT.TFile(os.path.join(inDir,outFileName),'RECREATE')
+    scales_to_consider = scales if args.uncSource !='Central' else ['Central']
     #print(all_samples_list)
     print(f"{os.path.join(inDir,inFileName)}")
     if not os.path.exists(os.path.join(inDir,inFileName)):
@@ -108,10 +111,13 @@ if __name__ == "__main__":
             #print(sample_type)
             hist_rebinned_dict = {}
             for channel in ['eTau', 'muTau', 'tauTau']:
-                for category in categories: #['inclusive','res2b','res1b','boosted']:
-                    #print(channel, category)
+                if args.channel != '' and channel != args.channel : continue
+                for category in ['res2b','res1b','boosted']:
+                    if args.category != '' and category != args.category : continue
+                    bins_to_compute = hist_cfg_dict[args.var]['x_bins_new2'][channel][category]
+                    new_bins = getNewBins(bins_to_compute)
                     total_histName = sample_type
-                    for uncScale in scales:
+                    for uncScale in scales_to_consider:
                         hist_name =  sample_type
                         #print(uncScale)
                         if args.uncSource != 'Central':
@@ -119,17 +125,23 @@ if __name__ == "__main__":
                             if uncScale == 'Central': continue
                             hist_name+=f"_{args.uncSource}{uncScale}"
                         uncScale_str = '-' if args.uncSource=='Central' else uncScale
-                        #print(hist_name)
+                        #print(channel, category, uncScale, sample_type)
+                        #print(f'hist name = {hist_name}')
                         hist_initial = GetHisto(channel, category, inFile, inDir, hist_name, args.uncSource,uncScale_str)
-                        #print(hist_initial)
-                        hist_final = RebinHisto(hist_initial, new_bins)
-                        if sample_type == 'QCD':
-                            if not FixNegativeContributions(histogram):
-                                print(f'for {channel} {category} QCD has negative contributions')
+                        #print(f'hist initial entries = {hist_initial.GetEntries()}')
+                        #print(channel, category, sample_type, hist_initial.Integral(0, hist_initial.GetNbinsX()+1))
+                        if hist_initial.Integral(0, hist_initial.GetNbinsX()+1)==0:
+                            hist_final = ROOT.TH1D(hist_initial.GetName(), hist_initial.GetTitle(), len(new_bins)-1, array.array('d', new_bins))
+                        else:
+                            hist_final = RebinHisto(hist_initial, new_bins)
+                            if sample_type == 'QCD':
+                                if not FixNegativeContributions(hist_final):
+                                    print(f'for {channel} {category} QCD has negative contributions')
 
                         hist_rebinned_dict[(channel, category,args.uncSource, uncScale)] = {"name":hist_name,"histogram":hist_final}
-                    SaveHists(hist_rebinned_dict, os.path.join(inDir,outFileName))
+                    SaveHists(hist_rebinned_dict, outfile)
         inFile.Close()
+        outfile.Close()
 
 
     executionTime = (time.time() - startTime)

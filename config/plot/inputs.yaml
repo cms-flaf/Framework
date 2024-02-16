@@ -1,9 +1,3 @@
-- name: DY
-  title: "DY #rightarrow ll + jets"
-  color: kAzure+10
-- name: TT
-  title: t#bar{t}
-  color: kGreen-3
 - name: W
   title: "W #rightarrow l#nu + jets"
   color: kYellow-7
@@ -36,6 +30,12 @@
 - name: Other
   title: "other backgrounds"
   color: kPink+1
+- name: TT
+  title: t#bar{t}
+  color: kGreen-3
+- name: DY
+  title: "DY #rightarrow ll + jets"
+  color: kAzure+10
 - name: data
   title: "data"
   type: data

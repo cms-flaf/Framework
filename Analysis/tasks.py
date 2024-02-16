@@ -60,7 +60,7 @@ def getOutFileName(var, sample_name, central_Histograms_path, btag_dir, suffix='
 
 # **************** 1D HISTOGRAMS *******************
 class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
     hists = load_hist_config(hist_config)

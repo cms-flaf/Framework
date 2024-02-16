@@ -29,7 +29,7 @@ def Initialize(loadTF=False, loadHHBtag=False):
             IncludeLibs.includeLibTool("tensorflow")
         if(loadHHBtag):
             ROOT.gInterpreter.Declare(f'#include "{header_path_HHbTag}"')
-            ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 1)')
+            ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 2)')
         initialized = True
 
 #leg_names = [ "Electron", "Muon", "Tau", "boostedTau" ]
@@ -290,7 +290,15 @@ def RecoHttCandidateSelection(df, config):
     #for c in cand_columns:
     #    df=df.Define(f"candSize_{c}", f"{c}.size()")
     #    df.Display({f"candSize_{c}"}).Print()
+    stringfilter = " || ".join(cand_filters)
+    #print("after filtering for HttCandidates_muMu.size()>0= ", df.Filter("HttCandidates_muMu.size() > 0 ").Count().GetValue())
+    #print("after filtering for HttCandidates_eMu.size()>0= ", df.Filter("HttCandidates_eMu.size() > 0 ").Count().GetValue())
+    #print("after filtering for HttCandidates_eE.size()>0= ", df.Filter("HttCandidates_eE.size() > 0 ").Count().GetValue())
+    #print("after filtering for HttCandidates_muTau.size()>0= ", df.Filter("HttCandidates_muTau.size() > 0 ").Count().GetValue())
+    #print("after filtering for HttCandidates_eTau.size()>0= ", df.Filter("HttCandidates_eTau.size() > 0 ").Count().GetValue())
+    #print("after filtering for HttCandidates_tauTau.size()>0= ", df.Filter("HttCandidates_tauTau.size() > 0 ").Count().GetValue())
     df = df.Filter(" || ".join(cand_filters), "Reco Baseline 2")
+    #print(f"after filtering {stringfilter} = {df.Count().GetValue()}")
     cand_list_str = ', '.join([ '&' + c for c in cand_columns])
     return df.Define('HttCandidate', f'GetBestHTTCandidate<2>({{ {cand_list_str} }}, event)')
 

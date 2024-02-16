@@ -13,12 +13,12 @@ cd /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework && source env.sh &&
 ##################### ANACACHE PRODUCTION #####################
 
 --------------------- deepTau 2p1 ---------------------
-dir=v9_deepTau2p1; law run AnaCacheTask  --period Run2_2018 --workflow htcondor --version ${dir} --transfer-logs
+dir=v10_deepTau2p1; law run AnaCacheTask  --period Run2_2018 --workflow htcondor --version ${dir} --transfer-logs
 dir=v1_deepTau2p1; law run AnaCacheTask  --period Run2_2016 --workflow htcondor --version ${dir} --transfer-logs
 dir=v1_deepTau2p1; law run AnaCacheTask  --period Run2_2016_HIPM --workflow htcondor --version ${dir} --transfer-logs
 
 --------------------- deepTau 2p5 ---------------------
-dir=v9_deepTau2p5; law run AnaCacheTask  --period Run2_2018 --workflow htcondor --version ${dir} --transfer-logs --customisations deepTauVersion=2p5
+dir=v10_deepTau2p5; law run AnaCacheTask  --period Run2_2018 --workflow htcondor --version ${dir} --transfer-logs --customisations deepTauVersion=2p5
 dir=v1_deepTau2p5; law run AnaCacheTask  --period Run2_2016 --workflow htcondor --version ${dir} --transfer-logs --customisations deepTauVersion=2p5
 dir=v1_deepTau2p5; law run AnaCacheTask  --period Run2_2016_HIPM --workflow htcondor --version ${dir} --transfer-logs --customisations deepTauVersion=2p5
 
@@ -30,21 +30,21 @@ cmsEnv python3 AnaProd/anaCacheProducer.py --config /afs/cern.ch/work/v/vdamante
 
 ##################### INPUT FILES PRODUCTION #####################
 --------------------- deepTau 2p1 ---------------------
-dir=v9_deepTau2p1; law run InputFileTask  --period Run2_2018 --version ${dir}
+dir=v10_deepTau2p1; law run InputFileTask  --period Run2_2018 --version ${dir}
 dir=v1_deepTau2p1; law run InputFileTask  --period Run2_2016 --version ${dir}
 dir=v1_deepTau2p1; law run InputFileTask  --period Run2_2016_HIPM --version ${dir}
 
 --------------------- deepTau 2p5 ---------------------
-dir=v9_deepTau2p5; law run InputFileTask  --period Run2_2018 --version ${dir}
+dir=v10_deepTau2p5; law run InputFileTask  --period Run2_2018 --version ${dir}
 dir=v1_deepTau2p5; law run InputFileTask  --period Run2_2016 --version ${dir}
 dir=v1_deepTau2p5; law run InputFileTask  --period Run2_2016_HIPM --version ${dir}
 
 ##################### ANATUPLE PRODUCTION #####################
 
 --------------------- deepTau 2p1 ---------------------
-dir=v9_deepTau2p1; law run AnaTupleTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
-mkdir /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/data/
-dir=v9_deepTau2p1; law run DataMergeTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p1; law run AnaTupleTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+mkdir /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/data/
+dir=v10_deepTau2p1; law run DataMergeTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
 
 dir=v1_deepTau2p1; law run AnaTupleTask --period Run2_2016 --version ${dir} --workflow htcondor --transfer-logs
 dir=v1_deepTau2p1; law run AnaTupleTask --period Run2_2016 --version ${dir} --workflow local --branches 55,56
@@ -53,9 +53,9 @@ dir=v1_deepTau2p1; law run DataMergeTask --period Run2_2016 --version ${dir} --w
 
 
 --------------------- deepTau 2p5 ---------------------
-dir=v9_deepTau2p5; law run AnaTupleTask  --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs  --customisations deepTauVersion=2p5
-mkdir /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p5/data/
-dir=v9_deepTau2p5; law run DataMergeTask  --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs  --customisations deepTauVersion=2p5
+dir=v10_deepTau2p5; law run AnaTupleTask  --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs  --customisations deepTauVersion=2p5
+mkdir /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p5/data/
+dir=v10_deepTau2p5; law run DataMergeTask  --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs  --customisations deepTauVersion=2p5
 
 ------------------- LOCALLY -------------------
 (A) specific event anatuple prod
@@ -66,7 +66,7 @@ cmsEnv python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/AnaProd
 
 (C) data merge prod
 python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/AnaProd/MergeNtuples.py --outFile output/data_tmp.root [here all the input files], e.g.
-    python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/AnaProd/MergeNtuples.py --outFile output/data_tmp.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/EGamma_2018A/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/EGamma_2018B/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/EGamma_2018C/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/EGamma_2018D/totalfile.root  /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/SingleMuon_2018A/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/SingleMuon_2018B/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/SingleMuon_2018C/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/SingleMuon_2018D/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/Tau_2018A/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/Tau_2018B/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/Tau_2018C/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/Tau_2018D/totalfile.root
+    python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/AnaProd/MergeNtuples.py --outFile output/data_tmp.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/EGamma_2018A/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/EGamma_2018B/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/EGamma_2018C/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/EGamma_2018D/totalfile.root  /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/SingleMuon_2018A/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/SingleMuon_2018B/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/SingleMuon_2018C/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/SingleMuon_2018D/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/Tau_2018A/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/Tau_2018B/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/Tau_2018C/totalfile.root /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/Tau_2018D/totalfile.root
 
 
 i=45; nEvents=100; echo ${i},${nEvents} ; cmsEnv python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/AnaProd/anaTupleProducer.py --config /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --inFile /eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/TTTo2L2Nu/nano_${i}.root --outFile output/tmp_TTTo2L2Nu_${i}_${nEvents}Events.root --sample TTTo2L2Nu --anaCache /eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/TTTo2L2Nu/anaCache.yaml --nEvents ${nEvents}
@@ -75,19 +75,19 @@ cmsEnv python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/AnaProd
 ##################### CACHETUPLE PRODUCTION #####################
 
 --------------------- deepTau 2p1 ---------------------
-dir=v9_deepTau2p1; law run AnaCacheTupleTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
-mkdir /eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/data/v9_deepTau2p1/
-dir=v9_deepTau2p1; law run DataCacheMergeTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p1; law run AnaCacheTupleTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+mkdir /eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/data/v10_deepTau2p1/
+dir=v10_deepTau2p1; law run DataCacheMergeTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
 
 --------------------- deepTau 2p5 ---------------------
-dir=v9_deepTau2p5; law run AnaCacheTupleTask  --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs  --customisations deepTauVersion=2p5
-mkdir /eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/data/v9_deepTau2p5/
-dir=v9_deepTau2p5; law run DataCacheMergeTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p5; law run AnaCacheTupleTask  --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs  --customisations deepTauVersion=2p5
+mkdir /eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/data/v10_deepTau2p5/
+dir=v10_deepTau2p5; law run DataCacheMergeTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --customisations deepTauVersion=2p5
 
 
 ------------------- LOCALLY -------------------
 (A) general anacache prod
-cmsEnv python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/AnaProd/anaCacheTupleProducer.py --inFileName /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/DYJetsToLL_1J/nano_10.root --outFileName output/anaCacheTuples/DYJetsToLL_1J/nano_10 --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --compute_unc_variations True
+cmsEnv python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/AnaProd/anaCacheTupleProducer.py --inFileName /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/DYJetsToLL_1J/nano_10.root --outFileName output/anaCacheTuples/DYJetsToLL_1J/nano_10 --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --compute_unc_variations True
 
 
 cmsEnv python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/AnaProd/anaCacheTupleProducer.py --inFileName output/ZZZ/anaTuple/nanoHTT_0.root --outFileName output/ZZZ/anaCacheTuples/nanoHTT_0 --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --compute_unc_variations True
@@ -96,80 +96,81 @@ cmsEnv python3 AnaProd/anaCacheProducer.py --config /afs/cern.ch/work/v/vdamante
 
 
 (B) merge ntuples
-python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/AnaProd/MergeNtuples.py --outFile /eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/data/v9_deepTau2p5/data/data_tmp.root /eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/EGamma_2018A/v9_deepTau2p5/nano_0.root /eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/EGamma_2018A/v9_deepTau2p5/nano_1.root
+python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/AnaProd/MergeNtuples.py --outFile /eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/data/v10_deepTau2p5/data/data_tmp.root /eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/EGamma_2018A/v10_deepTau2p5/nano_0.root /eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/EGamma_2018A/v10_deepTau2p5/nano_1.root
 
 ##################### CENTRAL HISTOGRAM PRODUCTION #####################
 
 --------------------- deepTau 2p1 ---------------------
-dir=v9_deepTau2p1; law run HistSampleTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
-dir=v9_deepTau2p1; law run MergeTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p1; law run HistSampleTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p1; law run MergeTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
 
 --------------------- deepTau 2p5 ---------------------
-dir=v9_deepTau2p5; law run HistSampleTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
-dir=v9_deepTau2p5; law run MergeTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p5; law run HistSampleTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p5; law run MergeTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
 
 --------------------- LOCALLY ---------------------
-python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistSampleCentral.py --inDir /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-1250 --outDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v9_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-1250 --cacheDir /eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-1250/v9_deepTau2p1 --dataset GluGluToRadionToHHTo2B2Tau_M-1250 --histConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/plot/histograms.yaml --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var b2_eta
+python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistSampleCentral.py --inDir /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-1250 --outDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v10_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-1250 --cacheDir /eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-1250/v10_deepTau2p1 --dataset GluGluToRadionToHHTo2B2Tau_M-1250 --histConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/plot/histograms.yaml --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var b2_eta
 
 ##################### CENTRAL HISTOGRAM 2D PRODUCTION #####################
 
 --------------------- deepTau 2p1 ---------------------
-dir=v9_deepTau2p1; law run HistSample2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
-dir=v9_deepTau2p1; law run Merge2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p1; law run HistSample2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p1; law run Merge2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
 
 --------------------- deepTau 2p5 ---------------------
-dir=v9_deepTau2p5; law run HistSample2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
-dir=v9_deepTau2p5; law run Merge2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p5; law run HistSample2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p5; law run Merge2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
 
 --------------------- LOCALLY ---------------------
-python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistSampleCentral.py --inDir /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-1250 --dataset GluGluToRadionToHHTo2B2Tau_M-1250 --outDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v9_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-1250 --histConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/plot/histograms.yaml --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var bbtautau_mass --want2D True
+python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistSampleCentral.py --inDir /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-1250 --dataset GluGluToRadionToHHTo2B2Tau_M-1250 --outDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v10_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-1250 --histConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/plot/histograms.yaml --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var bbtautau_mass --want2D True
 
 ##################### CENTRAL HISTOGRAM BTAG PRODUCTION #####################
 
 --------------------- deepTau 2p1 ---------------------
-dir=v9_deepTau2p1; law run HistSampleTaskCentral --period Run2_2018 --version ${dir} --wantBTag True --workflow htcondor --transfer-logs
-dir=v9_deepTau2p1; law run MergeTaskCentral --period Run2_2018 --version ${dir} --wantBTag True --workflow htcondor --transfer-logs
+dir=v10_deepTau2p1; law run HistSampleTaskCentral --period Run2_2018 --version ${dir} --wantBTag True --workflow htcondor --transfer-logs
+dir=v10_deepTau2p1; law run MergeTaskCentral --period Run2_2018 --version ${dir} --wantBTag True --workflow htcondor --transfer-logs
 
 --------------------- deepTau 2p5 ---------------------
-dir=v9_deepTau2p5; law run HistSampleTaskCentral --period Run2_2018 --version ${dir} --wantBTag True --workflow htcondor --transfer-logs
-dir=v9_deepTau2p5; law run MergeTaskCentral --period Run2_2018 --version ${dir} --wantBTag True --workflow htcondor --transfer-logs
+dir=v10_deepTau2p5; law run HistSampleTaskCentral --period Run2_2018 --version ${dir} --wantBTag True --workflow htcondor --transfer-logs
+dir=v10_deepTau2p5; law run MergeTaskCentral --period Run2_2018 --version ${dir} --wantBTag True --workflow htcondor --transfer-logs
 
 --------------------- LOCALLY ---------------------
 (A) hist producer
-python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistSampleCentral.py --inDir /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-350 --dataset GluGluToRadionToHHTo2B2Tau_M-350 --outDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v9_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-350 --histConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/plot/histograms.yaml --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var bbtautau_mass --wantBTag True
+python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistSampleCentral.py --inDir /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-350 --dataset GluGluToRadionToHHTo2B2Tau_M-350 --outDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v10_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-350 --histConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/plot/histograms.yaml --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var bbtautau_mass --wantBTag True
 
 (B) hist merger
 
 ##################### SHIFTED HISTOGRAM PRODUCTION #####################
 
 --------------------- deepTau 2p1 ---------------------
-dir=v9_deepTau2p1; law run HistProducerFileTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
-dir=v9_deepTau2p1; law run HistProducerSampleTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
-dir=v9_deepTau2p1; law run MergeTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
-dir=v9_deepTau2p1; law run  HaddMergedTask --period Run2_2018  --version ${dir} --workflow local
+dir=v10_deepTau2p1; law run HistProducerFileTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p1; law run HistProducerSampleTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p1; law run MergeTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p1; law run  HaddMergedTask --period Run2_2018  --version ${dir} --workflow local
+dir=v9_deepTau2p1; law run  HaddMergedTask --period Run2_2018  --version ${dir}  --workflow htcondor --transfer-logs
 
 --------------------- deepTau 2p5 ---------------------
-dir=v9_deepTau2p5; law run HistProducerFileTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
-dir=v9_deepTau2p5; law run HistProducerSampleTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
-dir=v9_deepTau2p5; law run MergeTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
-dir=v9_deepTau2p5; law run  HaddMergedTask --period Run2_2018  --version ${dir} --workflow local
+dir=v10_deepTau2p5; law run HistProducerFileTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p5; law run HistProducerSampleTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p5; law run MergeTask --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs
+dir=v10_deepTau2p5; law run  HaddMergedTask --period Run2_2018  --version ${dir} --workflow local
 
 --------------------- LOCALLY ---------------------
 (A) HistProducerFile
-python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistProducerFile.py --inFile /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-1250/nano.root --cacheFile /eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-1250/v9_deepTau2p1/nano.root --outFileName nano.root --dataset GluGluToRadionToHHTo2B2Tau_M-1250 --outDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v9_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-1250/tmp --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --histConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/plot/histograms.yaml --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var b2_eta --compute_unc_variations True
+python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistProducerFile.py --inFile /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-1250/nano.root --cacheFile /eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-1250/v10_deepTau2p1/nano.root --outFileName nano.root --dataset GluGluToRadionToHHTo2B2Tau_M-1250 --outDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v10_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-1250/tmp --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --histConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/plot/histograms.yaml --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var b2_eta --compute_unc_variations True
 
 python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistProducerFile.py --inFile output/ZZZ/anaTuple/nanoHTT_0.root --cacheFile output/ZZZ/anaCacheTuples/nanoHTT_0.root --outFileName nano.root --dataset ZZZ --outDir output/ZZZ/histograms --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --histConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/plot/histograms.yaml --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var b2_eta --compute_unc_variations True
 
 (B) HistProducerSample
-python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistProducerSample.py --histDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v9_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-1250/tmp --outDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v9_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-1250 --hists b2_eta --file-name-pattern b2_eta.root --remove-files True
+python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistProducerSample.py --histDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v10_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-1250/tmp --outDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v10_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-1250 --hists b2_eta --file-name-pattern b2_eta.root --remove-files True
 
-python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistProducerSample.py --histDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v9_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-3000/tmp --outDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v9_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-3000 --hists tau1_pt,tau1_eta,tau1_phi,tau1_mass,tau1_idDeepTau2017v2p1VSe,tau1_idDeepTau2017v2p1VSmu,tau1_idDeepTau2017v2p1VSjet,tau1_idDeepTau2018v2p5VSe,tau1_idDeepTau2018v2p5VSmu,tau1_idDeepTau2018v2p5VSjet,tau1_charge,tau1_iso --file-name-pattern nano.root --remove-files True
+python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistProducerSample.py --histDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v10_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-3000/tmp --outDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v10_deepTau2p1/GluGluToRadionToHHTo2B2Tau_M-3000 --hists tau1_pt,tau1_eta,tau1_phi,tau1_mass,tau1_idDeepTau2017v2p1VSe,tau1_idDeepTau2017v2p1VSmu,tau1_idDeepTau2017v2p1VSjet,tau1_idDeepTau2018v2p5VSe,tau1_idDeepTau2018v2p5VSmu,tau1_idDeepTau2018v2p5VSjet,tau1_charge,tau1_iso --file-name-pattern nano.root --remove-files True
 
 (C) HistMerger
-python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistMerger.py --histDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v9_deepTau2p1 --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var tau1_iso --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --uncSource MuID_TightID --jsonDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/jsonFiles/Run2_2018/v9_deepTau2p1
+python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistMerger.py --histDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v10_deepTau2p1 --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var tau1_iso --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --uncSource MuID_TightID --jsonDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/jsonFiles/Run2_2018/v10_deepTau2p1
 
 (D) ShapeOrLogNormal
-python3 Analysis/ShapeOrLogNormal.py --mass 1250 --histDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v9_deepTau2p1/ --inFileName all_histograms --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --outDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/jsonFiles/Run2_2018/v9_deepTau2p1/fitResults  --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --var tau1_iso | tee output.txt
+python3 Analysis/ShapeOrLogNormal.py --mass 1250 --histDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v10_deepTau2p1/ --inFileName all_histograms --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --outDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/jsonFiles/Run2_2018/v10_deepTau2p1/fitResults  --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --var tau1_iso | tee output.txt
 
 (E) hadd_merged_hists
 
@@ -182,12 +183,12 @@ python3 Analysis/ShapeOrLogNormal.py --mass 1250 --histDir /eos/home-v/vdamante/
 
 --------------------- LOCALLY ---------------------
 
-python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistProducerFile.py --inFile /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v9_deepTau2p1/TTToSemiLeptonic/nano_10.root --outFileName nano_10.root --dataset TTToSemiLeptonic --outDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v9_deepTau2p1/TTToSemiLeptonic/tmp_onlyCentral --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --histConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/plot/histograms.yaml --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var bbtautau_mass --wantBTag True
+python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistProducerFile.py --inFile /eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v10_deepTau2p1/TTToSemiLeptonic/nano_10.root --outFileName nano_10.root --dataset TTToSemiLeptonic --outDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v10_deepTau2p1/TTToSemiLeptonic/tmp_onlyCentral --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --histConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/plot/histograms.yaml --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var bbtautau_mass --wantBTag True
 
-var=bb_m_vis  ; echo ${var}; python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistMerger.py --histDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v9_deepTau2p1 --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var ${var} --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --jsonDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/jsonFiles/Run2_2018/v9_deepTau2p1 --wantBTag True
+var=bb_m_vis  ; echo ${var}; python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistMerger.py --histDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v10_deepTau2p1 --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var ${var} --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --jsonDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/jsonFiles/Run2_2018/v10_deepTau2p1 --wantBTag True
 
-var=tau1_eta; for channel in eTau muTau tauTau ; do for cat in res1b res2b inclusive ; do echo ${var} ${cat} ${channel} ; python3 Analysis/HistPlotter.py --mass 1250 --histDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v9_deepTau2p5 --inFileName all_histograms --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --outDir output/plots/plots_2p5 --var ${var} --category ${cat} --channel ${channel}  --suffix '_onlyCentral' --wantBTag True; done ; done\n
-var=tau1_eta  ; echo ${var}; python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistMerger.py --histDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v9_deepTau2p1 --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var ${var} --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --jsonDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/jsonFiles/Run2_2018/v9_deepTau2p1 --wantBTag True
+var=tau1_eta; for channel in eTau muTau tauTau ; do for cat in res1b res2b inclusive ; do echo ${var} ${cat} ${channel} ; python3 Analysis/HistPlotter.py --mass 1250 --histDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v10_deepTau2p5 --inFileName all_histograms --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --outDir output/plots/plots_2p5 --var ${var} --category ${cat} --channel ${channel}  --suffix '_onlyCentral' --wantBTag True; done ; done\n
+var=tau1_eta  ; echo ${var}; python3 /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/HistMerger.py --histDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v10_deepTau2p1 --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --var ${var} --uncConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/weight_definition.yaml --jsonDir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/jsonFiles/Run2_2018/v10_deepTau2p1 --wantBTag True
 
 ##################### S OVER SQRT B #####################
 
@@ -226,14 +227,14 @@ fileIn=/eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v6_deepTau2p1/Gl
 
 ##################### OTHER USEFUL COMMANDS ####################
 
-mkdir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/jsonFiles/Run2_2018/v9_deepTau2p1/all_ratios
-mv /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/jsonFiles/Run2_2018/v9_deepTau2p1/all_ratios*.json /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/jsonFiles/Run2_2018/v9_deepTau2p1/all_ratios
+mkdir /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/jsonFiles/Run2_2018/v10_deepTau2p1/all_ratios
+mv /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/jsonFiles/Run2_2018/v10_deepTau2p1/all_ratios*.json /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/jsonFiles/Run2_2018/v10_deepTau2p1/all_ratios
 
-for filename in /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/data/MergeTaskCentral/Run2_2018/v9_deepTau2p1/* ; do echo ${filename} ; more ${filename} | grep looks ; done > files_2p1.txt
+for filename in /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/data/MergeTaskCentral/Run2_2018/v10_deepTau2p1/* ; do echo ${filename} ; more ${filename} | grep looks ; done > files_2p1.txt
 
-ls -lrtah /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v9_deepTau2p1/*/*/bTag_shape/ | grep -v total | grep -v K\ Jan | grep -v M\ Jan > lstutto.txt
+ls -lrtah /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v10_deepTau2p1/*/*/bTag_shape/ | grep -v total | grep -v K\ Jan | grep -v M\ Jan > lstutto.txt
 
-for filename in /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/data/MergeTask/Run2_2018/v9_deepTau2p1/* ; do echo ${filename} ; more ${filename} | grep looks ; done > files_2p1_central.txt
+for filename in /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/data/MergeTask/Run2_2018/v10_deepTau2p1/* ; do echo ${filename} ; more ${filename} | grep looks ; done > files_2p1_central.txt
 
 python3 Analysis/checkFile.py --sampleConfig /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/samples_Run2_2018.yaml --inFile /eos/home-v/vdamante/HH_bbtautau_resonant_Run2/histograms/Run2_2018/v8_deepTau2p1/EWKZ2Jets_ZToLL_M-50/b2_btagDeepFlavCvL/bTag_shape/b2_btagDeepFlavCvL_onlyCentral.root
 
@@ -256,7 +257,7 @@ python3 Analysis/drawHist.py
 
 IMPORTANT NOTES:
 1. to choose variables, look at /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/tasks.py, line 15, and select correct vars to plot
-2. if a newly anatuple batch is produced, remember to replace, in /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/tasks.py, the lines if ‹‹self.version == 'v9_deepTau2p5'›› to ‹‹if self.version == 'NEW_VERSION'››
+2. if a newly anatuple batch is produced, remember to replace, in /afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Analysis/tasks.py, the lines if ‹‹self.version == 'v10_deepTau2p5'›› to ‹‹if self.version == 'NEW_VERSION'››
 3. if you want the workflow to be local replace from the command lines: ‹‹--workflow htcondor --transfer-logs››  with ‹‹--workflow local››
 
 
@@ -265,37 +266,37 @@ IMPORTANT NOTES:
 
 
 
- dir=v9_deepTau2p5; law run HistSampleTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSampleTaskCentral_2p5.txt
-dir=v9_deepTau2p5; law run MergeTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > MergeTaskCentral_2p5.txt
- dir=v9_deepTau2p5; law run PlotterTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --mass 1250 --print-status 2,2 > PlotterTaskCentral_2p5.txt
- dir=v9_deepTau2p5; law run PlotterTaskCentral --period Run2_2018 --version ${dir} --workflow local --mass 1250 --print-status 2,2 > PlotterTaskCentral_2p5.txt
+ dir=v10_deepTau2p5; law run HistSampleTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSampleTaskCentral_2p5.txt
+dir=v10_deepTau2p5; law run MergeTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > MergeTaskCentral_2p5.txt
+ dir=v10_deepTau2p5; law run PlotterTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --mass 1250 --print-status 2,2 > PlotterTaskCentral_2p5.txt
+ dir=v10_deepTau2p5; law run PlotterTaskCentral --period Run2_2018 --version ${dir} --workflow local --mass 1250 --print-status 2,2 > PlotterTaskCentral_2p5.txt
 
 
-dir=v9_deepTau2p1; law run HistSampleTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSampleTaskCentral_2p1.txt
-dir=v9_deepTau2p1; law run MergeTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > MergeTaskCentral_2p1.txt
+dir=v10_deepTau2p1; law run HistSampleTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSampleTaskCentral_2p1.txt
+dir=v10_deepTau2p1; law run MergeTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > MergeTaskCentral_2p1.txt
 
- dir=v9_deepTau2p1; law run PlotterTaskCentral --period Run2_2018 --version ${dir} --workflow local --mass 1250 --print-status 2,2 > PlotterTaskCentral_2p1.txt
-
-------------------------------------------------------------------------------------------------------
-
- dir=v9_deepTau2p5; law run HistSampleTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSampleTaskCentralBTag_2p5.txt
-dir=v9_deepTau2p5; law run MergeTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > MergeTaskCentralBTag_2p5.txt
- dir=v9_deepTau2p5; law run PlotterTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow htcondor --transfer-logs --mass 1250 --print-status 2,2 > PlotterTaskCentralBTag_2p5.txt
-
-
-dir=v9_deepTau2p1; law run HistSampleTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSampleTaskCentralBTag_2p1.txt
-dir=v9_deepTau2p1; law run MergeTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > MergeTaskCentralBTag_2p1.txt
- dir=v9_deepTau2p1; law run PlotterTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow local --mass 1250 --print-status 2,2 > PlotterTaskCentralBTag_2p1.txt
-
+ dir=v10_deepTau2p1; law run PlotterTaskCentral --period Run2_2018 --version ${dir} --workflow local --mass 1250 --print-status 2,2 > PlotterTaskCentral_2p1.txt
 
 ------------------------------------------------------------------------------------------------------
 
- dir=v9_deepTau2p5; law run HistSample2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSample2DTaskCentral_2p5.txt
-dir=v9_deepTau2p5; law run Merge2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > Merge2DTaskCentral_2p5.txt
- dir=v9_deepTau2p5; law run Plotter2DTaskCentral --period Run2_2018 --version ${dir} --workflow local --mass 1250 --print-status 2,2 > Plotter2DTaskCentral_2p5.txt
+ dir=v10_deepTau2p5; law run HistSampleTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSampleTaskCentralBTag_2p5.txt
+dir=v10_deepTau2p5; law run MergeTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > MergeTaskCentralBTag_2p5.txt
+ dir=v10_deepTau2p5; law run PlotterTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow htcondor --transfer-logs --mass 1250 --print-status 2,2 > PlotterTaskCentralBTag_2p5.txt
 
 
-dir=v9_deepTau2p1; law run HistSample2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSample2DTaskCentral_2p1.txt
-dir=v9_deepTau2p1; law run Merge2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > Merge2DTaskCentral_2p1.txt
- dir=v9_deepTau2p1; law run Plotter2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --mass 1250 --print-status 2,2 > Plotter2DTaskCentral_2p1.txt
- dir=v9_deepTau2p1; law run Plotter2DTaskCentral --period Run2_2018 --version ${dir} --workflow local --mass 1250 --print-status 2,2 > Plotter2DTaskCentral_2p1.txt
+dir=v10_deepTau2p1; law run HistSampleTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSampleTaskCentralBTag_2p1.txt
+dir=v10_deepTau2p1; law run MergeTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > MergeTaskCentralBTag_2p1.txt
+ dir=v10_deepTau2p1; law run PlotterTaskCentral --period Run2_2018 --wantBTag True --version ${dir} --workflow local --mass 1250 --print-status 2,2 > PlotterTaskCentralBTag_2p1.txt
+
+
+------------------------------------------------------------------------------------------------------
+
+ dir=v10_deepTau2p5; law run HistSample2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSample2DTaskCentral_2p5.txt
+dir=v10_deepTau2p5; law run Merge2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > Merge2DTaskCentral_2p5.txt
+ dir=v10_deepTau2p5; law run Plotter2DTaskCentral --period Run2_2018 --version ${dir} --workflow local --mass 1250 --print-status 2,2 > Plotter2DTaskCentral_2p5.txt
+
+
+dir=v10_deepTau2p1; law run HistSample2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > HistSample2DTaskCentral_2p1.txt
+dir=v10_deepTau2p1; law run Merge2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --print-status 2,2 > Merge2DTaskCentral_2p1.txt
+ dir=v10_deepTau2p1; law run Plotter2DTaskCentral --period Run2_2018 --version ${dir} --workflow htcondor --transfer-logs --mass 1250 --print-status 2,2 > Plotter2DTaskCentral_2p1.txt
+ dir=v10_deepTau2p1; law run Plotter2DTaskCentral --period Run2_2018 --version ${dir} --workflow local --mass 1250 --print-status 2,2 > Plotter2DTaskCentral_2p1.txt

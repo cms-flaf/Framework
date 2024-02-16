@@ -13,7 +13,7 @@ import Common.Utilities as Utilities
 from Corrections.CorrectionsCore import *
 from Corrections.pu import *
 
-def createAnaCache(inDir, outFile, global_params, isData, range=None, verbose=1:
+def createAnaCache(inDir, outFile, global_params, isData, range=None, verbose=1):
     start_time = datetime.datetime.now()
     Baseline.Initialize(False, False)
     Corrections.Initialize(config=global_params, isData=isData,  load_corr_lib=True, load_pu=True, load_tau=False, load_trg=False, load_btag=False, loadBTagEff=False, load_met=False, load_mu = False, load_ele=False, load_puJetID=False, load_jet=False)

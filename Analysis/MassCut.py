@@ -55,6 +55,26 @@ print("quantile max (99.5%) for tt mass resolved = ", max_tt_mass, max_tt_mass_i
 print("quantile min (99.5%) for tt mass resolved = ", min_tt_mass, min_tt_mass_int)
 
 
+#print(df.Count().GetValue())
+df_boosted = df_initial.Define("SelectedFatJet_size","SelectedFatJet_pt.size()").Filter("SelectedFatJet_size>0")
+#print(df.Count().GetValue())
+
+df_boosted = df_boosted.Define("FatJet_atLeast1BHadron","SelectedFatJet_nBHadrons>0").Filter("SelectedFatJet_pt[FatJet_atLeast1BHadron].size()==1")
+#print(df.Count().GetValue())
+
+df_boosted= df_boosted.Define("SelectedFatJet_pNetmass","SelectedFatJet_particleNet_mass[FatJet_atLeast1BHadron][0]")
+df_boosted= df_boosted.Define("SelectedFatJet_pt1had","SelectedFatJet_pt[FatJet_atLeast1BHadron][0]")
+np_dict_boosted = df_boosted.AsNumpy(["SelectedFatJet_pNetmass","SelectedFatJet_pt1had"])
+np_array_mass_boosted = np_dict_boosted["SelectedFatJet_pNetmass"]
+np_array_pt_boosted = np_dict_boosted["SelectedFatJet_pt1had"]
+#print(len(np_array))
+print("quantile max for pt boosted = ", np.quantile(np_array_pt_boosted, 1-0.005))
+print("quantile min for pt boosted = ",np.quantile(np_array_pt_boosted, 0.005))
+print("quantile max for mass boosted = ", np.quantile(np_array_mass_boosted, 1-0.005))
+print("quantile min for mass boosted = ",np.quantile(np_array_mass_boosted, 0.005))
+'''
+
+
 histcfg = '/afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/config/plot/histograms.yaml'
 hist_cfg_dict = {}
 with open(histcfg, 'r') as f:
@@ -95,3 +115,5 @@ plt.plot(x_p,y_p, c='red')
 
 plt.show()
 plt.savefig('MassCut_limits.png')
+
+'''

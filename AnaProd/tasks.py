@@ -33,7 +33,10 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         sample_name, isData = self.branch_data
-        sample_out = os.path.join(self.central_anaCache_path(), sample_name, 'anaCache.yaml')
+        outDir = os.path.join(self.central_anaCache_path(), sample_name, self.version)
+        if not os.path.exists(outDir):
+            os.makedirs(outDir)
+        sample_out = os.path.join(outDir, 'anaCache.yaml')
         return law.LocalFileTarget(sample_out)
 
     def run(self):
@@ -134,7 +137,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             sample_id, sample_name, sample_type, input_file = self.branch_data
             if self.test: print(f"sample_id= {sample_id}\nsample_name = {sample_name}\nsample_type = {sample_type}\ninput_file = {input_file}")
             producer_anatuples = os.path.join(self.ana_path(), 'AnaProd', 'anaTupleProducer.py')
-            anaCache = os.path.join(self.central_anaCache_path(), sample_name, 'anaCache.yaml')
+            anaCache = os.path.join(self.central_anaCache_path(), sample_name, self.version, 'anaCache.yaml')
             outdir_anatuples = os.path.join(job_home, 'anaTuples', sample_name)
             anatuple_cmd = [ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', input_file,
                         '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations',

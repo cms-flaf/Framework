@@ -18,7 +18,6 @@ def createCacheQuantities(dfWrapped_cache, cache_map_name):
     df_cache = dfWrapped_cache.df
     map_creator_cache = ROOT.analysis.CacheCreator(*dfWrapped_cache.colTypes)()
     df_cache = map_creator_cache.processCache(ROOT.RDF.AsRNode(df_cache), Utilities.ListToVector(dfWrapped_cache.colNames), cache_map_name)
-    #print(df_cache.Count().GetValue())
     return df_cache
 
 
@@ -27,10 +26,7 @@ def AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache,cache_map_name='cache
     col_tpyes_cache =  dfWrapped_cache.colTypes
     #if "kinFit_result" in col_names_cache:
     #    col_names_cache.remove("kinFit_result")
-    #print(cache_map_name)
-    #print(dfWrapped_cache.df.Count().GetValue())
     dfWrapped_cache.df = createCacheQuantities(dfWrapped_cache, cache_map_name)
-
     if dfWrapped_cache.df.Filter(f"{cache_map_name} > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
     dfWrapped_central.AddCacheColumns(col_names_cache,col_tpyes_cache)
     #ROOT.gInterpreter.ProcessLine("""delete analysis::GetEntriesMap();""")
@@ -75,28 +71,38 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
         if cat == 'boosted' and uncName in unc_to_not_consider_boosted: continue
         if cat != 'boosted' and var in var_to_add_boosted: continue
         #print(var, cat, uncName)
+        total_weight_expression = GetWeight(ch,cat) if sample_type!='data' else "1"
         weight_name = "final_weight"
         if not isCentral:
             if type(unc_cfg_dict)==dict:
                 if uncName in unc_cfg_dict.keys() and 'expression' in unc_cfg_dict[uncName].keys():
                     weight_name = unc_cfg_dict[uncName]['expression'].format(scale=scale)
+
         histograms[(key_1, key_2)] = []
-        total_weight_expression = GetWeight(ch,cat) if sample_type!='data' else "1"
+        #total_weight_expression = GetWeight(ch,cat) if sample_type!='data' else "1"
 
         for dataframe in dataframes:
             if furtherCut != '' : key_cut += f' && {furtherCut}'
             dataframe_new = dataframe.Filter(key_cut)
-            dataframe_new= dataframe_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}")
+            dataframe_new = dataframe_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}")
             final_string_weight = ApplyBTagWeight(cat,applyBtag=wantBTag, finalWeight_name = f"final_weight_0_{ch}_{cat}_{reg}") if sample_type!='data' else "1"
             dataframe_new = dataframe_new.Filter(f"{cat}")
-            weight_name = "final_weight"
+            #weight_name = "final_weight"
             if cat == 'btag_shape':
                 final_string_weight = f"final_weight_0_{ch}_{cat}_{reg}"
-            #print(ch, cat, final_string_weight)
+
+            print(ch, reg, cat)
+            print()
+            print(f"total weight expression before applying bTag, named final_weight_0_{ch}_{cat}_{reg} is {total_weight_expression}")
+            print()
+            print(f"the final string that will be named final_weight is {final_string_weight}")
+            print()
+            print("the weight for hists will be = ", weight_name)
+            dataframe_new.Define("final_weight", final_string_weight).Define("weight_for_hists", f"{weight_name}").Display({f"final_weight_0_{ch}_{cat}_{reg}", "final_weight", "weight_for_hists"}).Print()
             if want2D and not wantBTag:
-                histograms[(key_1, key_2)].append(dataframe_new.Define("weight_for_hists", f"{final_string_weight}").Histo2D(Get2DModel(hist_cfg_dict, var), var, "nBJets", "weight_for_hists"))
+                histograms[(key_1, key_2)].append(dataframe_new.Define("final_weight", final_string_weight).Define("weight_for_hists", f"{weight_name}").Histo2D(Get2DModel(hist_cfg_dict, var), var, "nBJets", "weight_for_hists"))
             else:
-                histograms[(key_1, key_2)].append(dataframe_new.Define("weight_for_hists", f"{final_string_weight}").Histo1D(GetModel(hist_cfg_dict, var), var, "weight_for_hists"))
+                histograms[(key_1, key_2)].append(dataframe_new.Define("final_weight", final_string_weight).Define("weight_for_hists", f"{weight_name}").Histo1D(GetModel(hist_cfg_dict, var), var, "weight_for_hists"))
 
     return histograms
 

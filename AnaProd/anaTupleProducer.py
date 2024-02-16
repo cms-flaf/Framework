@@ -92,13 +92,13 @@ def SelectBTagShapeSF(df,weight_name):
     return df
 
 def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
-    #print(f"before applying anything: {dfw.df.Count().GetValue()}")
+    print(syst_name)
+    print(f"before applying anything: {dfw.df.Count().GetValue()}")
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
     # qua va Select btagShapeWeight
     #print(f"after SelectRecoP4: {dfw.df.Count().GetValue()}")
     if mode == "HH":
         dfw.Apply(Baseline.RecoLeptonsSelection)
-        #print(dfw.df.Count().GetValue())
         #print(f"after RecoLeptonsSelection: {dfw.df.Count().GetValue()}")
         dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
         #print(f"after RecoHttCandidateSelection: {dfw.df.Count().GetValue()}")
@@ -264,7 +264,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
                 dfw.DefineAndAppend(f"b{leg_idx+1}_{jetVar}", f"Hbb_isValid ? Jet_{jetVar}.at(HbbCandidate->leg_index[{leg_idx}]) : -100")
             dfw.DefineAndAppend(f"b{leg_idx+1}_HHbtag", f"Hbb_isValid ?  static_cast<float>(Jet_HHBtagScore.at(HbbCandidate->leg_index[{leg_idx}])) : -100.f")
 
-def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOptions,range, evtIds,
+def createAnatuple(inFile, treeName, outDir, config, sample_name, anaCache, snapshotOptions,range, evtIds,
                    store_noncentral, compute_unc_variations, uncertainties, print_cutflow, mode):
     start_time = datetime.datetime.now()
     compression_settings = snapshotOptions.fCompressionAlgorithm * 100 + snapshotOptions.fCompressionLevel
@@ -286,7 +286,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     else:
         trigger_class = None
     inFiles = Utilities.ListToVector(inFile.split(','))
-    df = ROOT.RDataFrame("Events", inFiles)
+    df = ROOT.RDataFrame(treeName, inFiles)
     if range is not None:
         df = df.Range(range)
     #print(f"at the beginning: {df.Count().GetValue()}")
@@ -327,7 +327,7 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         suffix = '' if is_central else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
         dfw = Utilities.DataFrameWrapper(df_empty,defaultColToSave)
-
+        #print(syst_name)
         addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs)
 
         dfw.DefineAndAppend("weight_L1PreFiringDown_rel","L1PreFiringWeight_Dn/L1PreFiringWeight_Nom")
@@ -336,12 +336,11 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         dfw.DefineAndAppend("weight_L1PreFiring_ECALDown_rel","L1PreFiringWeight_ECAL_Dn/L1PreFiringWeight_ECAL_Nom")
         dfw.DefineAndAppend("weight_L1PreFiring_ECAL_Central","L1PreFiringWeight_ECAL_Nom")
         dfw.DefineAndAppend("weight_L1PreFiring_ECALUp_rel","L1PreFiringWeight_ECAL_Up/L1PreFiringWeight_ECAL_Nom")
-        dfw.DefineAndAppend("weight_L1PreFiring_Muon_StatDown_rel","L1PreFiringWeight_Muon_Stat_Dn/L1PreFiringWeight_Muon_Stat_Nom")
-        dfw.DefineAndAppend("weight_L1PreFiring_Muon_Stat_Central","L1PreFiringWeight_Muon_Stat_Nom")
-        dfw.DefineAndAppend("weight_L1PreFiring_Muon_StatUp_rel","L1PreFiringWeight_Muon_Stat_Up/L1PreFiringWeight_Muon_Stat_Nom")
-        dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystDown_rel","L1PreFiringWeight_Muon_Syst_Dn/L1PreFiringWeight_Muon_Syst_Nom")
-        dfw.DefineAndAppend("weight_L1PreFiring_Muon_Syst_Central","L1PreFiringWeight_Muon_Syst_Nom")
-        dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystUp_rel","L1PreFiringWeight_Muon_Syst_Up/L1PreFiringWeight_Muon_Syst_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_Central","L1PreFiringWeight_Muon_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_StatDown_rel", "L1PreFiringWeight_Muon_StatDn/L1PreFiringWeight_Muon_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_StatUp_rel", "L1PreFiringWeight_Muon_StatUp/L1PreFiringWeight_Muon_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystDown_rel", "L1PreFiringWeight_Muon_SystDn/L1PreFiringWeight_Muon_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystUp_rel", "L1PreFiringWeight_Muon_SystUp/L1PreFiringWeight_Muon_Nom")
         if not isData:
             weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name, nLegs,
                                         return_variations=is_central and compute_unc_variations, isCentral=is_central,
@@ -400,6 +399,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', required=True, type=str)
     parser.add_argument('--inFile', required=True, type=str)
+    parser.add_argument('--treeName', required=False, type=str, default="Events")
     parser.add_argument('--outDir', required=True, type=str)
     parser.add_argument('--sample', required=True, type=str)
     parser.add_argument('--anaCache', required=True, type=str)
@@ -433,5 +433,5 @@ if __name__ == "__main__":
     snapshotOptions.fMode="RECREATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
-    createAnatuple(args.inFile, args.outDir, config, args.sample, anaCache, snapshotOptions, args.nEvents,
+    createAnatuple(args.inFile,args.treeName, args.outDir, config, args.sample, anaCache, snapshotOptions, args.nEvents,
                    args.evtIds, args.store_noncentral, args.compute_unc_variations, args.uncertainties.split(","), args.print_cutflow, args.mode)

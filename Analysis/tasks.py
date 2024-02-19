@@ -992,13 +992,13 @@ class HaddMergedTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         outDir_json = os.path.join(self.valeos_path(), 'jsonFiles', self.period, self.version,'fitResults')
         histDir = self.central_Histograms_path()
         ShapeOrLogNormalProducer = os.path.join(self.ana_path(), 'Analysis', 'ShapeOrLogNormal.py')
-        ShapeOrLogNormal_cmd = ['python3', ShapeOrLogNormalProducer,'--mass', self.mass, '--histDir', histDir, '--inFileName', 'all_histograms', '--outDir', outDir_json, '--sampleConfig',self.sample_config,'--uncConfig', unc_config,'--var', var]
+        ShapeOrLogNormal_cmd = ['python3', ShapeOrLogNormalProducer,'--mass', self.mass, '--histDir', histDir, '--inFileName', 'all_histograms', '--outDir', outDir_json, '--sampleConfig',self.sample_config,'--uncConfig', unc_config,'--var', var, '--suffix','_Rebinned']
         sh_call(ShapeOrLogNormal_cmd,verbose=1)
         final_json_file = os.path.join(outDir_json, var, self.GetBTagDir(), 'slopeInfo.json')
         HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
-        HaddMergedHistsProducer_cmd = ['python3', HaddMergedHistsProducer,'--histDir', histDir, '--file-name-pattern', 'all_histograms', '--hists', var, '--uncConfig', unc_config]
-        if os.path.exists(final_json_file):
-            HaddMergedHistsProducer_cmd.extend(['--remove-files', 'True'])
+        HaddMergedHistsProducer_cmd = ['python3', HaddMergedHistsProducer,'--histDir', histDir, '--file-name-pattern', 'all_histograms', '--hists', var, '--uncConfig', unc_config, '--suffix','_Rebinned', '--period', self.period]
+        #if os.path.exists(final_json_file):
+            #HaddMergedHistsProducer_cmd.extend(['--remove-files', 'True'])
         sh_call(HaddMergedHistsProducer_cmd,verbose=1)
 
 '''

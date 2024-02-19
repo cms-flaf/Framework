@@ -8,17 +8,23 @@ import time
 from RunKit.sh_tools import sh_call
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
-
-
 from Analysis.HistHelper import *
+
+unc_to_not_consider_boosted = ["PUJetID", "JER","JES_FlavorQCD","JES_RelativeBal","JES_HF","JES_BBEC1","JES_EC2","JES_Absolute","JES_Total","JES_BBEC1_2018","JES_Absolute_2018","JES_EC2_2018","JES_HF_2018","JES_RelativeSample_2018","bTagSF_Loose_btagSFbc_correlated",  "bTagSF_Loose_btagSFbc_uncorrelated",  "bTagSF_Loose_btagSFlight_correlated",  "bTagSF_Loose_btagSFlight_uncorrelated",  "bTagSF_Medium_btagSFbc_correlated",  "bTagSF_Medium_btagSFbc_uncorrelated",  "bTagSF_Medium_btagSFlight_correlated",  "bTagSF_Medium_btagSFlight_uncorrelated",  "bTagSF_Tight_btagSFbc_correlated",  "bTagSF_Tight_btagSFbc_uncorrelated",  "bTagSF_Tight_btagSFlight_correlated",  "bTagSF_Tight_btagSFlight_uncorrelated","bTagShapeSF_lf","bTagShapeSF_hf","bTagShapeSF_lfstats1","bTagShapeSF_lfstats2","bTagShapeSF_hfstats1","bTagShapeSF_hfstats2","bTagShapeSF_cferr1","bTagShapeSF_cferr2"]
+
+
 def GetHisto(channel, category, inFile, inDir, hist_name, uncSource, scale):
     dir_0 = inFile.Get(channel)
     dir_1 = dir_0.Get(category)
+    #print(channel, category)
+    #print([str(key.GetName()) for key in inFile.GetListOfKeys()])
+    #print([str(key.GetName()) for key in dir_0.GetListOfKeys()])
     #print([str(key.GetName()) for key in dir_1.GetListOfKeys()])
     #if uncSource != 'Central':
     #    total_histName += f'_{uncSource}{scale}'
     for key in dir_1.GetListOfKeys():
         key_name = key.GetName()
+        #print(key_name, hist_name)
         if key_name != hist_name: continue
         obj = key.ReadObj()
         if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
@@ -112,9 +118,11 @@ if __name__ == "__main__":
             hist_rebinned_dict = {}
             for channel in ['eTau', 'muTau', 'tauTau']:
                 if args.channel != '' and channel != args.channel : continue
-                for category in ['res2b','res1b','boosted']:
+                for category in ['res2b','res1b','boosted','inclusive']:
+                    #if category == 'boosted' and 'b#Tag' in args.uncSource: continue
+                    if category == 'boosted' and args.uncSource in unc_to_not_consider_boosted: continue
                     if args.category != '' and category != args.category : continue
-                    bins_to_compute = hist_cfg_dict[args.var]['x_bins_new2'][channel][category]
+                    bins_to_compute = hist_cfg_dict[args.var]['x_rebin'][channel][category]
                     new_bins = getNewBins(bins_to_compute)
                     total_histName = sample_type
                     for uncScale in scales_to_consider:
@@ -125,8 +133,9 @@ if __name__ == "__main__":
                             if uncScale == 'Central': continue
                             hist_name+=f"_{args.uncSource}{uncScale}"
                         uncScale_str = '-' if args.uncSource=='Central' else uncScale
-                        #print(channel, category, uncScale, sample_type)
+                        #print(channel, category, uncScale, sample_type, uncScale_str)
                         #print(f'hist name = {hist_name}')
+
                         hist_initial = GetHisto(channel, category, inFile, inDir, hist_name, args.uncSource,uncScale_str)
                         #print(f'hist initial entries = {hist_initial.GetEntries()}')
                         #print(channel, category, sample_type, hist_initial.Integral(0, hist_initial.GetNbinsX()+1))

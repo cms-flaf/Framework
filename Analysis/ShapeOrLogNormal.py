@@ -8,15 +8,22 @@ if __name__ == "__main__":
 
 
 from Analysis.HistHelper import *
+unc_to_not_consider_boosted = ["PUJetID", "JER","JES_FlavorQCD","JES_RelativeBal","JES_HF","JES_BBEC1","JES_EC2","JES_Absolute","JES_Total","JES_BBEC1_2018","JES_Absolute_2018","JES_EC2_2018","JES_HF_2018","JES_RelativeSample_2018","bTagSF_Loose_btagSFbc_correlated",  "bTagSF_Loose_btagSFbc_uncorrelated",  "bTagSF_Loose_btagSFlight_correlated",  "bTagSF_Loose_btagSFlight_uncorrelated",  "bTagSF_Medium_btagSFbc_correlated",  "bTagSF_Medium_btagSFbc_uncorrelated",  "bTagSF_Medium_btagSFlight_correlated",  "bTagSF_Medium_btagSFlight_uncorrelated",  "bTagSF_Tight_btagSFbc_correlated",  "bTagSF_Tight_btagSFbc_uncorrelated",  "bTagSF_Tight_btagSFlight_correlated",  "bTagSF_Tight_btagSFlight_uncorrelated","bTagShapeSF_lf","bTagShapeSF_hf","bTagShapeSF_lfstats1","bTagShapeSF_lfstats2","bTagShapeSF_hfstats1","bTagShapeSF_hfstats2","bTagShapeSF_cferr1","bTagShapeSF_cferr2"]
+
 def GetHisto(channel, category, inFileName, inDir, sample_name, uncSource, scale):
     inFile = ROOT.TFile(os.path.join(inDir, inFileName),"READ")
     dir_0 = inFile.Get(channel)
     dir_1 = dir_0.Get(category)
+    print(channel, category)
     total_histName = sample_name
+    print([str(key.GetName()) for key in inFile.GetListOfKeys()])
+    print([str(key.GetName()) for key in dir_0.GetListOfKeys()])
+    #print([str(key.GetName()) for key in dir_1.GetListOfKeys()])
     if uncSource != 'Central':
         total_histName += f'_{uncSource}{scale}'
     for key in dir_1.GetListOfKeys():
         key_name = key.GetName()
+        #print(key_name, total_histName)
         if key_name != total_histName: continue
         obj = key.ReadObj()
         if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
@@ -27,7 +34,9 @@ def GetHisto(channel, category, inFileName, inDir, sample_name, uncSource, scale
 
 def GetShiftedRatios(channel, category, inFileName_Central, inDir, sample_name,uncSource):
     hist_central = GetHisto(channel, category, inFileName_Central, inDir, sample_name, 'Central','-')
+    #print(hist_central.GetNbinsX())
     hist_up = GetHisto(channel, category, inFileName, inDir, sample_name, uncSource,'Up')
+    #print(hist_up.GetNbinsX())
     hist_up_ratio = hist_up.Clone("hist_ratio_up")
     hist_up_ratio.Divide(hist_central)
     hist_down = GetHisto(channel, category, inFileName, inDir, sample_name, uncSource,'Down')
@@ -166,13 +175,18 @@ if __name__ == "__main__":
             #print(inFileName)
             inDir = os.path.join(args.histDir, 'all_histograms',args.var,btag_dir)
             #print(inDir)
+            inFileName_Central=f'{args.inFileName}_{args.var}_Central{args.suffix}.root'
+            print(inFileName_Central)
+            print(os.path.join(inDir,inFileName))
             if not os.path.exists(os.path.join(inDir,inFileName)): continue
-            inFileName_Central=f'{args.inFileName}_{args.var}_Central.root'
             #inFileName_Central=f'{args.inFileName}_{args.var}_Central{args.suffix}.root'
             sample_name = sample
             for channel in ['eTau', 'muTau', 'tauTau']:
-                for category in categories: #['inclusive','res2b','res1b','boosted']:
-                    if category=='boosted': continue
+                for category in ['inclusive','res2b','res1b','boosted']:
+                    #if category=='boosted': continue
+                    if category == 'boosted' and uncSource in unc_to_not_consider_boosted: continue
+                    print(channel, category, uncSource, sample_name)
+
                     hist_central,hist_up_ratio,hist_up,hist_down_ratio,hist_down = GetShiftedRatios(channel, category, inFileName_Central, inDir, sample_name,uncSource)
                     GetChi2Method(hist_central,hist_up_ratio,hist_up,hist_down_ratio,hist_down, sample_name, channel, category, uncSource, unc_dict)
     outDir = os.path.join(args.outDir, args.var, btag_dir)

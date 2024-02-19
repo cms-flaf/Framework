@@ -91,14 +91,14 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
             if cat == 'btag_shape':
                 final_string_weight = f"final_weight_0_{ch}_{cat}_{reg}"
 
-            print(ch, reg, cat)
-            print()
-            print(f"total weight expression before applying bTag, named final_weight_0_{ch}_{cat}_{reg} is {total_weight_expression}")
-            print()
-            print(f"the final string that will be named final_weight is {final_string_weight}")
-            print()
-            print("the weight for hists will be = ", weight_name)
-            dataframe_new.Define("final_weight", final_string_weight).Define("weight_for_hists", f"{weight_name}").Display({f"final_weight_0_{ch}_{cat}_{reg}", "final_weight", "weight_for_hists"}).Print()
+            #print(ch, reg, cat)
+            #print()
+            #print(f"total weight expression before applying bTag, named final_weight_0_{ch}_{cat}_{reg} is {total_weight_expression}")
+            #print()
+            #print(f"the final string that will be named final_weight is {final_string_weight}")
+            #print()
+            #print("the weight for hists will be = ", weight_name)
+            #dataframe_new.Define("final_weight", final_string_weight).Define("weight_for_hists", f"{weight_name}").Display({f"final_weight_0_{ch}_{cat}_{reg}", "final_weight", "weight_for_hists"}).Print()
             if want2D and not wantBTag:
                 histograms[(key_1, key_2)].append(dataframe_new.Define("final_weight", final_string_weight).Define("weight_for_hists", f"{weight_name}").Histo2D(Get2DModel(hist_cfg_dict, var), var, "nBJets", "weight_for_hists"))
             else:

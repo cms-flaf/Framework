@@ -7,3 +7,9 @@ __pycache__
 /.crabOverseer*
 /test
 /.vscode
+*.txt
+*.yaml
+*.sh
+*.root
+*.pdf
+*.json

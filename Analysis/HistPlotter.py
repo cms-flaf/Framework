@@ -40,7 +40,7 @@ if __name__ == "__main__":
     hist_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/histograms.yaml")
     with open(hist_cfg, 'r') as f:
         hist_cfg_dict = yaml.safe_load(f)
-    hist_cfg_dict["x_bins"] = hist_cfg_dict[args.var]["x_bins_new2"][args.channel][args.category]
+    hist_cfg_dict["x_bins"] = hist_cfg_dict[args.var]["x_rebin"][args.channel][args.category]
     with open(page_cfg_custom, 'r') as f:
         page_cfg_custom_dict = yaml.safe_load(f)
     inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/inputs.yaml")

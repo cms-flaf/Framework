@@ -124,7 +124,9 @@ norm:
   TrigSF_singleEle:
     expression: weight_tau1_TrgSF_singleEle{scale}_rel * weight_tau2_TrgSF_singleEle{scale}_rel * final_weight
   TrigSF_singleMu:
-    expression: weight_tau1_TrgSF_singleMu{scale}_rel * weight_tau2_TrgSF_singleMu{scale}_rel * final_weight
+    expression: weight_tau1_TrgSF_singleMu24{scale}_rel * weight_tau2_TrgSF_singleMu24{scale}_rel * final_weight
+  TrigSF_singleMu50:
+    expression: weight_tau1_TrgSF_singleMu50{scale}_rel * weight_tau2_TrgSF_singleMu50{scale}_rel * final_weight
   TrigSF_eTau_Ele:
     expression: weight_tau1_TrgSF_etau_ele{scale}_rel * weight_tau2_TrgSF_etau_ele{scale}_rel * final_weight
   TrigSF_eTau_DM0:

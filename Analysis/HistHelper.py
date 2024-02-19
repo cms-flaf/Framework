@@ -8,6 +8,17 @@ if __name__ == "__main__":
 import Common.Utilities as Utilities
 
 scales = ['Up','Down']
+unc_2018 = ['JES_BBEC1_2018', 'JES_Absolute_2018', 'JES_EC2_2018', 'JES_HF_2018', 'JES_RelativeSample_2018' ]
+unc_2017 = ['JES_BBEC1_2017', 'JES_Absolute_2017', 'JES_EC2_2017', 'JES_HF_2017', 'JES_RelativeSample_2017' ]
+unc_2016preVFP = ['JES_BBEC1_2016preVFP', 'JES_Absolute_2016preVFP', 'JES_EC2_2016preVFP', 'JES_HF_2016preVFP', 'JES_RelativeSample_2016preVFP' ]
+unc_2016postVFP = ['JES_BBEC1_2016postVFP', 'JES_Absolute_2016postVFP', 'JES_EC2_2016postVFP', 'JES_HF_2016postVFP', 'JES_RelativeSample_2016postVFP' ]
+
+uncs_to_exclude = {
+    'Run2_2018': unc_2017+ unc_2016preVFP + unc_2016postVFP,
+    'Run2_2017': unc_2018+ unc_2016preVFP + unc_2016postVFP,
+    'Run2_2016': unc_2017+ unc_2018 + unc_2016preVFP,
+    'Run2_2016_HIPM':unc_2017+ unc_2018 + unc_2016postVFP,
+    }
 
 def GetUncNameTypes(unc_cfg_dict):
     uncNames = []

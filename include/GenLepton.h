@@ -148,18 +148,22 @@ public:
         }
         return leptons;
     }
-    template<typename IntVector, typename FloatVector>
+    template<typename IntVector, typename FloatVector, typename ShortVector, typename UShortVector>
+    //template<typename IntVector, typename FloatVector>
     static std::vector<GenLepton> fromNanoAOD( const FloatVector& GenPart_pt ,
                                             const FloatVector& GenPart_eta,
                                             const FloatVector& GenPart_phi,
                                             const FloatVector& GenPart_mass,
-                                            const IntVector& GenPart_genPartIdxMother,
+                                            const ShortVector& GenPart_genPartIdxMother,
+                                            //const IntVector& GenPart_genPartIdxMother,
                                             const IntVector& GenPart_pdgId,
-                                            const IntVector& GenPart_statusFlags,
+                                            const UShortVector& GenPart_statusFlags,
+                                            //const IntVector& GenPart_statusFlags,
                                             int event=0){
         try {
             std::vector<GenLepton> genLeptons;
             std::set<size_t> processed_particles;
+            //if (event == 82819730) std::cout<<GenPart_pt.size()<<std::endl;
             for(size_t genPart_idx=0; genPart_idx<GenPart_pt.size(); ++genPart_idx ){
                 if(processed_particles.count(genPart_idx)) continue;
                 GenStatusFlags particle_statusFlags(GenPart_statusFlags.at(genPart_idx));
@@ -167,12 +171,27 @@ public:
                 const int abs_pdg = std::abs(GenPart_pdgId.at(genPart_idx));
                 if(!GenParticle::ChargedLeptons().count(static_cast<GenParticle::PdgId>(abs_pdg)))
                     continue;
+                //if (event == 82819730) std::cout<<genPart_idx<<std::endl;
+                //if (event == 82819730) std::cout<<GenPart_pt[genPart_idx]<<std::endl;
+                //if (event == 82819730) std::cout<<GenPart_eta[genPart_idx]<<std::endl;
+                //if (event == 82819730) std::cout<<GenPart_phi[genPart_idx]<<std::endl;
+                //if (event == 82819730) std::cout<<GenPart_mass[genPart_idx]<<std::endl;
+                //if (event == 82819730) std::cout<<GenPart_genPartIdxMother[genPart_idx]<<std::endl;
+                //if (event == 82819730) std::cout<<GenPart_pdgId[genPart_idx]<<std::endl;
+                //if (event == 82819730) std::cout<<GenPart_statusFlags[genPart_idx]<<std::endl;
+                //if (event == 82819730) std::cout<<"E"<<std::endl;
                 GenLepton lepton;
-                FillImplNano<IntVector, FloatVector> fillImplNano(lepton, processed_particles,GenPart_pt,GenPart_eta, GenPart_phi, GenPart_mass,
+                //if (event == 82819730) std::cout<<"F"<<std::endl;
+                //FillImplNano<IntVector, FloatVector> fillImplNano(lepton, processed_particles,GenPart_pt,GenPart_eta, GenPart_phi, GenPart_mass,
+                FillImplNano<IntVector, FloatVector, ShortVector, UShortVector> fillImplNano(lepton, processed_particles,GenPart_pt,GenPart_eta, GenPart_phi, GenPart_mass,
                 GenPart_genPartIdxMother, GenPart_pdgId, GenPart_statusFlags);
+                //if (event == 82819730) std::cout<<"G"<<std::endl;
                 fillImplNano.FillAll(genPart_idx);
+                //if (event == 82819730) std::cout<<"H"<<std::endl;
                 lepton.initialize();
+                //if (event == 82819730) std::cout<<"I"<<std::endl;
                 genLeptons.push_back(lepton);
+                //if (event == 82819730) std::cout<<"J"<<std::endl;
             }
             return genLeptons;
         } catch(std::runtime_error& e) {
@@ -386,7 +405,8 @@ private:
             }
         }
     };
-    template<typename IntVector, typename FloatVector>
+    //template<typename IntVector, typename FloatVector>
+    template<typename IntVector, typename FloatVector, typename ShortVector, typename UShortVector>
     struct FillImplNano {
         static constexpr size_t NoneIndex = std::numeric_limits<size_t>::max();
 
@@ -397,18 +417,22 @@ private:
         const FloatVector& GenPart_eta_;
         const FloatVector& GenPart_phi_;
         const FloatVector& GenPart_mass_;
-        const IntVector& GenPart_genPartIdxMother_;
+        //const IntVector& GenPart_genPartIdxMother_;
+        const ShortVector& GenPart_genPartIdxMother_;
         const IntVector& GenPart_pdgId_;
-        const IntVector& GenPart_statusFlags_;
+        //const IntVector& GenPart_statusFlags_;
+        const UShortVector& GenPart_statusFlags_;
 
         FillImplNano(GenLepton& lepton, std::set<size_t>& processedParticles,
             const FloatVector& GenPart_pt ,
             const FloatVector& GenPart_eta,
             const FloatVector& GenPart_phi,
             const FloatVector& GenPart_mass,
-            const IntVector& GenPart_genPartIdxMother,
+            const ShortVector& GenPart_genPartIdxMother,
+            //const IntVector& GenPart_genPartIdxMother,
             const IntVector& GenPart_pdgId,
-            const IntVector& GenPart_statusFlags) :
+            //const IntVector& GenPart_statusFlags) :
+            const UShortVector& GenPart_statusFlags) :
             lepton_(lepton), processedParticles_(processedParticles),
             GenPart_pt_(GenPart_pt), GenPart_eta_(GenPart_eta), GenPart_phi_(GenPart_phi),
             GenPart_mass_(GenPart_mass), GenPart_genPartIdxMother_(GenPart_genPartIdxMother),

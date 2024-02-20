@@ -11,6 +11,7 @@ class Triggers():
         hltBranches = []
         matchedObjectsBranches= []
         for path, path_dict in self.trigger_dict.items():
+            #print(path, path_dict)
             path_key = 'path'
             if 'path' not in path_dict:
                 path_key += '_data' if isData else '_MC'
@@ -51,23 +52,35 @@ class Triggers():
                     df = df.Define(var_name_online, ' && '.join(cut_vars))
                     matching_var = f'{leg_dict_offline["type"]}_Matching_{leg_id+1}_{path}'
 
-                    df = df.Define(matching_var, f"""FindMatchingSet( {type_name_offline}_{var_name_offline}_sel,{var_name_online},
-                                                                            {leg_dict_offline["type"]}_p4, TrigObj_p4,{self.deltaR_matching} )""")
+                    df = df.Define(matching_var, f"""FindMatchingSet( {type_name_offline}_{var_name_offline}_sel,{var_name_online},{leg_dict_offline["type"]}_p4, TrigObj_p4,{self.deltaR_matching} )""")
                     total_objects_matched.append(f'{{ {self.dict_legtypes[type_name_offline]}, {matching_var} }}')
-
+            #print("A")
+            #print(total_objects_matched)
             legVector = f'{{ { ", ".join(total_objects_matched)} }}'
+            #print("B")
+            #print(legVector)
             df = df.Define(f'hasOOMatching_{path}_details', f'HasOOMatching({legVector} )')
             df = df.Define(f'hasOOMatching_{path}', f'hasOOMatching_{path}_details.first')
+            #print()
+            #print(f'hasOOMatching_{path}')
+            #df.Display({f'hasOOMatching_{path}'}).Print()
             for offline_leg_id in range(nOfflineLegs):
                 matching_var_bool = f'tau{offline_leg_id+1}_HasMatching_{path}'
+                #print(matching_var_bool)
                 df = df.Define(matching_var_bool,
                                f'hasOOMatching_{path}_details.second.count(LegIndexPair(HttCandidate.leg_type.at({offline_leg_id}), HttCandidate.leg_index.at({offline_leg_id}) ) ) > 0')
                 matchedObjectsBranches.append(matching_var_bool)
+                #print(type(matching_var_bool))
+                #df.Display({matching_var_bool}).Print()
+            #print()
             fullPathSelection = f'{or_paths} &&  hasOOMatching_{path}'
             fullPathSelection += ' && '.join(additional_conditions)
+            #print(fullPathSelection)
             hltBranch = f'HLT_{path}'
             hltBranches.append(hltBranch)
             df = df.Define(hltBranch, fullPathSelection)
+        #print("D")
+        #print(hltBranches)
         total_or_string = ' || '.join(hltBranches)
         df = df.Filter(total_or_string, "trigger application")
         hltBranches.extend(matchedObjectsBranches)

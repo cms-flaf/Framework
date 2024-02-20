@@ -8,6 +8,17 @@ if __name__ == "__main__":
 import Common.Utilities as Utilities
 
 scales = ['Up','Down']
+unc_2018 = ['JES_BBEC1_2018', 'JES_Absolute_2018', 'JES_EC2_2018', 'JES_HF_2018', 'JES_RelativeSample_2018' ]
+unc_2017 = ['JES_BBEC1_2017', 'JES_Absolute_2017', 'JES_EC2_2017', 'JES_HF_2017', 'JES_RelativeSample_2017' ]
+unc_2016preVFP = ['JES_BBEC1_2016preVFP', 'JES_Absolute_2016preVFP', 'JES_EC2_2016preVFP', 'JES_HF_2016preVFP', 'JES_RelativeSample_2016preVFP' ]
+unc_2016postVFP = ['JES_BBEC1_2016postVFP', 'JES_Absolute_2016postVFP', 'JES_EC2_2016postVFP', 'JES_HF_2016postVFP', 'JES_RelativeSample_2016postVFP' ]
+
+uncs_to_exclude = {
+    'Run2_2018': unc_2017+ unc_2016preVFP + unc_2016postVFP,
+    'Run2_2017': unc_2018+ unc_2016preVFP + unc_2016postVFP,
+    'Run2_2016': unc_2017+ unc_2018 + unc_2016preVFP,
+    'Run2_2016_HIPM':unc_2017+ unc_2018 + unc_2016postVFP,
+    }
 
 def GetUncNameTypes(unc_cfg_dict):
     uncNames = []
@@ -15,7 +26,7 @@ def GetUncNameTypes(unc_cfg_dict):
     uncNames.extend([unc for unc in unc_cfg_dict['shape']])
     return uncNames
 
-def GetSamplesStuff(sample_cfg_dict,histDir,wantAllMasses=True,wantOneMass=True,mass=500):
+def GetSamplesStuff(sample_cfg_dict,histDir,wantSignals=True,wantAllMasses=True,wantOneMass=True,mass=500):
     all_samples_list = []
     all_samples_types = {'data':['data'],}
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
@@ -31,6 +42,7 @@ def GetSamplesStuff(sample_cfg_dict,histDir,wantAllMasses=True,wantOneMass=True,
         if sample_type in signals:
             isSignal = True
             sample_type=sample
+            if not wantSignals: continue
         if sample_type not in all_samples_types.keys() :
             all_samples_types[sample_type] = []
         all_samples_types[sample_type].append(sample)
@@ -72,12 +84,13 @@ def defineAllP4(df):
     return df
 
 def createInvMass(df):
+    particleNet_mass = 'particleNet_mass' if 'SelectedFatJet_particleNet_mass_boosted' in df.GetColumnNames() else 'particleNetLegacy_mass'
     df = df.Define("tautau_m_vis", "static_cast<float>((tau1_p4+tau2_p4).M())")
-    df = df.Define("bb_m_vis", """
-                   if (!boosted){
+    df = df.Define("bb_m_vis", f"""
+                   if (!boosted){{
                        return static_cast<float>((b1_p4+b2_p4).M());
-                       }
-                    return static_cast<float>(SelectedFatJet_particleNet_mass_boosted);""")
+                       }}
+                    return static_cast<float>(SelectedFatJet_{particleNet_mass}_boosted);""")
     df = df.Define("bbtautau_mass", """
                    if (!boosted){
                        return static_cast<float>((b1_p4+b2_p4+tau1_p4+tau2_p4).M());
@@ -135,7 +148,6 @@ class DataFrameBuilderBase:
         colNames[eventIdx], colNames[2] = colNames[2], colNames[eventIdx]
         colNames[lumiIdx], colNames[3] = colNames[3], colNames[lumiIdx]
         self.colNames = colNames
-
         #if "kinFit_result" in self.colNames:
         #    self.colNames.remove("kinFit_result")
         self.colTypes = [str(self.df.GetColumnType(c)) for c in self.colNames]
@@ -163,12 +175,11 @@ class DataFrameBuilderBase:
             if central_col in var_list or central_col in self.colNames: continue
             self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[std::make_tuple(entryIndex, run, event, luminosityBlock)]->GetValue<{central_col_types[central_col_idx]}>({central_col_idx})""")
 
-
     def AddCacheColumns(self,cache_cols,cache_col_types):
         for cache_col_idx,cache_col in enumerate(cache_cols):
             if  cache_col in self.df.GetColumnNames(): continue
             if cache_col.replace('.','_') in self.df.GetColumnNames(): continue
-            self.df = self.df.Define(cache_col.replace('.','_'), f"""analysis::GetEntriesMap().at(std::make_tuple(entryIndex, run, event, luminosityBlock))->GetValue<{cache_col_types[cache_col_idx]}>({cache_col_idx})""")
+            self.df = self.df.Define(cache_col.replace('.','_'), f"""analysis::GetCacheEntriesMap().at(std::make_tuple(entryIndex, run, event, luminosityBlock))->GetValue<{cache_col_types[cache_col_idx]}>({cache_col_idx})""")
 
 def GetModel(hist_cfg, var):
     x_bins = hist_cfg[var]['x_bins']
@@ -186,11 +197,11 @@ def Get2DModel(hist_cfg, var):
     x_bins = hist_cfg[var]['x_bins']
     if type(hist_cfg[var]['x_bins'])==list:
         x_bins_vec = Utilities.ListToVector(x_bins, "double")
-        model = ROOT.RDF.TH2DModel("", "", x_bins_vec.size()-1, x_bins_vec.data(), 11, -0.5, 10.5)
+        model = ROOT.RDF.TH2DModel("", "", x_bins_vec.size()-1, x_bins_vec.data(), 13, -0.5, 12.5)
     else:
         n_bins, bin_range = x_bins.split('|')
         start,stop = bin_range.split(':')
-        model = ROOT.RDF.TH2DModel("", "",int(n_bins), float(start), float(stop), 11, -0.5, 10.5)
+        model = ROOT.RDF.TH2DModel("", "",int(n_bins), float(start), float(stop), 13, -0.5, 12.5)
     return model
 
 

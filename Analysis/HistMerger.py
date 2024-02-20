@@ -27,11 +27,48 @@ def CreateNamesDict(histNamesDict, sample_types, uncName, scales, sample_cfg_dic
             histKey = (sample_key, uncName, scale)
             histNamesDict[histName] = histKey
 
-
-
+def checkLists(list1, list2):
+    if len(list1) != len(list2):
+        print(f"lists have different length: {list1} and {list2}")
+        return False
+    for item in list1:
+        if item not in list2:
+            print(f"{item} in {list1} but not in {list2}")
+            return False
+    return True
+def checkFile(inFileRoot, channels, qcdRegions, categories, var):
+    keys_channel = [str(key.GetName()) for key in inFileRoot.GetListOfKeys()]
+    if not (checkLists(keys_channel, channels)):
+        print("check list not worked for channels")
+        return False
+    for channel in channels:
+        dir_0 = inFileRoot.Get(channel)
+        keys_qcdRegions = [str(key.GetName()) for key in dir_0.GetListOfKeys()]
+        if not checkLists(keys_qcdRegions, QCDregions):
+            print("check list not worked for QCDregions")
+            return False
+        for qcdRegion in QCDregions:
+            dir_1 = dir_0.Get(qcdRegion)
+            keys_categories = [str(key.GetName()) for key in dir_1.GetListOfKeys()]
+            if var in bjet_vars and 'boosted' not in keys_categories:
+                keys_categories.extend(['boosted'])
+            #if cat != 'boosted' and var in var_to_add_boosted: continue
+                #print(cat, var)
+            if not checkLists(keys_categories, categories):
+                    print("check list not worked for categories")
+                    return False
+            for cat in categories:
+                if cat == 'boosted' and var in bjet_vars: continue
+                if cat != 'boosted' and var in var_to_add_boosted: continue
+                #print(cat, var)
+                dir_2 = dir_1.Get(cat)
+                keys_histograms = [str(key.GetName()) for key in dir_2.GetListOfKeys()]
+                #print(keys_histograms)
+                if not keys_histograms: return False
+    return True
 
 def fillHistDict(var, inFileRoot, all_histograms, unc_source,channels, QCDregions, categories, sample_type, histNamesDict,signals):
-    print(sample_type)
+    #print(sample_type)
     for channel in channels:
         dir_0 = inFileRoot.Get(channel)
         #print(dir_0.GetListOfKeys())
@@ -227,7 +264,7 @@ if __name__ == "__main__":
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
 
-    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir, True, False)
+    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir, True, True, False)
     histNamesDict = {}
     uncNameTypes = GetUncNameTypes(unc_cfg_dict)
     btag_dir= "bTag_WP" if args.wantBTag else "bTag_shape"
@@ -261,11 +298,16 @@ if __name__ == "__main__":
             if 'VBFToRadion' in inFileName: continue
             print(inFileName)
             if not os.path.exists(inFileName):
-                print(f"{inFileName} removed")
-                continue
+                raise RuntimeError(f"{inFileName} removed")
             inFileRoot = ROOT.TFile.Open(inFileName, "READ")
             if inFileRoot.IsZombie():
-                raise RuntimeError(f"{inFile} is Zombie")
+                inFileRoot.Close()
+                os.remove(inFileName)
+                raise RuntimeError(f"{inFileName} is Zombie")
+            if  not checkFile(inFileRoot, channels, QCDregions, categories,args.var):
+                inFileRoot.Close()
+                os.remove(inFileName)
+                raise RuntimeError(f"{inFileName} has problems")
             fillHistDict(args.var, inFileRoot, all_histograms[sample_type],args.uncSource, channels, QCDregions, categories, sample_type, histNamesDict, signals)
             inFileRoot.Close()
         MergeHistogramsPerType(all_histograms[sample_type])
@@ -276,9 +318,11 @@ if __name__ == "__main__":
     if not os.path.exists(args.jsonDir):
         os.makedirs(args.jsonDir)
     json_fileName_prefix =  f"all_ratios_{args.var}2D" if TwoDTrue else f"all_ratios_{args.var}"
+    #print(json_fileName_prefix)
+    #print(args.uncSource)
     if args.uncSource !='Central':
-        json_fileName_prefix+={args.uncSource}
-    json_file = os.path.join(args.jsonDir, f'{json_fileName_prefix}{args.suffix}.json')
+        json_fileName_prefix+=f"_{args.uncSource}"
+    json_file = os.path.join(args.jsonDir, 'all_ratios', f'{json_fileName_prefix}{args.suffix}.json')
     with open(f"{json_file}", "w") as write_file:
         json.dump(final_json_dict, write_file, indent=4)
 
@@ -286,8 +330,8 @@ if __name__ == "__main__":
     if not os.path.exists(outDir):
         os.makedirs(outDir)
     outFileName_prefix =  f"all_histograms_{args.var}2D" if TwoDTrue else f"all_histograms_{args.var}"
-    if args.uncSource !='Central':
-        outFileName_prefix+={args.uncSource}
+    #if args.uncSource !='Central':
+    outFileName_prefix+=f"_{args.uncSource}"
     outFileName = os.path.join(outDir, f'{outFileName_prefix}{args.suffix}.root')
     if os.path.exists(outFileName):
         os.remove(outFileName)

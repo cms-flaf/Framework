@@ -29,15 +29,56 @@ Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all"]
 Electron_observables = ["Electron_mvaNoIso_WP90", "Electron_mvaIso_WP90", "Electron_pfRelIso03_all"]
 JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",
-                "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL", "bRegCorr", "bRegRes", "idbtagDeepFlavB"]
+                "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL", "bRegCorr", "bRegRes", "idbtagDeepFlavB",
+                "btagPNetB", "btagPNetCvL", "btagPNetCvB", "btagPNetQvG", "btagPNetTauVJet", "PNetRegPtRawCorr", "PNetRegPtRawCorrNeutrino", "PNetRegPtRawRes"] # 2016]
 JetObservablesMC = ["hadronFlavour","partonFlavour"]
-
 FatJetObservables = ["area", "btagCSVV2", "btagDDBvLV2", "btagDeepB", "btagHbb", "deepTagMD_HbbvsQCD",
                      "deepTagMD_ZHbbvsQCD", "deepTagMD_ZbbvsQCD", "deepTagMD_bbvsLight", "deepTag_H",
-                     "jetId", "msoftdrop", "nBHadrons", "nCHadrons",
-                     "nConstituents", "particleNetMD_QCD", "particleNetMD_Xbb", "particleNet_HbbvsQCD",
-                     "particleNet_mass", "rawFactor" ]
+                     "jetId", "msoftdrop", "nBHadrons", "nCHadrons", "nConstituents","rawFactor",
+                      "particleNetMD_QCD", "particleNetMD_Xbb", "particleNet_HbbvsQCD", "particleNet_mass", # 2018
+                     "particleNet_QCD","particleNet_XbbVsQCD", # 2016
+                     "particleNetLegacy_QCD", "particleNetLegacy_Xbb", "particleNetLegacy_mass", # 2016
+                     "particleNetWithMass_QCD", "particleNetWithMass_HbbvsQCD", "particleNet_massCorr" # 2016
+                     ]
 
+# in this PR https://github.com/cms-sw/cmssw/commit/17457a557bd75ab479dfb78013edf9e551ecd6b7, particleNet MD have been removed therefore we will switch to take
+
+
+# # New ParticleNet trainings are not available in MiniAOD until Run3 13X
+'''
+particleNetWithMass_QCD YES
+particleNetWithMass_TvsQCD NO
+particleNetWithMass_WvsQCD NO
+particleNetWithMass_ZvsQCD NO
+particleNetWithMass_H4qvsQCD NO
+particleNetWithMass_HbbvsQCD YES
+particleNetWithMass_HccvsQCD NO
+particleNet_QCD YES
+particleNet_QCD2HF NO
+particleNet_QCD1HF NO
+particleNet_QCD0HF NO
+particleNet_massCorr YES
+particleNet_XbbVsQCD YES
+particleNet_XccVsQCD NO
+particleNet_XqqVsQCD NO
+particleNet_XggVsQCD NO
+particleNet_XttVsQCD NO
+particleNet_XtmVsQCD NO
+particleNet_XteVsQCD NO
+'''
+# Restore taggers that were decommisionned for Run-3
+'''
+particleNetLegacy_mass YES
+particleNetLegacy_Xbb YES
+particleNetLegacy_Xcc NO
+particleNetLegacy_Xqq NO
+particleNetLegacy_QCD YES
+'''
+
+# ParticleNet legacy jet tagger is already in 106Xv2 MINIAOD,
+# add PartlceNet legacy mass regression and new combined tagger + mass regression
+
+# for more info: ---> https://github.com/cms-sw/cmssw/blob/master/PhysicsTools/NanoAOD/python/jetsAK8_cff.py
 
 FatJetObservablesMC = ["hadronFlavour","partonFlavour"]
 
@@ -51,13 +92,13 @@ def SelectBTagShapeSF(df,weight_name):
     return df
 
 def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
-    #print(f"before applying anything: {dfw.df.Count().GetValue()}")
+    print(syst_name)
+    print(f"before applying anything: {dfw.df.Count().GetValue()}")
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
     # qua va Select btagShapeWeight
     #print(f"after SelectRecoP4: {dfw.df.Count().GetValue()}")
     if mode == "HH":
         dfw.Apply(Baseline.RecoLeptonsSelection)
-        #print(dfw.df.Count().GetValue())
         #print(f"after RecoLeptonsSelection: {dfw.df.Count().GetValue()}")
         dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
         #print(f"after RecoHttCandidateSelection: {dfw.df.Count().GetValue()}")
@@ -116,7 +157,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     if not isData:
         dfw.Define(f"FatJet_genJet_idx", f" FindMatching(FatJet_p4[FatJet_bbCand],GenJetAK8_p4,0.3)")
         fatjet_obs.extend(JetObservablesMC)
-        dfw.DefineAndAppend("genchannelId","static_cast<int>(genHttCandidate.channel())")
+        #dfw.DefineAndAppend("genchannelId","static_cast<int>(genHttCandidate.channel())")
     dfw.DefineAndAppend(f"SelectedFatJet_pt", f"v_ops::pt(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_phi", f"v_ops::phi(FatJet_p4[FatJet_bbCand])")
@@ -223,7 +264,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
                 dfw.DefineAndAppend(f"b{leg_idx+1}_{jetVar}", f"Hbb_isValid ? Jet_{jetVar}.at(HbbCandidate->leg_index[{leg_idx}]) : -100")
             dfw.DefineAndAppend(f"b{leg_idx+1}_HHbtag", f"Hbb_isValid ?  static_cast<float>(Jet_HHBtagScore.at(HbbCandidate->leg_index[{leg_idx}])) : -100.f")
 
-def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOptions,range, evtIds,
+def createAnatuple(inFile, treeName, outDir, config, sample_name, anaCache, snapshotOptions,range, evtIds,
                    store_noncentral, compute_unc_variations, uncertainties, print_cutflow, mode):
     start_time = datetime.datetime.now()
     compression_settings = snapshotOptions.fCompressionAlgorithm * 100 + snapshotOptions.fCompressionLevel
@@ -238,13 +279,14 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
     Baseline.Initialize(loadTF, loadHHBtag)
     Corrections.Initialize(config=config['GLOBAL'],isData=isData)
     triggerFile = config['GLOBAL'].get('triggerFile')
+    #print(triggerFile)
     if triggerFile is not None:
         triggerFile = os.path.join(os.environ['ANALYSIS_PATH'], triggerFile)
         trigger_class = Triggers.Triggers(triggerFile)
     else:
         trigger_class = None
     inFiles = Utilities.ListToVector(inFile.split(','))
-    df = ROOT.RDataFrame("Events", inFiles)
+    df = ROOT.RDataFrame(treeName, inFiles)
     if range is not None:
         df = df.Range(range)
     #print(f"at the beginning: {df.Count().GetValue()}")
@@ -285,20 +327,20 @@ def createAnatuple(inFile, outDir, config, sample_name, anaCache, snapshotOption
         suffix = '' if is_central else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
         dfw = Utilities.DataFrameWrapper(df_empty,defaultColToSave)
-
+        #print(syst_name)
         addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs)
-        dfw.DefineAndAppend("weight_L1PreFiring_Down","L1PreFiringWeight_Dn")
-        #dfw.DefineAndAppend("weight_L1PreFiring_Dn","L1PreFiringWeight_Dn")
-        dfw.DefineAndAppend("weight_L1PreFiring_ECALDown","L1PreFiringWeight_ECAL_Dn")
-        dfw.DefineAndAppend("weight_L1PreFiring_ECAL_Central","L1PreFiringWeight_ECAL_Nom")
-        dfw.DefineAndAppend("weight_L1PreFiring_ECALUp","L1PreFiringWeight_ECAL_Up")
-        dfw.DefineAndAppend("weight_L1PreFiring_Muon_Central","L1PreFiringWeight_Muon_Nom")
-        dfw.DefineAndAppend("weight_L1PreFiring_Muon_StatDown","L1PreFiringWeight_Muon_StatDn")
-        dfw.DefineAndAppend("weight_L1PreFiring_Muon_StatUp","L1PreFiringWeight_Muon_StatUp")
-        dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystDown","L1PreFiringWeight_Muon_SystDn")
-        dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystUp","L1PreFiringWeight_Muon_SystUp")
+
+        dfw.DefineAndAppend("weight_L1PreFiringDown_rel","L1PreFiringWeight_Dn/L1PreFiringWeight_Nom")
         dfw.DefineAndAppend("weight_L1PreFiring_Central","L1PreFiringWeight_Nom")
-        dfw.DefineAndAppend("weight_L1PreFiringUp","L1PreFiringWeight_Up")
+        dfw.DefineAndAppend("weight_L1PreFiringUp_rel","L1PreFiringWeight_Up/L1PreFiringWeight_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_ECALDown_rel","L1PreFiringWeight_ECAL_Dn/L1PreFiringWeight_ECAL_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_ECAL_Central","L1PreFiringWeight_ECAL_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_ECALUp_rel","L1PreFiringWeight_ECAL_Up/L1PreFiringWeight_ECAL_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_Central","L1PreFiringWeight_Muon_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_StatDown_rel", "L1PreFiringWeight_Muon_StatDn/L1PreFiringWeight_Muon_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_StatUp_rel", "L1PreFiringWeight_Muon_StatUp/L1PreFiringWeight_Muon_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystDown_rel", "L1PreFiringWeight_Muon_SystDn/L1PreFiringWeight_Muon_Nom")
+        dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystUp_rel", "L1PreFiringWeight_Muon_SystUp/L1PreFiringWeight_Muon_Nom")
         if not isData:
             weight_branches = dfw.Apply(Corrections.getNormalisationCorrections, config, sample_name, nLegs,
                                         return_variations=is_central and compute_unc_variations, isCentral=is_central,
@@ -357,6 +399,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', required=True, type=str)
     parser.add_argument('--inFile', required=True, type=str)
+    parser.add_argument('--treeName', required=False, type=str, default="Events")
     parser.add_argument('--outDir', required=True, type=str)
     parser.add_argument('--sample', required=True, type=str)
     parser.add_argument('--anaCache', required=True, type=str)
@@ -390,5 +433,5 @@ if __name__ == "__main__":
     snapshotOptions.fMode="RECREATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
-    createAnatuple(args.inFile, args.outDir, config, args.sample, anaCache, snapshotOptions, args.nEvents,
+    createAnatuple(args.inFile,args.treeName, args.outDir, config, args.sample, anaCache, snapshotOptions, args.nEvents,
                    args.evtIds, args.store_noncentral, args.compute_unc_variations, args.uncertainties.split(","), args.print_cutflow, args.mode)

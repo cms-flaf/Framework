@@ -41,7 +41,7 @@ page_setup:
 
 legend:
   pos_ref: inner_right_top
-  pos: [ 0.48, 0.44 ]
+  pos: [ 0.4, 0.44 ]
   size: [ 0.56, 0.42 ]
   fill_color: kWhite
   fill_style: 0
@@ -52,7 +52,7 @@ legend:
 ana_text:
   text: "hh#rightarrowbb#tau#tau"
   pos_ref: inner_left_top
-  pos: [ 0, -0.03 ]
+  pos: [ 0.1, -0.02 ]
   text_size: 0.02
   font: 62
   align: left_bottom
@@ -60,33 +60,33 @@ ana_text:
 cms_text:
   text: "CMS"
   pos_ref: inner_left_top
-  pos: [0.03, 0.03 ]
-  text_size: 0.055
+  pos: [ -0.01, -0.07 ]
+  text_size: 0.035
   font: 61
 
 scope_text:
   text: "Private work"
   pos_ref: cms_text
-  pos: [ 0, -0.1 ]
+  pos: [ 0.05, -0.08 ]
   text_size: 0.04
   font: 52
 
 datasim_text:
   pos_ref: scope_text
-  pos: [ 0, -0.1 ]
+  pos: [ 0, 0 ]
   text_size: 0.04
   font: 52
 
 cat_text:
   pos_ref: datasim_text
-  pos: [0.11, -0.1 ]
-  text_size: 0.03
+  pos: [0.1, -0.079 ]
+  text_size: 0.026
   font: 62
 
 ch_text:
   pos_ref: datasim_text
-  pos: [0, -0.11]
-  text_size: 0.03
+  pos: [0.01, -0.08]
+  text_size: 0.026
   font: 62
 
 bkg_hist:

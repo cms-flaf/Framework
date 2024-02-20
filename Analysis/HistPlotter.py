@@ -31,6 +31,7 @@ if __name__ == "__main__":
     parser.add_argument('--uncSource',required=False, type=str, default = 'Central')
     parser.add_argument('--wantBTag', required=False, type=bool, default=False)
     parser.add_argument('--want2D', required=False, type=bool, default=False)
+    parser.add_argument('--wantData', required=False, type=bool, default=False)
     parser.add_argument('--suffix', required=False, type=str, default='')
     args = parser.parse_args()
 
@@ -39,20 +40,29 @@ if __name__ == "__main__":
     hist_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/histograms.yaml")
     with open(hist_cfg, 'r') as f:
         hist_cfg_dict = yaml.safe_load(f)
+    hist_cfg_dict["x_bins"] = hist_cfg_dict[args.var]["x_rebin"][args.channel][args.category]
     with open(page_cfg_custom, 'r') as f:
         page_cfg_custom_dict = yaml.safe_load(f)
     inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/inputs.yaml")
     with open(inputs_cfg, 'r') as f:
         inputs_cfg_dict = yaml.safe_load(f)
+
+    #if args.wantData == False:
+    #    for dicti in inputs_cfg_dict:
+    #        if dicti['name'] == 'data':
+    #            inputs_cfg_dict.remove(dicti)
+        #print(inputs_cfg_dict)
     samples_list = [ s['name'] for s in inputs_cfg_dict]
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
     all_samples_separated = [k['name'] for k in inputs_cfg_dict]
+    #print(all_samples_separated)
     all_histlist = {}
+
     plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg_dict, inputs_cfg=inputs_cfg_dict)
     btag_dir= "bTag_WP" if args.wantBTag else "bTag_shape"
 
-    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir,False,True,args.mass)
+    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir,True,False,True,args.mass)
 
     all_samples_types.update({"QCD":"QCD"})
     histNamesDict = {}
@@ -61,9 +71,12 @@ if __name__ == "__main__":
     CreateNamesDict(histNamesDict, all_samples_types, args.uncSource, scales, sample_cfg_dict)
     inFileName=f'{args.inFileName}_{args.var}_{args.uncSource}{args.suffix}.root'
     inFileName_prefix =  f"{args.inFileName}_{args.var}2D" if args.want2D else f"{args.inFileName}_{args.var}"
-    if args.uncSource !='Central':
-        inFileName_prefix+={args.uncSource}
+    #if args.uncSource !='Central':
+    if args.suffix!='_onlyCentral':
+        inFileName_prefix+=f'_{args.uncSource}'
+    #inFileName=f'{args.inFileName}_{args.var}{args.suffix}.root'
     inFileName = f'{inFileName_prefix}{args.suffix}.root'
+
     print(os.path.join(args.histDir, f'{args.inFileName}',args.var,btag_dir,inFileName))
     inFile = ROOT.TFile(os.path.join(args.histDir, f'{args.inFileName}',args.var,btag_dir,inFileName),"READ")
     dir_0 = inFile.Get(args.channel)
@@ -73,6 +86,7 @@ if __name__ == "__main__":
         if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
             obj.SetDirectory(0)
             key_name = key.GetName()
+            #print(key_name)
             if key_name not in histNamesDict.keys(): continue
             sample, uncName, scale = histNamesDict[key_name]
             sample_type = sample if not sample in sample_cfg_dict.keys() else sample_cfg_dict[sample]['sampleType']
@@ -80,6 +94,7 @@ if __name__ == "__main__":
                 sample= sample_type
             if (uncName, scale) not in all_histlist.keys():
                 all_histlist[(uncName, scale)] = {}
+            #if args.wantData == False and (sample == 'data' or sample_type == 'data'): continue
             all_histlist[(uncName, scale)][sample] = obj
     inFile.Close()
 
@@ -92,27 +107,36 @@ if __name__ == "__main__":
         samples_dict = all_histlist[key]
         obj_list = ROOT.TList()
         for sample,hist in samples_dict.items():
+            #print(sample, hist.Integral(0, hist.GetNbinsX()+1))
             other_inputs = []
-            #print(sample)
             if sample not in all_samples_separated+sample_cfg_dict['GLOBAL']['signal_types']:
+                #print(sample)
                 if sample in other_inputs: continue
                 if not other_inputs:
                     other_obj = hist
                 other_inputs.append(sample)
                 #sample = 'Other'
-                print(f'{sample} in other has {hist.Integral(0, hist.GetNbinsX()+1)} entries')
+                #print(f'{sample} in other has {hist.Integral(0, hist.GetNbinsX()+1)} entries')
                 obj_list.Add(hist)
                 #obj_list=ROOT.TList()
             else:
-                print(f'{sample} has {hist.Integral(0, hist.GetNbinsX()+1)} entries')
+                #print(f'{sample} has {hist.Integral(0, hist.GetNbinsX()+1)} entries')
                 hists_to_plot[sample] = hist
         other_obj.Merge(obj_list)
-        print(f'other have {other_obj.GetEntries()} entries')
+        #print(f'other have {other_obj.GetEntries()} entries')
         hists_to_plot['Other'] = other_obj
-        if 'data' not in hists_to_plot.keys():
-            hists_to_plot['data'] = all_histlist[ ('Central','Central' )]['data']
+        #print()
+        #for sample,hist in hists_to_plot.items():
+        #    print(sample, hist.Integral(0, hist.GetNbinsX()+1))
+        #print()
+        #print()
+        #if args.wantData == True and 'data' not in hists_to_plot.keys():
+        #    hists_to_plot['data'] = all_histlist[ ('Central','Central' )]['data']
         cat_txt = args.category if args.category !='inclusive' else 'incl'
-        custom1= {'cat_text':f"{cat_txt} m_{{X}}={args.mass} GeV/c^{{2}}", 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS data/simulation'}
+        custom1= {'cat_text':f"{cat_txt} m_{{X}}={args.mass} GeV/c^{{2}}", 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS data/simulation','scope_text':''}
+
+        if args.wantData==False:
+            custom1= {'cat_text':f"{cat_txt} m_{{X}}={args.mass} GeV/c^{{2}}", 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS simulation', 'scope_text':''}
         outFile_prefix = f'{args.var}_{args.channel}_{args.category}'
 
         if(args.uncSource != 'Central'):
@@ -120,9 +144,11 @@ if __name__ == "__main__":
         tmpdir = 'from2D' if args.want2D else 'from1D'
         outDir = os.path.join(args.outDir,args.var,btag_dir,tmpdir)
         #print(outDir)
-        #print(hists_to_plot.keys())
+        #print(hists_to_plot)
         if not os.path.isdir(outDir):
             os.makedirs(outDir)
         outFileName = f"{outFile_prefix}_XMass{args.mass}.pdf"
+
         outFileFullPath = os.path.join(outDir,outFileName)
-        plotter.plot(args.var, hists_to_plot, outFileFullPath, custom=custom1)
+        plotter.plot(args.var, hists_to_plot, outFileFullPath, want_data = args.wantData, custom=custom1)
+        print(outFileFullPath)

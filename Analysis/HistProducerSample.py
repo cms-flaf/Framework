@@ -37,6 +37,9 @@ if __name__ == "__main__":
     start_end_idx = args.file_ids.split('-')
     all_files = {}
     for var in all_vars:
+        finalDir = os.path.join(args.outDir, var, btag_dir)
+        if not os.path.isdir(finalDir):
+            os.makedirs(finalDir)
         #print(var)
         all_files[var] = []
         file_name = args.file_name_pattern
@@ -47,11 +50,9 @@ if __name__ == "__main__":
                 all_files[var].append(os.path.join(args.histDir, var, btag_dir,file_name))
         else:
             all_files[var].append(os.path.join(args.histDir, var, btag_dir,file_name))
-        outDirNameFinal=os.path.join(args.outDir, btag_dir)
-        if not os.path.exists(outDirNameFinal):
-            os.makedirs(outDirNameFinal)
+
         str2d = '2D' if args.want2D else ''
-        outFileNameFinal = f'{outDirNameFinal}/{var}{str2d}{args.suffix}.root'
+        outFileNameFinal = f'{finalDir}/{var}{str2d}{args.suffix}.root'
         hadd_str = f'hadd -f209 -j -O {outFileNameFinal} '
         hadd_str += ' '.join(f for f in all_files[var])
         if len(all_files[var]) > 1:

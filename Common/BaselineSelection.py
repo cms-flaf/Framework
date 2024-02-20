@@ -4,7 +4,8 @@ from .Utilities import *
 
 initialized = False
 
-ana_reco_object_collections = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau", "MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune","SubJet"]
+#ana_reco_object_collections = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "boostedTau", "MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune","SubJet"]
+ana_reco_object_collections = [ "Electron", "Muon", "Tau", "Jet", "FatJet", "MET", "PuppiMET", "DeepMETResponseTune", "DeepMETResolutionTune","SubJet"]
 deepTauVersions = {"2p1":"2017", "2p5":"2018"}
 
 def Initialize(loadTF=False, loadHHBtag=False):
@@ -28,10 +29,11 @@ def Initialize(loadTF=False, loadHHBtag=False):
             IncludeLibs.includeLibTool("tensorflow")
         if(loadHHBtag):
             ROOT.gInterpreter.Declare(f'#include "{header_path_HHbTag}"')
-            ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 1)')
+            ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 2)')
         initialized = True
 
-leg_names = [ "Electron", "Muon", "Tau", "boostedTau" ]
+#leg_names = [ "Electron", "Muon", "Tau", "boostedTau" ]
+leg_names = [ "Electron", "Muon", "Tau" ]
 
 channels = [ 'muMu', 'eMu', 'eE', 'muTau', 'eTau', 'tauTau' ] # in order of importance during the channel selection
 
@@ -133,12 +135,12 @@ def DefineMETCuts(met_thr, met_collections):
 
 def RecoLeptonsSelection(df, apply_filter=True):
     df = df.Define("Electron_B0", f"""
-        v_ops::pt(Electron_p4) > 18 && abs(v_ops::eta(Electron_p4)) < 2.3 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
+        v_ops::pt(Electron_p4) > 8 && abs(v_ops::eta(Electron_p4)) < 2.3 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
         && (Electron_mvaIso_WP90 || (Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all < 0.5))
     """)
 
     df = df.Define("Muon_B0", f"""
-        v_ops::pt(Muon_p4) > 18 && abs(v_ops::eta(Muon_p4)) < 2.3 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045
+        v_ops::pt(Muon_p4) > 8 && abs(v_ops::eta(Muon_p4)) < 2.3 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045
         && ( ((Muon_tightId || Muon_mediumId) && Muon_pfRelIso04_all < 0.5) || (Muon_highPtId && Muon_tkRelIso < 0.5) )
     """)
     df = df.Define("Tau_B0", f"""
@@ -152,10 +154,10 @@ def RecoLeptonsSelection(df, apply_filter=True):
            )
     """)
 
-    df = df.Define("boostedTau_B0", f"""
-        v_ops::pt(boostedTau_p4) > 40 && abs(v_ops::eta(boostedTau_p4)) < 2.3 && abs(boostedTau_dz) < 0.2 && boostedTau_decayMode != 5
-        && boostedTau_decayMode != 6 && boostedTau_idMVAnewDM2017v2 >= {WorkingPointsBoostedTauVSjet.VVLoose.value}
-    """)
+    #df = df.Define("boostedTau_B0", f"""
+    #    v_ops::pt(boostedTau_p4) > 40 && abs(v_ops::eta(boostedTau_p4)) < 2.3 && abs(boostedTau_dz) < 0.2 && boostedTau_decayMode != 5
+    #    && boostedTau_decayMode != 6 && boostedTau_idMVAnewDM2017v2 >= {WorkingPointsBoostedTauVSjet.VVLoose.value}
+    #""")
 
     df = df.Define("Electron_B0T", """
         Electron_B0 && (Electron_mvaIso_WP80
@@ -173,9 +175,9 @@ def RecoLeptonsSelection(df, apply_filter=True):
                    || Tau_idDeepTau2018v2p5VSjet >= {WorkingPointsTauVSjet.Loose.value} )
     """)
 
-    df = df.Define("boostedTau_B0T", f"""
-        boostedTau_B0 && boostedTau_idMVAnewDM2017v2 >= {WorkingPointsBoostedTauVSjet.Medium.value}
-    """)
+    #df = df.Define("boostedTau_B0T", f"""
+    #    boostedTau_B0 && boostedTau_idMVAnewDM2017v2 >= {WorkingPointsBoostedTauVSjet.Medium.value}
+    #""")
 
     met_cuts = DefineMETCuts(80, ["MET", "DeepMETResolutionTune", "DeepMETResponseTune", "PuppiMET"])
 
@@ -183,7 +185,7 @@ def RecoLeptonsSelection(df, apply_filter=True):
     for leg1_idx in range(len(leg_names)):
         for leg2_idx in range(max(1, leg1_idx), len(leg_names)):
             leg1, leg2 = leg_names[leg1_idx], leg_names[leg2_idx]
-            if leg1 == 'Tau' and leg2 == 'boostedTau': continue
+            #if leg1 == 'Tau' and leg2 == 'boostedTau': continue
             ch_filter = f"{leg1}{leg2}_B0"
             ch_filters.append(ch_filter)
             if leg1 == leg2:
@@ -210,7 +212,7 @@ def RecoHttCandidateSelection(df, config):
            .Define("Tau_iso", f"""-Tau_rawDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSjet""")
     #print(f"""-Tau_rawDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSjet""")
 
-    df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && abs(v_ops::eta(Electron_p4)) < 2.3 && v_ops::pt(Electron_p4) > 20 && Electron_mvaIso_WP80 ")
+    df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && abs(v_ops::eta(Electron_p4)) < 2.3 && v_ops::pt(Electron_p4) > 10 && Electron_mvaIso_WP80 ")
     #df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaIso_WP80")
     #df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all<0.1")
     eta_cut = 2.3 if config["deepTauVersion"] == '2p1' else 2.5
@@ -228,7 +230,7 @@ def RecoHttCandidateSelection(df, config):
     """)
     '''
     df = df.Define("Muon_B2_muTau_1", f"""
-        Muon_B0 && v_ops::pt(Muon_p4) > 20 && abs(v_ops::eta(Muon_p4))<2.3 && (
+        Muon_B0 && v_ops::pt(Muon_p4) > 15 && abs(v_ops::eta(Muon_p4))<2.3 && (
             ( Muon_tightId && Muon_pfRelIso04_all < 0.15 )
         )
     """)
@@ -252,24 +254,24 @@ def RecoHttCandidateSelection(df, config):
     """)
 
     df = df.Define("Muon_B2_muMu_1", f"""
-        Muon_B0 && v_ops::pt(Muon_p4) > 20 && (   (Muon_tightId && Muon_pfRelIso04_all < 0.15)
+        Muon_B0 && v_ops::pt(Muon_p4) > 15 && (   (Muon_tightId && Muon_pfRelIso04_all < 0.15)
                                     || (Muon_highPtId && Muon_tkRelIso < 0.15) )
     """)
     df = df.Define("Muon_B2_muMu_2", f"""
-        Muon_B0 && v_ops::pt(Muon_p4) > 20 && (   (Muon_tightId && Muon_pfRelIso04_all < 0.3)
+        Muon_B0 && v_ops::pt(Muon_p4) > 15 && (   (Muon_tightId && Muon_pfRelIso04_all < 0.3)
                                     || (Muon_highPtId && Muon_tkRelIso < 0.3) )
     """)
 
     df = df.Define("Electron_B2_eMu_1", f"""
-        Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3
+        Electron_B0 && v_ops::pt(Electron_p4) > 10 && Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3
     """)
     df = df.Define("Muon_B2_eMu_2", f"""
-        Muon_B0 && v_ops::pt(Muon_p4) > 20 && (   (Muon_tightId && Muon_pfRelIso04_all < 0.15)
+        Muon_B0 && v_ops::pt(Muon_p4) > 15 && (   (Muon_tightId && Muon_pfRelIso04_all < 0.15)
                                     || (Muon_highPtId && Muon_tkRelIso < 0.15) )
     """)
 
     df = df.Define("Electron_B2_eE_1", f"""
-        Electron_B0 && v_ops::pt(Electron_p4) > 20 &&  Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.15
+        Electron_B0 && v_ops::pt(Electron_p4) > 10 &&  Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.15
     """)
     df = df.Define("Electron_B2_eE_2", f"""
                     Electron_B2_eE_1
@@ -288,7 +290,15 @@ def RecoHttCandidateSelection(df, config):
     #for c in cand_columns:
     #    df=df.Define(f"candSize_{c}", f"{c}.size()")
     #    df.Display({f"candSize_{c}"}).Print()
+    stringfilter = " || ".join(cand_filters)
+    #print("after filtering for HttCandidates_muMu.size()>0= ", df.Filter("HttCandidates_muMu.size() > 0 ").Count().GetValue())
+    #print("after filtering for HttCandidates_eMu.size()>0= ", df.Filter("HttCandidates_eMu.size() > 0 ").Count().GetValue())
+    #print("after filtering for HttCandidates_eE.size()>0= ", df.Filter("HttCandidates_eE.size() > 0 ").Count().GetValue())
+    #print("after filtering for HttCandidates_muTau.size()>0= ", df.Filter("HttCandidates_muTau.size() > 0 ").Count().GetValue())
+    #print("after filtering for HttCandidates_eTau.size()>0= ", df.Filter("HttCandidates_eTau.size() > 0 ").Count().GetValue())
+    #print("after filtering for HttCandidates_tauTau.size()>0= ", df.Filter("HttCandidates_tauTau.size() > 0 ").Count().GetValue())
     df = df.Filter(" || ".join(cand_filters), "Reco Baseline 2")
+    #print(f"after filtering {stringfilter} = {df.Count().GetValue()}")
     cand_list_str = ', '.join([ '&' + c for c in cand_columns])
     return df.Define('HttCandidate', f'GetBestHTTCandidate<2>({{ {cand_list_str} }}, event)')
 

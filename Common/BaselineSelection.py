@@ -132,6 +132,14 @@ def DefineMETCuts(met_thr, met_collections):
   cut = ' || '.join([f'{v}_pt > {met_thr}' for v in met_collections ])
   return f"( {cut} )"
 
+'''
+- we don't need B0T and everything below it in RecoLeptonsSelection (so no filter applied just defining B0s)
+- keep only channel- and tagger- independent cuts in B0. you can even move B0 directly to RecoHttCandidateSelection to have all signal lepton cuts in one place
+I propose to apply:
+- abs(eta) < 2.5 for electrons
+- pt > 10 GeV for muons (they use 15, but only because they are lazy, you can apply 15 at anatuple level to demonstrate how much is lost)
+- abs(eta) < 2.4 for muons
+'''
 def RecoLeptonsSelection(df, apply_filter=True):
     df = df.Define("Electron_B0", f"""
         v_ops::pt(Electron_p4) > 8 && abs(v_ops::eta(Electron_p4)) < 2.5 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045

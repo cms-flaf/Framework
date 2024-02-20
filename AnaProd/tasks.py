@@ -46,9 +46,10 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             self.output().touch()
         else:
             producer = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheProducer.py')
-            #inDir = os.path.join(self.central_nanoAOD_path(), sample_name)
+            inDir = os.path.join(self.central_nanoAOD_path(), sample_name)
             #if self.period!='Run2_2018':
-            inDir = os.path.join(self.central_nanoAOD_path_HLepRare(), sample_name)
+            if self.version.split('_')[-1]=='HTT':
+                inDir = os.path.join(self.central_nanoAOD_path_HLepRare(), sample_name)
             os.makedirs(os.path.dirname(self.output().path), exist_ok=True)
             sh_call(['python3', producer, '--config', self.sample_config, '--inDir', inDir, '--sample', sample_name,
                     '--outFile', self.output().path, '--customisations', self.customisations ], env=self.cmssw_env())
@@ -75,9 +76,10 @@ class InputFileTask(Task, law.LocalWorkflow):
         print(f'Creating inputFile for sample {sample_name} into {self.output().path}')
         os.makedirs(os.path.join(self.local_path(),sample_name), exist_ok=True)
         txtFile_tmp = os.path.join(self.local_path(), sample_name, "tmp.txt")
-        #inDir = os.path.join(self.central_nanoAOD_path(), sample_name)
+        inDir = os.path.join(self.central_nanoAOD_path(), sample_name)
         #if self.period!='Run2_2018':
-        inDir = os.path.join(self.central_nanoAOD_path_HLepRare(), sample_name)
+        if self.version.split('_')[-1]=='HTT':
+            inDir = os.path.join(self.central_nanoAOD_path_HLepRare(), sample_name)
         #print(f"inDir is {inDir}")
         input_files = []
         for root, dirs, files in os.walk(inDir):
@@ -112,7 +114,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             inputFileTxt = InputFileTask.req(self, branch=sample_id,workflow='local', branches=(sample_id,)).output().path
             with open(inputFileTxt, 'r') as inputtxtFile:
                 input_files = inputtxtFile.read().splitlines()
-            print(input_files)
+            #print(input_files)
             if len(input_files) == 0:
                 continue
                 #raise RuntimeError(f"AnaTupleTask: no input files found for {sample_name}")
@@ -288,7 +290,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             fileName_list = os.path.basename(input_file).split('.')
             #print(fileName_list)
             fileName = fileName_list[0]
-            print(fileName)
+            #print(fileName)
             #print(f"filename is {fileName}")
             sample_config = self.sample_config
             unc_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'weight_definition.yaml')

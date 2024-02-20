@@ -92,8 +92,8 @@ def SelectBTagShapeSF(df,weight_name):
     return df
 
 def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
-    print(syst_name)
-    print(f"before applying anything: {dfw.df.Count().GetValue()}")
+    #print(syst_name)
+    #print(f"before applying anything: {dfw.df.Count().GetValue()}")
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
     # qua va Select btagShapeWeight
     #print(f"after SelectRecoP4: {dfw.df.Count().GetValue()}")

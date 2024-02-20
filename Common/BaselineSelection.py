@@ -29,7 +29,7 @@ def Initialize(loadTF=False, loadHHBtag=False):
             IncludeLibs.includeLibTool("tensorflow")
         if(loadHHBtag):
             ROOT.gInterpreter.Declare(f'#include "{header_path_HHbTag}"')
-            ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 2)')
+            ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 1)')
         initialized = True
 
 #leg_names = [ "Electron", "Muon", "Tau", "boostedTau" ]
@@ -132,15 +132,22 @@ def DefineMETCuts(met_thr, met_collections):
   cut = ' || '.join([f'{v}_pt > {met_thr}' for v in met_collections ])
   return f"( {cut} )"
 
-
+'''
+- we don't need B0T and everything below it in RecoLeptonsSelection (so no filter applied just defining B0s)
+- keep only channel- and tagger- independent cuts in B0. you can even move B0 directly to RecoHttCandidateSelection to have all signal lepton cuts in one place
+I propose to apply:
+- abs(eta) < 2.5 for electrons
+- pt > 10 GeV for muons (they use 15, but only because they are lazy, you can apply 15 at anatuple level to demonstrate how much is lost)
+- abs(eta) < 2.4 for muons
+'''
 def RecoLeptonsSelection(df, apply_filter=True):
     df = df.Define("Electron_B0", f"""
-        v_ops::pt(Electron_p4) > 8 && abs(v_ops::eta(Electron_p4)) < 2.3 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
+        v_ops::pt(Electron_p4) > 8 && abs(v_ops::eta(Electron_p4)) < 2.5 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
         && (Electron_mvaIso_WP90 || (Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all < 0.5))
     """)
 
     df = df.Define("Muon_B0", f"""
-        v_ops::pt(Muon_p4) > 8 && abs(v_ops::eta(Muon_p4)) < 2.3 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045
+        v_ops::pt(Muon_p4) > 8 && abs(v_ops::eta(Muon_p4)) < 2.4 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045
         && ( ((Muon_tightId || Muon_mediumId) && Muon_pfRelIso04_all < 0.5) || (Muon_highPtId && Muon_tkRelIso < 0.5) )
     """)
     df = df.Define("Tau_B0", f"""
@@ -207,75 +214,79 @@ def RecoLeptonsSelection(df, apply_filter=True):
         return df, filter_expr
 
 def RecoHttCandidateSelection(df, config):
+    ########## first selection ("B0") ##########
+    df = df.Define("Electron_B0", f"""
+        v_ops::pt(Electron_p4) > 10 && abs(v_ops::eta(Electron_p4)) < 2.5 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045  """) # && (Electron_mvaIso_WP90 || (Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all < 0.5))
+
+    df = df.Define("Muon_B0", f"""
+        v_ops::pt(Muon_p4) > 10 && abs(v_ops::eta(Muon_p4)) < 2.4 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045
+    """) # && ( ((Muon_tightId || Muon_mediumId) && Muon_pfRelIso04_all < 0.5) || (Muon_highPtId && Muon_tkRelIso < 0.5) )
+    df = df.Define("Tau_B0", f"""
+        v_ops::pt(Tau_p4) > 15 && abs(v_ops::eta(Tau_p4)) < 2.5 && abs(Tau_dz) < 0.2 && Tau_decayMode != 5 && Tau_decayMode != 6
+    """)
+
+    '''
+    && (    (    Tau_idDeepTau2017v2p1VSe >= {WorkingPointsTauVSe.VVLoose.value}
+                  && Tau_idDeepTau2017v2p1VSmu >= {WorkingPointsTauVSmu.VLoose.value}
+                  && Tau_idDeepTau2017v2p1VSjet >= {WorkingPointsTauVSjet.VVVLoose.value} )
+             || (    Tau_idDeepTau2018v2p5VSe >= {WorkingPointsTauVSe.VVLoose.value}
+                  && Tau_idDeepTau2018v2p5VSmu >= {WorkingPointsTauVSmu.VLoose.value}
+                  && Tau_idDeepTau2018v2p5VSjet >= {WorkingPointsTauVSjet.VVVLoose.value} )
+           )
+    '''
+    eta_cut = 2.3 if config["deepTauVersion"] == '2p1' else 2.5
+
     df = df.Define("Electron_iso", "Electron_pfRelIso03_all") \
            .Define("Muon_iso", "Muon_pfRelIso04_all") \
            .Define("Tau_iso", f"""-Tau_rawDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSjet""")
-    #print(f"""-Tau_rawDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSjet""")
 
-    df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && abs(v_ops::eta(Electron_p4)) < 2.3 && v_ops::pt(Electron_p4) > 10 && Electron_mvaIso_WP80 ")
-    #df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaIso_WP80")
-    #df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && v_ops::pt(Electron_p4) > 20 && Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all<0.1")
-    eta_cut = 2.3 if config["deepTauVersion"] == '2p1' else 2.5
+    ########## channel definition ##########
+    df = df.Define("Electron_B2_eTau_1", f"Electron_B0 && Electron_mvaIso_WP80 ")
+    #  Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3
     df = df.Define("Tau_B2_eTau_2", f"""
-        Tau_B0 && v_ops::pt(Tau_p4) > 20 && v_ops::eta(Tau_p4) < {eta_cut}
+        Tau_B0 && v_ops::eta(Tau_p4) < {eta_cut}
         && (Tau_idDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSe >= {getattr(WorkingPointsTauVSe, config["deepTauWPs"]["eTau"]["VSe"]).value})
         && (Tau_idDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSmu >= {getattr(WorkingPointsTauVSmu, config["deepTauWPs"]["eTau"]["VSmu"]).value})
     """)
-    '''
+
     df = df.Define("Muon_B2_muTau_1", f"""
-        Muon_B0 && v_ops::pt(Muon_p4) > 20 && abs(v_ops::eta(Muon_p4))<2.3 && (
-            ( v_ops::pt(Muon_p4) <= 120  && Muon_tightId && Muon_pfRelIso04_all < 0.15) ||
-            ( v_ops::pt(Muon_p4)>120 && Muon_highPtId && Muon_tkRelIso < 0.15 )
-        )
-    """)
-    '''
-    df = df.Define("Muon_B2_muTau_1", f"""
-        Muon_B0 && v_ops::pt(Muon_p4) > 15 && abs(v_ops::eta(Muon_p4))<2.3 && (
-            ( Muon_tightId && Muon_pfRelIso04_all < 0.15 )
-        )
+        Muon_B0 &&  ( (Muon_tightId && Muon_pfRelIso04_all < 0.15) || (Muon_highPtId && Muon_tkRelIso < 0.15) )
     """)
     df = df.Define("Tau_B2_muTau_2", f"""
-        Tau_B0 && v_ops::pt(Tau_p4) > 20 && v_ops::eta(Tau_p4) < {eta_cut}
+        Tau_B0 && v_ops::eta(Tau_p4) < {eta_cut}
         && (Tau_idDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSe >= {getattr(WorkingPointsTauVSe, config["deepTauWPs"]["muTau"]["VSe"]).value})
         && (Tau_idDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSmu >= {getattr(WorkingPointsTauVSmu, config["deepTauWPs"]["muTau"]["VSmu"]).value})
     """)
 
     df = df.Define("Tau_B2_tauTau_1", f"""
-        Tau_B0 && v_ops::pt(Tau_p4) > 20 && v_ops::eta(Tau_p4) < {eta_cut}
+        Tau_B0 && v_ops::eta(Tau_p4) < {eta_cut}
         && (Tau_idDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSe >= {getattr(WorkingPointsTauVSe, config["deepTauWPs"]["tauTau"]["VSe"]).value})
         && (Tau_idDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSmu >= {getattr(WorkingPointsTauVSmu, config["deepTauWPs"]["tauTau"]["VSmu"]).value})
         && (Tau_idDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSjet >= {getattr(WorkingPointsTauVSjet, config["deepTauWPs"]["tauTau"]["VSjet"]).value})
     """)
 
     df = df.Define("Tau_B2_tauTau_2", f"""
-        Tau_B0 && v_ops::pt(Tau_p4) > 20 && v_ops::eta(Tau_p4) < {eta_cut}
+        Tau_B0 && v_ops::eta(Tau_p4) < {eta_cut}
         && (Tau_idDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSe >= {getattr(WorkingPointsTauVSe, config["deepTauWPs"]["tauTau"]["VSe"]).value})
         && (Tau_idDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSmu >= {getattr(WorkingPointsTauVSmu, config["deepTauWPs"]["tauTau"]["VSmu"]).value})
     """)
 
     df = df.Define("Muon_B2_muMu_1", f"""
-        Muon_B0 && v_ops::pt(Muon_p4) > 15 && (   (Muon_tightId && Muon_pfRelIso04_all < 0.15)
-                                    || (Muon_highPtId && Muon_tkRelIso < 0.15) )
+        Muon_B0 && ( (Muon_tightId && Muon_pfRelIso04_all < 0.15) || (Muon_highPtId && Muon_tkRelIso < 0.15) )
     """)
     df = df.Define("Muon_B2_muMu_2", f"""
-        Muon_B0 && v_ops::pt(Muon_p4) > 15 && (   (Muon_tightId && Muon_pfRelIso04_all < 0.3)
-                                    || (Muon_highPtId && Muon_tkRelIso < 0.3) )
+        Muon_B0 && ( (Muon_tightId && Muon_pfRelIso04_all < 0.3) || (Muon_highPtId && Muon_tkRelIso < 0.3) )
     """)
 
-    df = df.Define("Electron_B2_eMu_1", f"""
-        Electron_B0 && v_ops::pt(Electron_p4) > 10 && Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3
-    """)
+    df = df.Define("Electron_B2_eMu_1",f"Electron_B0 && Electron_mvaIso_WP80 ")
+    #  Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3
     df = df.Define("Muon_B2_eMu_2", f"""
-        Muon_B0 && v_ops::pt(Muon_p4) > 15 && (   (Muon_tightId && Muon_pfRelIso04_all < 0.15)
-                                    || (Muon_highPtId && Muon_tkRelIso < 0.15) )
+        Muon_B0 && ( (Muon_tightId && Muon_pfRelIso04_all < 0.3) || (Muon_highPtId && Muon_tkRelIso < 0.3) )
     """)
 
-    df = df.Define("Electron_B2_eE_1", f"""
-        Electron_B0 && v_ops::pt(Electron_p4) > 10 &&  Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.15
-    """)
-    df = df.Define("Electron_B2_eE_2", f"""
-                    Electron_B2_eE_1
-    """)
+    df = df.Define("Electron_B2_eE_1",f"Electron_B0 && Electron_mvaIso_WP80 ")
+    #  Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3
+    df = df.Define("Electron_B2_eE_2", f""" Electron_B2_eE_1 """)
 
     cand_columns = []
     for ch in channels:
@@ -287,25 +298,19 @@ def RecoHttCandidateSelection(df, config):
         """)
         cand_columns.append(cand_column)
     cand_filters = [ f'{c}.size() > 0' for c in cand_columns ]
-    #for c in cand_columns:
-    #    df=df.Define(f"candSize_{c}", f"{c}.size()")
-    #    df.Display({f"candSize_{c}"}).Print()
     stringfilter = " || ".join(cand_filters)
-    #print("after filtering for HttCandidates_muMu.size()>0= ", df.Filter("HttCandidates_muMu.size() > 0 ").Count().GetValue())
-    #print("after filtering for HttCandidates_eMu.size()>0= ", df.Filter("HttCandidates_eMu.size() > 0 ").Count().GetValue())
-    #print("after filtering for HttCandidates_eE.size()>0= ", df.Filter("HttCandidates_eE.size() > 0 ").Count().GetValue())
-    #print("after filtering for HttCandidates_muTau.size()>0= ", df.Filter("HttCandidates_muTau.size() > 0 ").Count().GetValue())
-    #print("after filtering for HttCandidates_eTau.size()>0= ", df.Filter("HttCandidates_eTau.size() > 0 ").Count().GetValue())
-    #print("after filtering for HttCandidates_tauTau.size()>0= ", df.Filter("HttCandidates_tauTau.size() > 0 ").Count().GetValue())
     df = df.Filter(" || ".join(cand_filters), "Reco Baseline 2")
-    #print(f"after filtering {stringfilter} = {df.Count().GetValue()}")
     cand_list_str = ', '.join([ '&' + c for c in cand_columns])
     return df.Define('HttCandidate', f'GetBestHTTCandidate<2>({{ {cand_list_str} }}, event)')
 
 def ThirdLeptonVeto(df):
+    '''
+    Reject events that have an electron or a muon, in addition to the signal electron (muon) for the eTau (muTau) channel, that passes the following selection:
+    Electron: pt > 10 GeV, abs(eta) < 2.5 ,abs(dz) < 0.2, abs(dxy) < 0.045, ( passes mvaEleID-Fall17-iso-V2-wp90 OR (passes mvaEleID-Fall17-noIso-V2-wp90 AND pfRelIso04 < 0.3) )
+    Muon: pt > 10 GeV, abs(eta) < 2.4, abs(dz) < 0.2, abs(dxy) < 0.045, passes Medium Muon ID or Tight Muon ID, pfRelIso04 < 0.3
+    '''
     df = df.Define("Electron_vetoSel",
-                   f"""v_ops::pt(Electron_p4) > 10 && abs(v_ops::eta(Electron_p4)) < 2.5 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
-                      && ( Electron_mvaIso_WP90 == true )
+                   f"""v_ops::pt(Electron_p4) > 10 && abs(v_ops::eta(Electron_p4)) < 2.5 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045 && ( Electron_mvaIso_WP90 == true )
                      && (HttCandidate.isLeg(Electron_idx, Leg::e)== false)""") # || ( Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all<0.3) --> removed
     df = df.Filter("Electron_idx[Electron_vetoSel].size() == 0", "No extra electrons")
     df = df.Define("Muon_vetoSel",

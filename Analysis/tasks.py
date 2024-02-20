@@ -33,6 +33,18 @@ def load_vars_to_plot(hists):
     #vars_to_plot += ["SVfit_valid", "SVfit_pt", "SVfit_pt_error", "SVfit_eta", "SVfit_eta_error", "SVfit_phi", "SVfit_phi_error", "SVfit_m", "SVfit_m_error", "SVfit_mt", "MT2"]#, "SVfit_mt_error", "MT2"]
     return vars_to_plot
 
+vars_to_plot = None
+def load_vars_to_plot(hists):
+    global vars_to_plot
+    #vars_to_plot = list(hists.keys())# ['bbtautau_mass']
+    vars_to_plot = ["tau1_pt", "tau1_eta", "tau1_phi", "tau1_mass", "tau1_idDeepTau2017v2p1VSe", "tau1_idDeepTau2017v2p1VSmu", "tau1_idDeepTau2017v2p1VSjet", "tau1_idDeepTau2018v2p5VSe", "tau1_idDeepTau2018v2p5VSmu", "tau1_idDeepTau2018v2p5VSjet", "tau1_charge", "tau1_iso"]
+    vars_to_plot += ["tau2_pt", "tau2_eta", "tau2_phi", "tau2_mass", "tau2_idDeepTau2017v2p1VSe", "tau2_idDeepTau2017v2p1VSmu", "tau2_idDeepTau2017v2p1VSjet", "tau2_idDeepTau2018v2p5VSe", "tau2_idDeepTau2018v2p5VSmu", "tau2_idDeepTau2018v2p5VSjet", "tau2_charge", "tau2_iso"]
+    vars_to_plot += ["b1_pt", "b1_eta", "b1_phi", "b1_mass", "b1_btagDeepFlavB", "b1_btagDeepFlavCvB", "b1_btagDeepFlavCvL", "b1_particleNetAK4_B", "b1_particleNetAK4_CvsB", "b1_particleNetAK4_CvsL", "b1_HHbtag"]#, "b1_hadronFlavour"]
+    vars_to_plot += ["b2_pt", "b2_eta", "b2_phi", "b2_mass", "b2_btagDeepFlavB", "b2_btagDeepFlavCvB", "b2_btagDeepFlavCvL", "b2_particleNetAK4_B", "b2_particleNetAK4_CvsB", "b2_particleNetAK4_CvsL", "b2_HHbtag"]#, "b2_hadronFlavour"]
+    vars_to_plot += ["tautau_m_vis", "bb_m_vis", "bbtautau_mass", "dR_tautau", "nBJets", "met_pt", "met_phi", "kinFit_convergence", "kinFit_result_probability", "kinFit_m", "kinFit_chi2"]
+    vars_to_plot += ["SVfit_valid", "SVfit_pt", "SVfit_pt_error", "SVfit_eta", "SVfit_eta_error", "SVfit_phi", "SVfit_phi_error", "SVfit_m", "SVfit_m_error", "SVfit_mt", "SVfit_mt_error", "MT2"]
+    return vars_to_plot
+
 hists = None
 def load_hist_config(hist_config):
     global hists
@@ -73,6 +85,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         workflow_dict = {}
         workflow_dict["anaTuple"] = {
             idx: AnaTupleTask.req(self, branch=br, branches=())
+            for idx, (sample, br,var) in branch_map.items() if sample !='data' and var==vars_to_plot[0]
             for idx, (sample, br,var) in branch_map.items() if sample !='data' and var==vars_to_plot[0]
         }
         workflow_dict["dataMergeTuple"] = {
@@ -354,6 +367,7 @@ class HistSampleTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
     hists = load_hist_config(hist_config)
     vars_to_plot = load_vars_to_plot(hists)
+    vars_to_plot = load_vars_to_plot(hists)
 
     def GetBTagDir(self):
         return "bTag_WP" if self.wantBTag else "bTag_shape"
@@ -363,6 +377,7 @@ class HistSampleTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
         workflow_dict = {}
         workflow_dict["anaTuple"] = {
             idx: AnaTupleTask.req(self, branches=tuple((br,) for br in branches))
+            for idx, (sample, branches,var) in branch_map.items() if sample !='data' and var==vars_to_plot[0]
             for idx, (sample, branches,var) in branch_map.items() if sample !='data' and var==vars_to_plot[0]
         }
         workflow_dict["dataMergeTuple"] = {
@@ -401,6 +416,7 @@ class HistSampleTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         sample_name, idx_list,var = self.branch_data
+        #print(sample_name)
         #print(sample_name)
         outDir = os.path.join(self.central_Histograms_path(), sample_name, var, self.GetBTagDir())
         fileName = f'{var}_onlyCentral.root'
@@ -441,6 +457,7 @@ class MergeTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
     hists = load_hist_config(hist_config)
     unc_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'weight_definition.yaml')
     unc_cfg_dict = load_unc_config(unc_config)
+    vars_to_plot = load_vars_to_plot(hists)
     vars_to_plot = load_vars_to_plot(hists)
 
     def GetBTagDir(self):
@@ -498,6 +515,7 @@ class HistSample2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
     hists = load_hist_config(hist_config)
     vars_to_plot=load_vars_to_plot(hists)
+    vars_to_plot=load_vars_to_plot(hists)
 
     def GetBTagDir(self):
         return "bTag_WP" if self.wantBTag else "bTag_shape"
@@ -508,9 +526,11 @@ class HistSample2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
         workflow_dict["anaTuple"] = {
             idx: AnaTupleTask.req(self, branches=tuple((br,) for br in branches))
             for idx, (sample, branches,var) in branch_map.items() if sample !='data' and var==vars_to_plot[0]
+            for idx, (sample, branches,var) in branch_map.items() if sample !='data' and var==vars_to_plot[0]
         }
         workflow_dict["dataMergeTuple"] = {
             idx: DataMergeTask.req(self, branch=0, branches=())
+            for idx, (sample, branches,var) in branch_map.items() if sample =='data' and var==vars_to_plot[0]
             for idx, (sample, branches,var) in branch_map.items() if sample =='data' and var==vars_to_plot[0]
         }
         return workflow_dict
@@ -525,6 +545,7 @@ class HistSample2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
         n=0
         branches = {}
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
+
 
         for var in vars_to_plot:
             all_samples = {}
@@ -754,6 +775,7 @@ class HistProducerFile2DTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         workflow_dict = {}
         workflow_dict["anaTuple"] = {
             idx: AnaTupleTask.req(self, branch=br, branches=())
+            for idx, (sample, br,var) in branch_map.items() if sample !='data' and var==vars_to_plot[0]
             for idx, (sample, br,var) in branch_map.items() if sample !='data' and var==vars_to_plot[0]
         }
         workflow_dict["dataMergeTuple"] = {

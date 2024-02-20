@@ -12,6 +12,8 @@ QCDregions = ['OS_Iso', 'SS_Iso', 'OS_AntiIso', 'SS_AntiIso']
 categories = ['res2b', 'res1b', 'inclusive', 'boosted', 'btag_shape','baseline']
 gen_channels = {'eTau':[3,5], 'muTau':[4,5], 'tauTau':[5,5]}
 channels = {'eTau':13, 'muTau':23, 'tauTau':33}
+triggers = {'eTau':  'HLT_singleTau || HLT_singleEle || HLT_etau || HLT_MET' , 'muTau': 'HLT_singleTau || HLT_singleMu || HLT_mutau || HLT_MET', 'tauTau' : 'HLT_singleTau || HLT_ditau || HLT_MET' }
+channels = {'eTau':13, 'muTau':23, 'tauTau':33}
 '''
 triggers = {
     'eTau':  '(HLT_singleTau || HLT_singleEle || HLT_etau || HLT_MET)' ,

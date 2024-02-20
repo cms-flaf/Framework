@@ -98,7 +98,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     # qua va Select btagShapeWeight
     #print(f"after SelectRecoP4: {dfw.df.Count().GetValue()}")
     if mode == "HH":
-        dfw.Apply(Baseline.RecoLeptonsSelection)
+        #dfw.Apply(Baseline.RecoLeptonsSelection)
         #print(f"after RecoLeptonsSelection: {dfw.df.Count().GetValue()}")
         dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
         #print(f"after RecoHttCandidateSelection: {dfw.df.Count().GetValue()}")

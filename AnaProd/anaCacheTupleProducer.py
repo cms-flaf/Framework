@@ -9,7 +9,6 @@ if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
     ROOT.gInterpreter.Declare(f'#include "include/KinFitInterface.h"')
-    ROOT.gInterpreter.Declare(f'#include "include/KinFitInterface.h"')
     ROOT.gInterpreter.Declare(f'#include "include/HistHelper.h"')
     ROOT.gInterpreter.Declare(f'#include "include/Utilities.h"')
 

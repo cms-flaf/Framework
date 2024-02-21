@@ -42,7 +42,6 @@ struct HHBtagWrapper{
         std::array <std::string, 2> models;
         for(size_t n = 0; n < 2; ++n) {
             std::ostringstream ss_model;
-            ss_model << path + "HHbtag_v" << version << "_par_" << n;
             models.at(n) = ss_model.str();
         }
         _Get() = std::make_unique<hh_btag::HH_BTag>(models);

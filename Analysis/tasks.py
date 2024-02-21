@@ -33,18 +33,6 @@ def load_vars_to_plot(hists):
     #vars_to_plot += ["SVfit_valid", "SVfit_pt", "SVfit_pt_error", "SVfit_eta", "SVfit_eta_error", "SVfit_phi", "SVfit_phi_error", "SVfit_m", "SVfit_m_error", "SVfit_mt", "MT2"]#, "SVfit_mt_error", "MT2"]
     return vars_to_plot
 
-vars_to_plot = None
-def load_vars_to_plot(hists):
-    global vars_to_plot
-    #vars_to_plot = list(hists.keys())# ['bbtautau_mass']
-    vars_to_plot = ["tau1_pt", "tau1_eta", "tau1_phi", "tau1_mass", "tau1_idDeepTau2017v2p1VSe", "tau1_idDeepTau2017v2p1VSmu", "tau1_idDeepTau2017v2p1VSjet", "tau1_idDeepTau2018v2p5VSe", "tau1_idDeepTau2018v2p5VSmu", "tau1_idDeepTau2018v2p5VSjet", "tau1_charge", "tau1_iso"]
-    vars_to_plot += ["tau2_pt", "tau2_eta", "tau2_phi", "tau2_mass", "tau2_idDeepTau2017v2p1VSe", "tau2_idDeepTau2017v2p1VSmu", "tau2_idDeepTau2017v2p1VSjet", "tau2_idDeepTau2018v2p5VSe", "tau2_idDeepTau2018v2p5VSmu", "tau2_idDeepTau2018v2p5VSjet", "tau2_charge", "tau2_iso"]
-    vars_to_plot += ["b1_pt", "b1_eta", "b1_phi", "b1_mass", "b1_btagDeepFlavB", "b1_btagDeepFlavCvB", "b1_btagDeepFlavCvL", "b1_particleNetAK4_B", "b1_particleNetAK4_CvsB", "b1_particleNetAK4_CvsL", "b1_HHbtag"]#, "b1_hadronFlavour"]
-    vars_to_plot += ["b2_pt", "b2_eta", "b2_phi", "b2_mass", "b2_btagDeepFlavB", "b2_btagDeepFlavCvB", "b2_btagDeepFlavCvL", "b2_particleNetAK4_B", "b2_particleNetAK4_CvsB", "b2_particleNetAK4_CvsL", "b2_HHbtag"]#, "b2_hadronFlavour"]
-    vars_to_plot += ["tautau_m_vis", "bb_m_vis", "bbtautau_mass", "dR_tautau", "nBJets", "met_pt", "met_phi", "kinFit_convergence", "kinFit_result_probability", "kinFit_m", "kinFit_chi2"]
-    vars_to_plot += ["SVfit_valid", "SVfit_pt", "SVfit_pt_error", "SVfit_eta", "SVfit_eta_error", "SVfit_phi", "SVfit_phi_error", "SVfit_m", "SVfit_m_error", "SVfit_mt", "SVfit_mt_error", "MT2"]
-    return vars_to_plot
-
 hists = None
 def load_hist_config(hist_config):
     global hists
@@ -515,7 +503,6 @@ class HistSample2DTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
     hists = load_hist_config(hist_config)
     vars_to_plot=load_vars_to_plot(hists)
-    vars_to_plot=load_vars_to_plot(hists)
 
     def GetBTagDir(self):
         return "bTag_WP" if self.wantBTag else "bTag_shape"
@@ -966,7 +953,6 @@ class Merge2DTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         var, uncName = self.branch_data
         unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
         sample_config = self.sample_config
-        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
         MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger2D.py')
         json_dir= os.path.join(self.valeos_path(), 'jsonFiles', self.period, self.version)
         MergerProducer_cmd = ['python3', MergerProducer,'--histDir', self.central_Histograms_path(), '--sampleConfig', sample_config, '--var', var,'--uncConfig', unc_config, '--jsonDir', json_dir, '--uncSource', uncName ]
@@ -982,6 +968,7 @@ class HaddMergedTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
     hists = load_hist_config(hist_config)
+    vars_to_plot=load_vars_to_plot(hists)
 
     def GetBTagDir(self):
         return "bTag_WP" if self.wantBTag else "bTag_shape"
@@ -1004,7 +991,8 @@ class HaddMergedTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         var = self.branch_data
-        local_file_target = os.path.join(self.central_Histograms_path(), 'all_histograms',var,self.GetBTagDir(),f'all_histograms_{var}.root')
+        #local_file_target = os.path.join(self.central_Histograms_path(), 'all_histograms',var,self.GetBTagDir(),f'all_histograms_{var}.root')
+        local_file_target = os.path.join(self.central_Histograms_path(), 'all_histograms',var,self.GetBTagDir(),f'all_histograms_{var}_Rebinned.root')
         return law.LocalFileTarget(local_file_target)
 
     def run(self):
@@ -1023,66 +1011,3 @@ class HaddMergedTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             #HaddMergedHistsProducer_cmd.extend(['--remove-files', 'True'])
         sh_call(HaddMergedHistsProducer_cmd,verbose=1)
 
-'''
-class PlotterTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
-    hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
-    hists = load_hist_config(hist_config)
-
-    def GetBTagDir(self):
-        return "bTag_WP" if self.wantBTag else "bTag_shape"
-
-
-    def workflow_requires(self):
-        return { "HaddMerged" : HaddMergedTask.req(self, branches=()) }
-
-    def requires(self):
-        return [HaddMergedTask.req(self, branches=())]
-
-    def create_branch_map(self):
-        uncNames = ['Central']
-        uncNames.extend(list(unc_cfg_dict['norm'].keys()))
-        uncNames.extend([unc for unc in unc_cfg_dict['shape']])
-        sample_cfg_dict = self.sample_config
-        categories = list(self.global_params['categories'])
-        QCD_region = 'OS_Iso'
-        channels = list(self.global_params['channelSelection'])
-        n = 0
-        branches = {}
-        for uncName in uncNames:
-            if uncName in uncs_to_exclude[self.period]: continue
-            for channel in channels:
-                for category in categories:
-                    branches[n] = (channel, QCD_region, category, uncName)
-                    n+=1
-        return branches
-
-    def output(self):
-        channel, QCD_region, category, uncName = self.branch_data
-        #vars_to_plot = list(hists.keys())
-        final_files = []
-        for var in vars_to_plot:
-            for uncScale in ['Central','Up','Down']:
-                if uncName == 'Central' and uncScale != 'Central': continue
-                if uncName != 'Central' and uncScale == 'Central': continue
-                final_directory = os.path.join(self.central_Histograms_path(), 'plots', var)
-                final_fileName = f'{channel}_{QCD_region}_{category}_{uncName}_{uncScale}_XMass{self.mass}.pdf'
-                final_files.append(law.LocalFileTarget(os.path.join(final_directory, final_fileName)))
-        return law.LocalDirectoryTarget(final_files)
-
-    def run(self):
-        channel, QCD_region, category, uncName = self.branch_data
-        print(channel, QCD_region, category, uncName)
-        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
-        sample_config = self.sample_config
-        #vars_to_plot = list(hists.keys())
-        hists_str = ','.join(var for var in vars_to_plot)
-        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
-        PlotterProducer = os.path.join(self.ana_path(), 'Analysis', 'HistPlotter.py')
-        for var in vars_to_plot:
-            outDir = os.path.join(self.central_Histograms_path(), 'plots')
-            PlotterProducer_cmd = ['python3', PlotterProducer,'--mass', self.mass, '--histDir', self.central_Histograms_path(),
-                                    '--outDir',outDir, '--inFileName', 'all_histograms', '--hists', var, '--sampleConfig',sample_config,
-                                    '--channel', channel, '--category', category, '--uncSource', uncName]
-            sh_call(PlotterProducer_cmd,verbose=1)
-        '''

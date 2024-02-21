@@ -143,7 +143,7 @@ def RecoHttCandidateSelection(df, config):
     """) # && ( ((Muon_tightId || Muon_mediumId) && Muon_pfRelIso04_all < 0.5) || (Muon_highPtId && Muon_tkRelIso < 0.5) )
     eta_cut = 2.3 if config["deepTauVersion"] == '2p1' else 2.5
     df = df.Define("Tau_B0", f"""
-        v_ops::pt(Tau_p4) > 20 && abs(v_ops::eta(Tau_p4)) < {eta_cut} && abs(Tau_dz) < 0.2 && Tau_decayMode != 5 && Tau_decayMode != 6 && ( ( Tau_idDeepTau2017v2p1VSjet >= {WorkingPointsTauVSjet.VVVLoose.value} ) || ( Tau_idDeepTau2018v2p5VSjet >= {WorkingPointsTauVSjet.VVVLoose.value} )  )
+        v_ops::pt(Tau_p4) > 20 && abs(v_ops::eta(Tau_p4)) < {eta_cut} && abs(Tau_dz) < 0.2 && Tau_decayMode != 5 && Tau_decayMode != 6 && ( Tau_idDeepTau{deepTauVersions[config["deepTauVersion"]]}v{config["deepTauVersion"]}VSjet >= {WorkingPointsTauVSjet.VVVLoose.value} )
     """)
     '''
      && (    (    Tau_idDeepTau2017v2p1VSe >= {WorkingPointsTauVSe.VVLoose.value}
@@ -273,7 +273,6 @@ def GenRecoJetMatching(df):
 
 def DefineHbbCand(df):
     df = df.Define("Jet_HHBtagScore", "GetHHBtagScore(Jet_bCand, Jet_idx, Jet_p4,Jet_btagDeepFlavB, MET_pt,  MET_phi, HttCandidate, period, event)")
-    df.Display({"Jet_HHBtagScore"}).Print()
     df = df.Define("HbbCandidate", "GetHbbCandidate(Jet_HHBtagScore, Jet_bCand, Jet_p4, Jet_idx)")
     return df
 

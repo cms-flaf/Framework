@@ -128,9 +128,10 @@ def CreateRecoP4(df, suffix='nano'):
             df = df.Define(f"{obj}_p4{suffix}", f"GetP4({obj}_pt, {obj}_eta, {obj}_phi, {obj}_mass, {obj}_idx)")
     return df
 
-def DefineMETCuts(met_thr, met_collections):
-  cut = ' || '.join([f'{v}_pt > {met_thr}' for v in met_collections ])
-  return f"( {cut} )"
+def DefineMETCuts(df, met_thr, met_collections):
+    cut = ' || '.join([f'{v}_pt > {met_thr}' for v in met_collections ])
+    df = df.Filter(cut, "MET cuts")
+    return df
 
 
 def RecoHttCandidateSelection(df, config):

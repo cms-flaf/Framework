@@ -22,205 +22,206 @@ defaultColToSave = []
 
 dict_files_BulkGraviton = {
     'GluGluToBulkGravitonToHHTo2B2Tau_M-1000':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-1000/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-1000/nanoHTT_0.root',
         'mass': 1000
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-1250':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-1250/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-1250/nanoHTT_0.root',
         'mass': 1250
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-1500':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-1500/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-1500/nanoHTT_0.root',
         'mass': 1500
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-1750':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-1750/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-1750/nanoHTT_0.root',
         'mass': 1750
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-2000':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-2000/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-2000/nanoHTT_0.root',
         'mass': 2000
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-250':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-250/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-250/nanoHTT_0.root',
         'mass': 250
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-2500':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-2500/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-2500/nanoHTT_0.root',
         'mass': 2500
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-260':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-260/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-260/nanoHTT_0.root',
         'mass': 260
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-270':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-270/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-270/nanoHTT_0.root',
         'mass': 270
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-280':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-280/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-280/nanoHTT_0.root',
         'mass': 280
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-300':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-300/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-300/nanoHTT_0.root',
         'mass': 300
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-3000':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-3000/nano.root',
+        #'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-3000/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-3000/nanoHTT_0.root',
         'mass': 3000
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-320':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-320/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-320/nanoHTT_0.root',
         'mass': 320
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-350':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-350/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-350/nanoHTT_0.root',
         'mass': 350
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-400':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-400/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-400/nanoHTT_0.root',
         'mass': 400
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-450':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-450/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-450/nanoHTT_0.root',
         'mass': 450
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-500':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-500/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-500/nanoHTT_0.root',
         'mass': 500
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-550':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-550/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-550/nanoHTT_0.root',
         'mass': 550
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-600':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-600/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-600/nanoHTT_0.root',
         'mass': 600
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-650':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-650/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-650/nanoHTT_0.root',
         'mass': 650
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-700':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-700/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-700/nanoHTT_0.root',
         'mass': 700
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-750':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-750/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-750/nanoHTT_0.root',
         'mass': 750
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-800':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-800/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-800/nanoHTT_0.root',
         'mass': 800
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-850':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-850/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-850/nanoHTT_0.root',
         'mass': 850
         },
     'GluGluToBulkGravitonToHHTo2B2Tau_M-900':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-900/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-900/nanoHTT_0.root',
         'mass': 900
         }
 }
 dict_files_Radion = {
     'GluGluToRadionToHHTo2B2Tau_M-1000':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-1000/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-1000/nanoHTT_0.root',
         'mass': 1000
         },
     'GluGluToRadionToHHTo2B2Tau_M-1250':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-1250/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-1250/nanoHTT_0.root',
         'mass': 1250
         },
     'GluGluToRadionToHHTo2B2Tau_M-1500':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-1500/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-1500/nanoHTT_0.root',
         'mass': 1500
         },
     'GluGluToRadionToHHTo2B2Tau_M-1750':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-1750/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-1750/nanoHTT_0.root',
         'mass': 1750
         },
     'GluGluToRadionToHHTo2B2Tau_M-2000':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-2000/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-2000/nanoHTT_0.root',
         'mass': 2000
         },
     'GluGluToRadionToHHTo2B2Tau_M-250':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-250/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-250/nanoHTT_0.root',
         'mass': 250
         },
     'GluGluToRadionToHHTo2B2Tau_M-2500':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-2500/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-2500/nanoHTT_0.root',
         'mass': 2500
         },
     'GluGluToRadionToHHTo2B2Tau_M-260':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-260/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-260/nanoHTT_0.root',
         'mass': 260
         },
     'GluGluToRadionToHHTo2B2Tau_M-270':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-270/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-270/nanoHTT_0.root',
         'mass': 270
         },
     'GluGluToRadionToHHTo2B2Tau_M-280':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-280/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-280/nanoHTT_0.root',
         'mass': 280
         },
     'GluGluToRadionToHHTo2B2Tau_M-300':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-300/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-300/nanoHTT_0.root',
         'mass': 300
         },
     'GluGluToRadionToHHTo2B2Tau_M-3000':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-3000/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-3000/nanoHTT_0.root',
         'mass': 3000
         },
     'GluGluToRadionToHHTo2B2Tau_M-320':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-320/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-320/nanoHTT_0.root',
         'mass': 320
         },
     'GluGluToRadionToHHTo2B2Tau_M-350':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-350/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-350/nanoHTT_0.root',
         'mass': 350
         },
     'GluGluToRadionToHHTo2B2Tau_M-400':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-400/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-400/nanoHTT_0.root',
         'mass': 400
         },
     'GluGluToRadionToHHTo2B2Tau_M-450':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-450/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-450/nanoHTT_0.root',
         'mass': 450
         },
     'GluGluToRadionToHHTo2B2Tau_M-500':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-500/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-500/nanoHTT_0.root',
         'mass': 500
         },
     'GluGluToRadionToHHTo2B2Tau_M-550':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-550/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-550/nanoHTT_0.root',
         'mass': 550
         },
     'GluGluToRadionToHHTo2B2Tau_M-600':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-600/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-600/nanoHTT_0.root',
         'mass': 600
         },
     'GluGluToRadionToHHTo2B2Tau_M-650':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-650/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-650/nanoHTT_0.root',
         'mass': 650
         },
     'GluGluToRadionToHHTo2B2Tau_M-700':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-700/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-700/nanoHTT_0.root',
         'mass': 700
         },
     'GluGluToRadionToHHTo2B2Tau_M-750':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-750/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-750/nanoHTT_0.root',
         'mass': 750
         },
     'GluGluToRadionToHHTo2B2Tau_M-800':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-800/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-800/nanoHTT_0.root',
         'mass': 800
         },
     'GluGluToRadionToHHTo2B2Tau_M-850':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-850/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-850/nanoHTT_0.root',
         'mass': 850
         },
     'GluGluToRadionToHHTo2B2Tau_M-900':{
-        'fileName':'/eos/home-k/kandroso/cms-hh-bbtautau/nanoAOD/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-900/nano.root',
+        'fileName':'/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/GluGluToRadionToHHTo2B2Tau_M-900/nanoHTT_0.root',
         'mass': 900
         }
 }
@@ -244,7 +245,10 @@ def createDenumDictEntry(treeName, inFile, sample_dict, config,nEvents, evtIds):
     df = df.Define("period", f"static_cast<int>(Period::{period})")
     df = Baseline.applyMETFlags(df, config["GLOBAL"]["MET_flags"])
     sample_dict['MET_flags'] = df.Count().GetValue()
+    df = Baseline.DefineMETCuts(df,80, ["MET", "DeepMETResolutionTune", "DeepMETResponseTune", "PuppiMET"])
     #print(f"MET flags {df.Count().GetValue()}")
+    sample_dict['MET_cuts'] = df.Count().GetValue()
+
     is_data = 'false'
     isData = False
 
@@ -310,8 +314,8 @@ def denumCalc(dfw, syst_name, isData, trigger_class, mode, nLegs, deepTauVersion
     sample_dict["SelectRecoP4"]=dfw.df.Count().GetValue()
     #print(sample_dict)
     if mode == "HH":
-        dfw.Apply(Baseline.RecoLeptonsSelection)
-        sample_dict["RecoLeptonsSelection"]=dfw.df.Count().GetValue()
+        #dfw.Apply(Baseline.RecoLeptonsSelection)
+        #sample_dict["RecoLeptonsSelection"]=dfw.df.Count().GetValue()
         #print(sample_dict)
         #print("2 RecoLeptonsSelection ", dfw.df.Count().GetValue())
 
@@ -414,7 +418,7 @@ if __name__ == "__main__":
     parser.add_argument('--evtIds', type=str, default='')
     parser.add_argument('--customisations', type=str, default="")
     parser.add_argument('--mode', type=str, default="HH")
-    parser.add_argument('--sample',type=str, default="GluGluToBulkGravitonToHHTo2B2Tau_M-1000")
+    parser.add_argument('--sample',type=str, default="")
     args = parser.parse_args()
 
     startTime = time.time()
@@ -442,28 +446,34 @@ if __name__ == "__main__":
     isData = False
 
     for sampleName,dict_sample in dict_files_BulkGraviton.items():
-        if(sampleName!=args.sample) : continue
+        if args.sample!='' and (sampleName!=args.sample) : continue
         sample_dict = {}
+        if not os.path.exists(dict_sample['fileName']):
+            print(f"""{dict_sample["fileName"]} does not exist""")
+            continue
         dfw = createDenumDictEntry('Events', dict_sample['fileName'],sample_dict, config, args.nEvents, args.evtIds)
         mass = dict_sample['mass']
         denumCalc(dfw, 'Central', isData, trigger_class, args.mode, nLegs)
         #print(sample_dict)
         sample_dict['mass'] = mass
         dict_denumerators_BG[sampleName] = sample_dict
-        print(dict_denumerators_BG)
+    print(dict_denumerators_BG)
     with open('/afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Studies/Triggers/denumerators_BulkGraviton.json', 'w') as fp:
         json.dump(dict_denumerators_BG, fp)
     dict_denumerators_R = {}
     for sampleName,dict_sample in dict_files_Radion.items():
-        if(sampleName!=args.sample) : continue
+        if args.sample!='' and (sampleName!=args.sample) : continue
         sample_dict = {}
+        if not os.path.exists(dict_sample['fileName']):
+            print(f"""{dict_sample["fileName"]} does not exist""")
+            continue
         dfw = createDenumDictEntry('Events', dict_sample['fileName'],sample_dict, config, args.nEvents, args.evtIds)
         mass = dict_sample['mass']
         sample_dict['mass'] = mass
         denumCalc(dfw, 'Central', isData, trigger_class, args.mode, nLegs)
 
         dict_denumerators_R[sampleName] = sample_dict
-        print(dict_denumerators_R)
+    print(dict_denumerators_R)
 
     with open('/afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/Studies/Triggers/denumerators_Radion.json', 'w') as fp:
         json.dump(dict_denumerators_R, fp)

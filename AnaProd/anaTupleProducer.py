@@ -95,6 +95,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
     #print(syst_name)
     #print(f"before applying anything: {dfw.df.Count().GetValue()}")
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
+    dfw.Apply(Baseline.DefineMETCuts,80, ["MET", "DeepMETResolutionTune", "DeepMETResponseTune", "PuppiMET"])
     # qua va Select btagShapeWeight
     #print(f"after SelectRecoP4: {dfw.df.Count().GetValue()}")
     if mode == "HH":

@@ -1,1 +1,1 @@
-{}
+{"GluGluToRadionToHHTo2B2Tau_M-900": {"beginning": 182657, "MET_flags": 182061, "MET_cuts": 148368, "mass": 900, "SelectRecoP4": 148368, "RecoHttCandidateSelection": 69148, "RecoJetSelection": 69148, "ThirdLeptonVeto": 67957, "ApplyJetSelection": 65413, "Channels": 54822, "os_iso_filtering": 37978, "eTau": 10100, "muTau": 13431, "tauTau": 14447, "Triggers": 32285}}

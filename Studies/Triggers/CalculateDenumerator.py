@@ -444,7 +444,7 @@ if __name__ == "__main__":
         trigger_class = None
     dict_denumerators_BG = {}
     isData = False
-
+    print(args.sample)
     for sampleName,dict_sample in dict_files_BulkGraviton.items():
         if args.sample!='' and (sampleName!=args.sample) : continue
         sample_dict = {}
@@ -454,7 +454,7 @@ if __name__ == "__main__":
         dfw = createDenumDictEntry('Events', dict_sample['fileName'],sample_dict, config, args.nEvents, args.evtIds)
         mass = dict_sample['mass']
         denumCalc(dfw, 'Central', isData, trigger_class, args.mode, nLegs)
-        #print(sample_dict)
+        print(sample_dict)
         sample_dict['mass'] = mass
         dict_denumerators_BG[sampleName] = sample_dict
     print(dict_denumerators_BG)
@@ -471,7 +471,7 @@ if __name__ == "__main__":
         mass = dict_sample['mass']
         sample_dict['mass'] = mass
         denumCalc(dfw, 'Central', isData, trigger_class, args.mode, nLegs)
-
+        print(sample_dict)
         dict_denumerators_R[sampleName] = sample_dict
     print(dict_denumerators_R)
 

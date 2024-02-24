@@ -116,8 +116,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 input_files = inputtxtFile.read().splitlines()
             #print(input_files)
             if len(input_files) == 0:
-                continue
-                #raise RuntimeError(f"AnaTupleTask: no input files found for {sample_name}")
+                raise RuntimeError(f"AnaTupleTask: no input files found for {sample_name}")
             for input_file in input_files:
                 branches[n] = (sample_id, sample_name, self.samples[sample_name]['sampleType'], input_file)
                 n += 1

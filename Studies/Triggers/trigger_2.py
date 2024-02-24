@@ -7,7 +7,6 @@ import ROOT
 import shutil
 import zlib
 import time
-import json
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
@@ -21,9 +20,10 @@ import Common.Utilities as Utilities
 from Analysis.HistHelper import *
 from Analysis.hh_bbtautau import *
 
+ggR_samples = [ "GluGluToRadionToHHTo2B2Tau_M-250", "GluGluToRadionToHHTo2B2Tau_M-260", "GluGluToRadionToHHTo2B2Tau_M-270", "GluGluToRadionToHHTo2B2Tau_M-280", "GluGluToRadionToHHTo2B2Tau_M-300", "GluGluToRadionToHHTo2B2Tau_M-320", "GluGluToRadionToHHTo2B2Tau_M-350", "GluGluToRadionToHHTo2B2Tau_M-450", "GluGluToRadionToHHTo2B2Tau_M-500", "GluGluToRadionToHHTo2B2Tau_M-550", "GluGluToRadionToHHTo2B2Tau_M-600", "GluGluToRadionToHHTo2B2Tau_M-650", "GluGluToRadionToHHTo2B2Tau_M-700", "GluGluToRadionToHHTo2B2Tau_M-750", "GluGluToRadionToHHTo2B2Tau_M-800", "GluGluToRadionToHHTo2B2Tau_M-850", "GluGluToRadionToHHTo2B2Tau_M-900", "GluGluToRadionToHHTo2B2Tau_M-1000", "GluGluToRadionToHHTo2B2Tau_M-1250", "GluGluToRadionToHHTo2B2Tau_M-1500", "GluGluToRadionToHHTo2B2Tau_M-1750", "GluGluToRadionToHHTo2B2Tau_M-2000", "GluGluToRadionToHHTo2B2Tau_M-2500", "GluGluToRadionToHHTo2B2Tau_M-3000"]
 
-
-
+ggBG_samples = [
+    'GluGluToBulkGravitonToHHTo2B2Tau_M-1000', 'GluGluToBulkGravitonToHHTo2B2Tau_M-1250', 'GluGluToBulkGravitonToHHTo2B2Tau_M-1500', 'GluGluToBulkGravitonToHHTo2B2Tau_M-1750', 'GluGluToBulkGravitonToHHTo2B2Tau_M-2000', 'GluGluToBulkGravitonToHHTo2B2Tau_M-250', 'GluGluToBulkGravitonToHHTo2B2Tau_M-2500', 'GluGluToBulkGravitonToHHTo2B2Tau_M-260', 'GluGluToBulkGravitonToHHTo2B2Tau_M-270', 'GluGluToBulkGravitonToHHTo2B2Tau_M-280', 'GluGluToBulkGravitonToHHTo2B2Tau_M-300', 'GluGluToBulkGravitonToHHTo2B2Tau_M-3000', 'GluGluToBulkGravitonToHHTo2B2Tau_M-320', 'GluGluToBulkGravitonToHHTo2B2Tau_M-350', 'GluGluToBulkGravitonToHHTo2B2Tau_M-400', 'GluGluToBulkGravitonToHHTo2B2Tau_M-450', 'GluGluToBulkGravitonToHHTo2B2Tau_M-500', 'GluGluToBulkGravitonToHHTo2B2Tau_M-550', 'GluGluToBulkGravitonToHHTo2B2Tau_M-600', 'GluGluToBulkGravitonToHHTo2B2Tau_M-650', 'GluGluToBulkGravitonToHHTo2B2Tau_M-700', 'GluGluToBulkGravitonToHHTo2B2Tau_M-750', 'GluGluToBulkGravitonToHHTo2B2Tau_M-800', 'GluGluToBulkGravitonToHHTo2B2Tau_M-850', 'GluGluToBulkGravitonToHHTo2B2Tau_M-900' ]
 
 def AddEfficiencyToDict(dfWrapped,trg_list, channel, n_initial_channel,eff_key, eff_dict):
     filter_expr = f' {channel} && ('
@@ -31,7 +31,7 @@ def AddEfficiencyToDict(dfWrapped,trg_list, channel, n_initial_channel,eff_key, 
     filter_expr+= ')'
     n_channel = dfWrapped.df.Filter(filter_expr).Count().GetValue()
     eff_channel = n_channel / n_initial_channel
-    print(f"with {eff_key} : n_initial{channel} = {n_initial_channel}, n_{channel} = {n_channel}, eff_{channel} = {round(eff_channel,2)}")
+    print(f"with {filter_expr} : n_initial{channel} = {n_initial_channel}, n_{channel} = {n_channel}, eff_{channel} = {round(eff_channel,2)}")
     if eff_key not in eff_dict.keys():
         eff_dict[eff_key] = []
     eff_dict[eff_key].append(round(eff_channel,2))
@@ -71,12 +71,8 @@ if __name__ == "__main__":
 
     #### useful stuff ####
 
-    json_denumerators_dict = {}
-    name_of_jsonFile = 'GluGluToRadion.json' if 'GluGluToRadion' in args.sample else 'GluGluToBulkGraviton.json'
-    with open(os.path.join('Studies', 'Triggers', f'{args.sample}.json'), 'r') as f:
-        json_denumerators_dict = json.load(f)
-
     inDir = "/eos/home-k/kandroso/cms-hh-bbtautau/anaTuples/Run2_2018/v1_deepTau2p1_HTT/"
+    inDir = "/afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/output/Run2_2018/{}/anaTuples/"
     masses = []
 
     eff_etau = {}
@@ -91,6 +87,27 @@ if __name__ == "__main__":
     etau_labels = []
     mutau_labels = []
     tautau_labels = []
+    regions = {
+       'singleTau_region':
+        {
+            'eTau':'tau1_pt>20',
+            'muTau':'tau1_pt>20',
+            'tauTau':'(tau1_pt > 190 && abs(tau1_eta) < 2.1) || (tau2_pt > 190 && abs(tau2_eta) < 2.1)'
+        },
+        'other_trg_region':
+        {
+            'eTau':'!singleTau_region_eTau',
+            'muTau':'!singleTau_region_muTau',
+            'tauTau':'tau1_pt > 40 && abs(tau1_eta) < 2.1 && tau2_pt > 40 && abs(tau2_eta) < 2.1 && !singleTau_region_tauTau'
+        },
+        'MET_region':
+        {
+            'eTau':'!singleTau_region_eTau',
+            'muTau':'!singleTau_region_muTau',
+            'tauTau':'met_pt > 180 && !(other_trg_region_tauTau || singleTau_region_tauTau)'
+        }
+    }
+    '''
     regions = {
     'MET_region':{
         'eTau': 'met_pt > 180 && (( tau1_pt < 33 && tau2_pt < 35 ) || ( tau1_pt < 25 && tau2_pt < 190 ))',
@@ -108,28 +125,38 @@ if __name__ == "__main__":
             'muTau': f"""! ({regions["MET_region"]["muTau"]} || {regions["singleTau_region"]["muTau"]})""",
             'tauTau': f"""! ({regions["MET_region"]["tauTau"]} || {regions["singleTau_region"]["tauTau"]})""",
             }
+            '''
+    sample_list = ggR_samples if args.sample == 'GluGluToRadion' else ggBG_samples
 
-    for sample_name,json_dict in json_denumerators_dict.items():
-        inFile = os.path.join(inDir,f"{sample_name}", "nanoHTT_0.root")
+    for sample_name in sample_list:
+        mass_string = sample_name.split('-')[-1]
+        if mass_string != '300':continue
+        mass_int = int(mass_string)
+        masses.append(mass_int)
+        inFile = os.path.join(inDir.format(sample_name), "nanoHTT_0.root")
+        #inFile = os.path.join(inDir,f"{sample_name}", "nanoHTT_0.root")
         if not os.path.exists(inFile) :
             print(f"{inFile} does not exist")
             continue
-        masses.append(json_dict['mass'])
         #print(sample_name)
+        print(inFile)
+        df_initial = ROOT.RDataFrame('Events', inFile)
         dfWrapped_central  = DataFrameBuilder(ROOT.RDataFrame('Events', inFile), args.deepTauVersion)
         PrepareDfWrapped(dfWrapped_central)
-        dfWrapped_central.df = dfWrapped_central.df.Filter('OS_Iso')
 
+        dfWrapped_central.df = dfWrapped_central.df.Filter('OS_Iso')
+        print(f"initially after OS Iso : {dfWrapped_central.df.Count().GetValue()}" )
         # denumerator = number of events taken from the dict, passing baseline + channel
-        nInitial_eTau = json_dict['eTau']
-        nInitial_muTau = json_dict['muTau']
-        nInitial_tauTau = json_dict['tauTau']
+        nInitial_eTau = dfWrapped_central.df.Filter('eTau').Count().GetValue()
+        nInitial_muTau = dfWrapped_central.df.Filter('muTau').Count().GetValue()
+        nInitial_tauTau = dfWrapped_central.df.Filter('tauTau').Count().GetValue()
 
         for region,reg_dict in regions.items():
             for channel in channels:
                 #print(f"{region}_{channel}")
                 dfWrapped_central.df = dfWrapped_central.df.Define(f"{region}_{channel}", f"""{reg_dict[channel]}""")
         #### eTau efficiencies ####
+        '''
         pass_met_eTau = "(HLT_MET && MET_region_eTau && !(singleTau_region_eTau) && ! (other_trg_region_eTau))"
         pass_singleTau_eTau = "(HLT_singleTau && singleTau_region_eTau && !(MET_region_eTau) && ! (other_trg_region_eTau))"
         pass_singleEle_eTau = "(HLT_singleEle && other_trg_region_eTau  && !(MET_region_eTau) && ! (singleTau_region_eTau))"
@@ -199,12 +226,12 @@ if __name__ == "__main__":
         trg_muTau_list_9 = [pass_singleMu_muTau, pass_muTau_muTau]
         mutau_labels.append("singleMu,muTau")
         AddEfficiencyToDict(dfWrapped_central, trg_muTau_list_9, 'muTau', nInitial_muTau,'eff_muTau_9', eff_mutau)
-
+        '''
         #### tauTau efficiencies ####
 
-        pass_met_tauTau = "(HLT_MET && MET_region_tauTau && !(singleTau_region_tauTau) && ! (other_trg_region_tauTau))"
-        pass_singleTau_tauTau = "(HLT_singleTau && singleTau_region_tauTau && !(MET_region_tauTau) && ! (other_trg_region_tauTau))"
-        pass_diTau_tauTau = "(HLT_ditau && other_trg_region_tauTau  && !(MET_region_tauTau) && ! (singleTau_region_tauTau))"
+        pass_met_tauTau = "(HLT_MET && MET_region_tauTau) "
+        pass_singleTau_tauTau = "(HLT_singleTau && singleTau_region_tauTau) "
+        pass_diTau_tauTau = "(HLT_ditau && other_trg_region_tauTau ) "
 
         trg_tauTau_list_1 = [pass_diTau_tauTau, pass_singleTau_tauTau, pass_met_tauTau]
         tautau_labels.append("diTau,singleTau,MET")
@@ -222,6 +249,7 @@ if __name__ == "__main__":
         tautau_labels.append("diTau")
         AddEfficiencyToDict(dfWrapped_central, trg_tauTau_list_4, 'tauTau', nInitial_tauTau,'eff_tauTau_4', eff_tautau)
 
+    '''
     #print(eff_etau)
     x_values = masses
     #print(eff_etau)
@@ -231,7 +259,7 @@ if __name__ == "__main__":
     makeplot(eff_mutau, mutau_labels, 'muTau', x_values, args.sample)
     makeplot(eff_tautau, tautau_labels, 'tauTau', x_values, args.sample)
     plt.show()
-
+    '''
     executionTime = (time.time() - startTime)
     print('Execution time in seconds: ' + str(executionTime))
 

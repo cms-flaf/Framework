@@ -7,7 +7,7 @@ class Triggers():
             self.trigger_dict= yaml.safe_load(stream)
         self.deltaR_matching = deltaR_matching
 
-    def ApplyTriggers(self, df, nOfflineLegs, isData = False):
+    def ApplyTriggers(self, df, nOfflineLegs, isData = False, isSignal=False):
         hltBranches = []
         matchedObjectsBranches= []
         for path, path_dict in self.trigger_dict.items():
@@ -82,6 +82,7 @@ class Triggers():
         #print("D")
         #print(hltBranches)
         total_or_string = ' || '.join(hltBranches)
-        df = df.Filter(total_or_string, "trigger application")
+        if not isSignal:
+            df = df.Filter(total_or_string, "trigger application")
         hltBranches.extend(matchedObjectsBranches)
         return df,hltBranches

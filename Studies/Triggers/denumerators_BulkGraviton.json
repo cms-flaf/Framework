@@ -1,1 +1,1 @@
-{}
+{"GluGluToBulkGravitonToHHTo2B2Tau_M-300": {"beginning": 204840, "MET_flags": 204667, "MET_cuts": 68945, "SelectRecoP4": 68945, "RecoHttCandidateSelection": 22024, "RecoJetSelection": 22024, "ThirdLeptonVeto": 21565, "ApplyJetSelection": 19513, "Channels": 15997, "os_iso_filtering": 8220, "eTau": 2200, "muTau": 3402, "tauTau": 2618, "Triggers": 2792, "mass": 300}}

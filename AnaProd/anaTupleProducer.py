@@ -91,7 +91,7 @@ def SelectBTagShapeSF(df,weight_name):
     df = df.Define("weight_bTagShapeSF", weight_name)
     return df
 
-def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
+def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs, isSignal):
     #print(syst_name)
     #print(f"before applying anything: {dfw.df.Count().GetValue()}")
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
@@ -142,7 +142,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs):
         dfw.DefineAndAppend(f"nExtraJets", f"Jet_p4[ExtraJet_B1].size()")
 
     if trigger_class is not None:
-        hltBranches = dfw.Apply(trigger_class.ApplyTriggers, nLegs, isData)
+        hltBranches = dfw.Apply(trigger_class.ApplyTriggers, nLegs, isData, isSignal)
         #print(f"after ApplyTriggers: {dfw.df.Count().GetValue()}")
         dfw.colToSave.extend(hltBranches)
     dfw.Define(f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
@@ -301,6 +301,8 @@ def createAnatuple(inFile, treeName, outDir, config, sample_name, anaCache, snap
     df = Baseline.applyMETFlags(df, config["GLOBAL"]["MET_flags"])
     df = df.Define("sample_type", f"static_cast<int>(SampleType::{config[sample_name]['sampleType']})")
     df = df.Define("sample_name", f"{zlib.crc32(sample_name.encode())}")
+    isSignal = config[sample_name]['sampleType'] in config['GLOBAL']['signal_types']
+    print("isSignal? ", isSignal)
     df = df.Define("period", f"static_cast<int>(Period::{period})")
     df = df.Define("X_mass", f"static_cast<int>({mass})")
     df = df.Define("X_spin", f"static_cast<int>({spin})")
@@ -329,7 +331,8 @@ def createAnatuple(inFile, treeName, outDir, config, sample_name, anaCache, snap
         if len(suffix) and not store_noncentral: continue
         dfw = Utilities.DataFrameWrapper(df_empty,defaultColToSave)
         #print(syst_name)
-        addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs)
+
+        addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs, isSignal)
 
         dfw.DefineAndAppend("weight_L1PreFiringDown_rel","L1PreFiringWeight_Dn/L1PreFiringWeight_Nom")
         dfw.DefineAndAppend("weight_L1PreFiring_Central","L1PreFiringWeight_Nom")

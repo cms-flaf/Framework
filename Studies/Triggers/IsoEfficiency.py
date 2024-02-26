@@ -43,6 +43,7 @@ if __name__ == "__main__":
     headers_dir = os.path.dirname(os.path.abspath(__file__))
     ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
     ROOT.gInterpreter.Declare(f'#include "include/Utilities.h"')
+    ROOT.gInterpreter.Declare(f'#include "include/AnalysisTools.h"')
 
     #### useful stuff ####
 
@@ -54,12 +55,13 @@ if __name__ == "__main__":
 
     deepTauYear = '2017' if args.deepTauVersion=='v2p1' else '2018'
     sample_list = ggR_samples if args.sample == 'GluGluToRadion' else ggBG_samples
-    x_bins = [20, 30, 40,50, 60,70, 80,90, 100,120, 140,160,180,200, 250, 300,400,500,1000]
+    x_bins = [20, 30, 40,50, 60,70, 80,90, 100,120, 140,160,180,200, 250, 300,400,800]
     x_bins_vec = Utilities.ListToVector(x_bins, "double")
 
     for sample_name in sample_list:
         mass_string = sample_name.split('-')[-1]
         if mass_string != args.mass:continue
+        print(mass_string)
         mass_int = int(mass_string)
         masses.append(mass_int)
         inFile = os.path.join(inDir.format(sample_name), "nanoHTT_0.root")
@@ -68,52 +70,66 @@ if __name__ == "__main__":
             continue
 
         if not os.path.exists(outFileDir.format(sample_name)):
-            os.mkdir(outFileDir.format(sample_name))
+            os.makedirs(outFileDir.format(sample_name), exist_ok=True)
+
 
         outFile = os.path.join(outFileDir.format(sample_name), 'efficiency_hists.root')
         output_file = ROOT.TFile(outFile, "RECREATE")
 
         df_initial = ROOT.RDataFrame('Events', inFile)
 
-        WP_requirements_denum = f"Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value} && Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSmu >= {Utilities.WorkingPointsTauVSmu.VLoose.value} && Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSe >= {Utilities.WorkingPointsTauVSe.VVVLoose.value} "
-        df_denum = df_initial.Define("denum_req",f"Tau_pt>20 && abs(Tau_eta)<2.3 && Tau_genPartFlav == 5 && {WP_requirements_denum}").Filter("Tau_pt[denum_req].size()>0")
-        model_denum = ROOT.RDF.TH1DModel("Tau_pt_denum", "Tau_pt_denum", x_bins_vec.size()-1, x_bins_vec.data())
-        hist_denum = df_denum.Histo1D(model_denum, 'Tau_pt')
+        WP_requirements_denum = f"""
+            Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value} &&
+            Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSmu >= {Utilities.WorkingPointsTauVSmu.Tight.value} &&
+            Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSe >= {Utilities.WorkingPointsTauVSe.VVLoose.value}
+            """
+        df_denum = df_initial.Define(f"Tau_idx", f"CreateIndexes(Tau_pt.size())").Define("denum_req",f"Tau_pt>20 && abs(Tau_eta)<2.3 && Tau_genPartFlav == 5 && {WP_requirements_denum}").Filter("Tau_idx[denum_req].size()==2")#Define("tau1_idx","Tau_idx[denum_req][0]").Define("tau2_idx")
+        df_denum = df_denum.Define("tau1_idx_denum",f"""Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet[Tau_idx[1]] > Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet[Tau_idx[0]] ? Tau_idx[1] : Tau_idx[0]""").Define("tau2_idx_denum","""tau1_idx_denum == Tau_idx[0] ? Tau_idx[1] : Tau_idx[0]""").Define("tau1_pt_denum", "Tau_pt[tau1_idx_denum]").Define("tau2_pt_denum", "Tau_pt[tau2_idx_denum]")
+
+        model_denum = ROOT.RDF.TH1DModel("tau2_pt_denum", "tau2_pt_denum", x_bins_vec.size()-1, x_bins_vec.data())
+        #hist_denum = df_denum.Histo1D(model_denum, 'tau2_pt_denum')
+        hist_denum = df_denum.Histo1D(model_denum, 'tau1_pt_denum')
         hist_denum.Write()
 
-        WP_requirements_num = f"Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value}  "
-        df_num = df_denum.Define("num_req",WP_requirements_num).Filter("Tau_pt[num_req].size()>0")
-        model_num = ROOT.RDF.TH1DModel("Tau_pt_num", "Tau_pt_num", x_bins_vec.size()-1, x_bins_vec.data())
-        hist_num = df_num.Histo1D(model_num, 'Tau_pt')
+        WP_requirements_num = f"Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value}"
+        df_num = df_denum.Define("num_req",WP_requirements_num).Filter("Tau_idx[num_req].size()==2")
+        df_num = df_num.Define("tau1_idx_num",f"""Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet[Tau_idx[1]] > Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet[Tau_idx[0]] ? Tau_idx[1] : Tau_idx[0]""").Define("tau2_idx_num","""tau1_idx_num == Tau_idx[0] ? Tau_idx[1] : Tau_idx[0]""").Define("tau1_pt_num", "Tau_pt[tau1_idx_num]").Define("tau2_pt_num", "Tau_pt[tau2_idx_num]")
+        model_num = ROOT.RDF.TH1DModel("tau2_pt_num", "tau2_pt_num", x_bins_vec.size()-1, x_bins_vec.data())
+        #hist_num = df_num.Histo1D(model_num, 'tau2_pt_num')
+        hist_num = df_num.Histo1D(model_num, 'tau1_pt_num')
         hist_num.Write()
         output_file.Close()
-
         efficiencies = []
+        x_points = []
         errors_x = []
         errors_y = []
         for i in range(1, len(x_bins)):
             numerator = hist_num.GetBinContent(i)
             denominator = hist_denum.GetBinContent(i)
             efficiency = numerator / denominator if denominator != 0 else 0
-
             conf_interval = proportion_confint(numerator, denominator, alpha=0.05, method='beta')
             error_low = efficiency - conf_interval[0]
             error_up = conf_interval[1] - efficiency
-
             efficiencies.append(efficiency)
+            #errors_x.append(hist_num.GetBinWidth(i)/2)
             errors_x.append((x_bins[i] - x_bins[i-1]) / 2)
             errors_y.append((error_low + error_up) / 2)
+            x_points.append((x_bins[i-1] + x_bins[i]) / 2)
 
-        plt.errorbar(x_bins[:-1], efficiencies, xerr=errors_x, yerr=errors_y, marker='o', linestyle='None')
-        plt.xlabel('tau_pt')
+        plt.errorbar(x_points, efficiencies, xerr=errors_x, yerr=errors_y, marker='o', linestyle='None')
+        #plt.errorbar(x_bins[:-1], efficiencies, xerr=errors_x, yerr=errors_y, marker='o', linestyle='None')
+        plt.xlabel('tau1_pt')
+        #plt.xlabel('tau2_pt')
         plt.ylabel('eff')
         plt.title('MediumWPEff')
         plt.xscale('log')
-        plt.ylim(0.1, 1)
-        plt.yscale('log')
-        plt.savefig(os.path.join(outFileDir.format(sample_name), 'eff_midWP.png'))
-        plt.show()
-
+        plt.ylim(0, 1)
+        #plt.ylim(0.1, 1)
+        #plt.yscale('log')
+        plt.savefig(os.path.join(outFileDir.format(sample_name), 'eff_midWP_tau1.png'))
+        #plt.savefig(os.path.join(outFileDir.format(sample_name), 'eff_midWP_tau2.png'))
+        #plt.show()
+        plt.close()
     executionTime = (time.time() - startTime)
     print('Execution time in seconds: ' + str(executionTime))
 

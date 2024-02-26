@@ -83,20 +83,39 @@ if __name__ == "__main__":
             Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSmu >= {Utilities.WorkingPointsTauVSmu.Tight.value} &&
             Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSe >= {Utilities.WorkingPointsTauVSe.VVLoose.value}
             """
-        df_denum = df_initial.Define(f"Tau_idx", f"CreateIndexes(Tau_pt.size())").Define("denum_req",f"Tau_pt>20 && abs(Tau_eta)<2.3 && Tau_genPartFlav == 5 && {WP_requirements_denum}").Filter("Tau_idx[denum_req].size()==2")#Define("tau1_idx","Tau_idx[denum_req][0]").Define("tau2_idx")
-        df_denum = df_denum.Define("tau1_idx_denum",f"""Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet[Tau_idx[1]] > Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet[Tau_idx[0]] ? Tau_idx[1] : Tau_idx[0]""").Define("tau2_idx_denum","""tau1_idx_denum == Tau_idx[0] ? Tau_idx[1] : Tau_idx[0]""").Define("tau1_pt_denum", "Tau_pt[tau1_idx_denum]").Define("tau2_pt_denum", "Tau_pt[tau2_idx_denum]")
+        df_denum = df_initial.Define(f"Tau_idx", f"CreateIndexes(Tau_pt.size())").Define("denum_req",f"Tau_pt>20 && abs(Tau_eta)<2.3 && Tau_genPartFlav == 5 && {WP_requirements_denum}").Filter("Tau_idx[denum_req].size()>0")
+        #df_denum = df_denum.Filter("Tau_idx[denum_req].size()==2").Define("tau1_idx_denum",f"""Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet[Tau_idx[1]] > Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet[Tau_idx[0]] ? Tau_idx[1] : Tau_idx[0]""").Define("tau2_idx_denum","""tau1_idx_denum == Tau_idx[0] ? Tau_idx[1] : Tau_idx[0]""").Define("tau1_pt_denum", "Tau_pt[tau1_idx_denum]").Define("tau2_pt_denum", "Tau_pt[tau2_idx_denum]")
 
-        model_denum = ROOT.RDF.TH1DModel("tau2_pt_denum", "tau2_pt_denum", x_bins_vec.size()-1, x_bins_vec.data())
+        #### Tau_pt
+        model_denum = ROOT.RDF.TH1DModel("Tau_pt_denum", "Tau_pt_denum", x_bins_vec.size()-1, x_bins_vec.data())
+        hist_denum = df_denum.Histo1D(model_denum, 'Tau_pt')
+
+        #### tau1_pt
+        #model_denum = ROOT.RDF.TH1DModel("tau1_pt_denum", "tau1_pt_denum", x_bins_vec.size()-1, x_bins_vec.data())
+        #hist_denum = df_denum.Histo1D(model_denum, 'tau1_pt_denum')
+
+        #### tau2_pt
+        #model_denum = ROOT.RDF.TH1DModel("tau2_pt_denum", "tau2_pt_denum", x_bins_vec.size()-1, x_bins_vec.data())
         #hist_denum = df_denum.Histo1D(model_denum, 'tau2_pt_denum')
-        hist_denum = df_denum.Histo1D(model_denum, 'tau1_pt_denum')
+
         hist_denum.Write()
 
         WP_requirements_num = f"Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value}"
-        df_num = df_denum.Define("num_req",WP_requirements_num).Filter("Tau_idx[num_req].size()==2")
-        df_num = df_num.Define("tau1_idx_num",f"""Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet[Tau_idx[1]] > Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet[Tau_idx[0]] ? Tau_idx[1] : Tau_idx[0]""").Define("tau2_idx_num","""tau1_idx_num == Tau_idx[0] ? Tau_idx[1] : Tau_idx[0]""").Define("tau1_pt_num", "Tau_pt[tau1_idx_num]").Define("tau2_pt_num", "Tau_pt[tau2_idx_num]")
-        model_num = ROOT.RDF.TH1DModel("tau2_pt_num", "tau2_pt_num", x_bins_vec.size()-1, x_bins_vec.data())
+        df_num = df_denum.Define("num_req",WP_requirements_num).Filter("Tau_idx[num_req].size()>0")
+        #df_num = df_num.Filter("Tau_idx[num_req].size()==2").Define("tau1_idx_num",f"""Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet[Tau_idx[1]] > Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet[Tau_idx[0]] ? Tau_idx[1] : Tau_idx[0]""").Define("tau2_idx_num","""tau1_idx_num == Tau_idx[0] ? Tau_idx[1] : Tau_idx[0]""").Define("tau1_pt_num", "Tau_pt[tau1_idx_num]").Define("tau2_pt_num", "Tau_pt[tau2_idx_num]")
+
+        #### Tau_pt
+        model_num = ROOT.RDF.TH1DModel("Tau_pt_num", "Tau_pt_num", x_bins_vec.size()-1, x_bins_vec.data())
+        hist_num = df_num.Histo1D(model_num, 'Tau_pt')
+
+        #### tau1_pt
+        #model_num = ROOT.RDF.TH1DModel("tau1_pt_num", "tau1_pt_num", x_bins_vec.size()-1, x_bins_vec.data())
+        #hist_num = df_num.Histo1D(model_num, 'tau1_pt_num')
+
+        #### tau2_pt
+        #model_num = ROOT.RDF.TH1DModel("tau2_pt_num", "tau2_pt_num", x_bins_vec.size()-1, x_bins_vec.data())
         #hist_num = df_num.Histo1D(model_num, 'tau2_pt_num')
-        hist_num = df_num.Histo1D(model_num, 'tau1_pt_num')
+
         hist_num.Write()
         output_file.Close()
         efficiencies = []
@@ -126,7 +145,8 @@ if __name__ == "__main__":
         plt.ylim(0, 1)
         #plt.ylim(0.1, 1)
         #plt.yscale('log')
-        plt.savefig(os.path.join(outFileDir.format(sample_name), 'eff_midWP_tau1.png'))
+        plt.savefig(os.path.join(outFileDir.format(sample_name), 'eff_midWP_greaterZeroTaus.png'))
+        #plt.savefig(os.path.join(outFileDir.format(sample_name), 'eff_midWP_tau1.png'))
         #plt.savefig(os.path.join(outFileDir.format(sample_name), 'eff_midWP_tau2.png'))
         #plt.show()
         plt.close()

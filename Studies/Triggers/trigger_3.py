@@ -72,11 +72,15 @@ if __name__ == "__main__":
     #### useful stuff ####
     deepTauYear = '2017' if args.deepTauVersion=='v2p1' else '2018'
     tau2_iso_var = f"tau2_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet"
+    tau1_iso_var = f"tau1_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet"
     filters = {
         "channel": "channelId==33",
         "gen_channel": "genchannelId ==33",
+        "gen_kind": "tau1_gen_kind==5 && tau2_gen_kind==5",
         "OS":"tau1_charge*tau2_charge < 0",
+        "Iso_2_loose": f"{tau2_iso_var} >=  {Utilities.WorkingPointsTauVSjet.Loose.value}" ,
         "Iso": f"{tau2_iso_var} >=  {Utilities.WorkingPointsTauVSjet.Medium.value}" ,
+        #"Iso_1_tight": f"{tau1_iso_var} >=  {Utilities.WorkingPointsTauVSjet.Tight.value}" ,
     }
 
     inDir = "/afs/cern.ch/work/v/vdamante/hhbbTauTauRes/prod/Framework/output/Run2_2018/{}/anaTuples/"

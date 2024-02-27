@@ -36,6 +36,10 @@ def makeEffPlot(fileName,hist_num, hist_denum,x_bins,xlabel):
     for i in range(1, len(x_bins)):
         numerator = hist_num.GetBinContent(i)
         denominator = hist_denum.GetBinContent(i)
+        if numerator > denominator:
+            print(f"bin = {i}")
+            print(f"numerator = {numerator}")
+            print(f"denominator = {denominator}")
         efficiency = numerator / denominator if denominator != 0 else 0
         conf_interval = proportion_confint(numerator, denominator, alpha=0.05, method='beta')
         error_low = efficiency - conf_interval[0]
@@ -50,14 +54,15 @@ def makeEffPlot(fileName,hist_num, hist_denum,x_bins,xlabel):
     #plt.xlabel('tau2_pt')
     plt.ylabel('eff')
     plt.title('MediumWPEff')
-    plt.xscale('log')
+    #plt.xscale('log')
     #plt.ylim(0, 1)
-    plt.ylim(0.1, 1)
-    plt.yscale('log')
+    #plt.ylim(0.1, 1)
+    #plt.yscale('log')
     plt.savefig(fileName)
     #plt.savefig(os.path.join(outFileDir.format(sample_name), 'eff_midWP_tau2.png'))
     #plt.show()
     plt.close()
+
 
 if __name__ == "__main__":
     import argparse
@@ -73,7 +78,7 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
     ROOT.gInterpreter.Declare(f'#include "include/Utilities.h"')
     ROOT.gInterpreter.Declare(f'#include "include/AnalysisTools.h"')
-
+    ROOT.gInterpreter.Declare(f'#include "include/GenLepton.h"')
     #### useful stuff ####
 
     inDir = "/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018/{}/"
@@ -84,20 +89,20 @@ if __name__ == "__main__":
 
     deepTauYear = '2017' if args.deepTauVersion=='v2p1' else '2018'
     sample_list = ggR_samples if args.sample == 'GluGluToRadion' else ggBG_samples
-    x_bins = [20, 30, 40,50, 60,70, 80,90, 100,120, 140,160,180,200, 250, 300,400,800]
+    x_bins = [20, 30, 40,50, 60,70, 80,90, 100,120]#, 140,160,180,200, 250, 300,400,800]
     x_bins_vec = Utilities.ListToVector(x_bins, "double")
 
     for sample_name in sample_list:
         mass_string = sample_name.split('-')[-1]
         if mass_string != args.mass:continue
-        print(mass_string)
+        print(f"mass = {mass_string}")
         mass_int = int(mass_string)
         masses.append(mass_int)
         inFile = os.path.join(inDir.format(sample_name), "nanoHTT_0.root")
         if not os.path.exists(inFile) :
             print(f"{inFile} does not exist")
             continue
-
+        print(f"inFile = {inFile}")
         if not os.path.exists(outFileDir.format(sample_name)):
             os.makedirs(outFileDir.format(sample_name), exist_ok=True)
 
@@ -106,71 +111,108 @@ if __name__ == "__main__":
         output_file = ROOT.TFile(outFile, "RECREATE")
 
         df_initial = ROOT.RDataFrame('Events', inFile)
-
+        #print(f"""initially = {df_initial.Count().GetValue()}""")
         #########   denumerator   ##########
+
+        df_initial = df_initial.Define("genLeptons", """reco_tau::gen_truth::GenLepton::fromNanoAOD(GenPart_pt, GenPart_eta,
+                                        GenPart_phi, GenPart_mass, GenPart_genPartIdxMother, GenPart_pdgId,
+                                        GenPart_statusFlags, event)""")
+        #print(f"""more than 2 genLep {df_initial.Filter("genLeptons.size()>2").Count().GetValue()}""")
+        #print(f"""exactly 2 genLep {df_initial.Filter("genLeptons.size()==2").Count().GetValue()}""")
 
         WP_requirements_denum = f"""
             Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value} &&
             Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSmu >= {Utilities.WorkingPointsTauVSmu.Tight.value} &&
             Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSe >= {Utilities.WorkingPointsTauVSe.VVLoose.value}
             """
-        df_denum = df_initial.Define(f"Tau_idx", f"CreateIndexes(Tau_pt.size())").Define("denum_req",f"Tau_pt>20 && abs(Tau_eta)<2.3 && Tau_genPartFlav == 5 && {WP_requirements_denum}").Filter("Tau_idx[denum_req].size()>0")
+        df_denum = df_initial.Filter("genLeptons.size()==2")
+        denum_requirements = f"Tau_pt>20 && abs(Tau_eta)<2.3 && Tau_genPartFlav == 5 && {WP_requirements_denum} && (Tau_decayMode!=5 && Tau_decayMode!=6) && abs(Tau_dz) < 0.2 "
+        df_denum = df_denum.Define("denum_req",denum_requirements).Define("Tau_pt_denum","Tau_pt[denum_req]")
+        df_denum = df_denum.Define("Tau_denum_idxUnordered", "CreateIndexes(Tau_pt_denum.size())")
+        df_denum = df_denum.Define("Tau_denum_idxOrdered", f"ReorderObjects(Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet, Tau_denum_idxUnordered)")
+        df_denum = df_denum.Define("Tau_denum_idxOrdered_Pt", f"ReorderObjects(Tau_pt, Tau_denum_idxUnordered)")
 
-        model_denum_Taupt_greaterZero = ROOT.RDF.TH1DModel("Tau_pt_denum", "Tau_pt_denum", x_bins_vec.size()-1, x_bins_vec.data())
-        hist_denum_Taupt_greaterZero = df_denum.Histo1D(model_denum_Taupt_greaterZero, 'Tau_pt')
+        model_denum_Taupt = ROOT.RDF.TH1DModel("Tau_pt_denum", "Tau_pt_denum", x_bins_vec.size()-1, x_bins_vec.data())
+        hist_denum_Taupt = df_denum.Histo1D(model_denum_Taupt, 'Tau_pt_denum')
 
-        df_denum = df_denum.Filter("Tau_idx[denum_req].size()==2")
-        model_denum_Taupt_exactlyTwo = ROOT.RDF.TH1DModel("Tau_pt_denum", "Tau_pt_denum", x_bins_vec.size()-1, x_bins_vec.data())
-        hist_denum_Taupt_exactlyTwo = df_denum.Histo1D(model_denum_Taupt_exactlyTwo, 'Tau_pt')
+        df_denum = df_denum.Define("tau1_pt_denum", "Tau_denum_idxOrdered.size() > 0 ? Tau_pt_denum[Tau_denum_idxOrdered[0]]: -1 ")
+        df_denum = df_denum.Define("tau2_pt_denum", "Tau_denum_idxOrdered.size() > 1 ? Tau_pt_denum[Tau_denum_idxOrdered[1]] : -1 ")
 
-        df_denum = df_denum.Filter("Tau_idx[denum_req].size()==2").Define("tau1_idx_denum",f"""Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet[Tau_idx[1]] > Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet[Tau_idx[0]] ? Tau_idx[1] : Tau_idx[0]""").Define("tau2_idx_denum","""tau1_idx_denum == Tau_idx[0] ? Tau_idx[1] : Tau_idx[0]""").Define("tau1_pt_denum", "Tau_pt[tau1_idx_denum]").Define("tau2_pt_denum", "Tau_pt[tau2_idx_denum]")
+        df_denum = df_denum.Define("tau1_pt_pt_denum", "Tau_denum_idxOrdered_Pt.size() > 0 ? Tau_pt_denum[Tau_denum_idxOrdered_Pt[0]] : -1")
+        df_denum = df_denum.Define("tau2_pt_pt_denum", "Tau_denum_idxOrdered_Pt.size() > 1 ? Tau_pt_denum[Tau_denum_idxOrdered_Pt[1]] : -1 ")
 
         #### tau1_pt
         model_denum_tau1_pt = ROOT.RDF.TH1DModel("tau1_pt_denum", "tau1_pt_denum", x_bins_vec.size()-1, x_bins_vec.data())
-        hist_denum_tau1_pt = df_denum.Histo1D(model_denum_tau1_pt, 'tau1_pt_denum')
+        hist_denum_tau1_pt = df_denum.Filter('tau1_pt_denum >= 0').Histo1D(model_denum_tau1_pt, 'tau1_pt_denum')
+
+        model_denum_tau1_pt_pt = ROOT.RDF.TH1DModel("tau1_pt_pt_denum", "tau1_pt_pt_denum", x_bins_vec.size()-1, x_bins_vec.data())
+        hist_denum_tau1_pt_pt = df_denum.Filter("tau1_pt_pt_denum >= 0").Histo1D(model_denum_tau1_pt_pt, 'tau1_pt_pt_denum')
 
         #### tau2_pt
         model_denum_tau2_pt = ROOT.RDF.TH1DModel("tau2_pt_denum", "tau2_pt_denum", x_bins_vec.size()-1, x_bins_vec.data())
-        hist_denum_tau2_pt = df_denum.Histo1D(model_denum_tau2_pt, 'tau2_pt_denum')
+        hist_denum_tau2_pt = df_denum.Filter("tau2_pt_denum >= 0").Histo1D(model_denum_tau2_pt, 'tau2_pt_denum')
+
+        model_denum_tau2_pt_pt = ROOT.RDF.TH1DModel("tau2_pt_pt_denum", "tau2_pt_pt_denum", x_bins_vec.size()-1, x_bins_vec.data())
+        hist_denum_tau2_pt_pt = df_denum.Filter("tau2_pt_pt_denum >= 0").Histo1D(model_denum_tau2_pt_pt, 'tau2_pt_pt_denum')
 
 
-        hist_denum_Taupt_greaterZero.Write()
-        hist_denum_Taupt_exactlyTwo.Write()
+        hist_denum_Taupt.Write()
         hist_denum_tau1_pt.Write()
         hist_denum_tau2_pt.Write()
+        hist_denum_tau1_pt_pt.Write()
+        hist_denum_tau2_pt_pt.Write()
 
 
         #########   numerator   ##########
         WP_requirements_num = f"Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value}"
-        df_num = df_denum.Define("num_req",WP_requirements_num).Filter("Tau_idx[num_req].size()>0")
+        num_requirements = f"denum_req && {WP_requirements_num} "
 
-        model_num_Taupt_greaterZero = ROOT.RDF.TH1DModel("Tau_pt_num", "Tau_pt_num", x_bins_vec.size()-1, x_bins_vec.data())
-        hist_num_Taupt_greaterZero = df_num.Histo1D(model_num_Taupt_greaterZero, 'Tau_pt')
+        df_num = df_denum.Define("num_req",num_requirements).Define("Tau_pt_num","Tau_pt[num_req]")
+        df_num = df_num.Define("Tau_num_idxUnordered", "CreateIndexes(Tau_pt_num.size())")
+        df_num = df_num.Define("Tau_num_idxOrdered", f"ReorderObjects(Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet, Tau_num_idxUnordered)")
+        df_num = df_num.Define("Tau_num_idxOrdered_Pt", f"ReorderObjects(Tau_pt, Tau_num_idxUnordered)")
 
-        df_num = df_num.Filter("Tau_idx[num_req].size()==2")
-        model_num_Taupt_exactlyTwo = ROOT.RDF.TH1DModel("Tau_pt_num", "Tau_pt_num", x_bins_vec.size()-1, x_bins_vec.data())
-        hist_num_Taupt_exactlyTwo = df_num.Histo1D(model_num_Taupt_exactlyTwo, 'Tau_pt')
+        model_num_Taupt = ROOT.RDF.TH1DModel("Tau_pt_num", "Tau_pt_num", x_bins_vec.size()-1, x_bins_vec.data())
+        hist_num_Taupt = df_num.Histo1D(model_num_Taupt, 'Tau_pt_num')
 
-        df_num = df_num.Filter("Tau_idx[num_req].size()==2").Define("tau1_idx_num",f"""Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet[Tau_idx[1]] > Tau_idDeepTau{deepTauYear}{args.deepTauVersion}VSjet[Tau_idx[0]] ? Tau_idx[1] : Tau_idx[0]""").Define("tau2_idx_num","""tau1_idx_num == Tau_idx[0] ? Tau_idx[1] : Tau_idx[0]""").Define("tau1_pt_num", "Tau_pt[tau1_idx_num]").Define("tau2_pt_num", "Tau_pt[tau2_idx_num]")
+        df_num = df_num.Define("tau1_pt_num", "Tau_num_idxOrdered.size() > 0 ? Tau_pt_num[Tau_num_idxOrdered[0]]: -1 ")
+        df_num = df_num.Define("tau2_pt_num", "Tau_num_idxOrdered.size() > 1 ? Tau_pt_num[Tau_num_idxOrdered[1]] : -1 ")
+
+        df_num = df_num.Define("tau1_pt_pt_num", "Tau_num_idxOrdered_Pt.size() > 0 ? Tau_pt_num[Tau_num_idxOrdered_Pt[0]] : -1")
+        df_num = df_num.Define("tau2_pt_pt_num", "Tau_num_idxOrdered_Pt.size() > 1 ? Tau_pt_num[Tau_num_idxOrdered_Pt[1]] : -1 ")
 
         #### tau1_pt
         model_num_tau1_pt = ROOT.RDF.TH1DModel("tau1_pt_num", "tau1_pt_num", x_bins_vec.size()-1, x_bins_vec.data())
-        hist_num_tau1_pt = df_num.Histo1D(model_num_tau1_pt, 'tau1_pt_num')
+        hist_num_tau1_pt = df_num.Filter('tau1_pt_num >= 0').Histo1D(model_num_tau1_pt, 'tau1_pt_num')
+
+        model_num_tau1_pt_pt = ROOT.RDF.TH1DModel("tau1_pt_pt_num", "tau1_pt_pt_num", x_bins_vec.size()-1, x_bins_vec.data())
+        hist_num_tau1_pt_pt = df_num.Filter("tau1_pt_pt_num >= 0").Histo1D(model_num_tau1_pt_pt, 'tau1_pt_pt_num')
 
         #### tau2_pt
         model_num_tau2_pt = ROOT.RDF.TH1DModel("tau2_pt_num", "tau2_pt_num", x_bins_vec.size()-1, x_bins_vec.data())
-        hist_num_tau2_pt = df_num.Histo1D(model_num_tau2_pt, 'tau2_pt_num')
+        hist_num_tau2_pt = df_num.Filter("tau2_pt_num >= 0").Histo1D(model_num_tau2_pt, 'tau2_pt_num')
 
-        hist_num_Taupt_greaterZero.Write()
-        hist_num_Taupt_exactlyTwo.Write()
+        model_num_tau2_pt_pt = ROOT.RDF.TH1DModel("tau2_pt_pt_num", "tau2_pt_pt_num", x_bins_vec.size()-1, x_bins_vec.data())
+        hist_num_tau2_pt_pt = df_num.Filter("tau2_pt_pt_num >= 0").Histo1D(model_num_tau2_pt_pt, 'tau2_pt_pt_num')
+
+
+        hist_num_Taupt.Write()
         hist_num_tau1_pt.Write()
         hist_num_tau2_pt.Write()
-        output_file.Close()
-        makeEffPlot(os.path.join(outFileDir.format(sample_name), f'eff_midWP_greaterZeroTaus.png'),hist_num_Taupt_greaterZero, hist_denum_Taupt_greaterZero,x_bins,'Tau_pt')
-        makeEffPlot(os.path.join(outFileDir.format(sample_name), f'eff_midWP_exactlyTwoTaus.png'),hist_num_Taupt_exactlyTwo, hist_denum_Taupt_exactlyTwo,x_bins,'Tau_pt')
-        makeEffPlot(os.path.join(outFileDir.format(sample_name), f'eff_midWP_tau1_pt.png'),hist_num_tau1_pt, hist_denum_tau1_pt,x_bins,'tau1_pt')
-        makeEffPlot(os.path.join(outFileDir.format(sample_name), f'eff_midWP_tau2_pt.png'),hist_num_tau2_pt, hist_denum_tau2_pt,x_bins,'tau2_pt')
+        hist_num_tau1_pt_pt.Write()
+        hist_num_tau2_pt_pt.Write()
 
+        makeEffPlot(os.path.join(outFileDir.format(sample_name), f'eff_midWP_tauPt_all.png'),hist_num_Taupt, hist_denum_Taupt,x_bins,'Tau_pt')
+        print(os.path.join(outFileDir.format(sample_name), f'eff_midWP_tauPt_all.png'))
+        makeEffPlot(os.path.join(outFileDir.format(sample_name), f'eff_midWP_tauPt_1.png'),hist_num_tau1_pt, hist_denum_tau1_pt,x_bins,'tau1_pt')
+        print(os.path.join(outFileDir.format(sample_name), f'eff_midWP_tauPt_1.png'))
+        makeEffPlot(os.path.join(outFileDir.format(sample_name), f'eff_midWP_tauPt_2.png'),hist_num_tau2_pt, hist_denum_tau2_pt,x_bins,'tau2_pt')
+        print(os.path.join(outFileDir.format(sample_name), f'eff_midWP_tauPt_2.png'))
+
+        makeEffPlot(os.path.join(outFileDir.format(sample_name), f'eff_midWP_tauPt_1_ptOrdered.png'),hist_num_tau1_pt_pt, hist_denum_tau1_pt_pt,x_bins,'tau1_pt')
+        print(os.path.join(outFileDir.format(sample_name), f'eff_midWP_tauPt_1_ptOrdered.png'))
+        makeEffPlot(os.path.join(outFileDir.format(sample_name), f'eff_midWP_tauPt_2_ptOrdered.png'),hist_num_tau2_pt_pt, hist_denum_tau2_pt_pt,x_bins,'tau2_pt')
+        print(os.path.join(outFileDir.format(sample_name), f'eff_midWP_tauPt_2_ptOrdered.png'))
 
     executionTime = (time.time() - startTime)
     print('Execution time in seconds: ' + str(executionTime))

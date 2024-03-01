@@ -284,6 +284,8 @@ class DataFrameBuilder(DataFrameBuilderBase):
     def defineChannels(self):
         for channel,ch_value in channels.items():
             self.df = self.df.Define(f"{channel}", f"channelId=={ch_value}")
+            if 'genchannelId' in self.df.GetColumnNames():
+                self.df = self.df.Define(f"gen_{channel}", f"genchannelId=={ch_value}")
         '''
         for gen_channel,gen_ch_value in gen_channels.items():
             if f"tau1_gen_kind" in self.df.GetColumnNames() and f"tau2_gen_kind" in self.df.GetColumnNames():
@@ -313,7 +315,9 @@ class DataFrameBuilder(DataFrameBuilderBase):
         #print(self.deepTauVersion)
         tau2_iso_var = f"tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet"
         self.df = self.df.Define("OS", "tau1_charge*tau2_charge < 0")
-        self.df = self.df.Define("Iso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
+        self.df = self.df.Define("Iso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.VLoose.value}")
+        #self.df = self.df.Define("Iso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Loose.value}")
+        #self.df = self.df.Define("Iso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
         self.df = self.df.Define("AntiIso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value} && !Iso")
         self.df = self.df.Define("OS_Iso", f"OS && Iso")
         self.df = self.df.Define("SS_Iso", f"!OS && Iso")

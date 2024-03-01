@@ -33,13 +33,16 @@ class Triggers():
                 leg_dict_offline= leg_tuple["offline_obj"]
                 type_name_offline = leg_dict_offline["type"]
                 var_name_offline = f'{type_name_offline}_offlineCut_{leg_id+1}_{path}'
+                #print(var_name_offline)
                 df = df.Define(var_name_offline, leg_dict_offline["cut"])
+                #print(leg_dict_offline["cut"])
                 if not leg_tuple["doMatching"]:
                     if not leg_dict_offline["type"].startswith('MET'):
                         var_name_offline = f'{leg_dict_offline["type"]}_idx[{var_name_offline}].size()>0'
                     additional_conditions.append(var_name_offline)
                 else:
                     df = df.Define(f'{type_name_offline}_{var_name_offline}_sel', f'HttCandidate.isLeg({type_name_offline}_idx, {self.dict_legtypes[type_name_offline]}) && ({var_name_offline})')
+                    #print(f'HttCandidate.isLeg({type_name_offline}_idx, {self.dict_legtypes[type_name_offline]}) && ({var_name_offline})')
                     leg_dict_online= leg_tuple["online_obj"]
                     var_name_online =  f'{leg_dict_offline["type"]}_onlineCut_{leg_id+1}_{path}'
                     cut_vars = []

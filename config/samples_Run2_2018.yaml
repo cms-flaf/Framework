@@ -66,6 +66,9 @@ GLOBAL:
     - keep ^GluGluToRadion*
     - keep ^GluGluToBulkGraviton*
     - drop ^GluGluToBulkGravitonToHHTo2B2Tau_M-400$
+    - keep ^TTTo2L2Nu$
+    - keep ^TTToSemiLeptonic$
+    - keep ^TTToHadronic$
     #- keep ^VBFToRadion*
     #- keep ^VBFToBulkGraviton*
     #- keep ^TTTo*

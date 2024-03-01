@@ -92,36 +92,38 @@ def SelectBTagShapeSF(df,weight_name):
     return df
 
 def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs, isSignal):
-    #print(syst_name)
-    #print(f"before applying anything: {dfw.df.Count().GetValue()}")
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
     dfw.Apply(Baseline.DefineMETCuts,80, ["MET", "DeepMETResolutionTune", "DeepMETResponseTune", "PuppiMET"])
     # qua va Select btagShapeWeight
-    #print(f"after SelectRecoP4: {dfw.df.Count().GetValue()}")
     if mode == "HH":
-        #dfw.Apply(Baseline.RecoLeptonsSelection)
-        #print(f"after RecoLeptonsSelection: {dfw.df.Count().GetValue()}")
         dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
-        #print(f"after RecoHttCandidateSelection: {dfw.df.Count().GetValue()}")
         dfw.Apply(Baseline.RecoJetSelection)
-        #print(f"after RecoJetSelection: {dfw.df.Count().GetValue()}")
         dfw.Apply(Baseline.ThirdLeptonVeto)
-        #print(f"after ThirdLeptonVeto: {dfw.df.Count().GetValue()}")
     elif mode == 'ttHH':
         dfw.Apply(Baseline.RecottHttCandidateSelection_ttHH)
         dfw.Apply(Baseline.RecoJetSelection_ttHH)
 
-
+    '''
+    if not isData:
+        print(f"before PassGenAcceptance : {dfw.df.Count().GetValue()}")
+        dfw.DefineAndAppend("n_GenJet", "GenJet_idx.size()")
+        dfw.Apply(Baseline.PassGenAcceptance)
+        print(f"after PassGenAcceptance : {dfw.df.Count().GetValue()}")
+        dfw.Apply(Baseline.GenJetSelection)
+        print(f"after GenJetSelection : {dfw.df.Count().GetValue()}")
+        dfw.Apply(Baseline.GenJetHttOverlapRemoval)
+        print(f"after GenJetHttOverlapRemoval : {dfw.df.Count().GetValue()}")
+        dfw.Apply(Baseline.RequestOnlyResolvedGenJets)
+        print(f"after RequestOnlyResolvedGenJets : {dfw.df.Count().GetValue()}")
+    '''
     dfw.Apply(Baseline.DefineHbbCand)
     dfw.DefineAndAppend("Hbb_isValid" , "HbbCandidate.has_value()")
     dfw.Apply(Baseline.ExtraRecoJetSelection)
-    #print(f"after ExtraRecoJetSelection: {dfw.df.Count().GetValue()}")
     dfw.Apply(Corrections.jet.getEnergyResolution)
     dfw.Apply(Corrections.btag.getWPid)
     jet_obs = []
     jet_obs.extend(JetObservables)
     dfw.Apply(Baseline.ApplyJetSelection)
-    #print(f"after ApplyJetSelection: {dfw.df.Count().GetValue()}")
     if not isData:
         dfw.Define(f"Jet_genJet_idx", f" FindMatching(Jet_p4,GenJet_p4,0.3)")
         jet_obs.extend(JetObservablesMC)
@@ -141,9 +143,19 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs, isSignal
     else:
         dfw.DefineAndAppend(f"nExtraJets", f"Jet_p4[ExtraJet_B1].size()")
 
+    dfw.DefineAndAppend(f"met_pt_nano", f"static_cast<float>(MET_p4_nano.pt())")
+    dfw.DefineAndAppend(f"met_phi_nano", f"static_cast<float>(MET_p4_nano.phi())")
+    dfw.DefineAndAppend("met_pt", "static_cast<float>(MET_p4.pt())")
+    dfw.DefineAndAppend("met_phi", "static_cast<float>(MET_p4.phi())")
+    dfw.DefineAndAppend("metnomu_pt_nano", "GetMetNoMu(HttCandidate, MET_p4_nano).pt()")
+    dfw.DefineAndAppend("metnomu_phi_nano", "GetMetNoMu(HttCandidate, MET_p4_nano).phi()")
+    dfw.DefineAndAppend("metnomu_pt", "GetMetNoMu(HttCandidate, MET_p4).pt()")
+    dfw.DefineAndAppend("metnomu_phi", "GetMetNoMu(HttCandidate, MET_p4).phi()")
+    for var in ["covXX", "covXY", "covYY"]:
+        dfw.DefineAndAppend(f"met_{var}", f"static_cast<float>(MET_{var})")
+
     if trigger_class is not None:
         hltBranches = dfw.Apply(trigger_class.ApplyTriggers, nLegs, isData, isSignal)
-        #print(f"after ApplyTriggers: {dfw.df.Count().GetValue()}")
         dfw.colToSave.extend(hltBranches)
     dfw.Define(f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
     dfw.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
@@ -158,7 +170,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs, isSignal
     if not isData:
         dfw.Define(f"FatJet_genJet_idx", f" FindMatching(FatJet_p4[FatJet_bbCand],GenJetAK8_p4,0.3)")
         fatjet_obs.extend(JetObservablesMC)
-        #dfw.DefineAndAppend("genchannelId","static_cast<int>(genHttCandidate.channel())")
+        dfw.DefineAndAppend("genchannelId","static_cast<int>(genHttCandidate->channel())")
+        #dfw.df.Display({"channelId","genchannelId"}).Print()
     dfw.DefineAndAppend(f"SelectedFatJet_pt", f"v_ops::pt(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_phi", f"v_ops::phi(FatJet_p4[FatJet_bbCand])")
@@ -188,12 +201,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs, isSignal
                                 }}
                                 return subjet_var;
                                 """)
-    dfw.DefineAndAppend(f"met_pt_nano", f"static_cast<float>(MET_p4_nano.pt())")
-    dfw.DefineAndAppend(f"met_phi_nano", f"static_cast<float>(MET_p4_nano.phi())")
-    dfw.DefineAndAppend("met_pt", "static_cast<float>(MET_p4.pt())")
-    dfw.DefineAndAppend("met_phi", "static_cast<float>(MET_p4.phi())")
-    for var in ["covXX", "covXY", "covYY"]:
-        dfw.DefineAndAppend(f"met_{var}", f"static_cast<float>(MET_{var})")
 
     n_legs = 2 if mode == "HH" else 4
     for leg_idx in range(n_legs):
@@ -417,10 +424,13 @@ if __name__ == "__main__":
     parser.add_argument('--customisations', type=str, default="")
     parser.add_argument('--uncertainties', type=str, default="all")
     parser.add_argument('--mode', type=str, default="HH")
+    parser.add_argument('--particleFile', type=str,
+                        default=f"{os.environ['ANALYSIS_PATH']}/config/pdg_name_type_charge.txt")
     args = parser.parse_args()
 
     ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
     ROOT.gROOT.ProcessLine('#include "include/GenTools.h"')
+    ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");")
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
     if len(args.customisations)>0:

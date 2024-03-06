@@ -169,7 +169,6 @@ if __name__ == "__main__":
             if channel not in b_values.keys():
                 b_values[channel] = {}
                 b_values[channel]["all"] = 0
-            if sample_name in bckg_samples and
 
             if channel not in s_values.keys():
                 s_values[channel] = {}

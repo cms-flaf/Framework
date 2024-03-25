@@ -80,20 +80,20 @@ singleMu:
         cut: TrigObj_id == 13 && (TrigObj_filterBits&8)!=0
       doMatching: True
 
-singleMu50:
-  channels:
-    - muTau
-    - muMu
-    - eMu
-  path:
-    - HLT_Mu50
-  legs:
-    - offline_obj:
-        type: Muon
-        cut:  v_ops::pt(Muon_p4) > 52 #&& abs(v_ops::eta(Muon_p4)) < 2.1
-      online_obj:
-        cut: TrigObj_id == 13 && (TrigObj_filterBits&1024)!=0
-      doMatching: True
+#singleMu50:
+#  channels:
+#    - muTau
+#    - muMu
+#    - eMu
+#  path:
+#    - HLT_Mu50
+#  legs:
+#    - offline_obj:
+#        type: Muon
+#        cut:  v_ops::pt(Muon_p4) > 52 #&& abs(v_ops::eta(Muon_p4)) < 2.1
+#      online_obj:
+#        cut: TrigObj_id == 13 && (TrigObj_filterBits&1024)!=0
+#      doMatching: True
 
 mutau:
   channels:

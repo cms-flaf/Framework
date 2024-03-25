@@ -120,6 +120,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs, isSignal
     dfw.DefineAndAppend("Hbb_isValid" , "HbbCandidate.has_value()")
     dfw.Apply(Baseline.ExtraRecoJetSelection)
     dfw.Apply(Corrections.jet.getEnergyResolution)
+    #dfw.Apply(Corrections.fatjet.getEnergyResolution)
     dfw.Apply(Corrections.btag.getWPid)
     jet_obs = []
     jet_obs.extend(JetObservables)
@@ -147,10 +148,10 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs, isSignal
     dfw.DefineAndAppend(f"met_phi_nano", f"static_cast<float>(MET_p4_nano.phi())")
     dfw.DefineAndAppend("met_pt", "static_cast<float>(MET_p4.pt())")
     dfw.DefineAndAppend("met_phi", "static_cast<float>(MET_p4.phi())")
-    dfw.DefineAndAppend("metnomu_pt_nano", "GetMetNoMu(HttCandidate, MET_p4_nano).pt()")
-    dfw.DefineAndAppend("metnomu_phi_nano", "GetMetNoMu(HttCandidate, MET_p4_nano).phi()")
-    dfw.DefineAndAppend("metnomu_pt", "GetMetNoMu(HttCandidate, MET_p4).pt()")
-    dfw.DefineAndAppend("metnomu_phi", "GetMetNoMu(HttCandidate, MET_p4).phi()")
+    dfw.DefineAndAppend("metnomu_pt_nano", "static_cast<float>(GetMetNoMu(HttCandidate, MET_p4_nano).pt())")
+    dfw.DefineAndAppend("metnomu_phi_nano", "static_cast<float>(GetMetNoMu(HttCandidate, MET_p4_nano).phi())")
+    dfw.DefineAndAppend("metnomu_pt", "static_cast<float>(GetMetNoMu(HttCandidate, MET_p4).pt())")
+    dfw.DefineAndAppend("metnomu_phi", "static_cast<float>(GetMetNoMu(HttCandidate, MET_p4).phi())")
     for var in ["covXX", "covXY", "covYY"]:
         dfw.DefineAndAppend(f"met_{var}", f"static_cast<float>(MET_{var})")
 
@@ -170,7 +171,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs, isSignal
     if not isData:
         dfw.Define(f"FatJet_genJet_idx", f" FindMatching(FatJet_p4[FatJet_bbCand],GenJetAK8_p4,0.3)")
         fatjet_obs.extend(JetObservablesMC)
-        dfw.DefineAndAppend("genchannelId","static_cast<int>(genHttCandidate->channel())")
+        if isSignal:
+            dfw.DefineAndAppend("genchannelId","static_cast<int>(genHttCandidate->channel())")
         #dfw.df.Display({"channelId","genchannelId"}).Print()
     dfw.DefineAndAppend(f"SelectedFatJet_pt", f"v_ops::pt(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[FatJet_bbCand])")
@@ -358,7 +360,6 @@ def createAnatuple(inFile, treeName, outDir, config, sample_name, anaCache, snap
                                         ana_cache=anaCache)
             weight_branches.extend(dfw.Apply(Corrections.trg.getTrgSF, trigger_class.trigger_dict.keys(), nLegs,
                                              is_central and compute_unc_variations, is_central))
-            weight_branches.extend(dfw.Apply(Corrections.btag.getSF,is_central and compute_unc_variations, is_central))
             SF_branches_core,SF_weight_jes=dfw.Apply(Corrections.jet.getBtagShapeSFs, syst_name, is_central)
             syst_name_selected = 'Central' if SF_weight_jes=="" else syst_name
             SF_branches_core.remove(f'weight_bTagShapeSF_Central')

@@ -18,10 +18,11 @@ class Triggers():
             keys = [k for k in path_dict[path_key]]
             # check that HLT path exists:
             for key in keys:
+                #print(key)
                 trigger_string = key.split(' ')
                 trigName = trigger_string[0]
                 if trigName not in df.GetColumnNames():
-                    print(f"{trigName} does not exist!!")
+                    #print(f"{trigName} does not exist!!")
                     path_dict[path_key].remove(key)
             or_paths = " || ".join(f'({p})' for p in path_dict[path_key])
             or_paths = f' ( { or_paths } ) '

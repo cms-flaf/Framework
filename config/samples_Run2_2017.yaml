@@ -1001,27 +1001,27 @@ W2JetsToLNu-amcatnloFXFX:
 WJetsToLNu_HT-100To200:
   miniAOD: /WJetsToLNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM
   sampleType: W
-  crossSectionStitch: WJetsToLNu_HT-100To200
+  crossSectionStitch: WJetsToLNu_HT-100To200_LO
 WJetsToLNu_HT-1200To2500:
   miniAOD: /WJetsToLNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM
   sampleType: W
-  crossSectionStitch: WJetsToLNu_HT-1200To2500
+  crossSectionStitch: WJetsToLNu_HT-1200To2500_LO
 WJetsToLNu_HT-200To400:
   miniAOD: /WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM
   sampleType: W
-  crossSectionStitch: WJetsToLNu_HT-200To400
+  crossSectionStitch: WJetsToLNu_HT-200To400_LO
 WJetsToLNu_HT-2500ToInf:
   miniAOD: /WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM
   sampleType: W
-  crossSectionStitch: WJetsToLNu_HT-2500ToInf
+  crossSectionStitch: WJetsToLNu_HT-2500ToInf_LO
 WJetsToLNu_HT-400To600:
   miniAOD: /WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM
   sampleType: W
-  crossSectionStitch: WJetsToLNu_HT-400To600
+  crossSectionStitch: WJetsToLNu_HT-400To600_LO
 WJetsToLNu_HT-600To800:
   miniAOD: /WJetsToLNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM
   sampleType: W
-  crossSectionStitch: WJetsToLNu_HT-600To800
+  crossSectionStitch: WJetsToLNu_HT-600To800_LO
 WJetsToLNu_HT-800To1200:
   miniAOD: /WJetsToLNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM
   sampleType: W

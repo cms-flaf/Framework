@@ -145,7 +145,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             outdir_anatuples = os.path.join(job_home, 'anaTuples', sample_name)
             anatuple_cmd = [ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', input_file,
                         '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations',
-                        self.customisations]#, '--compute_unc_variations', 'True', '--store-noncentral']
+                        self.customisations, '--compute_unc_variations', 'True', '--store-noncentral']
             if self.test:
                 anatuple_cmd.extend(['--nEvents', '100'])
             sh_call(anatuple_cmd, env=self.cmssw_env(),verbose=1)

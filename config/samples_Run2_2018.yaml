@@ -23,8 +23,8 @@ GLOBAL:
     - VBFToRadion
     - VBFToBulkGraviton
   genuineTau_SFtype:
-    eTau: dm
-    muTau: dm
+    eTau: pt
+    muTau: pt
     tauTau: dm
   deepTauWPs:
     eTau:
@@ -1271,31 +1271,31 @@ ZJetsToQQ_HT-800toInf:
 
 ZJetsToNuNu_HT-100To200:
   miniAOD: /ZJetsToNuNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM
-  sampleType: Z
+  sampleType: ZJNuNu
   crossSection: ZJetsToNuNu_HT-100To200
 ZJetsToNuNu_HT-1200To2500:
   miniAOD: /ZJetsToNuNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM
-  sampleType: Z
+  sampleType: ZJNuNu
   crossSection: ZJetsToNuNu_HT-1200To2500
 ZJetsToNuNu_HT-200To400:
   miniAOD: /ZJetsToNuNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
-  sampleType: Z
+  sampleType: ZJNuNu
   crossSection: ZJetsToNuNu_HT-200To400
 ZJetsToNuNu_HT-2500ToInf:
   miniAOD: /ZJetsToNuNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM
-  sampleType: Z
+  sampleType: ZJNuNu
   crossSection: ZJetsToNuNu_HT-2500ToInf
 ZJetsToNuNu_HT-400To600:
   miniAOD: /ZJetsToNuNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM
-  sampleType: Z
+  sampleType: ZJNuNu
   crossSection: ZJetsToNuNu_HT-400To600
 ZJetsToNuNu_HT-600To800:
   miniAOD: /ZJetsToNuNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM
-  sampleType: Z
+  sampleType: ZJNuNu
   crossSection: ZJetsToNuNu_HT-600To800
 ZJetsToNuNu_HT-800To1200:
   miniAOD: /ZJetsToNuNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM
-  sampleType: Z
+  sampleType: ZJNuNu
   crossSection: ZJetsToNuNu_HT-800To1200
 
 EWK_ZTo2L:

@@ -9,6 +9,7 @@ import tempfile
 
 from RunKit.envToJson import get_cmsenv
 from RunKit.crabLaw import update_kinit
+from RunKit.law_wlcg import WLCGFileSystem, WLCGFileTarget, WLCGDirectoryTarget
 
 law.contrib.load("htcondor")
 
@@ -66,6 +67,20 @@ _global_params = None
 _samples = None
 _hists = None
 
+_files_fs_dict = None
+def load_fs_file():
+    global _files_fs_dict
+    files_fs_file = os.path.join(os.environ['ANALYSIS_PATH'], 'config', f'files_fs.yaml')
+    with open(files_fs_file, 'r') as f:
+        _files_fs_dict = yaml.safe_load(f)
+    return _files_fs_dict
+
+def load_fs_files_nanoAOD(files_fs_dict):
+    return WLCGFileSystem(files_fs_dict['fs_nanoAOD_HLepRare'])
+
+def load_fs_files(files_fs_dict):
+    return WLCGFileSystem(files_fs_dict['fs_general'])
+
 def load_hist_config(hist_config):
     global _hists
     with open(hist_config, 'r') as f:
@@ -110,9 +125,13 @@ class Task(law.Task):
         self.cmssw_env_ = None
         self.sample_config = os.path.join(self.ana_path(), 'config', f'samples_{self.period}.yaml')
         self.global_params, self.samples = load_sample_configs(self.sample_config, self.period)
+        self.fs_files_dict = load_fs_file()
+        self.fs_files_nanoAOD = load_fs_files_nanoAOD(self.fs_files_dict)
+        self.fs_files = load_fs_files(self.fs_files_dict)
+
 
     def store_parts(self):
-        return (self.__class__.__name__, self.period, self.version)
+        return (self.__class__.__name__, self.version, self.period)
 
     def ana_path(self):
         return os.getenv("ANALYSIS_PATH")
@@ -134,16 +153,17 @@ class Task(law.Task):
         return os.path.join('/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/', self.period)
 
     def central_anaTuples_path(self):
-        return os.path.join(self.central_path(), 'anaTuples', self.period, self.version)
+        return os.path.join(self.central_path(), 'anaTuples', self.version, self.period)
 
     def valeos_path(self):
         return os.getenv("VDAMANTE_STORAGE")
 
     def central_Histograms_path(self):
-        return os.path.join(self.valeos_path(), 'histograms', self.period, self.version)
+        return os.path.join(self.valeos_path(), 'histograms', self.version, self.period)
 
     def central_anaCache_path(self):
         return os.path.join(self.central_path(), 'anaCache', self.period)
+        #return os.path.join(self.valeos_path(), 'anaCache', self.version, self.period)
 
     def local_path(self, *path):
         parts = (self.ana_data_path(),) + self.store_parts() + path

@@ -5,12 +5,25 @@ import shutil
 import time
 import threading
 import yaml
+import contextlib
 
-from RunKit.sh_tools import sh_call
+from RunKit.run_tools import ps_call
+from RunKit.grid_tools import gfal_copy_safe
 from RunKit.checkRootFile import checkRootFileSafe
 from RunKit.crabLaw import cond as kInit_cond,update_kinit_thread
 from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
+from RunKit.law_wlcg import WLCGFileSystem, WLCGFileTarget, WLCGDirectoryTarget
 
+
+
+def remote_nanoAOD(name,fs_files):
+    return WLCGFileTarget(name,fs_files)
+
+def remote_nanoAOD_directory(dir_name,fs_files):
+    return WLCGDirectoryTarget(dir_name,fs_files)
+
+def remote_file_target(name,fs_files):
+    return WLCGFileTarget(name, fs_files)
 
 unc_cfg_dict = None
 def load_unc_config(unc_cfg):
@@ -19,6 +32,15 @@ def load_unc_config(unc_cfg):
         unc_cfg_dict = yaml.safe_load(f)
     return unc_cfg_dict
 
+def getYear(period):
+    year_dict = {
+        'Run2_2016_HIPM':'2016_HIPM',
+        'Run2_2016':'2016',
+        'Run2_2017':'2017',
+        'Run2_2018':'2018',
+    }
+    return year_dict[period]
+
 class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)
 
@@ -26,34 +48,34 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         n = 0
         branches = {}
         for sample_name in sorted(self.samples.keys()):
-            #print(sample_name)
             isData = self.samples[sample_name]['sampleType'] == 'data'
             branches[n] = (sample_name, isData)
             n += 1
+        #print(branches)
         return branches
 
     def output(self):
         sample_name, isData = self.branch_data
-        outDir = os.path.join(self.central_anaCache_path(), sample_name)
+        outFileName = 'anaCache.yaml'
+        outDir = os.path.join('anaCache', self.period, sample_name)
         if not os.path.exists(outDir):
             os.makedirs(outDir)
-        sample_out = os.path.join(outDir, 'anaCache.yaml')
-        return law.LocalFileTarget(sample_out)
+        finalFile = os.path.join(outDir, outFileName)
+        print(self.fs_files)
+        return remote_file_target(finalFile,self.fs_files)
 
     def run(self):
         sample_name, isData = self.branch_data
         print(f'Creating anaCache for sample {sample_name} into {self.output().path}')
-        if isData:
-            self.output().touch()
-        else:
-            producer = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheProducer.py')
-            inDir = os.path.join(self.central_nanoAOD_path(), sample_name)
-            #if self.period!='Run2_2018':
-            if self.version.split('_')[-1]=='HTT':
-                inDir = os.path.join(self.central_nanoAOD_path_HLepRare(), sample_name)
-            os.makedirs(os.path.dirname(self.output().path), exist_ok=True)
-            sh_call(['python3', producer, '--config', self.sample_config, '--inDir', inDir, '--sample', sample_name,
-                    '--outFile', self.output().path, '--customisations', self.customisations ], env=self.cmssw_env())
+
+        producer = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheProducer.py')
+        with self.output().localize("w") as outFile_anaCache:
+            outFile_str = outFile_anaCache.path
+            print(outFile_str)
+            inDir = os.path.join(self.central_nanoAOD_path_HLepRare(), sample_name)
+            if not isData:
+                #os.makedirs(os.path.dirname(self.output().path), exist_ok=True)
+                ps_call(['python3', producer, '--config', self.sample_config, '--inDir', inDir, '--sample', sample_name, '--outFile', outFile_str, '--customisations', self.customisations ], env=self.cmssw_env())
         print(f'anaCache for sample {sample_name} is created in {self.output().path}')
 
 
@@ -72,32 +94,126 @@ class InputFileTask(Task, law.LocalWorkflow):
         sample_out = os.path.join(self.local_path(sample_name, "input_files.txt"))
         return law.LocalFileTarget(sample_out)
 
+
     def run(self):
         sample_name = self.branch_data
         print(f'Creating inputFile for sample {sample_name} into {self.output().path}')
         os.makedirs(os.path.join(self.local_path(),sample_name), exist_ok=True)
-        txtFile_tmp = os.path.join(self.local_path(), sample_name, "tmp.txt")
-        inDir = os.path.join(self.central_nanoAOD_path(), sample_name)
-        #if self.period!='Run2_2018':
-        if self.version.split('_')[-1]=='HTT':
+        nano_aod_dir_name = os.path.join(self.period, sample_name)
+        with self.output().localize("w") as out_local_file:
+            #out_local_file = os.path.join(self.local_path(), sample_name, "tmp.txt")
             inDir = os.path.join(self.central_nanoAOD_path_HLepRare(), sample_name)
-        #print(f"inDir is {inDir}")
-        input_files = []
-        for root, dirs, files in os.walk(inDir):
-            for file in files:
-                if file.endswith('.root') and not file.startswith('.'):
-                    if os.path.join(root, file) not in input_files:
-                        input_files.append(os.path.join(root, file))
-        #print(f"inDir is {input_files}")
-        with open(txtFile_tmp, 'w') as inputFileTxt:
-            for input_line in input_files:
-                inputFileTxt.write(input_line+'\n')
-        finalFile = self.output().path
-        shutil.move(txtFile_tmp,finalFile)
+            input_files = []
+            for root, dirs, files in os.walk(inDir):
+                for file in files:
+                    if file.endswith('.root') and not file.startswith('.'):
+                        if os.path.join(root, file) not in input_files:
+                            input_files.append(os.path.join(root, file))
+            with open(out_local_file.path, 'w') as inputFileTxt:
+                for input_line in input_files:
+                    inputFileTxt.write(input_line+'\n')
         print(f'inputFile for sample {sample_name} is created in {self.output().path}')
 
 
+class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
+    def workflow_requires(self):
+        return { "anaCache" : AnaCacheTask.req(self, branches=()), "inputFile": InputFileTask.req(self,workflow='local', branches=()) }
 
+    def requires(self):
+        sample_id, sample_name, sample_type, input_file = self.branch_data
+        return [ AnaCacheTask.req(self, branch=sample_id, max_runtime=AnaCacheTask.max_runtime._default, branches=()), InputFileTask.req(self, branch=sample_id, workflow='local', branches=()) ]
+
+    def create_branch_map(self):
+        n = 0
+        branches = {}
+        for sample_id, sample_name in enumerate(sorted(self.samples.keys())):
+            inputFileTxt = InputFileTask.req(self, branch=sample_id,workflow='local', branches=(sample_id,)).output().path
+            with open(inputFileTxt, 'r') as inputtxtFile:
+                input_files = inputtxtFile.read().splitlines()
+            #print(input_files)
+            if len(input_files) == 0:
+                raise RuntimeError(f"AnaTupleTask: no input files found for {sample_name}")
+            for input_file in input_files:
+                branches[n] = (sample_id, sample_name, self.samples[sample_name]['sampleType'], remote_file_target(input_file, self.fs_files))
+                n += 1
+        return branches
+
+    def output(self, force_pre_output=False):
+        sample_id, sample_name, sample_type, input_file = self.branch_data
+        outFileName = os.path.basename(input_file)
+        #outDir_tmp = os.path.join('/eos/user/a/androsov/valeria/','anaTuples', self.period, self.version)
+        outDir_tmp = self.central_anaTuples_path()
+
+        if not os.path.exists(outDir_tmp):
+            os.makedirs(outDir_tmp)
+        finalFile = os.path.join(self.version, self.period, sample_name, outFileName)
+        return remote_file_target(finalFile)
+
+    def run(self):
+        #inputs = self.input()["collection"].targets
+        #print(self.input()["collection"].targets)
+        print(self.input().path)
+        '''
+        sample_id, sample_name, sample_type, input_file = self.branch_data
+        producer_anatuples = os.path.join(self.ana_path(), 'AnaProd', 'anaTupleProducer.py')
+        anaCache_file_name = os.path.join(self.central_anaCache_path(), sample_name,'anaCache.yaml')
+        anaCache_file = remote_file_target(anaCache_file_name).localize("r")
+        producer_skimtuples = os.path.join(self.ana_path(), 'AnaProd', 'SkimProducer.py')
+        outFileName = os.path.basename(input_file)
+
+        thread = threading.Thread(target=update_kinit_thread)
+        thread.start()
+        try:
+            job_home, remove_job_home = self.law_job_home()
+
+            if self.test: print(f"sample_id= {sample_id}\nsample_name = {sample_name}\nsample_type = {sample_type}\ninput_file = {input_file}")
+
+            outdir_anatuples = os.path.join(job_home, 'anaTuples', sample_name)
+            outdir_skimtuples = os.path.join(job_home, 'skim', sample_name)
+
+            outFile_final = self.output().localize("w")
+
+            with input_file.localize("r") as local_input, remote_file_target(anaCache_file_name).localize("r") as anacache_input:
+                local_input_path = local_input.path
+                anatuple_cmd = [ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', local_input, '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations', self.customisations, '--compute_unc_variations', 'True', '--store-noncentral']
+                if self.test:
+                    anatuple_cmd.extend(['--nEvents', '100'])
+                ps_call(anatuple_cmd, env=self.cmssw_env(),verbose=1)
+
+            if self.test: print(f"outFileName is {outFileName}")
+            if sample_type!='data':
+                skimtuple_cmd = ['python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--centralFile',outFileName, '--workingDir', outdir_skimtuples,
+                        '--outputFile', outFileName]
+                if self.test:
+                    skimtuple_cmd.extend(['--test' , 'True'])
+                ps_call(skimtuple_cmd,verbose=1)
+            tmpFile = os.path.join(outdir_skimtuples, outFileName)
+            if sample_type=='data':
+                tmpFile = os.path.join(outdir_anatuples, outFileName)
+
+            outDir_tmp = self.central_anaTuples_path()
+            outdir_final = os.path.join(outDir_tmp, sample_name)
+            os.makedirs(outdir_final, exist_ok=True)
+            finalFile = os.path.join('davs://eosuserhttp.cern.ch:443/',self.output().path)
+            if self.test: print(f"finalFile is {finalFile}")
+            gfal_copy_safe(tmpFile, finalFile)
+            with self.output().localize("w") as tmp_local_file:
+                out_local_path = tmp_local_file.path
+                shutil.move(tmpFile, tmp_local_file)
+
+            if remove_job_home:
+                shutil.rmtree(job_home)
+            print(f'anaTuple for sample {sample_name} is created in {outdir_final}')
+            finally:
+                kInit_cond.acquire()
+                kInit_cond.notify_all()
+                kInit_cond.release()
+                thread.join()
+
+
+        '''
+'''
 class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
 
@@ -144,11 +260,10 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             anaCache = os.path.join(self.central_anaCache_path(), sample_name, 'anaCache.yaml')
             outdir_anatuples = os.path.join(job_home, 'anaTuples', sample_name)
             anatuple_cmd = [ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', input_file,
-                        '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations',
-                        self.customisations, '--compute_unc_variations', 'True', '--store-noncentral']
+                        '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations', self.customisations, '--compute_unc_variations', 'True', '--store-noncentral']
             if self.test:
                 anatuple_cmd.extend(['--nEvents', '100'])
-            sh_call(anatuple_cmd, env=self.cmssw_env(),verbose=1)
+            ps_call(anatuple_cmd, env=self.cmssw_env(),verbose=1)
             producer_skimtuples = os.path.join(self.ana_path(), 'AnaProd', 'SkimProducer.py')
             outdir_skimtuples = os.path.join(job_home, 'skim', sample_name)
             outFileName = os.path.basename(input_file)
@@ -158,7 +273,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                         '--outputFile', outFileName]
                 if self.test:
                     skimtuple_cmd.extend(['--test' , 'True'])
-                sh_call(skimtuple_cmd,verbose=1)
+                ps_call(skimtuple_cmd,verbose=1)
             tmpFile = os.path.join(outdir_skimtuples, outFileName)
             if sample_type=='data':
                 tmpFile = os.path.join(outdir_anatuples, outFileName)
@@ -166,9 +281,9 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             outDir_tmp = self.central_anaTuples_path()
             outdir_final = os.path.join(outDir_tmp, sample_name)
             os.makedirs(outdir_final, exist_ok=True)
-            finalFile = self.output().path
+            finalFile = os.path.join('davs://eosuserhttp.cern.ch:443/',self.output().path)
             if self.test: print(f"finalFile is {finalFile}")
-            shutil.copy(tmpFile, finalFile)
+            gfal_copy_safe(tmpFile, finalFile)
             if os.path.exists(finalFile):
                 os.remove(tmpFile)
             else:
@@ -186,6 +301,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     @staticmethod
     def getOutputDir(central_anaTuples_path, sample_name):
         return os.path.join(central_anaTuples_path, sample_name)
+'''
 
 class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
@@ -224,7 +340,7 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         tmpFile = os.path.join(outDir_tmp, 'data', 'data_tmp.root')
         dataMerge_cmd = [ 'python3', producer_dataMerge, '--outFile', tmpFile, '--useUproot', 'True']
         dataMerge_cmd.extend([f.path for f in self.input()])
-        sh_call(dataMerge_cmd,verbose=1)
+        ps_call(dataMerge_cmd,verbose=1)
         finalFile = self.output().path
         if self.test: print(f"finalFile is {finalFile}")
         print(f"finalFile is {finalFile}")
@@ -293,7 +409,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             #print(fileName)
             #print(f"filename is {fileName}")
             sample_config = self.sample_config
-            unc_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'weight_definition.yaml')
+            unc_config = os.path.join(self.ana_path(), 'config', f'weight_definition_{getYear(self.period)}.yaml')
             unc_cfg_dict = load_unc_config(unc_config)
             #print(f"\nsample_name = {sample_name}\ninput_file = {input_file}")
             outdir_anacacheTuples = os.path.join(job_home, 'anaCacheTuples', sample_name)
@@ -309,7 +425,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 anaCacheTupleProducer_cmd.extend(['--compute_unc_variations', 'True'])
             if self.version == 'v9_deepTau2p5':
                 anaCacheTupleProducer_cmd.extend([ '--deepTauVersion', 'v2p5'])
-            sh_call(anaCacheTupleProducer_cmd, env=self.cmssw_env(),verbose=1)
+            ps_call(anaCacheTupleProducer_cmd, env=self.cmssw_env(),verbose=1)
             print(f"finished to produce anacachetuple")
             outdir_final = os.path.join(self.central_anaCache_path(), sample_name, self.version)
             if not os.path.exists(outdir_final):
@@ -341,7 +457,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                         '--outputFile', outFileName]
                 if self.test:
                     skimtuple_cmd.extend(['--test' , 'True'])
-                #sh_call(skimtuple_cmd,verbose=1)
+                #ps_call(skimtuple_cmd,verbose=1)
                 print(skimtuple_cmd)
             tmpFile = os.path.join(outdir_skimcachetuples, outFileName)
             if sample_name=='data':
@@ -405,7 +521,7 @@ class DataCacheMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         tmpFile = os.path.join(outDir, 'data_tmp.root')
         dataMerge_cmd = [ 'python3', producer_dataMerge, '--outFile', tmpFile ]
         dataMerge_cmd.extend([f.path for f in self.input()])
-        sh_call(dataMerge_cmd,verbose=1)
+        ps_call(dataMerge_cmd,verbose=1)
         finalFile = self.output().path
         if self.test: print(f"finalFile is {finalFile}")
         print(f"finalFile is {finalFile}")

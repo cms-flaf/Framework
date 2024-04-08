@@ -8,7 +8,7 @@ import yaml
 import contextlib
 
 from RunKit.run_tools import ps_call
-from RunKit.grid_tools import gfal_copy_safe
+from RunKit.grid_tools import gfal_copy_safe,gfal_ls
 from RunKit.checkRootFile import checkRootFileSafe
 from RunKit.crabLaw import cond as kInit_cond,update_kinit_thread
 from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
@@ -58,15 +58,12 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_name, isData = self.branch_data
         outFileName = 'anaCache.yaml'
         outDir = os.path.join('anaCache', self.period, sample_name)
-        if not os.path.exists(outDir):
-            os.makedirs(outDir)
         finalFile = os.path.join(outDir, outFileName)
         return remote_file_target(finalFile,self.fs_read)
 
     def run(self):
         sample_name, isData = self.branch_data
         print(f'Creating anaCache for sample {sample_name} into {self.output().path}')
-
         producer = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheProducer.py')
         with self.output().localize("w") as outFile_anaCache:
             outFile_str = outFile_anaCache.path
@@ -75,7 +72,6 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             if not isData:
                 ps_call(['python3', producer, '--config', self.sample_config, '--inDir', inDir, '--sample', sample_name, '--outFile', outFile_str, '--customisations', self.customisations ], env=self.cmssw_env())
         print(f'anaCache for sample {sample_name} is created in {self.output().path}')
-
 
 
 class InputFileTask(Task, law.LocalWorkflow):
@@ -97,17 +93,28 @@ class InputFileTask(Task, law.LocalWorkflow):
         sample_name = self.branch_data
         print(f'Creating inputFile for sample {sample_name} into {self.output().path}')
         os.makedirs(os.path.join(self.local_path(),sample_name), exist_ok=True)
-        nano_aod_dir_name = os.path.join(self.period, sample_name)
+        #print(sample_name)
         with self.output().localize("w") as out_local_file:
             #out_local_file = os.path.join(self.local_path(), sample_name, "tmp.txt")
             inDir = os.path.join(self.central_nanoAOD_path_HLepRare(), sample_name)
             input_files = []
-            #print(gfal_ls(inDir))
-            for root, dirs, files in os.walk(inDir):
-                for file in files:
-                    if file.endswith('.root') and not file.startswith('.'):
-                        if os.path.join(root, file) not in input_files:
-                            input_files.append(os.path.join(root, file))
+            for fileInfo in gfal_ls(inDir):
+                if fileInfo.name.endswith("root") : #and not file.startswith('.'):
+                    fileName_absolute_list = fileInfo.path.split("/") + fileInfo.name.split("/")
+                    #print(fileName_absolute_list)
+                    inDir_list = self.central_nanoAOD_path_HLepRare().split("/")
+                    #print(inDir_list)
+                    fileName_relative_list = []
+                    for dir_idx in range(0, len(fileName_absolute_list)):
+                        if dir_idx < len(inDir_list) and fileName_absolute_list[dir_idx] == inDir_list[dir_idx]:
+                            continue
+                        fileName_relative_list.append(fileName_absolute_list[dir_idx])
+                    #print(fileName_relative_list)
+                    file_name_relative = '/'.join(f for f in fileName_relative_list)
+                    #print(file_name_relative)
+                    if file_name_relative not in input_files:
+                            input_files.append(file_name_relative)
+
             with open(out_local_file.path, 'w') as inputFileTxt:
                 for input_line in input_files:
                     inputFileTxt.write(input_line+'\n')
@@ -134,84 +141,72 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             if len(input_files) == 0:
                 raise RuntimeError(f"AnaTupleTask: no input files found for {sample_name}")
             for input_file in input_files:
-                branches[n] = (sample_id, sample_name, self.samples[sample_name]['sampleType'], remote_file_target(input_file, self.fs_files))
+                input_file_p = os.path.join(self.period, input_file)
+                branches[n] = (sample_id, sample_name, self.samples[sample_name]['sampleType'], remote_file_target(input_file_p, self.fs_files_nanoAOD))
                 n += 1
         return branches
 
     def output(self, force_pre_output=False):
         sample_id, sample_name, sample_type, input_file = self.branch_data
-        outFileName = os.path.basename(input_file)
+        outFileName = os.path.basename(input_file.path)
         #outDir_tmp = os.path.join('/eos/user/a/androsov/valeria/','anaTuples', self.period, self.version)
         outDir_tmp = self.central_anaTuples_path()
 
         if not os.path.exists(outDir_tmp):
             os.makedirs(outDir_tmp)
         finalFile = os.path.join(self.version, self.period, sample_name, outFileName)
-        return remote_file_target(finalFile)
+        return remote_file_target(finalFile, self.fs_files)
 
     def run(self):
-        #inputs = self.input()["collection"].targets
-        #print(self.input()["collection"].targets)
-        print(self.input().path)
-        '''
         sample_id, sample_name, sample_type, input_file = self.branch_data
         producer_anatuples = os.path.join(self.ana_path(), 'AnaProd', 'anaTupleProducer.py')
-        anaCache_file_name = os.path.join(self.central_anaCache_path(), sample_name,'anaCache.yaml')
-        anaCache_file = remote_file_target(anaCache_file_name).localize("r")
         producer_skimtuples = os.path.join(self.ana_path(), 'AnaProd', 'SkimProducer.py')
-        outFileName = os.path.basename(input_file)
-
         thread = threading.Thread(target=update_kinit_thread)
         thread.start()
+        anaCache_name = os.path.join('anaCache', self.period, sample_name, 'anaCache.yaml')
         try:
             job_home, remove_job_home = self.law_job_home()
-
-            if self.test: print(f"sample_id= {sample_id}\nsample_name = {sample_name}\nsample_type = {sample_type}\ninput_file = {input_file}")
-
+            if self.test: print(f"sample_id= {sample_id}\nsample_name = {sample_name}\nsample_type = {sample_type}\ninput_file = {input_file.path}")
+            print(f"sample_id= {sample_id}\nsample_name = {sample_name}\nsample_type = {sample_type}\ninput_file = {input_file.path}")
+            # part 1 --> nano->anaTupleS
             outdir_anatuples = os.path.join(job_home, 'anaTuples', sample_name)
-            outdir_skimtuples = os.path.join(job_home, 'skim', sample_name)
-
-            outFile_final = self.output().localize("w")
-
-            with input_file.localize("r") as local_input, remote_file_target(anaCache_file_name).localize("r") as anacache_input:
+            with input_file.localize("r") as local_input, remote_file_target(anaCache_name, self.fs_read).localize("r") as anacache_input:
                 local_input_path = local_input.path
-                anatuple_cmd = [ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', local_input, '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anaCache, '--customisations', self.customisations, '--compute_unc_variations', 'True', '--store-noncentral']
+                anacache_input_path = anacache_input.path
+                anatuple_cmd = [ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', local_input_path, '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anacache_input_path, '--customisations', self.customisations, '--compute_unc_variations', 'True', '--store-noncentral']
                 if self.test:
                     anatuple_cmd.extend(['--nEvents', '100'])
                 ps_call(anatuple_cmd, env=self.cmssw_env(),verbose=1)
+            # part 1 --> anaTupleS -> skimTuplE
+            outdir_skimtuples = os.path.join(job_home, 'skim', sample_name)
+            outFileName = os.path.basename(input_file.path)
 
             if self.test: print(f"outFileName is {outFileName}")
+            tmpFile = os.path.join(outdir_skimtuples, outFileName)
+
             if sample_type!='data':
-                skimtuple_cmd = ['python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--centralFile',outFileName, '--workingDir', outdir_skimtuples,
-                        '--outputFile', outFileName]
+                skimtuple_cmd = ['python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--centralFile',outFileName, '--workingDir', outdir_skimtuples, '--outputFile', outFileName]
                 if self.test:
                     skimtuple_cmd.extend(['--test' , 'True'])
                 ps_call(skimtuple_cmd,verbose=1)
-            tmpFile = os.path.join(outdir_skimtuples, outFileName)
-            if sample_type=='data':
+            else:
                 tmpFile = os.path.join(outdir_anatuples, outFileName)
 
-            outDir_tmp = self.central_anaTuples_path()
-            outdir_final = os.path.join(outDir_tmp, sample_name)
-            os.makedirs(outdir_final, exist_ok=True)
-            finalFile = os.path.join('davs://eosuserhttp.cern.ch:443/',self.output().path)
             if self.test: print(f"finalFile is {finalFile}")
-            gfal_copy_safe(tmpFile, finalFile)
             with self.output().localize("w") as tmp_local_file:
                 out_local_path = tmp_local_file.path
                 shutil.move(tmpFile, tmp_local_file)
 
             if remove_job_home:
                 shutil.rmtree(job_home)
-            print(f'anaTuple for sample {sample_name} is created in {outdir_final}')
-            finally:
-                kInit_cond.acquire()
-                kInit_cond.notify_all()
-                kInit_cond.release()
-                thread.join()
+            print(f'anaTuple for sample {sample_name} is created in {self.output().path}')
+        finally:
+            kInit_cond.acquire()
+            kInit_cond.notify_all()
+            kInit_cond.release()
+            thread.join()
 
 
-        '''
 '''
 class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)

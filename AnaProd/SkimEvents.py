@@ -36,6 +36,7 @@ col_type_dict = {
 def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Events',treeName_central='Events'):
   df_out = ROOT.RDataFrame(treeName_in, inputFileShifted)
   colNames = [str(c) for c in df_out.GetColumnNames()]
+  print(treeName,treeName_central, treeName_in, treeName_out)
   if len(colNames)==0:
     print(f"{treeName_in} has no columns")
     return
@@ -119,11 +120,11 @@ if __name__ == "__main__":
   #header_path_Skimmer = os.path.join(headers_dir, "include/SystSkimmer.h")
   ROOT.gInterpreter.Declare(f'#include "include/SystSkimmer.h"')
   make_df(args.inFileCentral,args.inFileShifted,args.outDir,args.treeName_out,args.treeName_in,args.treeName_central)
-  try : make_df(args.inFileCentral,args.inFileShifted,args.outDir,args.treeName_out,args.treeName_in,args.treeName_central)
-  except:
-    create_file(os.path.join(args.outDir, f"{args.treeName_out}_Valid.root"))
-    create_file(os.path.join(args.outDir, f"{args.treeName_out}_nonValid.root"))
-    create_file(os.path.join(args.outDir, f"{args.treeName_out}_noDiff.root"))
+  #try : make_df(args.inFileCentral,args.inFileShifted,args.outDir,args.treeName_out,args.treeName_in,args.treeName_central)
+  #except:
+  #  create_file(os.path.join(args.outDir, f"{args.treeName_out}_Valid.root"))
+  #  create_file(os.path.join(args.outDir, f"{args.treeName_out}_nonValid.root"))
+  #  create_file(os.path.join(args.outDir, f"{args.treeName_out}_noDiff.root"))
   '''
   colNames_Central = [str(c) for c in ROOT.RDataFrame(args.treeName_in, args.inFileCentral).GetColumnNames()]
   colNames_Shifted = [str(c) for c in ROOT.RDataFrame(args.treeName_in, args.inFileShifted).GetColumnNames()]

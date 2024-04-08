@@ -36,7 +36,6 @@ col_type_dict = {
 def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Events',treeName_central='Events'):
   df_out = ROOT.RDataFrame(treeName_in, inputFileShifted)
   colNames = [str(c) for c in df_out.GetColumnNames()]
-  print(treeName,treeName_central, treeName_in, treeName_out)
   if len(colNames)==0:
     print(f"{treeName_in} has no columns")
     return

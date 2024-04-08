@@ -81,6 +81,9 @@ def load_fs_files_nanoAOD(files_fs_dict):
 def load_fs_files(files_fs_dict):
     return WLCGFileSystem(files_fs_dict['fs_general'])
 
+def load_fs_read(files_fs_dict):
+    return WLCGFileSystem(files_fs_dict['fs_general_read'])
+
 def load_hist_config(hist_config):
     global _hists
     with open(hist_config, 'r') as f:
@@ -128,6 +131,7 @@ class Task(law.Task):
         self.fs_files_dict = load_fs_file()
         self.fs_files_nanoAOD = load_fs_files_nanoAOD(self.fs_files_dict)
         self.fs_files = load_fs_files(self.fs_files_dict)
+        self.fs_read = load_fs_read(self.fs_files_dict)
 
 
     def store_parts(self):

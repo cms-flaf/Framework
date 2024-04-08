@@ -61,8 +61,7 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         if not os.path.exists(outDir):
             os.makedirs(outDir)
         finalFile = os.path.join(outDir, outFileName)
-        print(self.fs_files)
-        return remote_file_target(finalFile,self.fs_files)
+        return remote_file_target(finalFile,self.fs_read)
 
     def run(self):
         sample_name, isData = self.branch_data
@@ -74,7 +73,6 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             print(outFile_str)
             inDir = os.path.join(self.central_nanoAOD_path_HLepRare(), sample_name)
             if not isData:
-                #os.makedirs(os.path.dirname(self.output().path), exist_ok=True)
                 ps_call(['python3', producer, '--config', self.sample_config, '--inDir', inDir, '--sample', sample_name, '--outFile', outFile_str, '--customisations', self.customisations ], env=self.cmssw_env())
         print(f'anaCache for sample {sample_name} is created in {self.output().path}')
 
@@ -104,6 +102,7 @@ class InputFileTask(Task, law.LocalWorkflow):
             #out_local_file = os.path.join(self.local_path(), sample_name, "tmp.txt")
             inDir = os.path.join(self.central_nanoAOD_path_HLepRare(), sample_name)
             input_files = []
+            #print(gfal_ls(inDir))
             for root, dirs, files in os.walk(inDir):
                 for file in files:
                     if file.endswith('.root') and not file.startswith('.'):

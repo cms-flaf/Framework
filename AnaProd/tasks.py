@@ -174,6 +174,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 local_input_path = local_input.path
                 anacache_input_path = anacache_input.path
                 anatuple_cmd = [ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', local_input_path, '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anacache_input_path, '--customisations', self.customisations, '--compute_unc_variations', 'True', '--store-noncentral']
+                centralFileName = os.path.basename(local_input_path)
                 if self.test:
                     anatuple_cmd.extend(['--nEvents', '100'])
                 ps_call(anatuple_cmd, env=self.cmssw_env(),verbose=1)
@@ -185,7 +186,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             tmpFile = os.path.join(outdir_skimtuples, outFileName)
 
             if sample_type!='data':
-                skimtuple_cmd = ['python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--centralFile',outFileName, '--workingDir', outdir_skimtuples, '--outputFile', outFileName]
+                skimtuple_cmd = ['python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--centralFile',centralFileName, '--workingDir', outdir_skimtuples, '--outputFile', outFileName]
                 if self.test:
                     skimtuple_cmd.extend(['--test' , 'True'])
                 ps_call(skimtuple_cmd,verbose=1)

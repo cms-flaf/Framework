@@ -1,6 +1,7 @@
 from enum import Enum
 import ROOT
 import copy
+import os
 
 class WorkingPointsTauVSmu(Enum):
     VLoose = 1
@@ -117,3 +118,8 @@ def GetKeyNames(filee, dir = "" ):
         if dir != "":
             filee.cd(dir)
         return [str(key.GetName()) for key in ROOT.gDirectory.GetListOfKeys()]
+
+
+def create_file(file_name, times=None):
+    with open(file_name, "w"):
+        os.utime(file_name, times)

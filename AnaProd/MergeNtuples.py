@@ -45,11 +45,13 @@ class ObjDesc:
         self.file_names = []
 
 
-def merge_ntuples(df):
-    if 'run' not in df.GetColumnNames() or 'luminosityBlock'  not in df.GetColumnNames() or 'event'  not in df.GetColumnNames():
-        return df
-    df = df.Filter("saveEvent(run, luminosityBlock, event)")
-    return df
+#def merge_ntuples(df):
+#    print(f"when entering merging ntuples function {df.Count().GetValue()} events")
+#    if 'run' not in df.GetColumnNames() or 'luminosityBlock'  not in df.GetColumnNames() or 'event'  not in df.GetColumnNames():
+#        return df
+#    df_new = df.Filter("saveEvent(run, luminosityBlock, event)")
+#    print(f"before returning df from merging ntuples function {df_new.Count().GetValue()} events")
+#    return df_new
 
 if __name__ == "__main__":
     import argparse
@@ -63,18 +65,21 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=False
-    snapshotOptions.fLazy = False
+    #snapshotOptions.fLazy = False
     snapshotOptions.fMode="UPDATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'kZLIB')
     snapshotOptions.fCompressionLevel = 4
-
-    inputFiles = [ (fileName, ROOT.TFile(fileName, "READ")) for fileName in args.inputFile ]
+    inputFiles =[]
+    #inputFiles = [ (fileName, ROOT.TFile(fileName, "READ")) for fileName in args.inputFile ]
+    for fileName in args.inputFile:
+            fileNameTot = f"davs://eosuserhttp.cern.ch:443{fileName}"
+            fileInRoot= ROOT.TFile.Open(fileNameTot, "READ")
+            inputFiles.append((fileNameTot, fileInRoot))
     objects = {}
     for fileName, file in inputFiles:
         for key in file.GetListOfKeys():
             key_name = key.GetName()
             obj = key.ReadObj()
-
             if obj.IsA().InheritsFrom(ROOT.TTree.Class()):
                 objType = "TTree"
             elif obj.IsA().InheritsFrom(ROOT.TH1.Class()):
@@ -96,7 +101,7 @@ if __name__ == "__main__":
                 else:
                     obj_desc.objsToMerge.Add(obj)
 
-    tmpFileName = args.outFile 
+    tmpFileName = args.outFile
     if args.useUproot:
         tmpFileName+= '.tmp.root'
     compression = ROOT.CompressionSettings(snapshotOptions.fCompressionAlgorithm, snapshotOptions.fCompressionLevel)
@@ -109,14 +114,22 @@ if __name__ == "__main__":
     outputFile.Close()
     for fileName, file in inputFiles:
         file.Close()
-
+    print(f"available objects are: {objects}")
     for obj_name, obj_desc in objects.items():
         if obj_desc.obj_type != "TTree":
             continue
         df = ROOT.RDataFrame(obj_name, obj_desc.file_names)
-        df = merge_ntuples(df)
-        df.Snapshot(obj_name, tmpFileName, df.GetColumnNames(), snapshotOptions)
-    #print(tmpFileName)
+        #print(f"before merging ntuples {df.Count().GetValue()} events")
+        #df = merge_ntuples(df)
+        df_copy = df
+        df_new = df_copy if ( 'run' not in df_copy.GetColumnNames() or 'luminosityBlock'  not in df_copy.GetColumnNames() or 'event'  not in df_copy.GetColumnNames() ) else df_copy.Filter("saveEvent(run, luminosityBlock, event)")
+        #print(f"after merging ntuples {df_new.Count().GetValue()} events")
+        #print(df_new.GetColumnNames())
+        #print(obj_name)
+        #print(tmpFileName)
+        df_new.Snapshot(obj_name, tmpFileName, df_new.GetColumnNames(), snapshotOptions)
+        #df.Snapshot(obj_name+"_Orig", tmpFileName, df.GetColumnNames(), snapshotOptions)
+
     if args.useUproot:
         ConvertUproot.toUproot(tmpFileName, args.outFile)
         if os.path.exists(args.outFile):

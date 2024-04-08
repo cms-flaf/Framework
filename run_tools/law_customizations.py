@@ -141,13 +141,9 @@ class Task(law.Task):
         self.sample_config = os.path.join(self.ana_path(), 'config', f'samples_{self.period}.yaml')
         self.global_params, self.samples = load_sample_configs(self.sample_config, self.period)
         self.fs_files_dict = load_fs_file()
-        #print(self.fs_files_dict)
         self.fs_files_nanoAOD = load_fs_files_nanoAOD(self.fs_files_dict)
-        #print(self.fs_files_nanoAOD)
         self.fs_files = load_fs_files(self.fs_files_dict)
-        #print(self.fs_files)
         self.fs_read = load_fs_read(self.fs_files_dict)
-        #print(self.fs_read)
 
     def store_parts(self):
         return (self.__class__.__name__, self.version, self.period)

@@ -99,19 +99,19 @@ GLOBAL:
     - drop ^JetHT_Run2016*
     - drop ^Double*
     - drop ^ZHToTauTau_M125_ext1$
-    - drop ^ZJetsToQQ_HT-200to400$
-    - drop ^ZJetsToQQ_HT-400to600$
-    - drop ^ZJetsToQQ_HT-600to800$
-    - drop ^ZJetsToQQ_HT-800toInf$
-    - drop ^TTZToQQ_Dilept$
-    - drop ^TTZToNuNu$
-    - drop ^TTZToBB$
-    - drop ^TTZToLL_M-1to10$
-    - drop ^TTTT$
-    - drop ^TTTW$
-    - drop ^TTTJ$
-    - drop ^TTGG$
-    - drop ^TTGJets$
+    #- drop ^ZJetsToQQ_HT-200to400$
+    #- drop ^ZJetsToQQ_HT-400to600$
+    #- drop ^ZJetsToQQ_HT-600to800$
+    #- drop ^ZJetsToQQ_HT-800toInf$
+    #- drop ^TTZToQQ_Dilept$
+    #- drop ^TTZToNuNu$
+    #- drop ^TTZToBB$
+    #- drop ^TTZToLL_M-1to10$
+    #- drop ^TTTT$
+    #- drop ^TTTW$
+    #- drop ^TTTJ$
+    #- drop ^TTGG$
+    #- drop ^TTGJets$
 
 GluGluToRadionToHHTo2B2Tau_M-250:
   miniAOD: /GluGluToRadionToHHTo2B2Tau_M-250_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM
@@ -1015,7 +1015,7 @@ EWK_WminusToLNu:
 WJetsToLNu:
   miniAOD: /WJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM
   sampleType: W
-  isReference: true
+  isReference: True
   crossSection: WJetsToLNu_NLO
   crossSectionStitch: WJetsToLNu_LO
 W0JetsToLNu-amcatnloFXFX:
@@ -1071,10 +1071,10 @@ WToMuNu_M-200:
   miniAOD: /WToMuNu_M-200_TuneCP5_13TeV-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM
   sampleType: WLep
   crossSection: WToMuNu_M-200_LO
-WJetsToLNu:
-  miniAOD: /WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM
-  sampleType: W
-  crossSectionStitch: WJetsToLNu_LO
+#WJetsToLNu:
+#  miniAOD: /WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM
+#  sampleType: W
+#  crossSectionStitch: WJetsToLNu_LO
 W1JetsToLNu:
   miniAOD: /W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM
   sampleType: W
@@ -1360,7 +1360,7 @@ DY4JetsToLL_M-50-madgraphMLM:
 DYJetsToLL_M-50-amcatnloFXFX:
   miniAOD: /DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM
   sampleType: DY
-  isReference: true
+  isReference: True
   crossSection: DY_LO
   crossSectionStitch: DY_NLO
 DYJetsToLL_0J-amcatnloFXFX:

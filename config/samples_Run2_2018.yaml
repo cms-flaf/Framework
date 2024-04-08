@@ -96,37 +96,6 @@ GLOBAL:
     - drop ^.*Enriched
     - drop ^JetHT_Run2018*
     - drop ^Double*
-    - drop ^GluGluToBulkGravitonToHHTo2B2Tau_M-400$
-    - drop ^ZH_Hbb_Zqq$
-    - drop ^ZHToTauTau_M125_ext1$
-    - drop ^HWplusJ_HToWW_M125$
-    - drop ^ttHTobb_M125$
-    - drop ^ZJetsToQQ_HT-200to400$
-    - drop ^ZJetsToQQ_HT-400to600$
-    - drop ^ZJetsToQQ_HT-600to800$
-    - drop ^ZJetsToQQ_HT-800toInf$
-    - drop ^TTZToBB$
-    - drop ^TTZToNuNu$
-    - drop ^TTZToQQ_Dilept$
-    - drop ^TTGJets$
-    - drop ^TTGJets_ext1$
-    - drop ^TTGamma_Dilept$
-    - drop ^TTGamma_Hadronic$
-    - drop ^TTGamma_SingleLept$
-    - drop ^TTTJ$
-    - drop ^TTTT$
-    - drop ^TTTW$
-    - drop ^TT4b$
-    - drop ^TTGG$
-    - drop ^TTZZTo4b$
-    - drop ^TTZZToNon4b$
-    - drop ^TTZHTo4b$
-    - drop ^TTZHToNon4b$
-    - drop ^TTHHTo4b$
-    - drop ^TTHHToNon4b$
-    - drop ^TTHH$
-    - drop ^QCD_HT300to500$
-    - drop ^QCD_HT700to1000_MLM$
 
 GluGluToRadionToHHTo2B2Tau_M-250:
   miniAOD: /GluGluToRadionToHHTo2B2Tau_M-250_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
@@ -1122,10 +1091,10 @@ TTZZ:
   #miniAOD: /TTHHTo2B2Tau_HEFT_kt-2_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   #sampleType: TTHH
   #crossSection: 1pb
-#TTHHTo2B2Tau:
-  #miniAOD: /TTHHTo2B2Tau_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
-  #sampleType: TTHH
-  #crossSection: 1pb
+TTHHTo2B2Tau:
+  miniAOD: /TTHHTo2B2Tau_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
+  sampleType: TTHH
+  crossSection: 1pb
 
 WWW_4F:
   miniAOD: /WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM
@@ -1386,7 +1355,7 @@ MET_Run2018D:
   miniAOD: /MET/Run2018D-UL2018_MiniAODv2_GT36-v1/MINIAOD
   sampleType: data
 
-####### samples missing in current skimming (12/03/2024) ########
+
 TTZToBB:
   miniAOD: /TTZToBB_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: TTV
@@ -1444,7 +1413,15 @@ TTZZTo4b:
   miniAOD: /TTZZTo4b_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: TTVV
   crossSection: TTZZTo4b
+TTZZTo4b_ext1:
+  miniAOD: /TTZZTo4b_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
+  sampleType: TTVV
+  crossSection: TTZZTo4b
 TTZZToNon4b:
+  miniAOD: /TTZZToNon4b_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
+  sampleType: TTVV
+  crossSection: TTZZToNon4b
+TTZHTo4b_ext1:
   miniAOD: /TTZZToNon4b_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: TTVV
   crossSection: TTZZToNon4b
@@ -1481,8 +1458,6 @@ TTHH:
   miniAOD: /TTHH_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: TTHH
   crossSection: TTHH
-
-  ###########################################################################
 
 QCD_HT50to100_MLM:
   miniAOD: /QCD_HT50to100_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM

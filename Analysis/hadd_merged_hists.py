@@ -3,7 +3,7 @@ import sys
 import os
 import math
 import shutil
-from RunKit.sh_tools import sh_call
+from RunKit.run_tools import ps_call
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
@@ -47,7 +47,7 @@ if __name__ == "__main__":
         hadd_str += ' '.join(f for f in all_files[var])
         print(hadd_str)
         if len(all_files[var]) > 1:
-            sh_call([hadd_str], True)
+            ps_call([hadd_str], True)
         else:
             shutil.copy(all_files[var][0],outFileNameFinal)
         if os.path.exists(outFileNameFinal) and args.remove_files:

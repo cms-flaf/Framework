@@ -18,26 +18,29 @@ def saveFile(outFile, out_tree_dict, histograms):
 def toUproot(inFile, outFile):
   dfNames = []
   histograms = {}
-  #print("0")
+  print("starting toUproot")
+  print(inFile)
+
   input_file = uproot.open(inFile)
-  #print("A")
+
   object_names = input_file.keys()
+  #print(object_names)
   for object_name in object_names:
     obj = input_file[object_name]
-    ##print(f"Tipo: {obj.classname}, Nome: {obj.name}")
+    #print(f"Tipo: {obj.classname}, Nome: {obj.name}")
     if obj.classname == 'TTree':
       dfNames.append(obj.name)
     elif 'TH1' in obj.classname:
       histograms[obj.name] = obj
     else :
       print (f"oggetto di tipo {obj.classname}")
-  #print("B")
-  #if len(dfNames)>1: #print(f"len of dfNames is {len(dfNames)}")
+  #if len(dfNames)>1: print(f"len of dfNames is {len(dfNames)}")
   out_trees = {}
   for dfName in dfNames:
     #print(dfName)
     input_tree = input_file[dfName]
     keys = input_tree.keys()
+    #print(keys)
     out_tree = {}
     if not keys:
       #with uproot.recreate(outFile, compression=uproot.LZMA(9)) as out_file:
@@ -55,7 +58,6 @@ def toUproot(inFile, outFile):
         if not col_name in collections:
           collections[col_name] = []
         collections[col_name].append(br_name)
-    #print("C")
     for col_name, columns in collections.items():
       out_tree[col_name] = ak.zip({ column: df[col_name + "_" + column] for column in columns })
 

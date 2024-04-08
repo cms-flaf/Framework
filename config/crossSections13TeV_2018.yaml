@@ -636,6 +636,34 @@ DY_NLO_LHEFilterPtZ-650ToInf:
   crossSec: 0.04728
   reference: XSDB DYJetsToLL_LHEFilterPtZ-650ToInf_MatchEWPDG20_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-07-15 09:17:15
   unc: 0.0002801
+ZJetsToNuNu_HT-100To200:
+  crossSec: 267.0
+  reference: XSDB ZJetsToNuNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-06-21 10:02:19
+  unc: 0.7918
+ZJetsToNuNu_HT-1200To2500:
+  crossSec: 0.2497
+  reference: XSDB ZJetsToNuNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-10-11 11:27:13
+  unc: 0.0007553
+ZJetsToNuNu_HT-200To400:
+  crossSec: 73.08
+  reference: XSDB ZJetsToNuNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-06-21 10:02:21
+  unc: 0.2192
+ZJetsToNuNu_HT-2500ToInf:
+  crossSec: 0.005618
+  reference: XSDB ZJetsToNuNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-10-11 11:27:13
+  unc: 1.697e-05
+ZJetsToNuNu_HT-400To600:
+  crossSec: 9.904
+  reference: XSDB ZJetsToNuNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-10-11 11:27:14
+  unc: 0.02985
+ZJetsToNuNu_HT-600To800:
+  crossSec: 2.413
+  reference: XSDB ZJetsToNuNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2022-03-02 06:46:47
+  unc: 0.007275
+ZJetsToNuNu_HT-800To1200:
+  crossSec: 1.071
+  reference: XSDB ZJetsToNuNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-10-11 11:27:15
+  unc: 0.003242
 ZJetsToQQ_HT-200to400:
   crossSec: 1012.0
   reference: XSDB ZJetsToQQ_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2022-03-02 06:46:48

@@ -97,10 +97,10 @@ GLOBAL:
     - drop ^.*Enriched
     - drop ^JetHT_Run2016*
     - drop ^Double*
-    - drop ^ZJetsToQQ_HT-200to400$
-    - drop ^ZJetsToQQ_HT-400to600$
-    - drop ^ZJetsToQQ_HT-600to800$
-    - drop ^ZJetsToQQ_HT-800toInf$
+    #- drop ^ZJetsToQQ_HT-200to400$
+    #- drop ^ZJetsToQQ_HT-400to600$
+    #- drop ^ZJetsToQQ_HT-600to800$
+    #- drop ^ZJetsToQQ_HT-800toInf$
 
 
 GluGluToRadionToHHTo2B2Tau_M-250:

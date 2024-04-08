@@ -6,7 +6,7 @@ import shutil
 import time
 ROOT.EnableThreadSafety()
 
-from RunKit.sh_tools import sh_call
+from RunKit.run_tools import ps_call
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 

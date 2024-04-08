@@ -66,8 +66,11 @@ def select_items(all_items, filters):
 _global_params = None
 _samples = None
 _hists = None
-
 _files_fs_dict = None
+_fs_files_nanoAOD = None
+_fs_files = None
+_fs_read = None
+
 def load_fs_file():
     global _files_fs_dict
     files_fs_file = os.path.join(os.environ['ANALYSIS_PATH'], 'config', f'files_fs.yaml')
@@ -76,13 +79,22 @@ def load_fs_file():
     return _files_fs_dict
 
 def load_fs_files_nanoAOD(files_fs_dict):
-    return WLCGFileSystem(files_fs_dict['fs_nanoAOD_HLepRare'])
+    global _fs_files_nanoAOD
+    if _fs_files_nanoAOD is None:
+        _fs_files_nanoAOD = WLCGFileSystem(files_fs_dict['fs_nanoAOD_HLepRare'])
+    return _fs_files_nanoAOD
 
 def load_fs_files(files_fs_dict):
-    return WLCGFileSystem(files_fs_dict['fs_general'])
+    global _fs_files
+    if _fs_files is None:
+        _fs_files = WLCGFileSystem(files_fs_dict['fs_general'])
+    return _fs_files
 
 def load_fs_read(files_fs_dict):
-    return WLCGFileSystem(files_fs_dict['fs_general_read'])
+    global _fs_read
+    if _fs_read is None:
+        _fs_read = WLCGFileSystem(files_fs_dict['fs_general_read'])
+    return _fs_read
 
 def load_hist_config(hist_config):
     global _hists
@@ -129,10 +141,13 @@ class Task(law.Task):
         self.sample_config = os.path.join(self.ana_path(), 'config', f'samples_{self.period}.yaml')
         self.global_params, self.samples = load_sample_configs(self.sample_config, self.period)
         self.fs_files_dict = load_fs_file()
+        #print(self.fs_files_dict)
         self.fs_files_nanoAOD = load_fs_files_nanoAOD(self.fs_files_dict)
+        #print(self.fs_files_nanoAOD)
         self.fs_files = load_fs_files(self.fs_files_dict)
+        #print(self.fs_files)
         self.fs_read = load_fs_read(self.fs_files_dict)
-
+        #print(self.fs_read)
 
     def store_parts(self):
         return (self.__class__.__name__, self.version, self.period)

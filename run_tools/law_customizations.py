@@ -9,7 +9,7 @@ import tempfile
 
 from RunKit.envToJson import get_cmsenv
 from RunKit.crabLaw import update_kinit
-from RunKit.law_wlcg import WLCGFileSystem, WLCGFileTarget, WLCGDirectoryTarget
+from RunKit.law_wlcg import WLCGFileSystem, WLCGFileTarget
 
 law.contrib.load("htcondor")
 

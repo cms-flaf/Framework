@@ -60,6 +60,7 @@ if __name__ == "__main__":
     inFileShiftedName = os.path.join(args.inputDir, systFile)
     if args.test: print('shifted file = ', inFileShiftedName)
     if args.test: print('index = ', k)
+    print(getTreeName(systFile))
     #treeName = getTreeName(systFile)
     #if args.test : print(f"final TreeName is {treeName}")
     skimEventsPython = os.path.join(os.environ['ANALYSIS_PATH'], "AnaProd/SkimEvents.py")

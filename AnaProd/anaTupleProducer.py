@@ -302,6 +302,7 @@ def createAnatuple(inFile, treeName, outDir, config, sample_name, anaCache, snap
     else:
         trigger_class = None
     df = ROOT.RDataFrame(treeName, inFile)
+    #print(f"at the beginning there are {df.Count().GetValue()} events")
     if range is not None:
         df = df.Range(range)
     if len(evtIds) > 0:
@@ -389,13 +390,14 @@ def createAnatuple(inFile, treeName, outDir, config, sample_name, anaCache, snap
                 if puIDbranch in weight_branches: weight_branches.remove(puIDbranch)
             dfw.colToSave.extend(weight_branches)
         reports.append(dfw.df.Report())
+        #print(f"at the end there are {dfw.df.Count().GetValue()} events for {syst_name}")
         varToSave = Utilities.ListToVector(dfw.colToSave)
         outfile_prefix = inFile.split('/')[-1]
         outfile_prefix = outfile_prefix.split('.')[0]
         outFileName = os.path.join(outDir, f"{outfile_prefix}{suffix}.root")
         outfilesNames.append(outFileName)
-        if os.path.exists(outFileName):
-            os.remove(outFileName)
+        #if os.path.exists(outFileName):
+            #os.remove(outFileName)
         snaps.append(dfw.df.Snapshot(f"Events", outFileName, varToSave, snapshotOptions))
     if snapshotOptions.fLazy == True:
         ROOT.RDF.RunGraphs(snaps)

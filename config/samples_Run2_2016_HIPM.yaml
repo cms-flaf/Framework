@@ -1688,57 +1688,153 @@ QCD_Pt-300toInf_EMEnriched:
   crossSection: QCD_Pt-300toInf_EMEnriched
 
 
+EWK_ZTo2L:
+  miniAOD:
+  sampleType: EWK
+  crossSection: EWK_ZTo2L
+EWK_ZTo2Nu:
+  miniAOD:
+  sampleType: EWK
+  crossSection: EWK_ZTo2Nu
+TTGamma_Dilept:
+  miniAOD:
+  sampleType: TTV
+  crossSection: TTGamma_Dilept
+TTGamma_Hadronic:
+  miniAOD:
+  sampleType: TTV
+  crossSection: TTGamma_Hadronic
+TTGamma_SingleLept:
+  miniAOD:
+  sampleType: TTV
+  crossSection: TTGamma_SingleLept
+
+TTHH:
+  miniAOD:
+  sampleType: TTHH
+  crossSection: TTHH
+
+TTHHTo4b:
+  miniAOD:
+  sampleType: TTHH
+  crossSection: TTHHTo4b
+
+TTHHToNon4b:
+  miniAOD:
+  sampleType: TTHH
+  crossSection: TTHHToNon4b
+TTTW:
+  miniAOD:
+  sampleType: TTTV
+  crossSection: TTTW
+TTTJ:
+  miniAOD:
+  sampleType: TTTV
+  crossSection: TTTJ
+TTGG:
+  miniAOD:
+  sampleType: TTVV
+  crossSection: TTGG
+TTGJets:
+  miniAOD:
+  sampleType: TTV
+  crossSection: TTGJets
+
+TTZHToNon4b:
+  miniAOD:
+  sampleType: TTVH
+  crossSection: TTZHToNon4b
+ZJetsToNuNu_HT-100To200:
+  miniAOD:
+  sampleType: ZJNuNu
+  crossSection: ZJetsToNuNu_HT-100To200
+ZJetsToNuNu_HT-1200To2500:
+  miniAOD:
+  sampleType: ZJNuNu
+  crossSection: ZJetsToNuNu_HT-1200To2500
+ZJetsToNuNu_HT-200To400:
+  miniAOD:
+  sampleType: ZJNuNu
+  crossSection: ZJetsToNuNu_HT-200To400
+ZJetsToNuNu_HT-2500ToInf:
+  miniAOD:
+  sampleType: ZJNuNu
+  crossSection: ZJetsToNuNu_HT-2500ToInf
+ZJetsToNuNu_HT-400To600:
+  miniAOD:
+  sampleType: ZJNuNu
+  crossSection: ZJetsToNuNu_HT-400To600
+ZJetsToNuNu_HT-600To800:
+  miniAOD:
+  sampleType: ZJNuNu
+  crossSection: ZJetsToNuNu_HT-600To800
+ZJetsToNuNu_HT-800To1200:
+  miniAOD:
+  sampleType: ZJNuNu
+  crossSection: ZJetsToNuNu_HT-800To1200
+
+
 ZJetsToQQ_HT-200to400:
   miniAOD:
-  sampleType: Z
+  sampleType: ZQQ
   crossSection: ZJetsToQQ_HT-200to400
 ZJetsToQQ_HT-400to600:
   miniAOD:
-  sampleType: Z
+  sampleType: ZQQ
   crossSection: ZJetsToQQ_HT-400to600
 ZJetsToQQ_HT-600to800:
   miniAOD:
-  sampleType: Z
+  sampleType: ZQQ
   crossSection: ZJetsToQQ_HT-600to800
 ZJetsToQQ_HT-800toInf:
   miniAOD:
-  sampleType: Z
+  sampleType: ZQQ
   crossSection: ZJetsToQQ_HT-800toInf
-#TTZZTo4b:
-# miniAOD:
-# sampleType: TTVV
-# crossSection: TTZZTo4b
-#TTZZToNon4b:
-#TTZHTo4b:
-# miniAOD:
-# sampleType: TTVH
-# crossSection: TTZHTo4b
-#TTZHToNon4b:
-#TT4b:
-# miniAOD:
-# sampleType: TT
-# crossSection: TT4b
-#TTGJets:
- #miniAOD:
-# sampleType: TTG
- #crossSection: TTGJets
-#TTTT:
-# miniAOD:
-# sampleType: TTTT
- #crossSection: TTTT
-#TTZToQQ_Dilept:
- #miniAOD:
-# sampleType: TTV
- #crossSection: TTZToQQ_Dilept
-#TTZToNuNu:
-# miniAOD:
-# sampleType: TTV
- #crossSection: TTZToNuNu
-#TTZToBB
-# miniAOD:
-# sampleType: TTV
- #crossSection: TTZToBB
-#TTZToLL_M-1to10:
- #miniAOD:
-# sampleType: TTV
- #crossSection: TTZToLLNuNu_M-10
+TTZZTo4b:
+ miniAOD:
+ sampleType: TTVV
+ crossSection: TTZZTo4b
+TTZZTo4b_ext1:
+ miniAOD:
+ sampleType: TTVV
+ crossSection: TTZZTo4b
+TTZZToNon4b:
+  miniAOD:
+  sampleType: TTVV
+  crossSection: TTZZToNon4b
+TTZHTo4b:
+ miniAOD:
+ sampleType: TTVH
+ crossSection: TTZHTo4b
+TTZHTo4b_ext1:
+ miniAOD:
+ sampleType: TTVH
+ crossSection: TTZHTo4b
+TT4b:
+ miniAOD:
+ sampleType: TT
+ crossSection: TT4b
+TTGJets:
+ miniAOD:
+ sampleType: TTV
+ crossSection: TTGJets
+TTTT:
+ miniAOD:
+ sampleType: TTTT
+ crossSection: TTTT
+TTZToQQ_Dilept:
+ miniAOD:
+ sampleType: TTV
+ crossSection: TTZToQQ_Dilept
+TTZToNuNu:
+ miniAOD:
+ sampleType: TTV
+ crossSection: TTZToNuNu
+TTZToBB:
+ miniAOD:
+ sampleType: TTV
+ crossSection: TTZToBB
+TTZToLL_M-1to10:
+ miniAOD:
+ sampleType: TTV
+ crossSection: TTZToLLNuNu_M-10

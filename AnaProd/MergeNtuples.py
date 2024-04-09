@@ -72,9 +72,8 @@ if __name__ == "__main__":
     inputFiles =[]
     #inputFiles = [ (fileName, ROOT.TFile(fileName, "READ")) for fileName in args.inputFile ]
     for fileName in args.inputFile:
-            fileNameTot = f"davs://eosuserhttp.cern.ch:443{fileName}"
-            fileInRoot= ROOT.TFile.Open(fileNameTot, "READ")
-            inputFiles.append((fileNameTot, fileInRoot))
+            fileInRoot= ROOT.TFile.Open(fileName, "READ")
+            inputFiles.append((fileName, fileInRoot))
     objects = {}
     for fileName, file in inputFiles:
         for key in file.GetListOfKeys():
@@ -119,7 +118,7 @@ if __name__ == "__main__":
         if obj_desc.obj_type != "TTree":
             continue
         df = ROOT.RDataFrame(obj_name, obj_desc.file_names)
-        #print(f"before merging ntuples {df.Count().GetValue()} events")
+        print(f"before merging ntuples {df.Count().GetValue()} events")
         #df = merge_ntuples(df)
         df_copy = df
         df_new = df_copy if ( 'run' not in df_copy.GetColumnNames() or 'luminosityBlock'  not in df_copy.GetColumnNames() or 'event'  not in df_copy.GetColumnNames() ) else df_copy.Filter("saveEvent(run, luminosityBlock, event)")

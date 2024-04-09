@@ -34,10 +34,22 @@ col_type_dict = {
   'ROOT::VecOps::RVec<unsigned char>':'ROOT::VecOps::RVec<unsigned char>'
   }
 def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Events',treeName_central='Events'):
+  df_central = ROOT.RDataFrame(treeName_central, inputFileCentral)
+  colNames_central = [str(c) for c in df_central.GetColumnNames()]
+  if len(colNames_central)==0:
+    print(f"{treeName_central} central has no columns")
+    create_file(os.path.join(outDir, f"{treeName}_Valid.root"))
+    create_file(os.path.join(outDir, f"{treeName}_nonValid.root"))
+    create_file(os.path.join(outDir, f"{treeName}_noDiff.root"))
+    return
+
   df_out = ROOT.RDataFrame(treeName_in, inputFileShifted)
   colNames = [str(c) for c in df_out.GetColumnNames()]
   if len(colNames)==0:
-    print(f"{treeName_in} has no columns")
+    print(f"{treeName} shifted has no columns")
+    create_file(os.path.join(outDir, f"{treeName}_Valid.root"))
+    create_file(os.path.join(outDir, f"{treeName}_nonValid.root"))
+    create_file(os.path.join(outDir, f"{treeName}_noDiff.root"))
     return
   entryIndexIdx = colNames.index("entryIndex")
   colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]

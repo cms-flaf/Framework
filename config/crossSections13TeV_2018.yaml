@@ -78,7 +78,7 @@ TTZToLLNuNu_M-10:
   crossSec: 0.2523
   reference: XSDB TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8 modifiedOn 2021-06-21 09:58:13
   unc: 0.0002995
-TTZToQQ:
+TTZToQQ_Dilept:
   crossSec: 0.0568
   reference: XSDB TTZToQQ_Dilept_TuneCP5_13TeV-amcatnlo-pythia8 modifiedOn 2021-06-21 09:58:18
   unc: 8.059e-05
@@ -332,6 +332,10 @@ TTGJets:
   crossSec: 3.757
   reference: XSDB TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8 modifiedOn 2021-06-21 09:55:33
   unc: 0.02243
+TTGG:
+  crossSec: 0.01696
+  reference: XSDB TTGG_TuneCP5_13TeV-amcatnlo-pythia8 modifiedOn 2023-02-13 11:52:34
+  unc: 3.287e-05
 TTGamma_Dilept:
   crossSec: 1.494
   reference: XSDB TTGamma_Dilept_TuneCP5_13TeV-madgraph-pythia8 modifiedOn 2021-06-21 09:55:35
@@ -359,7 +363,7 @@ TTTW:
 TTZZTo4b:
   crossSec: 0.001387
   reference: XSDB TTZZTo4b_TuneCP5_13TeV-madgraph-pythia8 modifiedOn 2022-03-02 06:43:02
-  unc: 1..006e-06
+  unc: 1.006e-06
 TTZZToNon4b:
   crossSec: 0.00139
   reference: XSDB TTZZToNon4b_TuneCP5_13TeV-madgraph-pythia8 modifiedOn 2022-03-02 06:43:03
@@ -376,6 +380,10 @@ TTZHToNon4b:
   crossSec: 0.001134
   reference: XSDB TTZHToNon4b_TuneCP5_13TeV-madgraph-pythia8 modifiedOn 2022-03-02 06:43:02
   unc: 7.889e-07
+TTZToLL_M-1to10:
+  crossSec: 0.0537
+  reference: XSDB modifiedOn TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8 2023-03-20 15:16:52
+  unc: 6.537e-05
 TTHHTo4b:
   crossSec: 756.5e-06 * 0.5824 * 0.5824
   reference: Higgs_XSBR_YR4

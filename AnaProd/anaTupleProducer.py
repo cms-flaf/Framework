@@ -16,6 +16,7 @@ import Common.triggerSel as Triggers
 import Corrections.Corrections as Corrections
 from Corrections.lumi import LumiFilter
 
+
 #ROOT.EnableImplicitMT(1)
 ROOT.EnableThreadSafety()
 
@@ -92,12 +93,16 @@ def SelectBTagShapeSF(df,weight_name):
     return df
 
 def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs, isSignal):
+    #print(f"at the beginning {dfw.df.Count().GetValue()}")
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
     dfw.Apply(Baseline.DefineMETCuts,80, ["MET", "DeepMETResolutionTune", "DeepMETResponseTune", "PuppiMET"])
+    #print(f"after met cuts {dfw.df.Count().GetValue()}")
     # qua va Select btagShapeWeight
     if mode == "HH":
         dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
+        #print(f"after htt cand sel {dfw.df.Count().GetValue()}")
         dfw.Apply(Baseline.RecoJetSelection)
+        #print(f"after reco jet sel {dfw.df.Count().GetValue()}")
         dfw.Apply(Baseline.ThirdLeptonVeto)
     elif mode == 'ttHH':
         dfw.Apply(Baseline.RecottHttCandidateSelection_ttHH)
@@ -164,8 +169,9 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs, isSignal
     dfw.DefineAndAppend("channelId","static_cast<int>(HttCandidate.channel())")
     if mode == "HH":
         channel_to_select = " || ".join(f"HttCandidate.channel()==Channel::{ch}" for ch in config["GLOBAL"]["channelSelection"])
+        #print(f"after channel sel {dfw.df.Count().GetValue()}")
+        #if dfw.df.Filter(channel_to_select).Count().GetValue() > 0:
         dfw.Filter(channel_to_select, "select channels")
-        #print(f"after {channel_to_select}: {dfw.df.Count().GetValue()}")
     fatjet_obs = []
     fatjet_obs.extend(FatJetObservables)
     if not isData:
@@ -295,21 +301,22 @@ def createAnatuple(inFile, treeName, outDir, config, sample_name, anaCache, snap
         trigger_class = Triggers.Triggers(triggerFile)
     else:
         trigger_class = None
-    inFiles = Utilities.ListToVector(inFile.split(','))
-    df = ROOT.RDataFrame(treeName, inFiles)
+    df = ROOT.RDataFrame(treeName, inFile)
+    #print(f"at the beginning there are {df.Count().GetValue()} events")
     if range is not None:
         df = df.Range(range)
-    #print(f"at the beginning: {df.Count().GetValue()}")
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
-
+    #print(f"initially {df.Count().GetValue()}")
 
     if isData and 'lumiFile' in config['GLOBAL']:
         lumiFilter = LumiFilter(config['GLOBAL']['lumiFile'])
         df = lumiFilter.filter(df)
+
     df = Baseline.applyMETFlags(df, config["GLOBAL"]["MET_flags"])
+    #print(f"after MET flags {df.Count().GetValue()}")
     df = df.Define("sample_type", f"static_cast<int>(SampleType::{config[sample_name]['sampleType']})")
-    df = df.Define("sample_name", f"{zlib.crc32(sample_name.encode())}")
+    df = df.Define("sample_name", f"static_cast<int>({zlib.crc32(sample_name.encode())})")
     isSignal = config[sample_name]['sampleType'] in config['GLOBAL']['signal_types']
     print("isSignal? ", isSignal)
     df = df.Define("period", f"static_cast<int>(Period::{period})")
@@ -320,7 +327,10 @@ def createAnatuple(inFile, treeName, outDir, config, sample_name, anaCache, snap
     df = df.Define("isData", is_data)
 
     df = Baseline.CreateRecoP4(df)
+    #print(f"after CreateRecoP4 {df.Count().GetValue()}")
     df = Baseline.DefineGenObjects(df, isData=isData, isHH=isHH)
+    #print(f"after DefineGenObjects {df.Count().GetValue()}")
+
     if isData:
         syst_dict = { 'nano' : 'Central' }
     else:
@@ -380,13 +390,14 @@ def createAnatuple(inFile, treeName, outDir, config, sample_name, anaCache, snap
                 if puIDbranch in weight_branches: weight_branches.remove(puIDbranch)
             dfw.colToSave.extend(weight_branches)
         reports.append(dfw.df.Report())
+        #print(f"at the end there are {dfw.df.Count().GetValue()} events for {syst_name}")
         varToSave = Utilities.ListToVector(dfw.colToSave)
-        outfile_prefix = inFiles[0].split('/')[-1]
+        outfile_prefix = inFile.split('/')[-1]
         outfile_prefix = outfile_prefix.split('.')[0]
         outFileName = os.path.join(outDir, f"{outfile_prefix}{suffix}.root")
         outfilesNames.append(outFileName)
-        if os.path.exists(outFileName):
-            os.remove(outFileName)
+        #if os.path.exists(outFileName):
+            #os.remove(outFileName)
         snaps.append(dfw.df.Snapshot(f"Events", outFileName, varToSave, snapshotOptions))
     if snapshotOptions.fLazy == True:
         ROOT.RDF.RunGraphs(snaps)
@@ -449,5 +460,6 @@ if __name__ == "__main__":
     snapshotOptions.fMode="RECREATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
-    createAnatuple(args.inFile,args.treeName, args.outDir, config, args.sample, anaCache, snapshotOptions, args.nEvents,
-                   args.evtIds, args.store_noncentral, args.compute_unc_variations, args.uncertainties.split(","), args.print_cutflow, args.mode)
+    createAnatuple(args.inFile,args.treeName, args.outDir, config, args.sample, anaCache, snapshotOptions, args.nEvents, args.evtIds, args.store_noncentral, args.compute_unc_variations, args.uncertainties.split(","), args.print_cutflow, args.mode)
+
+

@@ -4,7 +4,8 @@ import os
 import shutil
 import time
 import yaml
-from RunKit.sh_tools import sh_call
+import ROOT
+from RunKit.run_tools import ps_call
 from RunKit.checkRootFile import checkRootFileSafe
 
 from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
@@ -46,6 +47,24 @@ def load_unc_config(unc_cfg):
         unc_cfg_dict = yaml.safe_load(f)
     return unc_cfg_dict
 
+def getYear(period):
+    year_dict = {
+        'Run2_2016_HIPM':'2016_HIPM',
+        'Run2_2016':'2016',
+        'Run2_2017':'2017',
+        'Run2_2018':'2018',
+            }
+    return year_dict[period]
+
+def findEventTree(infile):
+    inFileRoot = ROOT.TFile.Open(infile, "READ")
+    keys_str = [str(key.GetName()) for key in inFileRoot.GetListOfKeys()]
+    if 'Events' not in keys_str :
+        inFileRoot.Close()
+        return False
+    inFileRoot.Close()
+    return True
+
 def get2DOutFileName(var, sample_name, central_Histograms_path, btag_dir, suffix=''):
     outDir = os.path.join(central_Histograms_path, sample_name,var, btag_dir)
     fileName = f'{var}2D{suffix}.root'
@@ -74,7 +93,6 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         workflow_dict["anaTuple"] = {
             idx: AnaTupleTask.req(self, branch=br, branches=())
             for idx, (sample, br,var) in branch_map.items() if sample !='data' and var==vars_to_plot[0]
-            for idx, (sample, br,var) in branch_map.items() if sample !='data' and var==vars_to_plot[0]
         }
         workflow_dict["dataMergeTuple"] = {
             idx: DataMergeTask.req(self, branch=0, branches=())
@@ -94,11 +112,10 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branches = {}
         #codeprint(vars_to_plot)
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
-        #vars_to_plot = ['bbtautau_mass']#list(hists.keys())# ['tau1_pt','tau2_pt','tau1_eta','tau2_eta','SelectedFatJet_pt_boosted','SelectedFatJet_eta_boosted'] #
-        #vars_to_plot = ['bbtautau_mass']#['tau1_pt','tau2_pt','tau1_eta','tau2_eta','SelectedFatJet_pt_boosted','SelectedFatJet_eta_boosted'] #
         for var in vars_to_plot:
             for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
                 if sample_type=='data' or sample_type=='VBFToRadion' or sample_type=='VBFToBulkGraviton' or 'QCD' in sample_type : continue
+                #if not findEventTree(input_file): continue
                 branches[n] = (sample_name, prod_br,var)
                 n+=1
             branches[n] = ('data', 0, var)
@@ -112,9 +129,9 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         fileName  = os.path.basename(input_file)
         #vars_to_plot = list(hists.keys())
         #local_files_target = []
-        #outFile_histProdSample = get2DOutFileName(var, sample_name, self.central_Histograms_path(), self.GetBTagDir(), '_onlyCentral')
-        #if os.path.exists(outFile_histProdSample):
-        #    return law.LocalFileTarget(outFile_histProdSample)
+        outFile_histProdSample = getOutFileName(var, sample_name, self.central_Histograms_path(), self.GetBTagDir())
+        if os.path.exists(outFile_histProdSample):
+            return law.LocalFileTarget(outFile_histProdSample)
         outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp', var, self.GetBTagDir())
         if not os.path.isdir(outDir):
             os.makedirs(outDir)
@@ -129,10 +146,10 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         outFileName = os.path.basename(input_file)
         outFileName_split = os.path.basename(input_file).split('.')[0]
         hist_config = self.hist_config
-        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
+        unc_config = os.path.join(self.ana_path(), 'config', f'weight_definition_{getYear(self.period)}.yaml')
         sample_config = self.sample_config
         outDir = os.path.join(self.central_Histograms_path(), sample_name, 'tmp')
-        cacheFile = f'/eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_2018/{sample_name}/{self.version}/{outFileName}'
+        cacheFile = f'/eos/home-k/kandroso/cms-hh-bbtautau/anaCache/{self.period}/{sample_name}/{self.version}/{outFileName}'
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
         HistProducerFile_cmd = ['python3', HistProducerFile,'--inFile', input_file, '--cacheFile', cacheFile, '--outFileName',outFileName_split, '--dataset', sample_name, '--outDir', outDir, '--compute_unc_variations', 'True', '--compute_rel_weights', 'True', '--uncConfig', unc_config, '--histConfig', hist_config,'--sampleConfig', sample_config, '--var', var]
         if self.version.split('_')[1] == 'deepTau2p5':
@@ -140,7 +157,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         if self.wantBTag:
             HistProducerFile_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
         #print(HistProducerFile_cmd)
-        sh_call(HistProducerFile_cmd,verbose=1)
+        ps_call(HistProducerFile_cmd,verbose=1)
 
 
 class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
@@ -204,9 +221,13 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         files_idx = []
         file_ids_str = ''
         file_name_pattern = 'nano'
+        if sample_name!='data' and self.version.split('_')[-1]=='HTT': file_name_pattern+= 'HTT'
         if(len(idx_list)>1):
             file_name_pattern +="_{id}"
             file_ids_str = f"0-{len(idx_list)}"
+        else :
+            if sample_name!='data' and self.version.split('_')[-1]=='HTT':
+                file_name_pattern +="_0"
         file_name_pattern += ".root"
         HistProducerSample = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample.py')
         outDir = os.path.join(self.central_Histograms_path(), sample_name)
@@ -218,15 +239,14 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             HistProducerSample_cmd.extend(['--file-ids', file_ids_str])
         #print(HistProducerSample_cmd)
         #print(f"outFile is {self.output().path}")
-        sh_call(HistProducerSample_cmd,verbose=1)
+        ps_call(HistProducerSample_cmd,verbose=1)
 
 
 class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
     hists = load_hist_config(hist_config)
-    unc_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'weight_definition.yaml')
-    unc_cfg_dict = load_unc_config(unc_config)
+
 
     def GetBTagDir(self):
         return "bTag_WP" if self.wantBTag else "bTag_shape"
@@ -248,6 +268,8 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def create_branch_map(self):
         uncNames = ['Central']
+        unc_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', f'weight_definition_{getYear(self.period)}.yaml')
+        unc_cfg_dict = load_unc_config(unc_config)
         uncNames.extend(list(unc_cfg_dict['norm'].keys()))
         uncNames.extend([unc for unc in unc_cfg_dict['shape']])
         #vars_to_plot = list(hists.keys())
@@ -275,13 +297,14 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         #vars_to_plot = list(hists.keys())
         print(f"outFile is {self.output().path}")
         sample_config = self.sample_config
-        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
+        unc_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', f'weight_definition_{getYear(self.period)}.yaml')
+        #unc_cfg_dict = load_unc_config(unc_config)
         json_dir= os.path.join(self.valeos_path(), 'jsonFiles', self.period, self.version)
         MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger.py')
         MergerProducer_cmd = ['python3', MergerProducer,'--histDir', self.central_Histograms_path(), '--sampleConfig', sample_config, '--var', var,'--uncConfig', unc_config, '--uncSource', uncName,'--jsonDir', json_dir]
         if self.wantBTag:
             MergerProducer_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
-        sh_call(MergerProducer_cmd,verbose=1)
+        ps_call(MergerProducer_cmd,verbose=1)
         #print(MergerProducer_cmd)
 
 
@@ -291,8 +314,6 @@ class HistRebinnerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
     hists = load_hist_config(hist_config)
-    unc_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'weight_definition.yaml')
-    unc_cfg_dict = load_unc_config(unc_config)
 
     def GetBTagDir(self):
         return "bTag_WP" if self.wantBTag else "bTag_shape"
@@ -312,6 +333,8 @@ class HistRebinnerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def create_branch_map(self):
         uncNames = ['Central']
+        unc_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', f'weight_definition_{getYear(self.period)}.yaml')
+        unc_cfg_dict = load_unc_config(unc_config)
         uncNames.extend(list(unc_cfg_dict['norm'].keys()))
         uncNames.extend([unc for unc in unc_cfg_dict['shape']])
         #vars_to_plot = list(hists.keys())
@@ -337,13 +360,13 @@ class HistRebinnerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         var, uncName = self.branch_data
         print(f"outFile is {self.output().path}")
         sample_config = self.sample_config
-        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
+        unc_config = os.path.join(self.ana_path(), 'config', f'weight_definition_{getYear(self.period)}.yaml')
         json_dir= os.path.join(self.valeos_path(), 'jsonFiles', self.period, self.version)
         RebinnerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistRebinner.py')
         RebinnerProducer_cmd = ['python3', RebinnerProducer,'--histDir', self.central_Histograms_path(), '--inFileName', 'all_histograms', '--sampleConfig', sample_config, '--var', var,'--uncConfig', unc_config, '--histConfig', self.hist_config, '--uncSource', uncName]
         if self.wantBTag:
             RebinnerProducer_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
-        sh_call(RebinnerProducer_cmd,verbose=1)
+        ps_call(RebinnerProducer_cmd,verbose=1)
         #print(MergerProducer_cmd)
 
 
@@ -422,7 +445,7 @@ class HistSampleTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
         #print(os.path.exists(outFile))
         if (os.path.exists(outFile)):
             print(f"{outFile} exists")
-            sh_call(CheckFile_cmd,verbose=1)
+            ps_call(CheckFile_cmd,verbose=1)
         while(not os.path.exists(outFile)):
             print(f"{outFile} does not exist")
 
@@ -436,15 +459,13 @@ class HistSampleTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
                 HistProducerFile_cmd.extend([ '--deepTauVersion', 'v2p5'])
             if self.wantBTag:
                 HistProducerFile_cmd.extend([ '--wantBTag', f'{self.wantBTag}'])
-            sh_call(HistProducerFile_cmd,verbose=1)
-            sh_call(CheckFile_cmd,verbose=1)
+            ps_call(HistProducerFile_cmd,verbose=1)
+            ps_call(CheckFile_cmd,verbose=1)
 
 class MergeTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
     hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
     hists = load_hist_config(hist_config)
-    unc_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'weight_definition.yaml')
-    unc_cfg_dict = load_unc_config(unc_config)
     vars_to_plot = load_vars_to_plot(hists)
     vars_to_plot = load_vars_to_plot(hists)
 
@@ -487,15 +508,14 @@ class MergeTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         var = self.branch_data
-        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
+        unc_config = os.path.join(self.ana_path(), 'config', f'weight_definition_{getYear(self.period)}.yaml')
         sample_config = self.sample_config
-        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
         MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger.py')
         json_dir= os.path.join(self.valeos_path(), 'jsonFiles', self.period, self.version)
         MergerProducer_cmd = ['python3', MergerProducer,'--histDir', self.central_Histograms_path(), '--sampleConfig', sample_config, '--var', var,'--uncConfig', unc_config, '--jsonDir', json_dir, '--suffix','_onlyCentral']
         if self.wantBTag:
             MergerProducer_cmd.extend(['--wantBTag','True' ])
-        sh_call(MergerProducer_cmd,verbose=1)
+        ps_call(MergerProducer_cmd,verbose=1)
 
 
 class PlotterTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
@@ -546,14 +566,14 @@ class PlotterTaskCentral(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         var,channel, QCD_region, category, uncName = self.branch_data
-        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
+        unc_config = os.path.join(self.ana_path(), 'config', f'weight_definition_{getYear(self.period)}.yaml')
         sample_config = self.sample_config
         PlotterProducer = os.path.join(self.ana_path(), 'Analysis', 'HistPlotter.py')
         plotdirname = 'plots_2p5' if self.version.split('_')[1] == 'deepTau2p5' else 'plots_2p1'
         eosdir = '/eos/home-v/vdamante/www/'
         outDir = os.path.join(eosdir, plotdirname)
         PlotterProducer_cmd = ['python3', PlotterProducer,'--mass', self.mass, '--histDir', self.central_Histograms_path(), '--outDir',outDir, '--inFileName', 'all_histograms', '--var', var, '--sampleConfig',sample_config, '--channel', channel, '--category', category, '--uncSource', uncName, '--suffix','_onlyCentral']
-        sh_call(PlotterProducer_cmd,verbose=1)
+        ps_call(PlotterProducer_cmd,verbose=1)
 
 # ***************************************
 
@@ -591,16 +611,16 @@ class HaddMergedTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def run(self):
         print(f"outFile is {self.output().path}")
         var = self.branch_data
-        unc_config = os.path.join(self.ana_path(), 'config', 'weight_definition.yaml')
+        unc_config = os.path.join(self.ana_path(), 'config', f'weight_definition_{getYear(self.period)}.yaml')
         outDir_json = os.path.join(self.valeos_path(), 'jsonFiles', self.period, self.version,'fitResults')
         histDir = self.central_Histograms_path()
         ShapeOrLogNormalProducer = os.path.join(self.ana_path(), 'Analysis', 'ShapeOrLogNormal.py')
         ShapeOrLogNormal_cmd = ['python3', ShapeOrLogNormalProducer,'--mass', self.mass, '--histDir', histDir, '--inFileName', 'all_histograms', '--outDir', outDir_json, '--sampleConfig',self.sample_config,'--uncConfig', unc_config,'--var', var, '--suffix','_Rebinned']
-        sh_call(ShapeOrLogNormal_cmd,verbose=1)
+        ps_call(ShapeOrLogNormal_cmd,verbose=1)
         final_json_file = os.path.join(outDir_json, var, self.GetBTagDir(), 'slopeInfo.json')
         HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
         HaddMergedHistsProducer_cmd = ['python3', HaddMergedHistsProducer,'--histDir', histDir, '--file-name-pattern', 'all_histograms', '--hists', var, '--uncConfig', unc_config, '--suffix','_Rebinned', '--period', self.period]
         #if os.path.exists(final_json_file):
             #HaddMergedHistsProducer_cmd.extend(['--remove-files', 'True'])
-        sh_call(HaddMergedHistsProducer_cmd,verbose=1)
+        ps_call(HaddMergedHistsProducer_cmd,verbose=1)
 

@@ -12,7 +12,7 @@ if __name__ == "__main__":
     ROOT.gInterpreter.Declare(f'#include "include/HistHelper.h"')
     ROOT.gInterpreter.Declare(f'#include "include/Utilities.h"')
 
-from RunKit.sh_tools import sh_call
+from RunKit.run_tools import ps_call
 ROOT.EnableThreadSafety()
 #ROOT.EnableImplicitMT()
 import Common.LegacyVariables as LegacyVariables
@@ -148,19 +148,22 @@ if __name__ == "__main__":
     with open(args.uncConfig, 'r') as f:
         unc_cfg_dict = yaml.safe_load(f)
     startTime = time.time()
-    all_files = createAnaCacheTuple(args.inFileName, args.outFileName, unc_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion)
     outFileNameFinal = f'{args.outFileName}.root'
     print(outFileNameFinal)
-    hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
-    hadd_str += ' '.join(f for f in all_files)
-    print(hadd_str)
-    if len(all_files) > 1:
-        sh_call([hadd_str], True)
-    else:
-        shutil.copy(all_files[0],outFileNameFinal)
-    if os.path.exists(outFileNameFinal):
-            for histFile in all_files:
-                if histFile == outFileNameFinal: continue
-                os.remove(histFile)
+    try:
+        all_files = createAnaCacheTuple(args.inFileName, args.outFileName, unc_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion)
+        hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
+        hadd_str += ' '.join(f for f in all_files)
+        print(hadd_str)
+        if len(all_files) > 1:
+            ps_call([hadd_str], True)
+        else:
+            shutil.copy(all_files[0],outFileNameFinal)
+        if os.path.exists(outFileNameFinal):
+                for histFile in all_files:
+                    if histFile == outFileNameFinal: continue
+                    os.remove(histFile)
+    except:
+        Utilities.create_file(outFileNameFinal)
     executionTime = (time.time() - startTime)
     print('Execution time in seconds: ' + str(executionTime))

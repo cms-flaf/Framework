@@ -126,8 +126,8 @@ action() {
     export ANALYSIS_PATH="$this_dir"
     export ANALYSIS_DATA_PATH="$ANALYSIS_PATH/data"
     export X509_USER_PROXY="$ANALYSIS_DATA_PATH/voms.proxy"
-    export CENTRAL_STORAGE="/eos/home-k/kandroso/cms-hh-bbtautau"
-    export VDAMANTE_STORAGE="/eos/home-v/vdamante/HH_bbtautau_resonant_Run2"
+    export CENTRAL_STORAGE="/eos/user/k/kandroso/cms-hh-bbtautau"
+    export VDAMANTE_STORAGE="/eos/user/v/vdamante/HH_bbtautau_resonant_Run2"
     export ANALYSIS_BIG_DATA_PATH="$CENTRAL_STORAGE/tmp/$(whoami)/data"
 
     run_cmd mkdir -p "$ANALYSIS_DATA_PATH"
@@ -152,6 +152,7 @@ action() {
     micromamba activate hh
     run_cmd source /afs/cern.ch/user/m/mrieger/public/law_sw/setup.sh
     source "$( law completion )"
+    source /cvmfs/cms.cern.ch/rucio/setup-py3.sh
 
     alias cmsEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY CENTRAL_STORAGE=$CENTRAL_STORAGE ANALYSIS_BIG_DATA_PATH=$ANALYSIS_BIG_DATA_PATH DEFAULT_CMSSW_BASE=$DEFAULT_CMSSW_BASE $ANALYSIS_PATH/RunKit/cmsEnv.sh"
     alias cmbEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY CENTRAL_STORAGE=$CENTRAL_STORAGE ANALYSIS_BIG_DATA_PATH=$ANALYSIS_BIG_DATA_PATH DEFAULT_CMSSW_BASE=$CMB_CMSSW_BASE /cvmfs/cms.cern.ch/common/cmssw-cc7 -- $ANALYSIS_PATH/RunKit/cmsEnv.sh"

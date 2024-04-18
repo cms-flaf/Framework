@@ -99,19 +99,19 @@ GLOBAL:
     - drop ^JetHT_Run2016*
     - drop ^Double*
     - drop ^ZHToTauTau_M125_ext1$
-    - drop ^ZJetsToQQ_HT-200to400$
-    - drop ^ZJetsToQQ_HT-400to600$
-    - drop ^ZJetsToQQ_HT-600to800$
-    - drop ^ZJetsToQQ_HT-800toInf$
-    - drop ^TTZToQQ_Dilept$
-    - drop ^TTZToNuNu$
-    - drop ^TTZToBB$
-    - drop ^TTZToLL_M-1to10$
-    - drop ^TTTT$
-    - drop ^TTTW$
-    - drop ^TTTJ$
-    - drop ^TTGG$
-    - drop ^TTGJets$
+    #- drop ^ZJetsToQQ_HT-200to400$
+    #- drop ^ZJetsToQQ_HT-400to600$
+    #- drop ^ZJetsToQQ_HT-600to800$
+    #- drop ^ZJetsToQQ_HT-800toInf$
+    #- drop ^TTZToQQ_Dilept$
+    #- drop ^TTZToNuNu$
+    #- drop ^TTZToBB$
+    #- drop ^TTZToLL_M-1to10$
+    #- drop ^TTTT$
+    #- drop ^TTTW$
+    #- drop ^TTTJ$
+    #- drop ^TTGG$
+    #- drop ^TTGJets$
 
 GluGluToRadionToHHTo2B2Tau_M-250:
   miniAOD: /GluGluToRadionToHHTo2B2Tau_M-250_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM
@@ -811,6 +811,100 @@ VBFToBulkGravitonToHHTo2B2Tau_M-3000:
   spin: 2
   crossSection: 1pb
 
+TT4b:
+  miniAOD:
+  sampleType: TTJ
+  crossSection: TT4b
+TTGamma_Dilept:
+  miniAOD:
+  sampleType: TTV
+  crossSection: TTGamma_Dilept
+TTGamma_Hadronic:
+  miniAOD:
+  sampleType: TTV
+  crossSection: TTGamma_Hadronic
+TTGamma_SingleLept:
+  miniAOD:
+  sampleType: TTV
+  crossSection: TTGamma_SingleLept
+TTHHTo4b:
+  miniAOD:
+  sampleType: TTHH
+  crossSection: TTHHTo4b
+TTHHToNon4b:
+  miniAOD:
+  sampleType: TTHH
+  crossSection: TTHHToNon4b
+TTHH:
+  miniAOD:
+  sampleType: TTHH
+  crossSection: TTHH
+TTWH:
+  miniAOD:
+  sampleType: TTVV
+  crossSection: TTWH
+
+TTZHTo4b:
+  miniAOD:
+  sampleType: TTVH
+  crossSection: TTZHTo4b
+TTZHTo4b_ext1:
+  miniAOD:
+  sampleType: TTVH
+  crossSection: TTZHTo4b
+TTZHToNon4b:
+  miniAOD:
+  sampleType: TTVH
+  crossSection: TTZHToNon4b
+TTZZ:
+  miniAOD:
+  sampleType: TTVV
+  crossSection: TTZZ
+TTZZTo4b:
+  miniAOD:
+  sampleType: TTVV
+  crossSection: TTZZTo4b
+TTZZTo4b_ext1:
+  miniAOD:
+  sampleType: TTVV
+  crossSection: TTZZTo4b
+TTZZToNon4b:
+  miniAOD: /TTZZToNon4b_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
+  sampleType: TTVV
+  crossSection: TTZZToNon4b
+TTZHTo4b_ext1:
+  miniAOD: /TTZZToNon4b_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
+  sampleType: TTVV
+  crossSection: TTZZToNon4b
+ZJetsToNuNu_HT-100To200:
+  miniAOD:
+  sampleType: ZJNuNu
+  crossSection: ZJetsToNuNu_HT-100To200
+ZJetsToNuNu_HT-1200To2500:
+  miniAOD:
+  sampleType: ZJNuNu
+  crossSection: ZJetsToNuNu_HT-1200To2500
+ZJetsToNuNu_HT-200To400:
+  miniAOD:
+  sampleType: ZJNuNu
+  crossSection: ZJetsToNuNu_HT-200To400
+ZJetsToNuNu_HT-2500ToInf:
+  miniAOD:
+  sampleType: ZJNuNu
+  crossSection: ZJetsToNuNu_HT-2500ToInf
+ZJetsToNuNu_HT-400To600:
+  miniAOD:
+  sampleType: ZJNuNu
+  crossSection: ZJetsToNuNu_HT-400To600
+ZJetsToNuNu_HT-600To800:
+  miniAOD:
+  sampleType: ZJNuNu
+  crossSection: ZJetsToNuNu_HT-600To800
+ZJetsToNuNu_HT-800To1200:
+  miniAOD:
+  sampleType: ZJNuNu
+  crossSection: ZJetsToNuNu_HT-800To1200
+
 
 SingleElectron_Run2016F:
   miniAOD: /SingleElectron/Run2016F-UL2016_MiniAODv2-v2/MINIAOD
@@ -1015,7 +1109,7 @@ EWK_WminusToLNu:
 WJetsToLNu:
   miniAOD: /WJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM
   sampleType: W
-  isReference: true
+  isReference: True
   crossSection: WJetsToLNu_NLO
   crossSectionStitch: WJetsToLNu_LO
 W0JetsToLNu-amcatnloFXFX:
@@ -1071,10 +1165,10 @@ WToMuNu_M-200:
   miniAOD: /WToMuNu_M-200_TuneCP5_13TeV-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM
   sampleType: WLep
   crossSection: WToMuNu_M-200_LO
-WJetsToLNu:
-  miniAOD: /WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM
-  sampleType: W
-  crossSectionStitch: WJetsToLNu_LO
+#WJetsToLNu:
+#  miniAOD: /WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM
+#  sampleType: W
+#  crossSectionStitch: WJetsToLNu_LO
 W1JetsToLNu:
   miniAOD: /W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM
   sampleType: W
@@ -1360,7 +1454,7 @@ DY4JetsToLL_M-50-madgraphMLM:
 DYJetsToLL_M-50-amcatnloFXFX:
   miniAOD: /DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM
   sampleType: DY
-  isReference: true
+  isReference: True
   crossSection: DY_LO
   crossSectionStitch: DY_NLO
 DYJetsToLL_0J-amcatnloFXFX:
@@ -1484,40 +1578,40 @@ ZJetsToQQ_HT-800toInf:
 
 TTZToQQ_Dilept:
   miniAOD: /TTZToQQ_Dilept_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM
-  sampleType:
-  crossSection:
+  sampleType: TTV
+  crossSection: TTZToQQ_Dilept
 TTZToNuNu:
   miniAOD: /TTZToNuNu_TuneCP5_13TeV_amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM
-  sampleType:
-  crossSection:
+  sampleType: TTV
+  crossSection: TTZToNuNu
 TTZToBB:
   miniAOD: /TTZToBB_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM
-  sampleType:
-  crossSection:
+  sampleType: TTV
+  crossSection: TTZToBB
 TTZToLL_M-1to10:
   miniAOD: /TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM
-  sampleType:
-  crossSection:
+  sampleType: TTV
+  crossSection: TTZToLL_M-1to10
 TTTT:
   miniAOD: /TTTT_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM
-  sampleType:
-  crossSection:
+  sampleType: TTTT
+  crossSection: TTTT
 TTTW:
   miniAOD: /TTTW_TuneCUETP8M2T4_13TeV-madgraph-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v1/MINIAODSIM
-  sampleType:
-  crossSection:
+  sampleType: TTTV
+  crossSection: TTTW
 TTTJ:
   miniAOD: /TTTJ_TuneCUETP8M2T4_13TeV-madgraph-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v1/MINIAODSIM
-  sampleType:
-  crossSection:
+  sampleType: TTTV
+  crossSection: TTTJ
 TTGG:
   miniAOD: /TTGG_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM
-  sampleType:
-  crossSection:
+  sampleType: TTVV
+  crossSection: TTGG
 TTGJets:
   miniAOD: /TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM
-  sampleType:
-  crossSection:
+  sampleType: TTV
+  crossSection: TTGJets
 
 
 QCD_HT50to100_MLM:

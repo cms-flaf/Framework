@@ -129,14 +129,14 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
         return ROOT.TH1D()
         #raise  RuntimeError(f"transfer factor <=0 ! {kappa}")
     hist_data_B.Scale(kappa)
-    #fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(hist_data_B)
-    #if not fix_negative_contributions:
-    #    #return hist_data_B
-    #    print(debug_info)
-    #    print(negative_bins_info)
-    #    print("Unable to estimate QCD")
+    fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(hist_data_B)
+    if not fix_negative_contributions:
+        #return hist_data_B
+        print(debug_info)
+        print(negative_bins_info)
+        print("Unable to estimate QCD")
 
-    #    return ROOT.TH1D()
+        return ROOT.TH1D()
         #raise RuntimeError("Unable to estimate QCD")
     return hist_data_B
 
@@ -220,7 +220,7 @@ def GetWeight(channel, cat):
         'muTau':["weight_tau1_TrgSF_singleMu_Central","weight_tau2_TrgSF_singleMu_Central", "weight_tau1_TrgSF_mutau_Central", "weight_tau2_TrgSF_mutau_Central"],
         'tauTau':["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central"]
         }
-    tau_weights =["EleSF_EleIDCentral", "HighPt_MuonID_SF_HighPtIDCentral", "HighPt_MuonID_SF_HighPtIdRelTkIsoCentral", "HighPt_MuonID_SF_RecoCentral", "HighPt_MuonID_SF_TightIDCentral", "MuonID_SF_HighPtID_TrkCentral", "MuonID_SF_HighPtIdRelTkIsoCentral", "MuonID_SF_RecoCentral", "MuonID_SF_TightID_TrkCentral", "MuonID_SF_TightRelIsoCentral", "TauID_SF_Central", "TauID_SF_TauID_genuineElectron_barrelCentral", "TauID_SF_TauID_genuineElectron_endcapsCentral", "TauID_SF_TauID_genuineMuon_eta0p4to0p8Central", "TauID_SF_TauID_genuineMuon_eta0p8to1p2Central", "TauID_SF_TauID_genuineMuon_eta1p2to1p7Central", "TauID_SF_TauID_genuineMuon_etaGt1p7Central", "TauID_SF_TauID_genuineMuon_etaLt0p4Central", "TauID_SF_stat1_dm0Central", "TauID_SF_stat1_dm10Central", "TauID_SF_stat1_dm11Central", "TauID_SF_stat1_dm1Central", "TauID_SF_stat2_dm0Central", "TauID_SF_stat2_dm10Central", "TauID_SF_stat2_dm11Central", "TauID_SF_stat2_dm1Central", "TauID_SF_syst_allerasCentral", "TauID_SF_syst_yearCentral", "TauID_SF_syst_year_dm0Central", "TauID_SF_syst_year_dm10Central", "TauID_SF_syst_year_dm11Central", "TauID_SF_syst_year_dm1Central", "TauID_SF_totalCentral"]
+    tau_weights =["EleSF_EleIDCentral", "HighPt_MuonID_SF_HighPtIDCentral", "HighPt_MuonID_SF_HighPtIdRelTkIsoCentral", "HighPt_MuonID_SF_RecoCentral", "HighPt_MuonID_SF_TightIDCentral", "MuonID_SF_HighPtID_TrkCentral", "MuonID_SF_HighPtIdRelTkIsoCentral", "MuonID_SF_RecoCentral", "MuonID_SF_TightID_TrkCentral", "MuonID_SF_TightRelIsoCentral", "TauID_SF_Central", "TauID_SF_genuineElectron_barrelCentral", "TauID_SF_genuineElectron_endcapsCentral", "TauID_SF_genuineMuon_eta0p4to0p8Central", "TauID_SF_genuineMuon_eta0p8to1p2Central", "TauID_SF_genuineMuon_eta1p2to1p7Central", "TauID_SF_genuineMuon_etaGt1p7Central", "TauID_SF_genuineMuon_etaLt0p4Central", "TauID_SF_stat1_dm0Central", "TauID_SF_stat1_dm10Central", "TauID_SF_stat1_dm11Central", "TauID_SF_stat1_dm1Central", "TauID_SF_stat2_dm0Central", "TauID_SF_stat2_dm10Central", "TauID_SF_stat2_dm11Central", "TauID_SF_stat2_dm1Central", "TauID_SF_syst_allerasCentral", "TauID_SF_syst_yearCentral", "TauID_SF_syst_year_dm0Central", "TauID_SF_syst_year_dm10Central", "TauID_SF_syst_year_dm11Central", "TauID_SF_syst_year_dm1Central", "TauID_SF_totalCentral","TauID_SF_stat_highpT_bin1Central","TauID_SF_stat_highpT_bin2Central", "TauID_SF_syst_highpT_bin1Central", "TauID_SF_syst_highpT_bin2Central", "TauID_SF_syst_highpT_extrapCentral"]
     for tau_suffix in tau_weights:
         for tau_idx in [1,2]:
             weights_to_apply.append(f"weight_tau{tau_idx}_{tau_suffix}")
@@ -345,7 +345,7 @@ class DataFrameBuilder(DataFrameBuilderBase):
 
 def PrepareDfWrapped(dfWrapped):
     dfWrapped.df = defineAllP4(dfWrapped.df)
-    dfWrapped.defineL1PrefiringRelativeWeights()
+    #dfWrapped.defineL1PrefiringRelativeWeights()
     dfWrapped.defineQCDRegions()
     dfWrapped.defineSelectionRegions()
     dfWrapped.defineBoostedVariables()

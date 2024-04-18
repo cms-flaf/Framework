@@ -6,10 +6,12 @@ ROOT.EnableThreadSafety()
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
-from RunKit.sh_tools import sh_call
+from RunKit.run_tools import ps_call
 import Common.ConvertUproot as ConvertUproot
 
-
+def create_file(file_name, times=None):
+    with open(file_name, "w"):
+        os.utime(file_name, times)
 def getTreeName(systFile):
   treeName_elements = systFile.split('.')[0].split('_')
   print(systFile)
@@ -31,6 +33,7 @@ if __name__ == "__main__":
   parser.add_argument('--workingDir', required=True, type=str)
   parser.add_argument('--outputFile', required=True, type=str)
   parser.add_argument('--centralFile', required=False, type=str, default='nano.root')
+  parser.add_argument('--treeName', required=False, type=str, default='Events')
   parser.add_argument('--recreateOutDir', required=False, type=bool, default=False)
   parser.add_argument('--test', required=False, type=bool, default=False)
   args = parser.parse_args()
@@ -57,12 +60,13 @@ if __name__ == "__main__":
     inFileShiftedName = os.path.join(args.inputDir, systFile)
     if args.test: print('shifted file = ', inFileShiftedName)
     if args.test: print('index = ', k)
-    treeName = getTreeName(systFile)
-    if args.test : print(f"final TreeName is {treeName}")
+    print(getTreeName(systFile))
+    #treeName = getTreeName(systFile)
+    #if args.test : print(f"final TreeName is {treeName}")
     skimEventsPython = os.path.join(os.environ['ANALYSIS_PATH'], "AnaProd/SkimEvents.py")
-    cmd = f"""python3 {skimEventsPython} --inFileCentral {inFileCentralName} --inFileShifted {inFileShiftedName} --outDir {args.workingDir} --treeName_out {treeName}"""
+    cmd = f"""python3 {skimEventsPython} --inFileCentral {inFileCentralName} --inFileShifted {inFileShiftedName} --outDir {args.workingDir}"""
     if args.test : print(cmd)
-    sh_call(cmd, True)
+    ps_call(cmd, True)
     k+=1
   for file_syst in os.listdir(args.workingDir) + [inFileCentralName]:
     if args.test : print(f"file_syst name is {file_syst}")
@@ -71,7 +75,9 @@ if __name__ == "__main__":
     if file_syst == inFileCentralName:
       inFileUproot = inFileCentralName
       outFileUproot = os.path.join(args.workingDir, f'uproot_{args.centralFile}')
-    ConvertUproot.toUproot(inFileUproot,outFileUproot)
+    try: ConvertUproot.toUproot(inFileUproot,outFileUproot)
+    except: create_file(outFileUproot)
+    #ConvertUproot.toUproot(inFileUproot,outFileUproot)
     if args.test : print(f"UprootFileName name is {outFileUproot}")
     syst_files_to_merge.append(outFileUproot)
   if args.test:
@@ -83,9 +89,11 @@ if __name__ == "__main__":
   hadd_str += ' '.join(f for f in syst_files_to_merge)
 
   if args.test : print(f'hadd_str is {hadd_str}')
-  sh_call([hadd_str], True)
+  try: ps_call([hadd_str], True)
+  except: create_file(outFileName)
   if args.test : print(f"outFileName is {outFileName}")
-  if os.path.exists(outFileName):
+  #print(syst_files_to_merge)
+  if os.path.exists(outFileName) and len(syst_files_to_merge) !=0 :
     for file_syst in syst_files_to_merge:# + [outFileCentralName]:
       if args.test : print(file_syst)
       if file_syst == outFileName: continue

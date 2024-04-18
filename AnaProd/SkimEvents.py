@@ -34,10 +34,22 @@ col_type_dict = {
   'ROOT::VecOps::RVec<unsigned char>':'ROOT::VecOps::RVec<unsigned char>'
   }
 def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Events',treeName_central='Events'):
+  df_central = ROOT.RDataFrame(treeName_central, inputFileCentral)
+  colNames_central = [str(c) for c in df_central.GetColumnNames()]
+  if len(colNames_central)==0:
+    print(f"{treeName_central} central has no columns")
+    create_file(os.path.join(outDir, f"{treeName}_Valid.root"))
+    create_file(os.path.join(outDir, f"{treeName}_nonValid.root"))
+    create_file(os.path.join(outDir, f"{treeName}_noDiff.root"))
+    return
+
   df_out = ROOT.RDataFrame(treeName_in, inputFileShifted)
   colNames = [str(c) for c in df_out.GetColumnNames()]
   if len(colNames)==0:
-    print(f"{treeName_in} has no columns")
+    print(f"{treeName} shifted has no columns")
+    create_file(os.path.join(outDir, f"{treeName}_Valid.root"))
+    create_file(os.path.join(outDir, f"{treeName}_nonValid.root"))
+    create_file(os.path.join(outDir, f"{treeName}_noDiff.root"))
     return
   entryIndexIdx = colNames.index("entryIndex")
   colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
@@ -100,6 +112,9 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Event
   tuple_maker.join()
 
 
+def create_file(file_name, times=None):
+    with open(file_name, "w"):
+        os.utime(file_name, times)
 
 if __name__ == "__main__":
   import argparse
@@ -107,7 +122,7 @@ if __name__ == "__main__":
   parser.add_argument('--inFileCentral', required=True, type=str)
   parser.add_argument('--inFileShifted', required=True, type=str)
   parser.add_argument('--outDir', required=True, type=str)
-  parser.add_argument('--treeName_out', required=True, type=str)
+  parser.add_argument('--treeName_out', required=False, type=str,default='Events')
   parser.add_argument('--treeName_in', required=False, type=str, default='Events')
   parser.add_argument('--treeName_central', required=False, type=str, default='Events')
   args = parser.parse_args()
@@ -116,4 +131,18 @@ if __name__ == "__main__":
   #header_path_Skimmer = os.path.join(headers_dir, "include/SystSkimmer.h")
   ROOT.gInterpreter.Declare(f'#include "include/SystSkimmer.h"')
   make_df(args.inFileCentral,args.inFileShifted,args.outDir,args.treeName_out,args.treeName_in,args.treeName_central)
-
+  #try : make_df(args.inFileCentral,args.inFileShifted,args.outDir,args.treeName_out,args.treeName_in,args.treeName_central)
+  #except:
+  #  create_file(os.path.join(args.outDir, f"{args.treeName_out}_Valid.root"))
+  #  create_file(os.path.join(args.outDir, f"{args.treeName_out}_nonValid.root"))
+  #  create_file(os.path.join(args.outDir, f"{args.treeName_out}_noDiff.root"))
+  '''
+  colNames_Central = [str(c) for c in ROOT.RDataFrame(args.treeName_in, args.inFileCentral).GetColumnNames()]
+  colNames_Shifted = [str(c) for c in ROOT.RDataFrame(args.treeName_in, args.inFileShifted).GetColumnNames()]
+  if len(colNames_Central)!=0 and len(colNames_Shifted)!=0:
+    make_df(args.inFileCentral,args.inFileShifted,args.outDir,args.treeName_out,args.treeName_in,args.treeName_central)
+  else:
+    create_file(os.path.join(args.outDir, f"{args.treeName_out}_Valid.root"))
+    create_file(os.path.join(args.outDir, f"{args.treeName_out}_nonValid.root"))
+    create_file(os.path.join(args.outDir, f"{args.treeName_out}_noDiff.root"))
+  '''

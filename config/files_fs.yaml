@@ -1,0 +1,7 @@
+fs_nanoAOD_HLepRare:
+  - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/HTT_skim_v1/'
+fs_general:
+  - 'T3_CH_CERNBOX:/store/user/vdamante/HH_bbtautau_resonant_Run2/'
+  - 'T2_IT_Legnaro:/store/user/vdamante/'
+fs_general_read:
+  - 'T3_CH_CERNBOX:/store/user/kandroso/cms-hh-bbtautau/'

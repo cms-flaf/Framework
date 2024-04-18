@@ -5,7 +5,7 @@ import math
 import array
 import time
 
-from RunKit.sh_tools import sh_call
+from RunKit.run_tools import ps_call
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 from Analysis.HistHelper import *
@@ -122,7 +122,7 @@ if __name__ == "__main__":
                     #if category == 'boosted' and 'b#Tag' in args.uncSource: continue
                     if category == 'boosted' and args.uncSource in unc_to_not_consider_boosted: continue
                     if args.category != '' and category != args.category : continue
-                    bins_to_compute = hist_cfg_dict[args.var]['x_rebin'][channel][category]
+                    bins_to_compute = hist_cfg_dict[args.var]['x_rebin'][channel][category] if 'x_rebin' in hist_cfg_dict[args.var].keys() else hist_cfg_dict[args.var]['x_bins']
                     new_bins = getNewBins(bins_to_compute)
                     total_histName = sample_type
                     for uncScale in scales_to_consider:

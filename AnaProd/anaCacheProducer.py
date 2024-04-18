@@ -13,22 +13,18 @@ import Common.Utilities as Utilities
 from Corrections.CorrectionsCore import *
 from Corrections.pu import *
 
-def createAnaCache(inDir, outFile, global_params, isData, range=None, verbose=1):
+
+def createAnaCache(inDir,outFile, global_params, isData, range=None, verbose=1):
     start_time = datetime.datetime.now()
     Baseline.Initialize(False, False)
     Corrections.Initialize(config=global_params, isData=isData,  load_corr_lib=True, load_pu=True, load_tau=False, load_trg=False, load_btag=False, loadBTagEff=False, load_met=False, load_mu = False, load_ele=False, load_puJetID=False, load_jet=False,load_fatjet=False)
-
-    if os.path.exists(args.outFile):
-        with open(args.outFile, 'r') as file:
-            dict = yaml.safe_load(file)
-    else:
-        dict = {}
+    dict = {}
     dict['denominator']={}
     sources = [ central ] + puWeightProducer.uncSource
     input_files = []
     for f in os.listdir(inDir):
         if f.split('.')[1] != 'root': continue
-        input_files.append(os.path.join(inDir, f))
+        input_files.append(os.path.join(f'davs://eoscms.cern.ch:443/',inDir, f))
     for tree in [ 'Events', 'EventsNotSelected']:
         df = ROOT.RDataFrame(tree, input_files)
         if range is not None:
@@ -67,4 +63,7 @@ if __name__ == "__main__":
     print(config[args.sample]['sampleType'])
     isData = True if config[args.sample]['sampleType'] == 'data' else False
     print(isData)
+    if os.path.exists(args.outFile):
+        print(f"{args.outFile} already exist, removing it")
+        os.remove(args.outFile)
     createAnaCache(args.inDir, args.outFile, config['GLOBAL'],isData, range=args.nEvents)

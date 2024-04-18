@@ -302,7 +302,45 @@ QCD_Pt-300toInf_EMEnriched:
   crossSec: 1104.0
   reference: XSDB QCD_Pt-300toInf_EMEnriched_TuneCP5_13TeV-pythia8 modifiedOn 2021-10-11 11:25:28
   unc: 3.282
-
+ZJetsToQQ_HT-200to400:
+  crossSec: 1012.0
+  reference: XSDB ZJetsToQQ_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2022-03-02 06:46:48
+  unc: 2.997
+ZJetsToQQ_HT-400to600:
+  crossSec: 114.2
+  reference: XSDB ZJetsToQQ_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2022-03-02 06:46:49
+  unc: 0.3432
+ZJetsToQQ_HT-600to800:
+  crossSec: 25.34
+  reference: XSDB ZJetsToQQ_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-10-11 11:27:15
+  unc: 0.07663
+ZJetsToQQ_HT-800toInf:
+  crossSec: 190.2
+  reference: XSDB ZJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2018-07-10 12:55:08
+  unc: 0.1051
+TTGJets:
+  crossSec: 3.757
+  reference: XSDB TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8 modifiedOn 2021-06-21 09:55:33
+  unc: 0.02243
+TTGG:
+  crossSec: 0.01696
+  reference: XSDB TTGG_TuneCP5_13TeV-amcatnlo-pythia8 modifiedOn 2023-02-13 11:52:34
+  unc: 3.287e-05
+TTGamma_Dilept:
+  crossSec: 1.494
+  reference: XSDB TTGamma_Dilept_TuneCP5_13TeV-madgraph-pythia8 modifiedOn 2021-06-21 09:55:35
+  unc: 0.001264
+TTGamma_Hadronic:
+  crossSec: 4.178
+  reference: XSDB TTGamma_Hadronic_TuneCP5_13TeV-madgraph-pythia8 modifiedOn 2021-06-21 09:55:40
+  unc: 0.003734
+TTGamma_SingleLept:
+  crossSec: 5.095
+  reference: XSDB TTGamma_SingleLept_TuneCP5_13TeV-madgraph-pythia8 modifiedOn 2021-06-21 09:55:44
+  unc: 0.00342
+TT4b:
+  crossSec: 0.06683
+  reference: XSDB TT4b_TuneCP5_13TeV_madgraph_pythia8 2020-09-24 05:12:25 # from 2018
 TTTo2L2Nu:
   crossSec:  791. * (1 - 0.6741) * (1 - 0.6741)
   reference: TOP-20-001 https://twiki.cern.ch/twiki/pub/CMSPublic/PhysicsResultsTOPSummaryFigures/tt_xsec_cms_13TeV.pdf
@@ -760,3 +798,51 @@ TTHHToNon4b:
   crossSec: 756.5e-06 * (1-0.5824 * 0.5824)
   reference: Higgs_XSBR_YR4
   unc: 4.628e-07
+TTTJ:
+  crossSec: 0.0003974
+  reference: XSDB TTTJ_TuneCP5_13TeV-madgraph-pythia8 modifiedOn 2018-07-10 12:48:41
+  unc: 2.299e-7
+TTTW:
+  crossSec: 0.0007314
+  reference: XSDB TTTW_TuneCP5_13TeV-madgraph-pythia8 modifiedOn 2018-07-10 12:48:43
+  unc: 4.889e-07
+TTZHToNon4b:
+  crossSec: 0.001134
+  reference: XSDB TTZHToNon4b_TuneCP5_13TeV-madgraph-pythia8 modifiedOn 2022-03-02 06:43:02
+  unc: 7.889e-07
+TTZToLL_M-1to10:
+  crossSec: 0.0537
+  reference: XSDB modifiedOn TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8 2023-03-20 15:16:52
+  unc: 6.537e-05
+TTZZTo4b:
+  crossSec: 0.001387
+  reference: XSDB TTZZTo4b_TuneCP5_13TeV-madgraph-pythia8 modifiedOn 2022-03-02 06:43:02
+  unc: 1.006e-06
+ZJetsToNuNu_HT-100To200:
+  crossSec: 267.0
+  reference: XSDB ZJetsToNuNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-06-21 10:02:19
+  unc: 0.7918
+ZJetsToNuNu_HT-1200To2500:
+  crossSec: 0.2497
+  reference: XSDB ZJetsToNuNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-10-11 11:27:13
+  unc: 0.0007553
+ZJetsToNuNu_HT-200To400:
+  crossSec: 73.08
+  reference: XSDB ZJetsToNuNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-06-21 10:02:21
+  unc: 0.2192
+ZJetsToNuNu_HT-2500ToInf:
+  crossSec: 0.005618
+  reference: XSDB ZJetsToNuNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-10-11 11:27:13
+  unc: 1.697e-05
+ZJetsToNuNu_HT-400To600:
+  crossSec: 9.904
+  reference: XSDB ZJetsToNuNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-10-11 11:27:14
+  unc: 0.02985
+ZJetsToNuNu_HT-600To800:
+  crossSec: 2.413
+  reference: XSDB ZJetsToNuNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2022-03-02 06:46:47
+  unc: 0.007275
+ZJetsToNuNu_HT-800To1200:
+  crossSec: 1.071
+  reference: XSDB ZJetsToNuNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-10-11 11:27:15
+  unc: 0.003242

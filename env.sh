@@ -172,13 +172,14 @@ action() {
   local os_prefix=$(get_os_prefix $os_version)
   local node_os=$os_prefix$os_version
 
-  local default_cmssw_ver=CMSSW_14_0_6_patch1
+  local default_cmssw_ver=CMSSW_13_0_15
+  # local default_cmssw_ver=CMSSW_14_0_6_patch1
   local target_os_version=9
   local target_os_prefix=$(get_os_prefix $target_os_version)
   local target_os_gt_prefix=$(get_os_prefix $target_os_version 1)
   local target_os=$target_os_prefix$target_os_version
   export DEFAULT_CMSSW_BASE="$ANALYSIS_PATH/soft/$default_cmssw_ver"
-  run_cmd install_cmssw $node_os $target_os ${target_os_gt_prefix}${target_os_version}_amd64_gcc12 $default_cmssw_ver
+  run_cmd install_cmssw $node_os $target_os ${target_os_gt_prefix}${target_os_version}_amd64_gcc11 $default_cmssw_ver
 
   local cmb_cmssw_ver=CMSSW_11_3_4
   local cmb_scram_arch="slc7_amd64_gcc900"

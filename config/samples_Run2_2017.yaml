@@ -14,7 +14,7 @@ GLOBAL:
     #- Flag_hfNoisyHitsFilter
     #- Flag_BadChargedCandidateFilter
   triggerFile: config/triggers_2017.yaml
-  crossSectionsFile : config/crossSections13TeV_2017.yaml
+  crossSectionsFile : config/crossSections13TeV.yaml
   # from https://twiki.cern.ch/twiki/bin/viewauth/CMS/DCUserPage
   # useful link: https://twiki.cern.ch/twiki/bin/view/CMS/DCUserPage2017Analysis
   lumiFile: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/Legacy_2017/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt
@@ -63,11 +63,9 @@ GLOBAL:
     - baseline
   storeExtraJets: False
   sampleSelection:
-    - keep ^.*$
     - drop ^VBFToRadion*
     - drop ^VBFToBulkGraviton*
     - drop ^.*NoFully
-    #- drop ^ST_s*
     - drop ^.*Enriched
     - drop ^JetHT_Run2017*
     - drop ^Double*
@@ -1493,19 +1491,19 @@ QCD_Pt-300toInf_EMEnriched:
 ZJetsToQQ_HT-200to400:
   miniAOD: /ZJetsToQQ_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM
   sampleType: ZQQ
-  crossSectionStitch: ZJetsToQQ_HT-200to400
+  crossSection: ZJetsToQQ_HT-200to400
 ZJetsToQQ_HT-400to600:
   miniAOD: /ZJetsToQQ_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM
   sampleType: ZQQ
-  crossSectionStitch: ZJetsToQQ_HT-400to600
+  crossSection: ZJetsToQQ_HT-400to600
 ZJetsToQQ_HT-600to800:
   miniAOD: /ZJetsToQQ_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM
   sampleType: ZQQ
-  crossSectionStitch: ZJetsToQQ_HT-600to800
+  crossSection: ZJetsToQQ_HT-600to800
 ZJetsToQQ_HT-800toInf:
   miniAOD: /ZJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM
   sampleType: ZQQ
-  crossSectionStitch: ZJetsToQQ_HT-800toInf
+  crossSection: ZJetsToQQ_HT-800toInf
 TTZZTo4b:
  miniAOD: /TTZZTo4b_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM
  sampleType: TTVV
@@ -1565,7 +1563,7 @@ TT4b:
  crossSection: TT4b
 TTGJets:
  miniAOD: /TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM
- sampleType: TTG
+ sampleType: TTV
  crossSection: TTGJets
 TTTT:
  miniAOD: /TTTT_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM
@@ -1621,7 +1619,7 @@ ZJetsToNuNu_HT-800To1200:
 EWK_ZTo2L:
   miniAOD:
   sampleType: EWK
-  crossSection: EWKZ2Jets_ZToLL_M-50
+  crossSection: EWK_ZTo2L
 EWK_ZTo2Nu:
   miniAOD:
   sampleType: EWK

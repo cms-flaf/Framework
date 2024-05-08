@@ -12,7 +12,7 @@ GLOBAL:
     - Flag_eeBadScFilter
     - Flag_ecalBadCalibFilter
   triggerFile: config/triggers_2018.yaml
-  crossSectionsFile : config/crossSections13TeV_2018.yaml
+  crossSectionsFile : config/crossSections13TeV.yaml
   # https://twiki.cern.ch/twiki/bin/viewauth/CMS/DCUserPage
   # https://twiki.cern.ch/twiki/bin/view/CMS/DCUserPage2018Analysis
   # lumiFile: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt
@@ -67,11 +67,14 @@ GLOBAL:
     #- keep ^GluGluToBulkGraviton*
     - drop ^VBFToRadion*
     - drop ^VBFToBulkGraviton*
+    - drop ^.*NoFully
+    - drop ^.*Enriched
+    - drop ^JetHT_Run2018*
+    - drop ^Double*
     #- keep ^TTTo*
     #- keep ^DY*
     #- keep ^EWK*
     #- keep ^ST_*
-    - drop ^.*NoFully
     #- keep ^WJetsToLNu$
     #- keep ^W[1-4]JetsToLNu$
     #- keep ^ZJets*
@@ -93,9 +96,6 @@ GLOBAL:
     #- keep ^T{2,3}?
     #- keep ^QCD_Pt*
     #- keep ^QCD_HT*
-    - drop ^.*Enriched
-    - drop ^JetHT_Run2018*
-    - drop ^Double*
 
 GluGluToRadionToHHTo2B2Tau_M-250:
   miniAOD: /GluGluToRadionToHHTo2B2Tau_M-250_TuneCP5_PSWeights_narrow_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
@@ -797,7 +797,7 @@ WZTo1L1Nu2Q:
 WZTo2Q2L:
   miniAOD: /WZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: VV
-  crossSection: WZTo2L2Q_mll>4GeV
+  crossSection: WZTo2Q2L
 WZTo3LNu:
   miniAOD: /WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: VV
@@ -818,7 +818,7 @@ ZZTo2L2Nu:
 ZZTo2Q2L:
   miniAOD: /ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: VV
-  crossSection: ZZTo2Q2L_mll>4GeV
+  crossSection: ZZTo2Q2L
 ZZTo2Q2Nu:
   miniAOD: /ZZTo2Q2Nu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM
   sampleType: VV
@@ -1204,11 +1204,11 @@ WJetsToLNu_HT-800To1200:
 WToTauNu_M-200:
   miniAOD: /WToTauNu_M-200_TuneCP5_13TeV-pythia8-tauola/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM
   sampleType: WLep
-  crossSection: W_To_TauNu_M-200
+  crossSection: WToTauNu_M-200
 WToMuNu_M-200:
   miniAOD: /WToMuNu_M-200_TuneCP5_13TeV-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM
   sampleType: WLep
-  crossSection: W_To_MuNu_M-200
+  crossSection: WToMuNu_M-200
 
 WGToLNuG:
   miniAOD: /WGToLNuG_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM

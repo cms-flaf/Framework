@@ -13,7 +13,7 @@ GLOBAL:
     #- Flag_hfNoisyHitsFilter
     #- Flag_BadChargedCandidateFilter
   triggerFile: config/triggers_2016.yaml
-  crossSectionsFile : config/crossSections13TeV_2016.yaml
+  crossSectionsFile : config/crossSections13TeV.yaml
   # from https://twiki.cern.ch/twiki/bin/viewauth/CMS/DCUserPage
   # useful link: https://twiki.cern.ch/twiki/bin/view/CMS/DCUserPage2016Analysis
   #lumiFile: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Final/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON.txt
@@ -857,7 +857,7 @@ WJetsToLNu:
   miniAOD: /WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM
   sampleType: W
   isReference: true
-  crossSection: WJetsToLNu_NLO
+  crossSection: WJetsToLNu_NNLO
   crossSectionStitch: WJetsToLNu_LO
 W1JetsToLNu:
   miniAOD: /W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM
@@ -875,10 +875,10 @@ W4JetsToLNu:
   miniAOD: /W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM
   sampleType: W
   crossSectionStitch: W4JetsToLNu_LO
-WJetsToLNu-amcatnloFXFX:
-  miniAOD: /WJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM
-  sampleType: W
-  crossSectionStitch: WJetsToLNu_NLO
+#WJetsToLNu-amcatnloFXFX:
+#  miniAOD: /WJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM
+#  sampleType: W
+#  crossSectionStitch: WJetsToLNu_NLO
 W0JetsToLNu-amcatnloFXFX:
   miniAOD: /WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
   sampleType: W
@@ -894,11 +894,11 @@ W2JetsToLNu-amcatnloFXFX:
 WToTauNu_M-200:
   miniAOD: /WToTauNu_M-200_TuneCP5_13TeV-pythia8-tauola/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
   sampleType: WLep
-  crossSection: WToTauNu_M-200_LO
+  crossSection: WToTauNu_M-200
 WToMuNu_M-200:
   miniAOD: /WToMuNu_M-200_TuneCP5_13TeV-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
   sampleType: WLep
-  crossSection: WToMuNu_M-200_LO
+  crossSection: WToMuNu_M-200
 WGToLNuG:
   miniAOD: /WGToLNuG_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
   sampleType: WG
@@ -1237,35 +1237,35 @@ ZHToTauTau_M125_ext1:
 GluGluHToWWTo2L2Nu_M125:
   miniAOD: /GluGluHToWWTo2L2Nu_M-125_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
   sampleType: H
-  crossSection: GluGluHToWWTo2L2Nu_M125
+  crossSection: GluGluHToWWTo2L2Nu
 VBFHToWWTo2L2Nu_M125:
   miniAOD: /VBFHToWWTo2L2Nu_M-125_TuneCP5_13TeV-powheg-jhugen727-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
   sampleType: H
-  crossSection: VBFHToWWTo2L2Nu_M125
+  crossSection: VBFHToWWTo2L2Nu
 HWplusJ_HToWW_M125:
   miniAOD: /HWplusJ_HToWW_M-125_TuneCP5_13TeV-powheg-jhugen727-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM
   sampleType: VH
-  crossSection: HWplusJ_HToWW_M125
+  crossSection: HWplusJ_HToWW
 HWminusJ_HToWW_M125:
   miniAOD: /HWminusJ_HToWW_M-125_TuneCP5_13TeV-powheg-jhugen727-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
   sampleType: VH
-  crossSection: HWminusJ_HToWW_M125
+  crossSection: HWminusJ_HToWW
 HZJ_HToWW_M125:
   miniAOD: /HZJ_HToWW_M-125_TuneCP5_13TeV-powheg-jhugen727-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
   sampleType: VH
-  crossSection: HZJ_HToWW_M125
+  crossSection: HZJ_HToWW
 HZJ_HToWW_M125_ext1:
   miniAOD: /HZJ_HToWW_M-125_TuneCP5_13TeV-powheg-jhugen727-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11_ext1-v2/MINIAODSIM
   sampleType: H
-  crossSection: HZJ_HToWW_M125
+  crossSection: HZJ_HToWW
 GluGluZH_HToWW_ZTo2L_M125:
   miniAOD: /GluGluZH_HToWW_ZTo2L_M-125_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
   sampleType: VH
-  crossSection: GluGluZH_HToWW_ZTo2L_M125
+  crossSection: GluGluZH_HToWW_ZTo2L
 GluGluZH_HToWW_ZTo2L_M125_ext1:
   miniAOD: /GluGluZH_HToWW_ZTo2L_M-125_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11_ext1-v2/MINIAODSIM
   sampleType: VH
-  crossSection: GluGluZH_HToWW_ZTo2L_M125
+  crossSection: GluGluZH_HToWW_ZTo2L
 
 ttHToNonbb_M125:
   miniAOD: /ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM

@@ -95,32 +95,20 @@ def SelectBTagShapeSF(df,weight_name):
 def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs, isSignal):
     #print(f"at the beginning {dfw.df.Count().GetValue()}")
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
-    dfw.Apply(Baseline.DefineMETCuts,80, ["MET", "DeepMETResolutionTune", "DeepMETResponseTune", "PuppiMET"])
     #print(f"after met cuts {dfw.df.Count().GetValue()}")
     # qua va Select btagShapeWeight
     if mode == "HH":
+        #dfw.Apply(Baseline.RecoLeptonsSelection, config["GLOBAL"])
+        #print(f"after RecoLeptonsSelection: {dfw.df.Count().GetValue()}")
         dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
-        #print(f"after htt cand sel {dfw.df.Count().GetValue()}")
+        #print(f"after RecoHttCandidateSelection: {dfw.df.Count().GetValue()}")
         dfw.Apply(Baseline.RecoJetSelection)
-        #print(f"after reco jet sel {dfw.df.Count().GetValue()}")
+        #print(f"after RecoJetSelection: {dfw.df.Count().GetValue()}")
         dfw.Apply(Baseline.ThirdLeptonVeto)
+        #dfw.Apply(Baseline.DefineMETCuts,80, ["MET", "DeepMETResolutionTune", "DeepMETResponseTune", "PuppiMET"])
     elif mode == 'ttHH':
         dfw.Apply(Baseline.RecottHttCandidateSelection_ttHH)
         dfw.Apply(Baseline.RecoJetSelection_ttHH)
-
-    '''
-    if not isData:
-        print(f"before PassGenAcceptance : {dfw.df.Count().GetValue()}")
-        dfw.DefineAndAppend("n_GenJet", "GenJet_idx.size()")
-        dfw.Apply(Baseline.PassGenAcceptance)
-        print(f"after PassGenAcceptance : {dfw.df.Count().GetValue()}")
-        dfw.Apply(Baseline.GenJetSelection)
-        print(f"after GenJetSelection : {dfw.df.Count().GetValue()}")
-        dfw.Apply(Baseline.GenJetHttOverlapRemoval)
-        print(f"after GenJetHttOverlapRemoval : {dfw.df.Count().GetValue()}")
-        dfw.Apply(Baseline.RequestOnlyResolvedGenJets)
-        print(f"after RequestOnlyResolvedGenJets : {dfw.df.Count().GetValue()}")
-    '''
     dfw.Apply(Baseline.DefineHbbCand)
     dfw.DefineAndAppend("Hbb_isValid" , "HbbCandidate.has_value()")
     dfw.Apply(Baseline.ExtraRecoJetSelection)

@@ -14,33 +14,82 @@ import Common.Utilities as Utilities
 from Analysis.HistHelper import *
 from Analysis.HistMerger import *
 
+def GetHistograms(inFile, channel, category, uncSource, histNamesDict,all_histlist, wantData):
+    inFile = ROOT.TFile(inFile,"READ")
+    dir_0 = inFile.Get(channel)
+    dir_1 = dir_0.Get(category)
+    for key in dir_1.GetListOfKeys():
+        obj = key.ReadObj()
+        if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
+            obj.SetDirectory(0)
+            key_name = key.GetName()
+            if key_name not in histNamesDict.keys(): continue
+            sample, uncName, scale = histNamesDict[key_name]
+            sample_type = sample if not sample in sample_cfg_dict.keys() else sample_cfg_dict[sample]['sampleType']
+            if sample_type in signals:
+                sample= sample_type
+            if (uncName, scale) not in all_histlist.keys():
+                all_histlist[(uncName, scale)] = {}
+            #if wantData == False and (sample == 'data' or sample_type == 'data'): continue
+            all_histlist[(uncName, scale)][sample] = obj
+    inFile.Close()
+
+def GetSignalHistogram(inFileSig, channel, category, uncSource, histNamesDict,all_histlist, mass):
+    inFileSignal = ROOT.TFile(inFileSig,"READ")
+    dir_0Signal = inFileSignal.Get(channel)
+    dir_qcdSignal = dir_0Signal.Get('OS_Iso')
+    dir_1Signal = dir_qcdSignal.Get(category)
+    for key in dir_1Signal.GetListOfKeys():
+        objSignal = key.ReadObj()
+        if objSignal.IsA().InheritsFrom(ROOT.TH1.Class()):
+            objSignal.SetDirectory(0)
+            key_name = key.GetName()
+            key_name_split = key_name.split('_')
+            if uncSource == 'Central' and len(key_name_split)>1 : continue
+            else:
+                key_name = key_name.split('_')[0]
+            sample = key_name
+            key_name += f'ToHHTo2B2Tau_M-{mass}'
+            print(key_name)
+            print(histNamesDict.keys())
+            print(key_name in histNamesDict.keys())
+            if key_name not in histNamesDict.keys(): continue
+            sampleName, uncName, scale = histNamesDict[key_name]
+            #sample_type = sample if not sample in sample_cfg_dict.keys() else sample_cfg_dict[sample]['sampleType']
+            #if sample_type in signals:
+            #    sample= sample_type
+            if (uncName, scale) not in all_histlist.keys():
+                all_histlist[(uncName, scale)] = {}
+            #if args.wantData == False and (sample == 'data' or sample_type == 'data'): continue
+            all_histlist[(uncName, scale)][sample] = objSignal
+    inFileSignal.Close()
 
 if __name__ == "__main__":
     import argparse
     import PlotKit.Plotter as Plotter
     import yaml
     parser = argparse.ArgumentParser()
-    parser.add_argument('--histDir', required=True)
-    parser.add_argument('--outDir', required=True)
-    parser.add_argument('--inFileName', required=True)
+    parser.add_argument('--outFile', required=True)
+    parser.add_argument('--inFile', required=True, type=str)
+    parser.add_argument('--inFileRadion', required=True, type=str)
+    parser.add_argument('--inFileGraviton', required=True, type=str)
     parser.add_argument('--var', required=False, type=str, default = 'tau1_pt')
     parser.add_argument('--mass', required=False, type=int, default=1250)
     parser.add_argument('--sampleConfig', required=True, type=str)
     parser.add_argument('--channel',required=False, type=str, default = 'tauTau')
     parser.add_argument('--category',required=False, type=str, default = 'inclusive')
-    parser.add_argument('--uncSource',required=False, type=str, default = 'Central')
-    parser.add_argument('--wantBTag', required=False, type=bool, default=False)
-    parser.add_argument('--want2D', required=False, type=bool, default=False)
     parser.add_argument('--wantData', required=False, type=bool, default=False)
-    parser.add_argument('--suffix', required=False, type=str, default='')
+    parser.add_argument('--uncSource', required=False, type=str,default='Central')
+    parser.add_argument('--year', required=False, type=str,default='Run2_2018')
     args = parser.parse_args()
 
     page_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/cms_stacked.yaml")
-    page_cfg_custom = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/2018.yaml")
+    page_cfg_custom = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/Run2_2018.yaml")
     hist_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/histograms.yaml")
     with open(hist_cfg, 'r') as f:
         hist_cfg_dict = yaml.safe_load(f)
-    hist_cfg_dict["x_bins"] = hist_cfg_dict[args.var]["x_rebin"][args.channel][args.category]
+    if "x_rebin" in hist_cfg_dict[args.var].keys():
+        hist_cfg_dict["x_bins"] = hist_cfg_dict[args.var]["x_rebin"][args.channel][args.category]
     with open(page_cfg_custom, 'r') as f:
         page_cfg_custom_dict = yaml.safe_load(f)
     inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/inputs.yaml")
@@ -60,45 +109,32 @@ if __name__ == "__main__":
     all_histlist = {}
 
     plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg_dict, inputs_cfg=inputs_cfg_dict)
-    btag_dir= "bTag_WP" if args.wantBTag else "bTag_shape"
 
-    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir,True,False,True,args.mass)
+    wantSignals=True
+    wantAllMasses=False
+    wantOneMass=True
 
+    #all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir,True,False,True,args.mass)
+    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict, wantSignals, wantAllMasses, wantOneMass, args.mass)
     all_samples_types.update({"QCD":"QCD"})
+    #print(all_samples_types)
     histNamesDict = {}
-
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
     CreateNamesDict(histNamesDict, all_samples_types, args.uncSource, scales, sample_cfg_dict)
-    inFileName=f'{args.inFileName}_{args.var}_{args.uncSource}{args.suffix}.root'
-    inFileName_prefix =  f"{args.inFileName}_{args.var}2D" if args.want2D else f"{args.inFileName}_{args.var}"
-    #if args.uncSource !='Central':
-    if args.suffix!='_onlyCentral':
-        inFileName_prefix+=f'_{args.uncSource}'
-    #inFileName=f'{args.inFileName}_{args.var}{args.suffix}.root'
-    inFileName = f'{inFileName_prefix}{args.suffix}.root'
+    #print(histNamesDict)
 
-    print(os.path.join(args.histDir, f'{args.inFileName}',args.var,btag_dir,inFileName))
-    inFile = ROOT.TFile(os.path.join(args.histDir, f'{args.inFileName}',args.var,btag_dir,inFileName),"READ")
-    dir_0 = inFile.Get(args.channel)
-    dir_1 = dir_0.Get(args.category)
-    for key in dir_1.GetListOfKeys():
-        obj = key.ReadObj()
-        if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
-            obj.SetDirectory(0)
-            key_name = key.GetName()
-            #print(key_name)
-            if key_name not in histNamesDict.keys(): continue
-            sample, uncName, scale = histNamesDict[key_name]
-            sample_type = sample if not sample in sample_cfg_dict.keys() else sample_cfg_dict[sample]['sampleType']
-            if sample_type in signals:
-                sample= sample_type
-            if (uncName, scale) not in all_histlist.keys():
-                all_histlist[(uncName, scale)] = {}
-            #if args.wantData == False and (sample == 'data' or sample_type == 'data'): continue
-            all_histlist[(uncName, scale)][sample] = obj
-    inFile.Close()
+
+    GetHistograms(args.inFile, args.channel, args.category, args.uncSource, histNamesDict,all_histlist, args.wantData)
+    GetSignalHistogram(args.inFileRadion, args.channel, args.category, args.uncSource, histNamesDict,all_histlist, args.mass)
+    GetSignalHistogram(args.inFileGraviton, args.channel, args.category, args.uncSource, histNamesDict,all_histlist, args.mass)
+
+    #print(os.path.join(args.histDir, inFileName))
+
+    print(all_histlist.items(), all_histlist.keys())
 
     hists_to_plot = {}
+
+    print(all_samples_types.keys())
     for uncScale in scales+['Central']:
         if args.uncSource == 'Central' and uncScale != 'Central': continue
         if args.uncSource != 'Central' and uncScale == 'Central': continue
@@ -110,7 +146,7 @@ if __name__ == "__main__":
             #print(sample, hist.Integral(0, hist.GetNbinsX()+1))
             other_inputs = []
             if sample not in all_samples_separated+sample_cfg_dict['GLOBAL']['signal_types']:
-                #print(sample)
+                print(sample)
                 if sample in other_inputs: continue
                 if not other_inputs:
                     other_obj = hist
@@ -137,6 +173,11 @@ if __name__ == "__main__":
 
         if args.wantData==False:
             custom1= {'cat_text':f"{cat_txt} m_{{X}}={args.mass} GeV/c^{{2}}", 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS simulation', 'scope_text':''}
+
+        plotter.plot(args.var, hists_to_plot, args.outFile, want_data = args.wantData, custom=custom1)
+        print(args.outFile)
+
+        '''
         outFile_prefix = f'{args.var}_{args.channel}_{args.category}'
 
         if(args.uncSource != 'Central'):
@@ -152,3 +193,4 @@ if __name__ == "__main__":
         outFileFullPath = os.path.join(outDir,outFileName)
         plotter.plot(args.var, hists_to_plot, outFileFullPath, want_data = args.wantData, custom=custom1)
         print(outFileFullPath)
+        '''

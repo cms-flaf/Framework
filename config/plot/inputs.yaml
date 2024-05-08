@@ -1,6 +1,16 @@
+
+- name: DY
+  title: "DY #rightarrow ll + jets"
+  color: kAzure+10
+- name: TT
+  title: t#bar{t}
+  color: kGreen-3
 - name: W
   title: "W #rightarrow l#nu + jets"
   color: kYellow-7
+- name: QCD
+  title: QCD
+  color: kOrange
 - name: HHnonRes
   title: "HH SM"
   color: kRed-4
@@ -24,18 +34,9 @@
 #  type: signal
 #  color: kViolet+4
 #  scale: 5
-- name: QCD
-  title: QCD
-  color: kOrange
 - name: Other
   title: "other backgrounds"
   color: kPink+1
-- name: TT
-  title: t#bar{t}
-  color: kGreen-3
-- name: DY
-  title: "DY #rightarrow ll + jets"
-  color: kAzure+10
 - name: data
   title: "data"
   type: data

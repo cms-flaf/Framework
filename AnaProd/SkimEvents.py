@@ -11,6 +11,11 @@ if __name__ == "__main__":
 
 import Common.Utilities as Utilities
 
+def createVoidTree(file_name, tree_name):
+    df = ROOT.RDataFrame(0)
+    df=df.Define("test", "return true;")
+    df.Snapshot(tree_name, file_name, {"test"})
+
 
 
 def ListToVector(list, type="string"):
@@ -38,18 +43,18 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Event
   colNames_central = [str(c) for c in df_central.GetColumnNames()]
   if len(colNames_central)==0:
     print(f"{treeName_central} central has no columns")
-    create_file(os.path.join(outDir, f"{treeName}_Valid.root"))
-    create_file(os.path.join(outDir, f"{treeName}_nonValid.root"))
-    create_file(os.path.join(outDir, f"{treeName}_noDiff.root"))
+    createVoidTree(os.path.join(outDir, f"{treeName}_Valid.root"), f"{treeName}_Valid.root")
+    createVoidTree(os.path.join(outDir, f"{treeName}_nonValid.root"), f"{treeName}_nonValid.root")
+    createVoidTree(os.path.join(outDir, f"{treeName}_noDiff.root"), f"{treeName}_noDiff.root")
     return
 
   df_out = ROOT.RDataFrame(treeName_in, inputFileShifted)
   colNames = [str(c) for c in df_out.GetColumnNames()]
   if len(colNames)==0:
     print(f"{treeName} shifted has no columns")
-    create_file(os.path.join(outDir, f"{treeName}_Valid.root"))
-    create_file(os.path.join(outDir, f"{treeName}_nonValid.root"))
-    create_file(os.path.join(outDir, f"{treeName}_noDiff.root"))
+    createVoidTree(os.path.join(outDir, f"{treeName}_Valid.root"), f"{treeName}_Valid.root")
+    createVoidTree(os.path.join(outDir, f"{treeName}_nonValid.root"), f"{treeName}_nonValid.root")
+    createVoidTree(os.path.join(outDir, f"{treeName}_noDiff.root"), f"{treeName}_noDiff.root")
     return
   entryIndexIdx = colNames.index("entryIndex")
   colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
@@ -110,11 +115,6 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Event
 
 
   tuple_maker.join()
-
-
-def create_file(file_name, times=None):
-    with open(file_name, "w"):
-        os.utime(file_name, times)
 
 if __name__ == "__main__":
   import argparse

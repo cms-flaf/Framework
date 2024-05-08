@@ -93,39 +93,18 @@ def SelectBTagShapeSF(df,weight_name):
     return df
 
 def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs, isSignal):
-    #print(f"at the beginning {dfw.df.Count().GetValue()}")
     dfw.Apply(Baseline.SelectRecoP4, syst_name)
-    dfw.Apply(Baseline.DefineMETCuts,80, ["MET", "DeepMETResolutionTune", "DeepMETResponseTune", "PuppiMET"])
-    #print(f"after met cuts {dfw.df.Count().GetValue()}")
-    # qua va Select btagShapeWeight
     if mode == "HH":
         dfw.Apply(Baseline.RecoHttCandidateSelection, config["GLOBAL"])
-        #print(f"after htt cand sel {dfw.df.Count().GetValue()}")
         dfw.Apply(Baseline.RecoJetSelection)
-        #print(f"after reco jet sel {dfw.df.Count().GetValue()}")
         dfw.Apply(Baseline.ThirdLeptonVeto)
     elif mode == 'ttHH':
         dfw.Apply(Baseline.RecottHttCandidateSelection_ttHH)
         dfw.Apply(Baseline.RecoJetSelection_ttHH)
-
-    '''
-    if not isData:
-        print(f"before PassGenAcceptance : {dfw.df.Count().GetValue()}")
-        dfw.DefineAndAppend("n_GenJet", "GenJet_idx.size()")
-        dfw.Apply(Baseline.PassGenAcceptance)
-        print(f"after PassGenAcceptance : {dfw.df.Count().GetValue()}")
-        dfw.Apply(Baseline.GenJetSelection)
-        print(f"after GenJetSelection : {dfw.df.Count().GetValue()}")
-        dfw.Apply(Baseline.GenJetHttOverlapRemoval)
-        print(f"after GenJetHttOverlapRemoval : {dfw.df.Count().GetValue()}")
-        dfw.Apply(Baseline.RequestOnlyResolvedGenJets)
-        print(f"after RequestOnlyResolvedGenJets : {dfw.df.Count().GetValue()}")
-    '''
     dfw.Apply(Baseline.DefineHbbCand)
     dfw.DefineAndAppend("Hbb_isValid" , "HbbCandidate.has_value()")
     dfw.Apply(Baseline.ExtraRecoJetSelection)
     dfw.Apply(Corrections.jet.getEnergyResolution)
-    #dfw.Apply(Corrections.fatjet.getEnergyResolution)
     dfw.Apply(Corrections.btag.getWPid)
     jet_obs = []
     jet_obs.extend(JetObservables)
@@ -169,8 +148,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs, isSignal
     dfw.DefineAndAppend("channelId","static_cast<int>(HttCandidate.channel())")
     if mode == "HH":
         channel_to_select = " || ".join(f"HttCandidate.channel()==Channel::{ch}" for ch in config["GLOBAL"]["channelSelection"])
-        #print(f"after channel sel {dfw.df.Count().GetValue()}")
-        #if dfw.df.Filter(channel_to_select).Count().GetValue() > 0:
         dfw.Filter(channel_to_select, "select channels")
     fatjet_obs = []
     fatjet_obs.extend(FatJetObservables)
@@ -179,7 +156,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs, isSignal
         fatjet_obs.extend(JetObservablesMC)
         if isSignal:
             dfw.DefineAndAppend("genchannelId","static_cast<int>(genHttCandidate->channel())")
-        #dfw.df.Display({"channelId","genchannelId"}).Print()
     dfw.DefineAndAppend(f"SelectedFatJet_pt", f"v_ops::pt(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_phi", f"v_ops::phi(FatJet_p4[FatJet_bbCand])")
@@ -295,26 +271,22 @@ def createAnatuple(inFile, treeName, outDir, config, sample_name, anaCache, snap
     Baseline.Initialize(loadTF, loadHHBtag)
     Corrections.Initialize(config=config['GLOBAL'],isData=isData)
     triggerFile = config['GLOBAL'].get('triggerFile')
-    #print(triggerFile)
     if triggerFile is not None:
         triggerFile = os.path.join(os.environ['ANALYSIS_PATH'], triggerFile)
         trigger_class = Triggers.Triggers(triggerFile)
     else:
         trigger_class = None
     df = ROOT.RDataFrame(treeName, inFile)
-    #print(f"at the beginning there are {df.Count().GetValue()} events")
     if range is not None:
         df = df.Range(range)
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
-    #print(f"initially {df.Count().GetValue()}")
 
     if isData and 'lumiFile' in config['GLOBAL']:
         lumiFilter = LumiFilter(config['GLOBAL']['lumiFile'])
         df = lumiFilter.filter(df)
 
     df = Baseline.applyMETFlags(df, config["GLOBAL"]["MET_flags"])
-    #print(f"after MET flags {df.Count().GetValue()}")
     df = df.Define("sample_type", f"static_cast<int>(SampleType::{config[sample_name]['sampleType']})")
     df = df.Define("sample_name", f"static_cast<int>({zlib.crc32(sample_name.encode())})")
     isSignal = config[sample_name]['sampleType'] in config['GLOBAL']['signal_types']
@@ -327,9 +299,7 @@ def createAnatuple(inFile, treeName, outDir, config, sample_name, anaCache, snap
     df = df.Define("isData", is_data)
 
     df = Baseline.CreateRecoP4(df)
-    #print(f"after CreateRecoP4 {df.Count().GetValue()}")
     df = Baseline.DefineGenObjects(df, isData=isData, isHH=isHH)
-    #print(f"after DefineGenObjects {df.Count().GetValue()}")
 
     if isData:
         syst_dict = { 'nano' : 'Central' }
@@ -349,7 +319,6 @@ def createAnatuple(inFile, treeName, outDir, config, sample_name, anaCache, snap
         suffix = '' if is_central else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
         dfw = Utilities.DataFrameWrapper(df_empty,defaultColToSave)
-        #print(syst_name)
 
         addAllVariables(dfw, syst_name, isData, trigger_class, mode, nLegs, isSignal)
 
@@ -390,14 +359,11 @@ def createAnatuple(inFile, treeName, outDir, config, sample_name, anaCache, snap
                 if puIDbranch in weight_branches: weight_branches.remove(puIDbranch)
             dfw.colToSave.extend(weight_branches)
         reports.append(dfw.df.Report())
-        #print(f"at the end there are {dfw.df.Count().GetValue()} events for {syst_name}")
         varToSave = Utilities.ListToVector(dfw.colToSave)
         outfile_prefix = inFile.split('/')[-1]
         outfile_prefix = outfile_prefix.split('.')[0]
         outFileName = os.path.join(outDir, f"{outfile_prefix}{suffix}.root")
         outfilesNames.append(outFileName)
-        #if os.path.exists(outFileName):
-            #os.remove(outFileName)
         snaps.append(dfw.df.Snapshot(f"Events", outFileName, varToSave, snapshotOptions))
     if snapshotOptions.fLazy == True:
         ROOT.RDF.RunGraphs(snaps)
@@ -413,7 +379,6 @@ def createAnatuple(inFile, treeName, outDir, config, sample_name, anaCache, snap
         outputRootFile.Close()
         # if print_cutflow:
         #     report.Print()
-    #print(f"number of loops is {df_empty.GetNRuns()}")
 
 
 if __name__ == "__main__":

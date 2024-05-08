@@ -67,8 +67,7 @@ def checkFile(inFileRoot, channels, qcdRegions, categories, var):
                 if not keys_histograms: return False
     return True
 
-def fillHistDict(var, inFileRoot, all_histograms, unc_source,channels, QCDregions, categories, sample_type, histNamesDict,signals):
-    #print(sample_type)
+def fillHistDict(var, inFileRoot, all_histograms, unc_source,channels, QCDregions, categories, histNamesDict,signals):
     for channel in channels:
         dir_0 = inFileRoot.Get(channel)
         #print(dir_0.GetListOfKeys())
@@ -80,31 +79,41 @@ def fillHistDict(var, inFileRoot, all_histograms, unc_source,channels, QCDregion
                 if cat != 'boosted' and var in var_to_add_boosted: continue
                 #print(cat, var)
                 dir_2 = dir_1.Get(cat)
-                #print(dir_2.GetListOfKeys())
                 for key in dir_2.GetListOfKeys():
                     obj = key.ReadObj()
                     if not obj.IsA().InheritsFrom(ROOT.TH1.Class()): continue
                     obj.SetDirectory(0)
                     key_name = key.GetName()
                     key_name_split = key_name.split('_')
-                    if key_name_split[0] in signals:
-                        key_name = f"{sample_type}"
-                        if len(key_name_split)>1:
-                            key_name+="_"
-                            key_name += '_'.join(ks for ks in key_name_split[1:])
+                    sample_type = key_name_split[0]
+                    #print(sample_type)
+                    #print("before")
+                    #print(key_name)
+                    #if key_name_split[0] not in signals and key_name not in histNamesDict.keys(): continue
+                        #key_name = f"{sample_type}"
+                        #if len(key_name_split)>1:
+                        #    key_name+="_"
+                        #    key_name += '_'.join(ks for ks in key_name_split[1:])
                     if key_name not in histNamesDict.keys(): continue
+                    #print("after")
+                    #print(key_name)
                     sample,uncNameType,scale = histNamesDict[key_name]
                     if cat == 'boosted' and uncNameType in unc_to_not_consider_boosted: continue
                     if sample=='data' and uncNameType!='Central':continue
                     if sample!='data' and uncNameType!=unc_source:continue
                     key_total = ((channel, qcdRegion, cat), (uncNameType, scale))
-                    if key_total not in all_histograms.keys():
-                        all_histograms[key_total] = []
-                    all_histograms[key_total].append(obj)
+                    if sample_type not in all_histograms.keys():
+                        print(f"{sample_type} not in all_histograms keys")
+                        all_histograms[sample_type] = {}
+                    if key_total not in all_histograms[sample_type].keys():
+                        print(f"{key_total} not in all_histograms {sample_type} keys")
+                        all_histograms[sample_type][key_total] = []
+                    all_histograms[sample_type][key_total].append(obj)
+    #print(all_histograms)
 
 def MergeHistogramsPerType(all_histograms):
     for key_name,histlist in all_histograms.items():
-        #print(key_name, histlist)
+        print(key_name, histlist)
         final_hist =  histlist[0]
         objsToMerge = ROOT.TList()
         for hist in histlist[1:]:
@@ -192,7 +201,6 @@ def GetBTagWeightDict(var, all_histograms, sample_name, final_json_dict, want2D,
             #    continue
             if not wantBTag : histogram.Scale(ratio)
             all_histograms_1D[key_name] = histogram
-
     return all_histograms_1D
 
 
@@ -247,15 +255,21 @@ if __name__ == "__main__":
     import argparse
     import yaml
     parser = argparse.ArgumentParser()
-    parser.add_argument('--histDir', required=True, type=str)
-    parser.add_argument('--jsonDir', required=True, type=str)
-    parser.add_argument('--suffix', required=False, type=str, default='')
+    parser.add_argument('inputFile', nargs='+', type=str)
+    #parser.add_argument('datasetFile', nargs='+', type=str)
+    parser.add_argument('--outFile', required=True, type=str)
+    parser.add_argument('--jsonFile', required=True, type=str)
+    parser.add_argument('--datasetFile', required=True, type=str)
     parser.add_argument('--var', required=True, type=str)
     parser.add_argument('--sampleConfig', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
-    parser.add_argument('--wantBTag', required=False, type=bool, default=False)
-    parser.add_argument('--want2D', required=False, type=bool, default=False)
+
+    #parser.add_argument('--histDir', required=True, type=str)
+    #parser.add_argument('--jsonDir', required=True, type=str)
+    #parser.add_argument('--suffix', required=False, type=str, default='')
+    #parser.add_argument('--wantBTag', required=False, type=bool, default=False)
+    #parser.add_argument('--want2D', required=False, type=bool, default=False)
 
     args = parser.parse_args()
     startTime = time.time()
@@ -264,83 +278,70 @@ if __name__ == "__main__":
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
 
-    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir, True, True, False)
+    wantSignals=True
+    wantAllMasses=True
+    wantOneMass=False
+    #mass=500
+
+    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict, wantSignals, wantAllMasses, wantOneMass)
+    #print(all_samples_types)
     histNamesDict = {}
     uncNameTypes = GetUncNameTypes(unc_cfg_dict)
-    btag_dir= "bTag_WP" if args.wantBTag else "bTag_shape"
     if args.uncSource != 'Central' and args.uncSource not in uncNameTypes:
         print("unknown unc source {args.uncSource}")
     CreateNamesDict(histNamesDict, all_samples_types, args.uncSource, scales, sample_cfg_dict)
-
+    print(histNamesDict)
     categories = list(sample_cfg_dict['GLOBAL']['categories'])
     QCDregions = list(sample_cfg_dict['GLOBAL']['QCDRegions'])
     channels = list(sample_cfg_dict['GLOBAL']['channelSelection'])
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
-    all_files = {}
+    files_separated = {}
     all_histograms ={}
     all_histograms_1D ={}
     final_json_dict = {}
 
-    TwoDTrue = args.want2D and not args.wantBTag
-    fileName =  f"{args.var}2D{args.suffix}.root" if TwoDTrue else f"{args.var}{args.suffix}.root"
-
-    all_files = {}
-    for sample_type in all_samples_types.keys():
-        samples = all_samples_types[sample_type]
-        histDirs = [os.path.join(args.histDir,sample,  args.var,  btag_dir) for sample in samples]
-        all_files[sample_type] = [os.path.join(hist_dir,fileName) for hist_dir in histDirs]
-        # 1. get Histograms
-        if sample_type not in all_histograms.keys():
-            all_histograms[sample_type] = {}
-            all_histograms_1D[sample_type] = {}
-        for inFileName in all_files[sample_type]:
-            if 'VBFToBulkGraviton' in inFileName: continue
-            if 'VBFToRadion' in inFileName: continue
-            print(inFileName)
-            if not os.path.exists(inFileName):
-                raise RuntimeError(f"{inFileName} removed")
-            inFileRoot = ROOT.TFile.Open(inFileName, "READ")
-            if inFileRoot.IsZombie():
-                inFileRoot.Close()
-                os.remove(inFileName)
-                raise RuntimeError(f"{inFileName} is Zombie")
-            if  not checkFile(inFileRoot, channels, QCDregions, categories,args.var):
-                inFileRoot.Close()
-                os.remove(inFileName)
-                raise RuntimeError(f"{inFileName} has problems")
-            fillHistDict(args.var, inFileRoot, all_histograms[sample_type],args.uncSource, channels, QCDregions, categories, sample_type, histNamesDict, signals)
+    all_infiles = [ fileName for fileName in args.inputFile ]
+    #print(all_infiles)
+    all_datasets = args.datasetFile.split(',')
+    #print(all_datasets)
+    if len(all_infiles) != len(all_datasets):
+        raise RuntimeError(f"all_infiles have len {len(all_infiles)} and all_datasets have len {len(all_datasets)}")
+    for (inFileName, sample_name) in zip(all_infiles, all_datasets):
+        #print(inFileName)
+        #print(sample_name)
+        if not os.path.exists(inFileName):
+            raise RuntimeError(f"{inFileName} removed")
+        inFileRoot = ROOT.TFile.Open(inFileName, "READ")
+        if inFileRoot.IsZombie():
             inFileRoot.Close()
+            os.remove(inFileName)
+            raise RuntimeError(f"{inFileName} is Zombie")
+        if  not checkFile(inFileRoot, channels, QCDregions, categories,args.var):
+            print(f"{sample_name} has void file")
+            inFileRoot.Close()
+            continue
+            #os.remove(inFileName)
+            #print(all_infiles.index(fileName))
+            #raise RuntimeError(f"{inFileName} has problems")
+        fillHistDict(args.var, inFileRoot, all_histograms,args.uncSource, channels, QCDregions, categories, histNamesDict, signals)
+        inFileRoot.Close()
+    for sample_type in all_histograms.keys():
+        print(sample_type, all_histograms[sample_type])
         MergeHistogramsPerType(all_histograms[sample_type])
-        all_histograms_1D[sample_type]=GetBTagWeightDict(args.var,all_histograms[sample_type],sample_type,final_json_dict,TwoDTrue, args.wantBTag)
-
-    #print(all_histograms)
-    AddQCDInHistDict(args.var,all_histograms_1D, channels, categories, sample_type, args.uncSource, all_samples_list, scales)
-    if not os.path.exists(args.jsonDir):
-        os.makedirs(args.jsonDir)
-    json_fileName_prefix =  f"all_ratios_{args.var}2D" if TwoDTrue else f"all_ratios_{args.var}"
-    #print(json_fileName_prefix)
-    #print(args.uncSource)
-    if args.uncSource !='Central':
-        json_fileName_prefix+=f"_{args.uncSource}"
-    json_file = os.path.join(args.jsonDir, 'all_ratios', f'{json_fileName_prefix}{args.suffix}.json')
-    with open(f"{json_file}", "w") as write_file:
+        all_histograms_1D[sample_type]=GetBTagWeightDict(args.var,all_histograms[sample_type],sample_type,final_json_dict,False, False)
+    fixNegativeContributions=True
+    if args.var == 'kinFit_m':
+        fixNegativeContributions=False
+    AddQCDInHistDict(args.var,all_histograms_1D, channels, categories, sample_type, args.uncSource, all_samples_list, scales,fixNegativeContributions)
+    with open(f"{args.jsonFile}.json", "w") as write_file:
         json.dump(final_json_dict, write_file, indent=4)
 
-    outDir = os.path.join(args.histDir,'all_histograms',args.var, btag_dir)
-    if not os.path.exists(outDir):
-        os.makedirs(outDir)
-    outFileName_prefix =  f"all_histograms_{args.var}2D" if TwoDTrue else f"all_histograms_{args.var}"
-    #if args.uncSource !='Central':
-    outFileName_prefix+=f"_{args.uncSource}"
-    outFileName = os.path.join(outDir, f'{outFileName_prefix}{args.suffix}.root')
-    if os.path.exists(outFileName):
-        os.remove(outFileName)
-    outFile = ROOT.TFile(outFileName, "RECREATE")
+    outFile = ROOT.TFile(args.outFile, "RECREATE")
 
     for sample_type in all_histograms_1D.keys():
+        #print(sample_type)
         for key in all_histograms_1D[sample_type]:
             (channel, qcdRegion, cat), (uncNameType, uncScale) = key
-
             if qcdRegion != 'OS_Iso': continue
             dirStruct = (channel, cat)
             dir_name = '/'.join(dirStruct)

@@ -13,7 +13,7 @@ from Analysis.HistHelper import *
 unc_to_not_consider_boosted = ["PUJetID", "JER","JES_FlavorQCD","JES_RelativeBal","JES_HF","JES_BBEC1","JES_EC2","JES_Absolute","JES_Total","JES_BBEC1_2018","JES_Absolute_2018","JES_EC2_2018","JES_HF_2018","JES_RelativeSample_2018","bTagSF_Loose_btagSFbc_correlated",  "bTagSF_Loose_btagSFbc_uncorrelated",  "bTagSF_Loose_btagSFlight_correlated",  "bTagSF_Loose_btagSFlight_uncorrelated",  "bTagSF_Medium_btagSFbc_correlated",  "bTagSF_Medium_btagSFbc_uncorrelated",  "bTagSF_Medium_btagSFlight_correlated",  "bTagSF_Medium_btagSFlight_uncorrelated",  "bTagSF_Tight_btagSFbc_correlated",  "bTagSF_Tight_btagSFbc_uncorrelated",  "bTagSF_Tight_btagSFlight_correlated",  "bTagSF_Tight_btagSFlight_uncorrelated","bTagShapeSF_lf","bTagShapeSF_hf","bTagShapeSF_lfstats1","bTagShapeSF_lfstats2","bTagShapeSF_hfstats1","bTagShapeSF_hfstats2","bTagShapeSF_cferr1","bTagShapeSF_cferr2"]
 
 
-def GetHisto(channel, category, inFile, inDir, hist_name, uncSource, scale):
+def GetHisto(channel, category, inFile, hist_name, uncSource, scale):
     dir_0 = inFile.Get(channel)
     dir_1 = dir_0.Get(category)
     #print(channel, category)
@@ -67,8 +67,8 @@ if __name__ == "__main__":
     import json
     import yaml
     parser = argparse.ArgumentParser()
-    parser.add_argument('--histDir', required=True)
-    parser.add_argument('--inFileName', required=True)
+    parser.add_argument('--inFile', required=True)
+    parser.add_argument('--outFile', required=True)
     parser.add_argument('--sampleConfig', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--histConfig', required=True, type=str)
@@ -87,7 +87,10 @@ if __name__ == "__main__":
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
-    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir, True, True, False)
+    wantSignals=False
+    wantAllMasses=False
+    wantOneMass=False
+    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict, wantSignals, wantAllMasses, wantOneMass)
     unc_cfg_dict = {}
     with open(args.uncConfig, 'r') as f:
         unc_cfg_dict = yaml.safe_load(f)
@@ -101,24 +104,22 @@ if __name__ == "__main__":
     categories = list(sample_cfg_dict['GLOBAL']['categories'])
     btag_dir= "bTag_WP" if args.wantBTag else "bTag_shape"
     unc_dict = {}
-    inDir = os.path.join(args.histDir,'all_histograms',args.var,btag_dir)
-    inFileName=f'{args.inFileName}_{args.var}_{args.uncSource}{args.suffix}.root'
 
-    outFileName=f'{args.inFileName}_{args.var}_{args.uncSource}{args.suffix}_Rebinned.root'
-    outfile  = ROOT.TFile(os.path.join(inDir,outFileName),'RECREATE')
+
+    outfile  = ROOT.TFile(args.outFile,'RECREATE')
     scales_to_consider = scales if args.uncSource !='Central' else ['Central']
     #print(all_samples_list)
-    print(f"{os.path.join(inDir,inFileName)}")
-    if not os.path.exists(os.path.join(inDir,inFileName)):
-        print(f"{os.path.join(inDir,inFileName)} does not exist")
+    print(f"{args.inFile}")
+    if not os.path.exists(args.inFile):
+        print(f"{args.inFile} does not exist")
     else:
-        inFile = ROOT.TFile(os.path.join(inDir, inFileName),"READ")
+        inFile = ROOT.TFile(args.inFile,"READ")
         for sample_type in all_samples_list+['QCD', 'data']:
             #print(sample_type)
             hist_rebinned_dict = {}
-            for channel in ['eTau', 'muTau', 'tauTau']:
+            for channel in sample_cfg_dict['GLOBAL']['channelSelection']:
                 if args.channel != '' and channel != args.channel : continue
-                for category in ['res2b','res1b','boosted','inclusive']:
+                for category in sample_cfg_dict['GLOBAL']['categories']:
                     #if category == 'boosted' and 'b#Tag' in args.uncSource: continue
                     if category == 'boosted' and args.uncSource in unc_to_not_consider_boosted: continue
                     if args.category != '' and category != args.category : continue
@@ -134,9 +135,9 @@ if __name__ == "__main__":
                             hist_name+=f"_{args.uncSource}{uncScale}"
                         uncScale_str = '-' if args.uncSource=='Central' else uncScale
                         #print(channel, category, uncScale, sample_type, uncScale_str)
-                        #print(f'hist name = {hist_name}')
+                        print(f'hist name = {hist_name}')
 
-                        hist_initial = GetHisto(channel, category, inFile, inDir, hist_name, args.uncSource,uncScale_str)
+                        hist_initial = GetHisto(channel, category, inFile, hist_name, args.uncSource,uncScale_str)
                         #print(f'hist initial entries = {hist_initial.GetEntries()}')
                         #print(channel, category, sample_type, hist_initial.Integral(0, hist_initial.GetNbinsX()+1))
                         if hist_initial.Integral(0, hist_initial.GetNbinsX()+1)==0:

@@ -71,15 +71,15 @@ def createKeyFilterDict(sample_cfg_dict):
                     filter_str = f"{filter_base}"
                 else:
                     filter_str = f"b1_pt>0 && b2_pt>0 && {filter_base}"
-                    #for mass_name,mass_limits in mass_cut_limits.items():
-                    #    filter_str+=f" && {mass_name} >= {mass_limits[0]} && {mass_name} <= {mass_limits[1]}"
+                    for mass_name,mass_limits in mass_cut_limits.items():
+                        filter_str+=f" && {mass_name} >= {mass_limits[0]} && {mass_name} <= {mass_limits[1]}"
                 key = (ch, reg, cat)
                 reg_dict[key] = filter_str
                 #print(key, filter_str)
                 #print()
     return reg_dict
 
-def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, scale):
+def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, scale, wantNegativeContributions):
     #print(channel, category)
     #print(histograms.keys())
     key_B_data = ((channel, 'OS_AntiIso', category), ('Central', 'Central'))
@@ -97,13 +97,14 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
     n_data_B = hist_data_B.Integral(0, hist_data_B.GetNbinsX()+1)
     n_data_C = hist_data_C.Integral(0, hist_data_C.GetNbinsX()+1)
     n_data_D = hist_data_D.Integral(0, hist_data_D.GetNbinsX()+1)
-    #print(f"Yield for data {key_C_data} is {n_data_C}")
-    #print(f"Yield for data {key_D_data} is {n_data_D}")
+    print(f"Initially Yield for data in OS AntiIso region is {key_B_data} is {n_data_B}")
+    print(f"Initially Yield for data in SS Iso region is{key_C_data} is {n_data_C}")
+    print(f"Initially Yield for data in SS AntiIso region is{key_D_data} is {n_data_D}")
     for sample in all_samples_list:
-        if sample=='data' or 'GluGluToBulkGraviton' in sample or 'GluGluToRadion' in sample or 'VBFToBulkGraviton' in sample or 'VBFToRadion'  in sample:
-            #print(f"sample {sample} is not considered")
+        if sample=='data' or 'GluGluToBulkGraviton' in sample or 'GluGluToRadion' in sample or 'VBFToBulkGraviton' in sample or 'VBFToRadion' in sample or sample=='QCD':
+            print(f"sample {sample} is not considered")
             continue
-        #print(sample)
+        print(sample)
         # find kappa value
         hist_sample = histograms[sample]
         #print(histograms[sample].keys())
@@ -116,9 +117,9 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
         n_data_C-=n_sample_C
         n_sample_D = hist_sample_D.Integral(0, hist_sample_D.GetNbinsX()+1)
         n_data_D-=n_sample_D
-        #print(f"Yield for data {key_B_data} after removing {sample} with yield {n_sample_B} is {n_data_B}")
-        #print(f"Yield for data {key_C_data} after removing {sample} with yield {n_sample_C} is {n_data_C}")
-        #print(f"Yield for data {key_D_data} after removing {sample} with yield {n_sample_D} is {n_data_D}")
+        print(f"Yield for data in OS AntiIso region {key_B_data} after removing {sample} with yield {n_sample_B} is {n_data_B}")
+        print(f"Yield for data in SS Iso region {key_C_data} after removing {sample} with yield {n_sample_C} is {n_data_C}")
+        print(f"Yield for data in SS AntiIso region {key_D_data} after removing {sample} with yield {n_sample_D} is {n_data_D}")
         hist_data_B.Add(hist_sample_B, -1)
     #if n_data_C <= 0 or n_data_D <= 0:
         #print(f"n_data_C = {n_data_C}")
@@ -129,15 +130,15 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
         return ROOT.TH1D()
         #raise  RuntimeError(f"transfer factor <=0 ! {kappa}")
     hist_data_B.Scale(kappa)
-    fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(hist_data_B)
-    if not fix_negative_contributions:
-        #return hist_data_B
-        print(debug_info)
-        print(negative_bins_info)
-        print("Unable to estimate QCD")
-
-        return ROOT.TH1D()
-        #raise RuntimeError("Unable to estimate QCD")
+    if wantNegativeContributions:
+        fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(hist_data_B)
+        if not fix_negative_contributions:
+            #return hist_data_B
+            print(debug_info)
+            print(negative_bins_info)
+            print("Unable to estimate QCD")
+            return ROOT.TH1D()
+            #raise RuntimeError("Unable to estimate QCD")
     return hist_data_B
 
 
@@ -186,7 +187,7 @@ def CompareYields(histograms, all_samples_list, channel, category, uncName, scal
         print(f"{sample} || {key_C} || {n_sample_C}")
         print(f"{sample} || {key_D} || {n_sample_D}")
 
-def AddQCDInHistDict(var, all_histograms, channels, categories, sample_type, uncName, all_samples_list, scales):
+def AddQCDInHistDict(var, all_histograms, channels, categories, sample_type, uncName, all_samples_list, scales, wantNegativeContributions=True):
     if 'QCD' not in all_histograms.keys():
             all_histograms['QCD'] = {}
     for channel in channels:
@@ -201,7 +202,7 @@ def AddQCDInHistDict(var, all_histograms, channels, categories, sample_type, unc
                 if cat == 'boosted' and uncName in unc_to_not_consider_boosted: continue
                 if cat != 'boosted' and var in var_to_add_boosted: continue
                 key =( (channel, 'OS_Iso', cat), (uncName, scale))
-                all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale)
+                all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale,wantNegativeContributions)
 
 def ApplyBTagWeight(cat,applyBtag=True, finalWeight_name = 'final_weight_0'):
     btag_weight = "1"
@@ -218,9 +219,9 @@ def GetWeight(channel, cat):
     trg_weights_dict = {
         'eTau':["weight_tau1_TrgSF_singleEle_Central","weight_tau2_TrgSF_singleEle_Central", "weight_tau1_TrgSF_etau_Central", "weight_tau2_TrgSF_etau_Central"],
         'muTau':["weight_tau1_TrgSF_singleMu_Central","weight_tau2_TrgSF_singleMu_Central", "weight_tau1_TrgSF_mutau_Central", "weight_tau2_TrgSF_mutau_Central"],
-        'tauTau':["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central"]
+        'tauTau':["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central","weight_tau1_TrgSF_singleTau_Central","weight_tau2_TrgSF_singleTau_Central"]
         }
-    tau_weights =["EleSF_EleIDCentral", "HighPt_MuonID_SF_HighPtIDCentral", "HighPt_MuonID_SF_HighPtIdRelTkIsoCentral", "HighPt_MuonID_SF_RecoCentral", "HighPt_MuonID_SF_TightIDCentral", "MuonID_SF_HighPtID_TrkCentral", "MuonID_SF_HighPtIdRelTkIsoCentral", "MuonID_SF_RecoCentral", "MuonID_SF_TightID_TrkCentral", "MuonID_SF_TightRelIsoCentral", "TauID_SF_Central", "TauID_SF_genuineElectron_barrelCentral", "TauID_SF_genuineElectron_endcapsCentral", "TauID_SF_genuineMuon_eta0p4to0p8Central", "TauID_SF_genuineMuon_eta0p8to1p2Central", "TauID_SF_genuineMuon_eta1p2to1p7Central", "TauID_SF_genuineMuon_etaGt1p7Central", "TauID_SF_genuineMuon_etaLt0p4Central", "TauID_SF_stat1_dm0Central", "TauID_SF_stat1_dm10Central", "TauID_SF_stat1_dm11Central", "TauID_SF_stat1_dm1Central", "TauID_SF_stat2_dm0Central", "TauID_SF_stat2_dm10Central", "TauID_SF_stat2_dm11Central", "TauID_SF_stat2_dm1Central", "TauID_SF_syst_allerasCentral", "TauID_SF_syst_yearCentral", "TauID_SF_syst_year_dm0Central", "TauID_SF_syst_year_dm10Central", "TauID_SF_syst_year_dm11Central", "TauID_SF_syst_year_dm1Central", "TauID_SF_totalCentral","TauID_SF_stat_highpT_bin1Central","TauID_SF_stat_highpT_bin2Central", "TauID_SF_syst_highpT_bin1Central", "TauID_SF_syst_highpT_bin2Central", "TauID_SF_syst_highpT_extrapCentral"]
+    tau_weights =["EleSF_EleIDCentral", "HighPt_MuonID_SF_HighPtIDCentral", "HighPt_MuonID_SF_HighPtIdRelTkIsoCentral", "HighPt_MuonID_SF_RecoCentral", "HighPt_MuonID_SF_TightIDCentral", "MuonID_SF_HighPtID_TrkCentral", "MuonID_SF_HighPtIdRelTkIsoCentral", "MuonID_SF_RecoCentral", "MuonID_SF_TightID_TrkCentral", "MuonID_SF_TightRelIsoCentral", "TauID_SF_Medium_Central"]
     for tau_suffix in tau_weights:
         for tau_idx in [1,2]:
             weights_to_apply.append(f"weight_tau{tau_idx}_{tau_suffix}")
@@ -312,15 +313,15 @@ class DataFrameBuilder(DataFrameBuilderBase):
     def defineQCDRegions(self):
         #print(self.deepTauVersion)
         tau2_iso_var = f"tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet"
+        tau1_iso_var = f"tau1_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet"
+        self.df = self.df.Define("tau1_iso_medium", f"{tau1_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
         self.df = self.df.Define("OS", "tau1_charge*tau2_charge < 0")
-        self.df = self.df.Define("Iso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.VLoose.value}")
-        #self.df = self.df.Define("Iso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Loose.value}")
-        #self.df = self.df.Define("Iso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
+        self.df = self.df.Define("Iso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
         self.df = self.df.Define("AntiIso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value} && !Iso")
-        self.df = self.df.Define("OS_Iso", f"OS && Iso")
-        self.df = self.df.Define("SS_Iso", f"!OS && Iso")
-        self.df = self.df.Define("OS_AntiIso", f"OS && AntiIso")
-        self.df = self.df.Define("SS_AntiIso", f"!OS && AntiIso")
+        self.df = self.df.Define("OS_Iso", f"tau1_iso_medium && OS && Iso")
+        self.df = self.df.Define("SS_Iso", f"tau1_iso_medium && !OS && Iso")
+        self.df = self.df.Define("OS_AntiIso", f"tau1_iso_medium && OS && AntiIso")
+        self.df = self.df.Define("SS_AntiIso", f"tau1_iso_medium && !OS && AntiIso")
 
     def deepTauYear(self):
         return deepTauYears[self.deepTauVersion]

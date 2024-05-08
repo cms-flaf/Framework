@@ -104,7 +104,11 @@
 			"span": "cpp",
 			"*.icc": "cpp",
 			"forward_list": "cpp",
-			"regex": "cpp"
+			"regex": "cpp",
+			"charconv": "cpp",
+			"csignal": "cpp",
+			"format": "cpp",
+			"shared_mutex": "cpp"
 		},
 		"git.ignoreLimitWarning": true
 	}

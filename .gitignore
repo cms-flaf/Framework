@@ -3,13 +3,5 @@
 __pycache__
 /output
 /soft
-/crab
-/.crabOverseer*
 /test
 /.vscode
-*.txt
-*.yaml
-*.sh
-*.root
-*.pdf
-*.json

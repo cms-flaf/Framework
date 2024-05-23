@@ -316,6 +316,33 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#how-to-run-nanoaod-nanoaod-skims-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to run nanoAOD-&gt;nanoAOD skims production
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-run-hhbtag-training-skim-ntuple-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to run HHbtag training skim ntuple production
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-run-histogram-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to run Histogram production
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -372,6 +399,33 @@
   <a href="#how-to-run-limits" class="md-nav__link">
     <span class="md-ellipsis">
       How to run limits
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-run-nanoaod-nanoaod-skims-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to run nanoAOD-&gt;nanoAOD skims production
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-run-hhbtag-training-skim-ntuple-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to run HHbtag training skim ntuple production
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-run-histogram-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to run Histogram production
     </span>
   </a>
   
@@ -461,6 +515,15 @@ Task workflow managed is done via <a href="https://github.com/riga/law">LAW</a> 
 </ul>
 </li>
 </ol>
+<h2 id="how-to-run-nanoaod-nanoaod-skims-production">How to run nanoAOD-&gt;nanoAOD skims production<a class="headerlink" href="#how-to-run-nanoaod-nanoaod-skims-production" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>law<span class="w"> </span>run<span class="w"> </span>CreateNanoSkims<span class="w"> </span>--version<span class="w"> </span>prod_v1<span class="w"> </span>--periods<span class="w"> </span><span class="m">2016</span>,2016APV,2017,2018<span class="w"> </span>--ignore-missing-samples<span class="w"> </span>True
+</code></pre></div>
+<h2 id="how-to-run-hhbtag-training-skim-ntuple-production">How to run HHbtag training skim ntuple production<a class="headerlink" href="#how-to-run-hhbtag-training-skim-ntuple-production" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>Studies/HHBTag/CreateTrainingSkim.py<span class="w"> </span>--inFile<span class="w"> </span><span class="nv">$CENTRAL_STORAGE</span>/prod_v1/nanoAOD/2018/GluGluToBulkGravitonToHHTo2B2Tau_M-350.root<span class="w"> </span>--outFile<span class="w"> </span>output/skim.root<span class="w"> </span>--mass<span class="w"> </span><span class="m">350</span><span class="w"> </span>--sample<span class="w"> </span>GluGluToBulkGraviton<span class="w"> </span>--year<span class="w"> </span><span class="m">2018</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="w"> </span>EventInfo.txt
+python<span class="w"> </span>Common/SaveHisto.txt<span class="w"> </span>--inFile<span class="w"> </span><span class="nv">$CENTRAL_STORAGE</span>/prod_v1/nanoAOD/2018/GluGluToBulkGravitonToHHTo2B2Tau_M-350.root<span class="w"> </span>--outFile<span class="w"> </span>output/skim.root
+</code></pre></div>
+<h2 id="how-to-run-histogram-production">How to run Histogram production<a class="headerlink" href="#how-to-run-histogram-production" title="Permanent link">&para;</a></h2>
+<p>Please, see the file all_commands.txt (to be updated)</p>
 
 
 

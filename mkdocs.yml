@@ -1,0 +1,75 @@
+site_name: FLAF
+repo_name: GitHub
+repo_url: https://github.com/cms-flaf/Framework
+theme:
+  name: material
+  font: false
+  features:
+    - content.action.edit
+    - content.action.view
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+
+markdown_extensions:
+  - attr_list
+  - admonition
+  - def_list
+  - footnotes
+  - meta
+  - toc:
+      permalink: true
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - pymdownx.blocks.admonition
+  - pymdownx.blocks.details
+  - pymdownx.blocks.tab
+
+plugins:
+  - search
+
+extra_css:
+  - stylesheets/fonts.css
+
+extra_javascript:
+  - https://unpkg.com/mermaid@9.3/dist/mermaid.min.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+
+nav:
+  - Home: index.md
+
+#theme: readthedocs

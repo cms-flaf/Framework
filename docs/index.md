@@ -5,8 +5,8 @@ Task workflow managed is done via [LAW](https://github.com/riga/law) (Luigi Anal
 
 ## How to install
 1. Setup ssh keys:
-  - On GitHub [settings/keys](https://github.com/settings/keys)
-  - On CERN GitLab [profile/keys](https://gitlab.cern.ch/-/profile/keys)
+    - On GitHub [settings/keys](https://github.com/settings/keys)
+    - On CERN GitLab [profile/keys](https://gitlab.cern.ch/-/profile/keys)
 
 1. Clone the repository:
   ```sh

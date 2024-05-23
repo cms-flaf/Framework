@@ -307,6 +307,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#how-to-run-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to run limits
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -359,6 +368,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#how-to-run-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to run limits
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -391,14 +409,58 @@
 
 
 <h1 id="flaf">FLAF<a class="headerlink" href="#flaf" title="Permanent link">&para;</a></h1>
-<p>Flexible LAW-based Analysis Framework</p>
+<p>FLAF - Flexible LAW-based Analysis Framework.
+Task workflow managed is done via <a href="https://github.com/riga/law">LAW</a> (Luigi Analysis Framework).</p>
 <h2 id="how-to-install">How to install<a class="headerlink" href="#how-to-install" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>--recursive<span class="w"> </span>git@github.com:cms-flaf/Framework.git
-</code></pre></div>
+<ol>
+<li>Setup ssh keys:</li>
+<li>On GitHub <a href="https://github.com/settings/keys">settings/keys</a></li>
+<li>
+<p>On CERN GitLab <a href="https://gitlab.cern.ch/-/profile/keys">profile/keys</a></p>
+</li>
+<li>
+<p>Clone the repository:
+  <div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>--recursive<span class="w"> </span>git@github.com:cms-flaf/Framework.git<span class="w"> </span>FLAF
+</code></pre></div></p>
+</li>
+</ol>
 <h2 id="how-to-load-environment">How to load environment<a class="headerlink" href="#how-to-load-environment" title="Permanent link">&para;</a></h2>
 <p>Following command activates the framework environment:
 <div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>env.sh
 </code></pre></div></p>
+<h2 id="how-to-run-limits">How to run limits<a class="headerlink" href="#how-to-run-limits" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>As a temporary workaround, if you want to run multiplie commands, to avoid delays to load environment each time run:
+  <div class="highlight"><pre><span></span><code>cmbEnv<span class="w"> </span>/bin/zsh<span class="w"> </span><span class="c1"># or /bin/bash</span>
+</code></pre></div>
+  Alternatively add <code>cmbEnv</code> in front of each command. E.g.
+  <div class="highlight"><pre><span></span><code>cmbEnv<span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;print(&quot;hello&quot;)&#39;</span>
+</code></pre></div></p>
+</li>
+<li>
+<p>Create datacards.
+  <div class="highlight"><pre><span></span><code>python3<span class="w"> </span>StatInference/dc_make/create_datacards.py<span class="w"> </span>--input<span class="w"> </span>PATH_TO_SHAPES<span class="w">  </span>--output<span class="w"> </span>PATH_TO_CARDS<span class="w"> </span>--config<span class="w"> </span>PATH_TO_CONFIG
+</code></pre></div>
+  Available configurations:</p>
+<ul>
+<li>For X-&gt;HH&gt;bbtautau Run 2: <a href="https://github.com/cms-flaf/StatInference/blob/main/config/x_hh_bbtautau_run2.yaml">StatInference/config/x_hh_bbtautau_run2.yaml</a></li>
+<li>For X-&gt;HH-&gt;bbWW Run 3: <a href="https://github.com/cms-flaf/StatInference/blob/main/config/x_hh_bbww_run3.yaml">StatInference/config/x_hh_bbww_run3.yaml</a></li>
+</ul>
+</li>
+<li>
+<p>Run limits.
+  <div class="highlight"><pre><span></span><code>law<span class="w"> </span>run<span class="w"> </span>PlotResonantLimits<span class="w"> </span>--version<span class="w"> </span>dev<span class="w"> </span>--datacards<span class="w"> </span><span class="s1">&#39;PATH_TO_CARDS/*.txt&#39;</span><span class="w"> </span>--xsec<span class="w"> </span>fb<span class="w"> </span>--y-log
+</code></pre></div>
+  Hints:</p>
+<ul>
+<li>use <code>--workflow htcondor</code> to submit on HTCondor (by default it runs locally)</li>
+<li>add <code>--remove-output 4,a,y</code> to remove previous output files</li>
+<li>add <code>--print-status 0</code> to get status of the workflow (where <code>0</code> is a depth). Useful to get the output file name.</li>
+<li>for more details see <a href="https://cms-hh.web.cern.ch/tools/inference/">cms-hh inference documentation</a></li>
+</ul>
+</li>
+</ol>
 
 
 

@@ -64,6 +64,7 @@ do_install_inference() {
   local combine_version=$3
   local cmssw_base=$4
 
+  export ANALYSIS_PATH="$this_dir"
   echo "Installing inference: combine $combine_version in $cmssw_version for $scram_arch"
 
   local setups_dir="$this_dir/inference/.setups"

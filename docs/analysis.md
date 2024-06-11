@@ -1,11 +1,13 @@
 # Common analysis steps
 
 Remarks:
+
 - commands bellow assume that `ERA` variable is set. E.g.
     ```sh
     ERA=Run2_2016
     ```
     Alternatively you can add `ERA=Run2_2016; ...` in front of each command.
+
 - `version` argument alows to produce different versions of the same task. In the command below `--version dev` is used for illustration purposes. You can replace it with your version naming.
 - `--workflow` can be `htcondor` or `local`. It is recommended to develop and test locally and then switch to `htcondor` for production. In examples below `--workflow local` is used for illustration purposes.
 - when running on `htcondor` it is recommended to add `--transfer-logs` to the command to transfer logs to local.

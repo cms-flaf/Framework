@@ -9,8 +9,10 @@
       
       
       
-        <link rel="prev" href="..">
+        <link rel="prev" href="../analysis/">
       
+      
+        <link rel="next" href="../stat_inference/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -189,6 +191,23 @@
         
   
   
+  
+    <li class="md-tabs__item">
+      <a href="../analysis/" class="md-tabs__link">
+        
+  
+    
+  
+  Analysis
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
     
   
   
@@ -199,6 +218,23 @@
     
   
   HH->bbtautau
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../stat_inference/" class="md-tabs__link">
+        
+  
+    
+  
+  Statistical inference
 
       </a>
     </li>
@@ -268,6 +304,26 @@
   
   <span class="md-ellipsis">
     Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Analysis
   </span>
   
 
@@ -439,10 +495,39 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#how-to-run-hhbtag-training-skim-ntuple-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to run HHbtag training skim ntuple production
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
       
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stat_inference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Statistical inference
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -584,6 +669,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#how-to-run-hhbtag-training-skim-ntuple-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to run HHbtag training skim ntuple production
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -618,57 +712,61 @@
 <h1 id="simple-commands">Simple commands<a class="headerlink" href="#simple-commands" title="Permanent link">&para;</a></h1>
 <h2 id="deeptau-2p1">DeepTau 2p1<a class="headerlink" href="#deeptau-2p1" title="Permanent link">&para;</a></h2>
 <h3 id="anacache-production">AnaCache Production<a class="headerlink" href="#anacache-production" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>InputFileTask<span class="w">  </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span>
-<span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>AnaCacheTask<span class="w">  </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--transfer-logs
+<div class="highlight"><pre><span></span><code><span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>InputFileTask<span class="w">  </span>--period<span class="w"> </span><span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span>
+<span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>AnaCacheTask<span class="w">  </span>--period<span class="w"> </span><span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--transfer-logs
 </code></pre></div>
 <h3 id="anatuple-production-after-anacachetask">AnaTuple Production (AFTER AnaCacheTask)<a class="headerlink" href="#anatuple-production-after-anacachetask" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>InputFileTask<span class="w">  </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span>
-<span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>AnaTupleTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
-<span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>mkdir<span class="w"> </span>/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/<span class="si">${</span><span class="nv">dir</span><span class="si">}</span>/Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span>/data
-<span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>DataMergeTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
+<div class="highlight"><pre><span></span><code><span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>InputFileTask<span class="w">  </span>--period<span class="w"> </span><span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span>
+<span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>AnaTupleTask<span class="w"> </span>--period<span class="w"> </span><span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
+<span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>mkdir<span class="w"> </span>/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/<span class="si">${</span><span class="nv">dir</span><span class="si">}</span>/Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span>/data
+<span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>DataMergeTask<span class="w"> </span>--period<span class="w"> </span><span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
 </code></pre></div>
 <h3 id="anacachetuple-production-after-anatupletask">AnaCacheTuple Production (AFTER AnaTupleTask)<a class="headerlink" href="#anacachetuple-production-after-anatupletask" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>AnaCacheTupleTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
+<div class="highlight"><pre><span></span><code><span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>AnaCacheTupleTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
 </code></pre></div>
 <h3 id="histograms-production-after-anatupletask-but-not-necessairly-anacachetupletask">Histograms Production (AFTER AnaTupleTask but NOT NECESSAIRLY AnaCacheTupleTask)<a class="headerlink" href="#histograms-production-after-anatupletask-but-not-necessairly-anacachetupletask" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>HistProducerFileTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
-<span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>HistProducerSampleTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
-<span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w">  </span>MergeTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w">  </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w">  </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
+<div class="highlight"><pre><span></span><code><span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>HistProducerFileTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
+<span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>HistProducerSampleTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
+<span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w">  </span>MergeTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w">  </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w">  </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
 </code></pre></div>
 <p><strong>Work in progress</strong>
-<div class="highlight"><pre><span></span><code><span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w">  </span>HistRebinnerTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w">  </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w">  </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs<span class="w"> </span><span class="c1">#This does something only for KinFit_m, currently</span>
-<span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w">  </span>HaddMergedTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w">  </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w">  </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
+<div class="highlight"><pre><span></span><code><span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w">  </span>HistRebinnerTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w">  </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w">  </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs<span class="w"> </span><span class="c1">#This does something only for KinFit_m, currently</span>
+<span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p1_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w">  </span>HaddMergedTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w">  </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w">  </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
 </code></pre></div></p>
 <h2 id="deeptau-2p5">DeepTau 2p5<a class="headerlink" href="#deeptau-2p5" title="Permanent link">&para;</a></h2>
 <h3 id="anacache-production_1">AnaCache Production<a class="headerlink" href="#anacache-production_1" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>InputFileTask<span class="w">  </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span>
-<span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>AnaCacheTask<span class="w">  </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--transfer-logs<span class="w"> </span>--customisations<span class="w"> </span><span class="nv">deepTauVersion</span><span class="o">=</span>2p5
+<div class="highlight"><pre><span></span><code><span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>InputFileTask<span class="w">  </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span>
+<span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>AnaCacheTask<span class="w">  </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--transfer-logs<span class="w"> </span>--customisations<span class="w"> </span><span class="nv">deepTauVersion</span><span class="o">=</span>2p5
 </code></pre></div>
 <h3 id="anatuple-production-after-anacachetask_1">AnaTuple Production (AFTER AnaCacheTask)<a class="headerlink" href="#anatuple-production-after-anacachetask_1" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>InputFileTask<span class="w">  </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span>
-<span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>AnaTupleTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs<span class="w"> </span>--customisations<span class="w"> </span><span class="nv">deepTauVersion</span><span class="o">=</span>2p5
-<span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>mkdir<span class="w"> </span>/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/<span class="si">${</span><span class="nv">dir</span><span class="si">}</span>/Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span>/data
-<span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>DataMergeTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs<span class="w"> </span>--customisations<span class="w"> </span><span class="nv">deepTauVersion</span><span class="o">=</span>2p5<span class="w"> </span><span class="c1"># not sure it&#39;s needed in this step but I add it usually</span>
+<div class="highlight"><pre><span></span><code><span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>InputFileTask<span class="w">  </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span>
+<span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>AnaTupleTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs<span class="w"> </span>--customisations<span class="w"> </span><span class="nv">deepTauVersion</span><span class="o">=</span>2p5
+<span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>mkdir<span class="w"> </span>/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/<span class="si">${</span><span class="nv">dir</span><span class="si">}</span>/Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span>/data
+<span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>DataMergeTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs<span class="w"> </span>--customisations<span class="w"> </span><span class="nv">deepTauVersion</span><span class="o">=</span>2p5<span class="w"> </span><span class="c1"># not sure it&#39;s needed in this step but I add it usually</span>
 </code></pre></div>
 <h3 id="anacachetuple-production-after-anatupletask_1">AnaCacheTuple Production (AFTER AnaTupleTask)<a class="headerlink" href="#anacachetuple-production-after-anatupletask_1" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>AnaCacheTupleTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs<span class="w"> </span>--customisations<span class="w"> </span><span class="nv">deepTauVersion</span><span class="o">=</span>2p5
-<span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span>/eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span>/data/<span class="si">${</span><span class="nv">dir</span><span class="si">}</span>
-<span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>DataCacheMergeTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs<span class="w"> </span>--customisations<span class="w"> </span><span class="nv">deepTauVersion</span><span class="o">=</span>2p5
+<div class="highlight"><pre><span></span><code><span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>AnaCacheTupleTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs<span class="w"> </span>--customisations<span class="w"> </span><span class="nv">deepTauVersion</span><span class="o">=</span>2p5
+<span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span>/eos/home-k/kandroso/cms-hh-bbtautau/anaCache/Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span>/data/<span class="si">${</span><span class="nv">dir</span><span class="si">}</span>
+<span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>DataCacheMergeTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs<span class="w"> </span>--customisations<span class="w"> </span><span class="nv">deepTauVersion</span><span class="o">=</span>2p5
 </code></pre></div>
 <h3 id="histograms-production-after-anatupletask-but-not-necessairly-anacachetupletask_1">Histograms Production (AFTER AnaTupleTask but NOT NECESSAIRLY AnaCacheTupleTask)<a class="headerlink" href="#histograms-production-after-anatupletask-but-not-necessairly-anacachetupletask_1" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>HistProducerFileTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
-<span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>HistProducerSampleTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
-<span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w">  </span>MergeTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w">  </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w">  </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
+<div class="highlight"><pre><span></span><code><span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>HistProducerFileTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
+<span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w"> </span>HistProducerSampleTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
+<span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w">  </span>MergeTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w">  </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w">  </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
 </code></pre></div>
 <p><strong>Work in progress</strong>
-<div class="highlight"><pre><span></span><code><span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w">  </span>HistRebinnerTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w">  </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w">  </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs<span class="w"> </span><span class="c1">#This does something only for KinFit_m, currently</span>
-<span class="nv">year</span><span class="o">=</span><span class="m">2016</span><span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w">  </span>HaddMergedTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">year</span><span class="si">}</span><span class="w">  </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w">  </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
+<div class="highlight"><pre><span></span><code><span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w">  </span>HistRebinnerTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w">  </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w">  </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs<span class="w"> </span><span class="c1">#This does something only for KinFit_m, currently</span>
+<span class="nv">era</span><span class="o">=</span>Run2_2016<span class="p">;</span><span class="w"> </span><span class="nv">dir</span><span class="o">=</span>v8_deepTau2p5_onlyTauTau_HTT<span class="p">;</span><span class="w"> </span>law<span class="w"> </span>run<span class="w">  </span>HaddMergedTask<span class="w"> </span>--period<span class="w"> </span>Run2_<span class="si">${</span><span class="nv">era</span><span class="si">}</span><span class="w">  </span>--version<span class="w"> </span><span class="si">${</span><span class="nv">dir</span><span class="si">}</span><span class="w">  </span>--workflow<span class="w"> </span>htcondor<span class="w"> </span>--transfer-logs
 </code></pre></div></p>
 <h2 id="tips">Tips<a class="headerlink" href="#tips" title="Permanent link">&para;</a></h2>
 <ol>
 <li>For local production switch from <code>--workflow htcondor</code> to <code>--workflow local</code></li>
 <li>To produce specific branches add <code>--branches X1,X2,...</code>, where <code>Xi</code> are the branch numbers</li>
 </ol>
+<h2 id="how-to-run-hhbtag-training-skim-ntuple-production">How to run HHbtag training skim ntuple production<a class="headerlink" href="#how-to-run-hhbtag-training-skim-ntuple-production" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>Studies/HHBTag/CreateTrainingSkim.py<span class="w"> </span>--inFile<span class="w"> </span><span class="nv">$CENTRAL_STORAGE</span>/prod_v1/nanoAOD/2018/GluGluToBulkGravitonToHHTo2B2Tau_M-350.root<span class="w"> </span>--outFile<span class="w"> </span>output/skim.root<span class="w"> </span>--mass<span class="w"> </span><span class="m">350</span><span class="w"> </span>--sample<span class="w"> </span>GluGluToBulkGraviton<span class="w"> </span>--year<span class="w"> </span><span class="m">2018</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="w"> </span>EventInfo.txt
+python<span class="w"> </span>Common/SaveHisto.txt<span class="w"> </span>--inFile<span class="w"> </span><span class="nv">$CENTRAL_STORAGE</span>/prod_v1/nanoAOD/2018/GluGluToBulkGravitonToHHTo2B2Tau_M-350.root<span class="w"> </span>--outFile<span class="w"> </span>output/skim.root
+</code></pre></div>
 
 
 
@@ -704,7 +802,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href=".." class="md-footer__link md-footer__link--prev" aria-label="Previous: Home">
+          <a href="../analysis/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Analysis">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -714,11 +812,27 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Home
+                Analysis
               </div>
             </div>
           </a>
         
+        
+          
+          <a href="../stat_inference/" class="md-footer__link md-footer__link--next" aria-label="Next: Statistical inference">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Statistical inference
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+            </div>
+          </a>
         
       </nav>
     

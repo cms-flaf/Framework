@@ -1,7 +1,9 @@
 GLOBAL:
   era: 'Run2_2016'
   luminosity : 16800 # pb^-1 2016 postVFP
-  #luminosity: 36310.
+  fs_nanoAOD:
+  - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2016'
+  nano_version: v12
   MET_flags: # https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#2016_data_and_MC_UL
     - Flag_goodVertices
     - Flag_globalSuperTightHalo2016Filter
@@ -13,56 +15,11 @@ GLOBAL:
     - Flag_eeBadScFilter
     #- Flag_hfNoisyHitsFilter
     #- Flag_BadChargedCandidateFilter
-  triggerFile: config/triggers_2016.yaml
+  triggerFile: config/Run2_2016/triggers.yaml
   crossSectionsFile : config/crossSections13TeV.yaml
   # from https://twiki.cern.ch/twiki/bin/viewauth/CMS/DCUserPage
   # useful link: https://twiki.cern.ch/twiki/bin/view/CMS/DCUserPage2016Analysis
-  #lumiFile: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Final/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON.txt
   lumiFile: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Legacy_2016/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt
-  signal_types:
-    - GluGluToRadion
-    - GluGluToBulkGraviton
-    - VBFToRadion
-    - VBFToBulkGraviton
-  genuineTau_SFtype:
-    eTau: dm
-    muTau: dm
-    tauTau: dm
-  deepTauWPs:
-    eTau:
-      VSe: VVLoose
-      VSmu: Tight
-      VSjet: Medium
-    muTau:
-      VSe: VVLoose
-      VSmu: Tight
-      VSjet: Medium
-    tauTau:
-      VSe: VVLoose
-      VSmu: Tight
-      VSjet: Medium
-  corrections:
-    - tauID
-    - tauES
-    - JEC_JER
-  deepTauVersion: 2p1
-  channelSelection:
-    #- eTau
-    #- muTau
-    - tauTau
-  QCDRegions:
-    - OS_Iso
-    - SS_Iso
-    - OS_AntiIso
-    - SS_AntiIso
-  categories:
-    - res1b
-    - res2b
-    - inclusive
-    - boosted
-    - btag_shape
-    - baseline
-  storeExtraJets: False
   sampleSelection:
     #- drop ^.*$
     #- keep ^GluGluToRadion*

@@ -163,9 +163,6 @@ action() {
   export ANALYSIS_PATH="$this_dir"
   export ANALYSIS_DATA_PATH="$ANALYSIS_PATH/data"
   export X509_USER_PROXY="$ANALYSIS_DATA_PATH/voms.proxy"
-  export CENTRAL_STORAGE="/eos/user/k/kandroso/cms-hh-bbtautau"
-  export VDAMANTE_STORAGE="/eos/user/v/vdamante/HH_bbtautau_resonant_Run2"
-  export ANALYSIS_BIG_DATA_PATH="$CENTRAL_STORAGE/tmp/$(whoami)/data"
 
   run_cmd mkdir -p "$ANALYSIS_DATA_PATH"
 
@@ -173,14 +170,15 @@ action() {
   local os_prefix=$(get_os_prefix $os_version)
   local node_os=$os_prefix$os_version
 
-  local default_cmssw_ver=CMSSW_13_0_15
-  # local default_cmssw_ver=CMSSW_14_0_6_patch1
+  # local default_cmssw_ver=CMSSW_13_0_15
+  local default_cmssw_ver=CMSSW_14_0_8
   local target_os_version=9
   local target_os_prefix=$(get_os_prefix $target_os_version)
   local target_os_gt_prefix=$(get_os_prefix $target_os_version 1)
   local target_os=$target_os_prefix$target_os_version
   export DEFAULT_CMSSW_BASE="$ANALYSIS_PATH/soft/$default_cmssw_ver"
-  run_cmd install_cmssw $node_os $target_os ${target_os_gt_prefix}${target_os_version}_amd64_gcc11 $default_cmssw_ver
+  export DEFAULT_CMSSW_ARCH="${target_os_gt_prefix}${target_os_version}_amd64_gcc12"
+  run_cmd install_cmssw $node_os $target_os $DEFAULT_CMSSW_ARCH $default_cmssw_ver
 
   local cmb_cmssw_ver=CMSSW_11_3_4
   local cmb_scram_arch="slc7_amd64_gcc900"
@@ -195,15 +193,14 @@ action() {
     autoload bashcompinit
     bashcompinit
   fi
-  #source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.30.02/x86_64-almalinux9.3-gcc114-opt/bin/thisroot.sh
-  export MAMBA_ROOT_PREFIX=/afs/cern.ch/work/k/kandroso/micromamba
-  eval "$($MAMBA_ROOT_PREFIX/micromamba shell hook -s posix)"
-  micromamba activate hh
+
+  source /afs/cern.ch/work/k/kandroso/public/flaf_env/bin/activate
+  source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.30.06/x86_64-almalinux9.3-gcc114-opt/bin/thisroot.sh
   run_cmd source /afs/cern.ch/user/m/mrieger/public/law_sw/setup.sh
   source "$( law completion )"
   source /cvmfs/cms.cern.ch/rucio/setup-py3.sh &> /dev/null
 
-  alias cmsEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY CENTRAL_STORAGE=$CENTRAL_STORAGE ANALYSIS_BIG_DATA_PATH=$ANALYSIS_BIG_DATA_PATH DEFAULT_CMSSW_BASE=$DEFAULT_CMSSW_BASE $ANALYSIS_PATH/RunKit/cmsEnv.sh"
+  alias cmsEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY CENTRAL_STORAGE=$CENTRAL_STORAGE ANALYSIS_BIG_DATA_PATH=$ANALYSIS_BIG_DATA_PATH DEFAULT_CMSSW_BASE=$DEFAULT_CMSSW_BASE DEFAULT_CMSSW_ARCH=$DEFAULT_CMSSW_ARCH $ANALYSIS_PATH/RunKit/cmsEnv.sh"
   alias cmbEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY CENTRAL_STORAGE=$CENTRAL_STORAGE ANALYSIS_BIG_DATA_PATH=$ANALYSIS_BIG_DATA_PATH /cvmfs/cms.cern.ch/common/cmssw-cc7 -- $ANALYSIS_PATH/cmb_env.sh"
 }
 

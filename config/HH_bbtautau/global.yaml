@@ -1,0 +1,48 @@
+anaTupleDef: AnaProd/HH_bbtautau/anaTupleDef.py
+signal_types:
+  - GluGluToRadion
+  - GluGluToBulkGraviton
+  - VBFToRadion
+  - VBFToBulkGraviton
+genuineTau_SFtype:
+  eTau: dm
+  muTau: dm
+  tauTau: dm
+deepTauWPs:
+  eTau:
+    VSe: VVLoose
+    VSmu: Tight
+    VSjet: Medium
+  muTau:
+    VSe: VVLoose
+    VSmu: Tight
+    VSjet: Medium
+  tauTau:
+    VSe: VVLoose
+    VSmu: Tight
+    VSjet: Medium
+corrections:
+  - tauID
+  - tauES
+  - JEC_JER
+  - trg
+  - btag
+  - pu
+deepTauVersion: 2p1
+channelSelection:
+  #- eTau
+  #- muTau
+  - tauTau
+QCDRegions:
+  - OS_Iso
+  - SS_Iso
+  - OS_AntiIso
+  - SS_AntiIso
+categories:
+  - res1b
+  - res2b
+  - inclusive
+  - boosted
+  - btag_shape
+  - baseline
+storeExtraJets: False

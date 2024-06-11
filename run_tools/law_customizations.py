@@ -3,13 +3,12 @@ import law
 import luigi
 import math
 import os
-import re
-import yaml
 import tempfile
 
-from RunKit.envToJson import get_cmsenv
+from RunKit.run_tools import natural_sort
 from RunKit.crabLaw import update_kinit
-from RunKit.law_wlcg import WLCGFileSystem, WLCGFileTarget
+from RunKit.law_wlcg import WLCGFileTarget
+from Common.Setup import Setup
 
 law.contrib.load("htcondor")
 
@@ -22,106 +21,6 @@ def get_param_value(cls, param_name):
     param = getattr(cls, param_name)
     return param.task_value(cls.__name__, param_name)
 
-def select_items(all_items, filters):
-    def name_match(name, pattern):
-        if pattern[0] == '^':
-            return re.match(pattern, name) is not None
-        return name == pattern
-
-    selected_items = { c for c in all_items }
-    excluded_items = set()
-    keep_prefix = "keep "
-    drop_prefix = "drop "
-    used_filters = set()
-    for item_filter in filters:
-        if item_filter.startswith(keep_prefix):
-            keep = True
-            items_from = excluded_items
-            items_to = selected_items
-            prefix = keep_prefix
-        elif item_filter.startswith(drop_prefix):
-            keep = False
-            items_from = selected_items
-            items_to = excluded_items
-            prefix = drop_prefix
-        else:
-            raise RuntimeError(f'Unsupported filter = "{item_filter}".')
-        pattern = item_filter[len(prefix):]
-        if len(pattern) == 0:
-            raise RuntimeError(f'Filter with an empty pattern expression.')
-
-        to_move = [ item for item in items_from if name_match(item, pattern) ]
-        if len(to_move) > 0:
-            used_filters.add(item_filter)
-            for column in to_move:
-                items_from.remove(column)
-                items_to.add(column)
-
-    unused_filters = set(filters) - used_filters
-    if len(unused_filters) > 0:
-        print("Unused filters: " + " ".join(unused_filters))
-
-    return list(sorted(selected_items))
-
-_global_params = None
-_samples = None
-_hists = None
-_files_fs_dict = None
-_fs_files_nanoAOD = None
-_fs_files = None
-_fs_read = None
-
-def load_fs_file():
-    global _files_fs_dict
-    files_fs_file = os.path.join(os.environ['ANALYSIS_PATH'], 'config', f'files_fs.yaml')
-    with open(files_fs_file, 'r') as f:
-        _files_fs_dict = yaml.safe_load(f)
-    return _files_fs_dict
-
-def load_fs_files_nanoAOD(files_fs_dict):
-    global _fs_files_nanoAOD
-    if _fs_files_nanoAOD is None:
-        _fs_files_nanoAOD = WLCGFileSystem(files_fs_dict['fs_nanoAOD_HLepRare'])
-    return _fs_files_nanoAOD
-
-def load_fs_files(files_fs_dict):
-    global _fs_files
-    if _fs_files is None:
-        _fs_files = WLCGFileSystem(files_fs_dict['fs_general'])
-    return _fs_files
-
-def load_fs_read(files_fs_dict):
-    global _fs_read
-    if _fs_read is None:
-        _fs_read = WLCGFileSystem(files_fs_dict['fs_general_read'])
-    return _fs_read
-
-def load_hist_config(hist_config):
-    global _hists
-    with open(hist_config, 'r') as f:
-        _hists = yaml.safe_load(f)
-    return _hists
-
-def load_sample_configs(sample_config, period):
-    global _global_params
-    global _samples
-
-    if _global_params is None:
-        with open(sample_config, 'r') as f:
-            _samples = yaml.safe_load(f)
-
-        _global_params = _samples['GLOBAL']
-        all_samples = []
-        for key, value in _samples.items():
-            if(type(value) != dict):
-                raise RuntimeError(f'Invalid sample definition period="{period}", sample_name="{key}"' )
-            if key != 'GLOBAL':
-                all_samples.append(key)
-        selected_samples = select_items(all_samples, _global_params.get('sampleSelection', []))
-        _samples = { key : _samples[key] for key in selected_samples }
-    return _global_params, _samples
-
-
 class Task(law.Task):
     """
     Base task that we use to force a version parameter on all inheriting tasks, and that provides
@@ -132,21 +31,37 @@ class Task(law.Task):
     period = luigi.Parameter()
     customisations =luigi.Parameter(default="")
     test = luigi.BoolParameter(default=False)
-    wantBTag = luigi.BoolParameter(default=False)
-    mass = luigi.Parameter(default="1250")
 
     def __init__(self, *args, **kwargs):
         super(Task, self).__init__(*args, **kwargs)
-        self.cmssw_env_ = None
-        self.sample_config = os.path.join(self.ana_path(), 'config', f'samples_{self.period}.yaml')
-        self.global_params, self.samples = load_sample_configs(self.sample_config, self.period)
-        self.fs_files_dict = load_fs_file()
-        self.fs_files_nanoAOD = load_fs_files_nanoAOD(self.fs_files_dict)
-        self.fs_files = load_fs_files(self.fs_files_dict)
-        self.fs_read = load_fs_read(self.fs_files_dict)
+        self.setup = Setup.getGlobal(os.getenv("ANALYSIS_PATH"), self.period, self.customisations)
 
     def store_parts(self):
         return (self.__class__.__name__, self.version, self.period)
+
+    @property
+    def cmssw_env(self):
+        return self.setup.cmssw_env
+
+    @property
+    def samples(self):
+        return self.setup.samples
+
+    @property
+    def global_params(self):
+        return self.setup.global_params
+
+    @property
+    def fs_nanoAOD(self):
+        return self.setup.get_fs('nanoAOD')
+
+    @property
+    def fs_anaCache(self):
+        return self.setup.get_fs('anaCache')
+
+    @property
+    def fs_anaTuple(self):
+        return self.setup.get_fs('anaTuple')
 
     def ana_path(self):
         return os.getenv("ANALYSIS_PATH")
@@ -154,51 +69,17 @@ class Task(law.Task):
     def ana_data_path(self):
         return os.getenv("ANALYSIS_DATA_PATH")
 
-    def ana_big_data_path(self):
-        return os.getenv("ANALYSIS_BIG_DATA_PATH")
-
-    def central_path(self):
-        return os.getenv("CENTRAL_STORAGE")
-
-    def central_nanoAOD_path(self):
-        return os.path.join(self.central_path(), 'nanoAOD', self.period)
-
-
-    def central_nanoAOD_path_HLepRare(self):
-        return os.path.join('/eos/cms/store/group/phys_higgs/HLepRare/HTT_skim_v1/', self.period)
-
-    def central_anaTuples_path(self):
-        return os.path.join(self.central_path(), 'anaTuples', self.version, self.period)
-
-    def valeos_path(self):
-        return os.getenv("VDAMANTE_STORAGE")
-
-    def central_Histograms_path(self):
-        return os.path.join(self.valeos_path(), 'histograms', self.version, self.period)
-
-    def central_anaCache_path(self):
-        return os.path.join(self.central_path(), 'anaCache', self.period)
-        #return os.path.join(self.valeos_path(), 'anaCache', self.version, self.period)
-
     def local_path(self, *path):
         parts = (self.ana_data_path(),) + self.store_parts() + path
-        return os.path.join(*parts)
-
-    def local_central_path(self, *path):
-        parts = (self.ana_big_data_path(),) + self.store_parts() + path
         return os.path.join(*parts)
 
     def local_target(self, *path):
         return law.LocalFileTarget(self.local_path(*path))
 
-    def cmssw_env(self):
-        if self.cmssw_env_ is None:
-            self.cmssw_env_ = get_cmsenv(cmssw_path=os.getenv("DEFAULT_CMSSW_BASE"))
-            for var in [ 'HOME', 'ANALYSIS_PATH', 'ANALYSIS_DATA_PATH', 'X509_USER_PROXY', 'CENTRAL_STORAGE',
-                         'ANALYSIS_BIG_DATA_PATH', 'DEFAULT_CMSSW_BASE']:
-                if var in os.environ:
-                    self.cmssw_env_[var] = os.environ[var]
-        return self.cmssw_env_
+    def remote_target(self, *path, fs=None):
+        fs = fs or self.setup.fs_default
+        path = os.path.join(*path)
+        return WLCGFileTarget(path, fs)
 
     def law_job_home(self):
         if 'LAW_JOB_HOME' in os.environ:
@@ -208,6 +89,12 @@ class Task(law.Task):
 
     def poll_callback(self, poll_data):
         update_kinit(verbose=0)
+
+    def iter_samples(self):
+        for sample_id, sample_name in enumerate(natural_sort(self.samples.keys())):
+            yield sample_id, sample_name
+
+
 
 
 class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):

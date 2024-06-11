@@ -1,13 +1,15 @@
 import os
 import shutil
-import ROOT
 import sys
-ROOT.EnableThreadSafety()
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
 from RunKit.run_tools import ps_call
 import Common.ConvertUproot as ConvertUproot
+
+import ROOT
+ROOT.EnableThreadSafety()
+
 
 def create_file(file_name, times=None):
     with open(file_name, "w"):

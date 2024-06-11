@@ -5,8 +5,6 @@
 #include "exception.h"
 #include <iomanip>
 #include <unordered_set>
-#include <boost/algorithm/string.hpp>
-#include <boost/filesystem/convenience.hpp>
 
 namespace analysis {
 
@@ -105,11 +103,6 @@ std::string CollectionToString(const Collection& col, const std::string& separat
     return ss.str();
 }
 
-inline std::string RemoveFileExtension(const std::string& file_name)
-{
-    return boost::filesystem::change_extension(file_name, "").string();
-}
-
 inline std::string GetFileNameWithoutPath(const std::string& file_name)
 {
     const size_t lastindex = file_name.find_last_of("/");
@@ -124,12 +117,29 @@ inline std::vector<std::string> SplitValueList(const std::string& _values_str, b
 {
     std::string values_str = _values_str;
     std::vector<std::string> result;
+    auto is_any_of = [&](char c) { return separators.find(c) != std::string::npos; };
+
+    auto trim = [&](std::string& str) {
+        size_t start_pos = 0;
+        size_t end_pos = str.size();
+        for(; start_pos < str.size(); ++start_pos)
+            if(!is_any_of(str[start_pos])) break;
+        for(; end_pos > start_pos; --end_pos)
+            if(!is_any_of(str[end_pos-1])) break;
+        return str.substr(start_pos, end_pos - start_pos);
+    };
     if(enable_token_compress)
-        boost::trim_if(values_str, boost::is_any_of(separators));
+        values_str = trim(values_str);
+
     if(!values_str.size()) return result;
-    const auto token_compress = enable_token_compress ? boost::algorithm::token_compress_on
-                                                      : boost::algorithm::token_compress_off;
-    boost::split(result, values_str, boost::is_any_of(separators), token_compress);
+    for(size_t start_pos = 0; start_pos < values_str.size();) {
+        size_t end_pos = values_str.find_first_of(separators, start_pos);
+        if(end_pos == std::string::npos) end_pos = values_str.size();
+        const std::string value = values_str.substr(start_pos, end_pos - start_pos);
+        if(!enable_token_compress || value.size())
+            result.push_back(value);
+        start_pos = end_pos + 1;
+    }
     if(!allow_duplicates) {
         std::unordered_set<std::string> set_result;
         for(const std::string& value : result) {
@@ -161,7 +171,7 @@ inline std::vector<std::string> ReadValueList(std::istream& stream, size_t numbe
     try {
         std::vector<std::string> result;
         std::unordered_set<std::string> set_result;
-        const auto predicate = boost::is_any_of(separators);
+        const auto predicate = [&](char c) { return separators.find(c) != std::string::npos; };
         size_t n = 0;
         for(; n < number_of_items; ++n) {
             std::string value;

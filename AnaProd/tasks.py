@@ -1,158 +1,146 @@
+import copy
+import contextlib
+import json
 import law
-import luigi
 import os
 import shutil
-import time
 import threading
 import yaml
-import contextlib
-
-from RunKit.run_tools import ps_call
-from RunKit.grid_tools import gfal_copy_safe,gfal_ls
-from RunKit.checkRootFile import checkRootFileSafe
-from RunKit.crabLaw import cond as kInit_cond,update_kinit_thread
-from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
-from RunKit.law_wlcg import WLCGFileSystem, WLCGFileTarget, WLCGDirectoryTarget
 
 
-
-def remote_nanoAOD(name,fs_files):
-    return WLCGFileTarget(name,fs_files)
-
-def remote_nanoAOD_directory(dir_name,fs_files):
-    return WLCGDirectoryTarget(dir_name,fs_files)
-
-def remote_file_target(name,fs_files):
-    return WLCGFileTarget(name, fs_files)
-
-unc_cfg_dict = None
-def load_unc_config(unc_cfg):
-    global unc_cfg_dict
-    with open(unc_cfg, 'r') as f:
-        unc_cfg_dict = yaml.safe_load(f)
-    return unc_cfg_dict
-
-def getYear(period):
-    year_dict = {
-        'Run2_2016_HIPM':'2016_HIPM',
-        'Run2_2016':'2016',
-        'Run2_2017':'2017',
-        'Run2_2018':'2018',
-    }
-    return year_dict[period]
-
-class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)
-
-    def create_branch_map(self):
-        n = 0
-        branches = {}
-        for sample_name in sorted(self.samples.keys()):
-            isData = self.samples[sample_name]['sampleType'] == 'data'
-            branches[n] = (sample_name, isData)
-            n += 1
-        #print(branches)
-        return branches
-
-    def output(self):
-        sample_name, isData = self.branch_data
-        outFileName = 'anaCache.yaml'
-        outDir = os.path.join('anaCache', self.period, sample_name)
-        finalFile = os.path.join(outDir, outFileName)
-        return remote_file_target(finalFile,self.fs_read)
-
-    def run(self):
-        sample_name, isData = self.branch_data
-        print(f'Creating anaCache for sample {sample_name} into {self.output().path}')
-        producer = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheProducer.py')
-        with self.output().localize("w") as outFile_anaCache:
-            outFile_str = outFile_anaCache.path
-            #print(outFile_str)
-            inDir = os.path.join(self.central_nanoAOD_path_HLepRare(), sample_name)
-            if not isData:
-                ps_call(['python3', producer, '--config', self.sample_config, '--inDir', inDir, '--sample', sample_name, '--outFile', outFile_str, '--customisations', self.customisations ], env=self.cmssw_env())
-        print(f'anaCache for sample {sample_name} is created in {self.output().path}')
-
+from RunKit.run_tools import ps_call, natural_sort
+from RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
+from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param
+from Common.Utilities import SerializeObjectToString
+from AnaProd.anaCacheProducer import addAnaCaches
 
 class InputFileTask(Task, law.LocalWorkflow):
-    max_files_per_job = luigi.IntParameter(default=1, description="maximum number of input files per job")
+    def __init__(self, *args, **kwargs):
+        kwargs['workflow'] = 'local'
+        super(InputFileTask, self).__init__(*args, **kwargs)
 
     def create_branch_map(self):
         branches = {}
-        for n, sample_name in enumerate(sorted(self.samples.keys())):
-            branches[n] = sample_name
+        for sample_id, sample_name in self.iter_samples():
+            branches[sample_id] = sample_name
         return branches
 
     def output(self):
         sample_name = self.branch_data
-        sample_out = os.path.join(self.local_path(sample_name, "input_files.txt"))
-        return law.LocalFileTarget(sample_out)
-
+        return self.local_target('input_files', f'{sample_name}.txt')
 
     def run(self):
         sample_name = self.branch_data
         print(f'Creating inputFile for sample {sample_name} into {self.output().path}')
-        os.makedirs(os.path.join(self.local_path(),sample_name), exist_ok=True)
-        #print(sample_name)
         with self.output().localize("w") as out_local_file:
-            #out_local_file = os.path.join(self.local_path(), sample_name, "tmp.txt")
-            inDir = os.path.join(self.central_nanoAOD_path_HLepRare(), sample_name)
             input_files = []
-            for fileInfo in gfal_ls(inDir):
-                if fileInfo.name.endswith("root") : #and not file.startswith('.'):
-                    fileName_absolute_list = fileInfo.path.split("/") + fileInfo.name.split("/")
-                    #print(fileName_absolute_list)
-                    inDir_list = self.central_nanoAOD_path_HLepRare().split("/")
-                    #print(inDir_list)
-                    fileName_relative_list = []
-                    for dir_idx in range(0, len(fileName_absolute_list)):
-                        if dir_idx < len(inDir_list) and fileName_absolute_list[dir_idx] == inDir_list[dir_idx]:
-                            continue
-                        fileName_relative_list.append(fileName_absolute_list[dir_idx])
-                    #print(fileName_relative_list)
-                    file_name_relative = '/'.join(f for f in fileName_relative_list)
-                    #print(file_name_relative)
-                    if file_name_relative not in input_files:
-                            input_files.append(file_name_relative)
-
+            for file in natural_sort(self.fs_nanoAOD.listdir(sample_name)):
+                if file.endswith(".root"):
+                    input_files.append(file)
             with open(out_local_file.path, 'w') as inputFileTxt:
                 for input_line in input_files:
                     inputFileTxt.write(input_line+'\n')
         print(f'inputFile for sample {sample_name} is created in {self.output().path}')
 
+    @staticmethod
+    def load_input_files(input_file_list, sample_name, fs=None, return_uri=False):
+        input_files = []
+        with open(input_file_list, 'r') as txt_file:
+            for file in txt_file.readlines():
+                file_path = os.path.join(sample_name, file.strip())
+                file_full_path = fs.uri(file_path) if return_uri else file_path
+                input_files.append(file_full_path)
+        if len(input_files) == 0:
+            raise RuntimeError(f"No input files found for {sample_name}")
+        return input_files
+
+class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)
+
+    def create_branch_map(self):
+        branches = {}
+        for sample_id, sample_name in self.iter_samples():
+            isData = self.samples[sample_name]['sampleType'] == 'data'
+            branches[sample_id] = (sample_name, isData)
+        return branches
+
+    def requires(self):
+        return [ InputFileTask.req(self) ]
+
+    def workflow_requires(self):
+        return { "inputFile": InputFileTask.req(self) }
+
+    def output(self):
+        sample_name, isData = self.branch_data
+        return self.remote_target('anaCache', self.period, f'{sample_name}.yaml', fs=self.fs_anaCache)
+
+    def run(self):
+        sample_name, isData = self.branch_data
+        if isData:
+            self.output().touch()
+            return
+        print(f'Creating anaCache for sample {sample_name} into {self.output().uri()}')
+        producer = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheProducer.py')
+        input_files = InputFileTask.load_input_files(self.input()[0].path, sample_name)
+        ana_caches = []
+        global_params_str = SerializeObjectToString(self.global_params)
+        n_inputs = len(input_files)
+        for input_idx, input_file in enumerate(input_files):
+            input_target = self.remote_target(input_file, fs=self.fs_nanoAOD)
+            print(f'[{input_idx+1}/{n_inputs}] {input_target.uri()}')
+            with input_target.localize("r") as input_local:
+                returncode, output, err = ps_call([ 'python3', producer, '--input-files', input_local.path,
+                                                    '--global-params', global_params_str, '--verbose', '1' ],
+                                                  env=self.cmssw_env, catch_stdout=True)
+            ana_cache = json.loads(output)
+            print(json.dumps(ana_cache))
+            ana_caches.append(ana_cache)
+        total_ana_cache = addAnaCaches(*ana_caches)
+        print(f'total anaCache: {json.dumps(total_ana_cache)}')
+        with self.output().localize("w") as output_local:
+            with open(output_local.path, 'w') as file:
+                yaml.dump(total_ana_cache, file)
+        print(f'anaCache for sample {sample_name} is created in {self.output().uri()}')
 
 class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
+
+    def create_branch_map(self):
+        input_file_task_complete = InputFileTask.req(self).complete()
+        if not input_file_task_complete:
+            self.cache_branch_map = False
+            if not hasattr(self, '_branches_backup'):
+                self._branches_backup = copy.deepcopy(self.branches)
+            return { 0: () }
+        self.cache_branch_map = True
+        if hasattr(self, '_branches_backup'):
+            self.branches = self._branches_backup
+        branch_idx = 0
+        branches = {}
+        for sample_id, sample_name in self.iter_samples():
+            input_file_list = InputFileTask.req(self, branch=sample_id, branches=(sample_id,)).output().path
+            input_files = InputFileTask.load_input_files(input_file_list, sample_name)
+            for input_file in input_files:
+                branches[branch_idx] = (sample_id, sample_name, self.samples[sample_name]['sampleType'],
+                                        self.remote_target(input_file, fs=self.fs_nanoAOD))
+                branch_idx += 1
+        return branches
+
     def workflow_requires(self):
-        return { "anaCache" : AnaCacheTask.req(self, branches=()), "inputFile": InputFileTask.req(self,workflow='local', branches=()) }
+        return { "anaCache" : AnaCacheTask.req(self),
+                 "inputFile": InputFileTask.req(self) }
 
     def requires(self):
         sample_id, sample_name, sample_type, input_file = self.branch_data
-        #print(sample_name)
-        return [ AnaCacheTask.req(self, branch=sample_id, max_runtime=AnaCacheTask.max_runtime._default, branches=()), InputFileTask.req(self, branch=sample_id, workflow='local', branches=()) ]
+        return [ AnaCacheTask.req(self, branch=sample_id, max_runtime=AnaCacheTask.max_runtime._default, branches=()) ]
 
-    def create_branch_map(self):
-        n = 0
-        branches = {}
-        for sample_id, sample_name in enumerate(sorted(self.samples.keys())):
-            inputFileTxt = InputFileTask.req(self, branch=sample_id,workflow='local', branches=(sample_id,)).output().path
-            with open(inputFileTxt, 'r') as inputtxtFile:
-                input_files = inputtxtFile.read().splitlines()
-            #print(input_files)
-            if len(input_files) == 0:
-                raise RuntimeError(f"AnaTupleTask: no input files found for {sample_name}")
-            for input_file in input_files:
-                input_file_p = os.path.join(self.period, input_file)
-                branches[n] = (sample_id, sample_name, self.samples[sample_name]['sampleType'], remote_file_target(input_file_p, self.fs_files_nanoAOD))
-                n += 1
-        return branches
-
-    def output(self, force_pre_output=False):
+    def output(self):
+        if len(self.branch_data) == 0:
+            return self.local_target('dummy.txt')
         sample_id, sample_name, sample_type, input_file = self.branch_data
-        outFileName = os.path.basename(input_file.path)
-        finalFile = os.path.join(self.version, self.period, sample_name, outFileName)
-        #finalFile = os.path.join('anaTuples',self.version, self.period, sample_name, outFileName)
-        return remote_file_target(finalFile, self.fs_files)
+        output_name = os.path.basename(input_file.path)
+        output_path = os.path.join('anaTuples', self.version, self.period, sample_name, output_name)
+        return self.remote_target(output_path, fs=self.fs_anaTuple)
 
     def run(self):
         sample_id, sample_name, sample_type, input_file = self.branch_data
@@ -160,29 +148,40 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         producer_skimtuples = os.path.join(self.ana_path(), 'AnaProd', 'SkimProducer.py')
         thread = threading.Thread(target=update_kinit_thread)
         thread.start()
-        anaCache_name = os.path.join('anaCache', self.period, sample_name, 'anaCache.yaml')
+        anaCache_remote = self.input()[0]
         try:
             job_home, remove_job_home = self.law_job_home()
-            if self.test: print(f"sample_id= {sample_id}\nsample_name = {sample_name}\nsample_type = {sample_type}\ninput_file = {input_file.path}")
-            print(f"sample_id= {sample_id}\nsample_name = {sample_name}\nsample_type = {sample_type}\ninput_file = {input_file.path}")
-            # part 1 --> nano->anaTupleS
+            print(f"sample_id = {sample_id}\nsample_name = {sample_name}\nsample_type = {sample_type}\n"
+                  f"input_file = {input_file.uri()}")
+
+            print("step 1: nanoAOD -> anaTupleS")
             outdir_anatuples = os.path.join(job_home, 'anaTuples', sample_name)
-            with input_file.localize("r") as local_input, remote_file_target(anaCache_name, self.fs_read).localize("r") as anacache_input:
-                local_input_path = local_input.path
-                anacache_input_path = anacache_input.path
-                anatuple_cmd = [ 'python3', producer_anatuples, '--config', self.sample_config, '--inFile', local_input_path, '--outDir', outdir_anatuples, '--sample', sample_name, '--anaCache', anacache_input_path, '--customisations', self.customisations, '--compute_unc_variations', 'True', '--store-noncentral']
-                centralFileName = os.path.basename(local_input_path)
+            with input_file.localize("r") as local_input, anaCache_remote.localize("r") as anaCache_input:
+                anatuple_cmd = [ 'python3', producer_anatuples, '--period', self.period,
+                                 '--inFile', local_input.path, '--outDir', outdir_anatuples, '--sample', sample_name,
+                                 '--anaTupleDef', self.global_params['anaTupleDef'],
+                                 '--anaCache', anaCache_input.path ]
+                if len(self.customisations) > 0:
+                    anatuple_cmd.extend([ '--customisations', self.customisations ])
+                if self.global_params.get('compute_unc_variations', False):
+                    anatuple_cmd.append('--compute-unc-variations')
+                if self.global_params.get('store_noncentral', False):
+                    anatuple_cmd.append('--store-noncentral')
+                centralFileName = os.path.basename(local_input.path)
                 if self.test:
                     anatuple_cmd.extend(['--nEvents', '100'])
-                ps_call(anatuple_cmd, env=self.cmssw_env(),verbose=1)
-            # part 1 --> anaTupleS -> skimTuplE
+                ps_call(anatuple_cmd, env=self.cmssw_env, verbose=1)
+
+            print("step 2: anaTupleS -> skimTuplE")
             outdir_skimtuples = os.path.join(job_home, 'skim', sample_name)
             outFileName = os.path.basename(input_file.path)
 
             if self.test: print(f"outFileName is {outFileName}")
             tmpFile = os.path.join(outdir_skimtuples, outFileName)
             if sample_type!='data':
-                skimtuple_cmd = ['python3', producer_skimtuples, '--inputDir',outdir_anatuples, '--centralFile',centralFileName, '--workingDir', outdir_skimtuples, '--outputFile', outFileName]
+                skimtuple_cmd = [ 'python', producer_skimtuples, '--inputDir', outdir_anatuples,
+                                  '--centralFile',centralFileName, '--workingDir', outdir_skimtuples,
+                                  '--outputFile', outFileName ]
                 if self.test:
                     skimtuple_cmd.extend(['--test' , 'True'])
                 ps_call(skimtuple_cmd,verbose=1)
@@ -195,13 +194,12 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
             if remove_job_home:
                 shutil.rmtree(job_home)
-            print(f'anaTuple for sample {sample_name} is created in {self.output().path}')
+            print(f'anaTuple for sample {sample_name} is created in {self.output().uri()}')
         finally:
             kInit_cond.acquire()
             kInit_cond.notify_all()
             kInit_cond.release()
             thread.join()
-
 
 class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
@@ -290,7 +288,6 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_name, sample_type,prod_br = self.branch_data
         sample_config = self.sample_config
         unc_config = os.path.join(self.ana_path(), 'config', f'weight_definition_{getYear(self.period)}.yaml')
-        unc_cfg_dict = load_unc_config(unc_config)
         producer_anacachetuples = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheTupleProducer.py')
 
         thread = threading.Thread(target=update_kinit_thread)
@@ -335,7 +332,7 @@ class DataCacheMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def create_branch_map(self):
         anaProd_branch_map = AnaCacheTupleTask.req(self, branch=-1, branches=()).create_branch_map()
         prod_branches = []
-        for prod_br, (sample_name, sample_type,branch) in anaProd_branch_map.items():
+        for prod_br, (sample_name, sample_type, branch) in anaProd_branch_map.items():
             if sample_type != "data": continue
             prod_branches.append(prod_br)
         return { 0: prod_branches }

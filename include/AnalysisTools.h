@@ -28,6 +28,10 @@ enum class Period : int {
   Run2_2016 = 2,
   Run2_2017 = 3,
   Run2_2018 = 4,
+  Run3_2022 = 5,
+  Run3_2022EE = 6,
+  Run3_2023 = 7,
+  Run3_2023BPix = 8
 };
 
 enum class SampleType : int {

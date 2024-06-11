@@ -1,0 +1,10 @@
+anaTupleDef: AnaProd/HH_bbWW/anaTupleDef.py
+signal_types:
+  - GluGluToRadion
+  - GluGluToBulkGraviton
+corrections: []
+channelSelection:
+  - eE
+  - eMu
+  - muMu
+storeExtraJets: False

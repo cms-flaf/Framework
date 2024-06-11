@@ -1,7 +1,11 @@
 from enum import Enum
 import ROOT
+import base64
 import copy
+import importlib
 import os
+import pickle
+import sys
 
 class WorkingPointsTauVSmu(Enum):
     VLoose = 1
@@ -92,20 +96,6 @@ class DataFrameWrapper:
         else:
             self.df = result
 
-def ApplyConfigCustomisations(config_dict, customisations):
-    customisations_to_apply = customisations.split(',')
-    for customisation in customisations_to_apply:
-        substrings = customisation.split('=')
-        if len(substrings) != 2 :
-            raise RuntimeError("len of substring is not 2!")
-        value = substrings[-1]
-        key_entries = substrings[0].split('.')
-        cfg_entry = config_dict
-        for key in key_entries[:-1]:
-            cfg_entry = cfg_entry[key]
-        entry_type = type(cfg_entry[key_entries[-1]])
-        cfg_entry[key_entries[-1]] = entry_type(value)
-
 def GetValues(collection):
     for key, value in collection.items():
         if isinstance(value, dict):
@@ -114,12 +104,29 @@ def GetValues(collection):
             collection[key] = value.GetValue()
     return collection
 
-def GetKeyNames(filee, dir = "" ):
-        if dir != "":
-            filee.cd(dir)
-        return [str(key.GetName()) for key in ROOT.gDirectory.GetListOfKeys()]
+def GetKeyNames(file, dir=""):
+    if dir != "":
+        file.cd(dir)
+    return [ str(key.GetName()) for key in ROOT.gDirectory.GetListOfKeys() ]
 
 
 def create_file(file_name, times=None):
     with open(file_name, "w"):
         os.utime(file_name, times)
+
+def SerializeObjectToString(obj):
+    obj_pkl = pickle.dumps(obj)
+    return base64.b64encode(obj_pkl).decode()
+
+def DeserializeObjectFromString(string):
+    obj_pkl = base64.b64decode(string.encode())
+    return pickle.loads(obj_pkl)
+
+def load_module(module_path):
+    module_file = os.path.basename(module_path)
+    module_name, module_ext = os.path.splitext(module_file)
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module

@@ -72,5 +72,6 @@ extra_javascript:
 nav:
   - Home: index.md
   - HH->bbtautau: hh_bbtautau.md
+  - Statistical inference: stat_inference.md
 
 #theme: readthedocs

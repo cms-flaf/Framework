@@ -6,3 +6,4 @@ __pycache__
 /test
 /.vscode
 /site
+/config/user_custom.yaml

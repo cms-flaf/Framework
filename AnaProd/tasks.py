@@ -156,11 +156,11 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
             print("step 1: nanoAOD -> anaTupleS")
             outdir_anatuples = os.path.join(job_home, 'anaTuples', sample_name)
+            anaTupleDef = os.path.join(self.ana_path(), self.global_params['anaTupleDef'])
             with input_file.localize("r") as local_input, anaCache_remote.localize("r") as anaCache_input:
                 anatuple_cmd = [ 'python3', producer_anatuples, '--period', self.period,
                                  '--inFile', local_input.path, '--outDir', outdir_anatuples, '--sample', sample_name,
-                                 '--anaTupleDef', self.global_params['anaTupleDef'],
-                                 '--anaCache', anaCache_input.path ]
+                                 '--anaTupleDef', anaTupleDef, '--anaCache', anaCache_input.path ]
                 if len(self.customisations) > 0:
                     anatuple_cmd.extend([ '--customisations', self.customisations ])
                 if self.global_params.get('compute_unc_variations', False):

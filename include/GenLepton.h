@@ -23,7 +23,8 @@ class GenParticle {
 public:
     enum class PdgId {
         electron = 11, electron_neutrino = 12, muon = 13, muon_neutrino = 14, tau = 15, tau_neutrino = 16,
-        pi0 = 111, pi = 211, K0_L = 130, K0_S = 310, K0 = 311, K = 321,
+        pi0 = 111, pi = 211, K0_L = 130, K0_S = 310, K0 = 311, K = 321, eta = 221, omega = 223, K_star = 323,
+        p = 2212, D = 411, J_psi = 443, D0 = 421, D_s = 431,
         down = 1, up = 2, strange = 3, charm = 4, bottom = 5, top = 6,
         gluon = 21, photon = 22, Z = 23, W = 24, h0 = 25
     };
@@ -44,14 +45,39 @@ public:
     }
 
     static const std::set<PdgId>& ChargedHadrons() {
-        static const std::set<PdgId> s = { PdgId::pi, PdgId::K };
+        static const std::set<PdgId> s = { PdgId::pi, PdgId::K, PdgId::K_star, PdgId::p, PdgId::D, PdgId::D_s };
         return s;
     }
 
     static const std::set<PdgId>& NeutralHadrons() {
-        static const std::set<PdgId> s = { PdgId::pi0, PdgId::K0_L, PdgId::K0_S, PdgId::K0 };
+        static const std::set<PdgId> s = { PdgId::pi0, PdgId::K0_L, PdgId::K0_S, PdgId::K0, PdgId::eta,
+                                           PdgId::omega, PdgId::J_psi, PdgId::D0 };
         return s;
     }
+
+    static const std::set<PdgId>& Bosons() {
+        static const std::set<PdgId> s = { PdgId::photon, PdgId::Z, PdgId::W, PdgId::h0 };
+        return s;
+    }
+
+    static bool CheckPdgId(PdgId pdgId, bool throw_exception)
+    {
+        static std::set<PdgId> unknownPdgIds;
+        if(gluonQuarks().count(pdgId) || ChargedLeptons().count(pdgId) || NeutralLeptons().count(pdgId)
+           || ChargedHadrons().count(pdgId) || NeutralHadrons().count(pdgId) || Bosons().count(pdgId))
+            return true;
+        if(throw_exception) {
+            if(unknownPdgIds.count(pdgId) == 0) {
+                unknownPdgIds.insert(pdgId);
+                std::ostringstream ss;
+                ss << "Unknown pdgId = " << static_cast<int>(pdgId);
+                std::cout << ss.str() << std::endl;
+                //throw std::runtime_error(ss.str());
+            }
+        }
+        return false;
+    }
+
     static double GetMass(PdgId pdgId, double nanoAODmass) {
         static const std::map<PdgId, double> pdgId_Masses {
             {PdgId::electron,0.0005109989461},
@@ -107,8 +133,6 @@ public:
     std::set<const GenParticle*> daughters;
 
     PdgId pdgCode() const { return static_cast<PdgId>(std::abs(pdgId)); }
-
-
 };
 
 inline std::ostream& operator<<(std::ostream& os, const GenParticle& p)
@@ -163,7 +187,6 @@ public:
         try {
             std::vector<GenLepton> genLeptons;
             std::set<size_t> processed_particles;
-            //if (event == 82819730) std::cout<<GenPart_pt.size()<<std::endl;
             for(size_t genPart_idx=0; genPart_idx<GenPart_pt.size(); ++genPart_idx ){
                 if(processed_particles.count(genPart_idx)) continue;
                 GenStatusFlags particle_statusFlags(GenPart_statusFlags.at(genPart_idx));
@@ -171,27 +194,12 @@ public:
                 const int abs_pdg = std::abs(GenPart_pdgId.at(genPart_idx));
                 if(!GenParticle::ChargedLeptons().count(static_cast<GenParticle::PdgId>(abs_pdg)))
                     continue;
-                //if (event == 82819730) std::cout<<genPart_idx<<std::endl;
-                //if (event == 82819730) std::cout<<GenPart_pt[genPart_idx]<<std::endl;
-                //if (event == 82819730) std::cout<<GenPart_eta[genPart_idx]<<std::endl;
-                //if (event == 82819730) std::cout<<GenPart_phi[genPart_idx]<<std::endl;
-                //if (event == 82819730) std::cout<<GenPart_mass[genPart_idx]<<std::endl;
-                //if (event == 82819730) std::cout<<GenPart_genPartIdxMother[genPart_idx]<<std::endl;
-                //if (event == 82819730) std::cout<<GenPart_pdgId[genPart_idx]<<std::endl;
-                //if (event == 82819730) std::cout<<GenPart_statusFlags[genPart_idx]<<std::endl;
-                //if (event == 82819730) std::cout<<"E"<<std::endl;
                 GenLepton lepton;
-                //if (event == 82819730) std::cout<<"F"<<std::endl;
-                //FillImplNano<IntVector, FloatVector> fillImplNano(lepton, processed_particles,GenPart_pt,GenPart_eta, GenPart_phi, GenPart_mass,
                 FillImplNano<IntVector, FloatVector, ShortVector, UShortVector> fillImplNano(lepton, processed_particles,GenPart_pt,GenPart_eta, GenPart_phi, GenPart_mass,
                 GenPart_genPartIdxMother, GenPart_pdgId, GenPart_statusFlags);
-                //if (event == 82819730) std::cout<<"G"<<std::endl;
                 fillImplNano.FillAll(genPart_idx);
-                //if (event == 82819730) std::cout<<"H"<<std::endl;
                 lepton.initialize();
-                //if (event == 82819730) std::cout<<"I"<<std::endl;
                 genLeptons.push_back(lepton);
-                //if (event == 82819730) std::cout<<"J"<<std::endl;
             }
             return genLeptons;
         } catch(std::runtime_error& e) {
@@ -238,6 +246,7 @@ public:
                 GenParticle& p = lepton.particles_->at(n);
                 p.pdgId = genParticle_pdgId.at(n);
                 p.charge = genParticle_charge.at(n);
+                GenParticle::CheckPdgId(p.pdgCode(), true);
                 p.isFirstCopy = genParticle_isFirstCopy.at(n);
                 p.isLastCopy = genParticle_isLastCopy.at(n);
                 p.p4 = LorentzVectorM(genParticle_pt.at(n), genParticle_eta.at(n),
@@ -387,6 +396,7 @@ private:
             GenParticle output_p;
             output_p.pdgId = p->pdgId();
             output_p.charge = p->charge();
+            GenParticle::CheckPdgId(output_p.pdgCode(), true);
             output_p.isFirstCopy = p->statusFlags().isFirstCopy();
             output_p.isLastCopy = p->statusFlags().isLastCopy();
             output_p.p4 = p->p4();
@@ -479,6 +489,7 @@ private:
             GenParticle output_p;
             output_p.pdgId = GenPart_pdgId_.at(part_idx);
             output_p.charge = output_p.getCharge();
+            GenParticle::CheckPdgId(output_p.pdgCode(), true);
             GenStatusFlags output_pStatusFlags(GenPart_statusFlags_.at(part_idx));
             output_p.isFirstCopy = output_pStatusFlags.isFirstCopy();
             output_p.isLastCopy = output_pStatusFlags.isLastCopy();

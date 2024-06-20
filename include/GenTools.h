@@ -9,7 +9,7 @@
 
 struct ParticleInfo {
   int pdgId;
-  int charge;
+  float charge;
   std::string name;
   std::string type;
   float mass{-1.};
@@ -29,7 +29,7 @@ public:
        currentInfo.pdgId = analysis::Parse<int>(values.at(0));
        currentInfo.name = values.at(1);
        currentInfo.type= values.at(2);
-       currentInfo.charge= analysis::Parse<int>(values.at(3));
+       currentInfo.charge= analysis::Parse<float>(values.at(3));
        if(values.size()>4){
          currentInfo.mass = analysis::Parse<float>(values.at(4));
        }

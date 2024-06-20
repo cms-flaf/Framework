@@ -35,7 +35,7 @@ if __name__ == "__main__":
                 if(!GetTauDaughters(tau_daughters, daughter))
                     return false;
             } else {
-                std::cout << "Unknown daughter pdgId = " << daughter_pdgId << ". Mother pdgId = " << part->pdgId << std::endl;
+                // std::cout << "Unknown daughter pdgId = " << daughter_pdgId << ". Mother pdgId = " << part->pdgId << std::endl;
                 return false;
                 // throw std::runtime_error("Unknown daughter pdgId = " + std::to_string(daughter_pdgId));
             }
@@ -47,18 +47,29 @@ if __name__ == "__main__":
     df = ROOT.RDataFrame("Events", args.inFile)
     df = df.Define("genLeptons", """reco_tau::gen_truth::GenLepton::fromNanoAOD(GenPart_pt, GenPart_eta,
                                         GenPart_phi, GenPart_mass, GenPart_genPartIdxMother, GenPart_pdgId,
-                                        GenPart_statusFlags, event)""")
+                                        GenPart_statusFlags, GenPart_vx, GenPart_vy, GenPart_vz, event)""")
     df = df.Filter("""
         for(const auto& lep: genLeptons) {
             std::vector<int> tau_daughters;
             if(lep.lastCopy().pdgId != 15) continue;
-            if(!GetTauDaughters(tau_daughters, &lep.lastCopy())) return true;
+            if(!GetTauDaughters(tau_daughters, &lep.lastCopy())) {
+                // std::cout << lep << std::endl;
+                return true;
+            }
             size_t n_part = 0;
             for(int dauther_pdg : tau_daughters) {
                 if (std::abs(dauther_pdg) == 22) n_part++;
             }
-            if(n_part > 1) return true;
+            if(n_part > 1) {
+                // std::cout << lep << std::endl;
+                return true;
+            }
         }
         return false;
     """)
-    print(df.AsNumpy([ 'event' ]))
+    event_ids = df.AsNumpy([ 'event' ])['event']
+    print(f'n_selected={len(event_ids)}')
+    n_to_print=10
+    to_print = ' '.join(map(str, event_ids[:n_to_print].tolist()))
+    prefix = f'first {n_to_print} ' if len(event_ids) > n_to_print else ''
+    print(f'{prefix}selected event ids: {to_print}')

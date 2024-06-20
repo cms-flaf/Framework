@@ -375,6 +375,7 @@ public:
 
     const LorentzVectorXYZ& visibleP4() const { return visibleP4_; }
     const LorentzVectorXYZ& radiatedP4() const { return radiatedP4_; }
+    LorentzVectorM invisibleP4() const { return lastCopy().p4 - visibleP4(); }
 
     size_t nChargedHadrons() const { return nChargedHadrons_; }
     size_t nNeutralHadrons() const { return nNeutralHadrons_; }

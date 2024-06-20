@@ -5,11 +5,191 @@
 #include "TextIO.h"
 #include "HHCore.h"
 
-std::shared_ptr<HTTCand<2>> GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
+
+// std::shared_ptr<HTTCand<2>> GetGenHWWCandidate(int evt, const RVecI& GenPart_pdgId,
+//                                                const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
+//                                                const RVecF& GenPart_pt, const RVecF& GenPart_eta,
+//                                                const RVecF& GenPart_phi, const RVecF& GenPart_mass,
+//                                                bool throw_error_if_not_found)
+// {
+//   try
+//   {
+//     int sz = GenPart_pdgId.size();
+//     std::set<int> HWW_indices;
+//     for (int i = 0; i < sz; ++i)
+//     {
+//       const GenStatusFlags status(GenPart_statusFlags.at(i));
+//       bool is_higgs = GenPart_pdgId[i] == PdG::Higgs();
+//       if (!(is_higgs && status.isLastCopy()))
+//       {
+//         continue;
+//       }
+
+//       auto const& daughters = GenPart_daughters.at(i);
+//       auto IsW = [&](int id){ return id == PdG::Wplus() || id == PdG::Wminus(); };
+//       int n_W_from_H = std::count_if(daughters.begin(), daughters.end(), IsW);
+//       if (n_W_from_H != 2)
+//       {
+//         throw analysis::exception("Invalid H->WW decay: n_W_from_H = %2%") % n_W_from_H;
+//       }
+
+//       HWW_indices.insert(i);
+//     }
+
+//     if(HWW_indices.empty())
+//     {
+//       throw analysis::exception("H->WW not found.");
+//     }
+//     if(HWW_indices.size() != 1)
+//     {
+//       throw analysis::exception("Multiple H->WW candidates.");
+//     }
+
+//     int const HWW_index = *HWW_indices.begin();
+//     HTTCand<2> HWW_cand;
+//     int leg_idx = 0;
+//     for (int W_idx : GenPart_daughters.at(HWW_index))
+//     {
+//       W_idx = GetLastCopy(W_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
+//       HWW_cand.leg_index.at(leg_idx) = W_idx;
+//       ++leg_idx;
+//     }
+
+//     for(leg_idx = 0; leg_idx < HWW_cand.leg_index.size(); ++leg_idx)
+//     {
+//       const int genPart_index = HWW_cand.leg_index.at(leg_idx);
+//       const int genPart_pdg = GenPart_pdgId.at(genPart_index);
+//       const auto& genPart_info = ParticleDB::GetParticleInfo(genPart_pdg);
+//       HWW_cand.leg_type[leg_idx] = PdGToLeg(genPart_pdg);
+//       HWW_cand.leg_charge[leg_idx] = genPart_info.charge;
+//       HWW_cand.leg_p4[leg_idx] = GetVisibleP4(genPart_index, GenPart_pdgId, GenPart_daughters,
+//                                               GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
+//     }
+
+//     return std::make_shared<HTTCand<2>>(HWW_cand);
+//   }
+//   catch (analysis::exception& e)
+//   {
+//     if(throw_error_if_not_found)
+//     {
+//       throw analysis::exception("GetGenHWWCandidate (event=%1%): %2%") % evt % e.message();
+//     }
+//     return std::make_shared<HTTCand<2>>();
+//   }
+// }
+
+WCand GetGenWCand(int evt, int w_idx, const RVecI& GenPart_pdgId,
+                  const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
+                  const RVecF& GenPart_pt, const RVecF& GenPart_eta,
+                  const RVecF& GenPart_phi, const RVecF& GenPart_mass)
+{
+  WCand res;
+  RVecI daughters = GenPart_daughters.at(w_idx);
+  if (daughters.size() < 2)
+  {
+    throw analysis::exception("W candidate has less than 2 daughters");
+  }
+
+  bool decays_to_hadrons = std::all_of(daughters.begin(), daughters.end(), [&](int id){ return std::abs(id) <= PdG::b(); });
+  if (decays_to_hadrons)
+  {
+    AssignHadronicWCand(res, w_idx, GenPart_pdgId, GenPart_daughters,
+                        GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
+  }
+
+  return res;
+}
+
+void AssignHadronicWCand(WCand& cand, int cand_idx, const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters,
+                         const RVecF& GenPart_pt, const RVecF& GenPart_eta,
+                         const RVecF& GenPart_phi, const RVecF& GenPart_mass)
+{
+  cand.leg_kind[0] = Wleg::Jet;
+  cand.leg_kind[1] = Wleg::Jet;
+
+  RVecI daughters = GenPart_daughters.at(cand_idx);
+  cand.leg_index[0] = daughters[0];
+  cand.leg_index[1] = daughters[1];
+
+  cand.cand_p4 = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, cand_idx);
+
+  cand.leg_p4[0] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, cand.leg_index[0]);
+  cand.leg_p4[1] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, cand.leg_index[1]);
+
+  cand.leg_vis_p4[0] = LorentzVectorM{};
+  cand.leg_vis_p4[1] = LorentzVectorM{};
+}
+
+std::shared_ptr<HWWCand> GetGenHWWCandidate(int evt, const RVecI& GenPart_pdgId,
                                             const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
                                             const RVecF& GenPart_pt, const RVecF& GenPart_eta,
                                             const RVecF& GenPart_phi, const RVecF& GenPart_mass,
                                             bool throw_error_if_not_found)
+{
+  try
+  {
+    int sz = GenPart_pdgId.size();
+    std::set<int> HWW_indices;
+    for (int i = 0; i < sz; ++i)
+    {
+      const GenStatusFlags status(GenPart_statusFlags.at(i));
+      bool is_higgs = GenPart_pdgId[i] == PdG::Higgs();
+      if (!(is_higgs && status.isLastCopy()))
+      {
+        continue;
+      }
+
+      auto const& daughters = GenPart_daughters.at(i);
+      auto IsW = [&](int id){ return id == PdG::Wplus() || id == PdG::Wminus(); };
+      int n_W_from_H = std::count_if(daughters.begin(), daughters.end(), IsW);
+      if (n_W_from_H != 2)
+      {
+        throw analysis::exception("Invalid H->WW decay: n_W_from_H = %2%") % n_W_from_H;
+      }
+
+      HWW_indices.insert(i);
+    }
+
+    if(HWW_indices.empty())
+    {
+      throw analysis::exception("H->WW not found.");
+    }
+    if(HWW_indices.size() != 1)
+    {
+      throw analysis::exception("Multiple H->WW candidates.");
+    }
+
+    int const HWW_index = *HWW_indices.begin();
+    HWWCand HWW_cand;
+
+    HWW_cand.cand_p4 = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, HWW_index);
+
+    RVecI W_from_H = GenPart_daughters.at(HWW_index);
+    int W1_idx = W_from_H[0];
+    int W2_idx = W_from_H[2];
+
+    HWW_cand.legs[0] = GetGenWCand(evt, W1_idx, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
+                                   GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
+    HWW_cand.legs[1] = GetGenWCand(evt, W2_idx, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
+                                   GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
+
+    return std::make_shared<HWWCand>(HWW_cand);
+  }
+  catch (analysis::exception& e)
+  {
+    if(throw_error_if_not_found)
+    {
+      throw analysis::exception("GetGenHWWCandidate (event=%1%): %2%") % evt % e.message();
+    }
+    return std::make_shared<HWWCand>();
+  }
+}
+
+std::shared_ptr<HTTCand<2>> GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
+                                               const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
+                                               const RVecF& GenPart_pt, const RVecF& GenPart_eta,
+                                               const RVecF& GenPart_phi, const RVecF& GenPart_mass,
+                                               bool throw_error_if_not_found)
 {
   try {
     std::set<int> htt_indices;
@@ -34,30 +214,30 @@ std::shared_ptr<HTTCand<2>> GetGenHTTCandidate(int evt, const RVecI& GenPart_pdg
     HTTCand<2> htt_cand;
     int leg_idx = 0;
     for(int tau_idx : GenPart_daughters.at(htt_index)) {
-        if(std::abs(GenPart_pdgId.at(tau_idx)) != PdG::tau()) continue;
-        tau_idx = GetLastCopy(tau_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
+      if(std::abs(GenPart_pdgId.at(tau_idx)) != PdG::tau()) continue;
+      tau_idx = GetLastCopy(tau_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
 
-        int lepton_idx = tau_idx;
-        size_t n_neutrinos = 0;
-        for(int tau_daughter : GenPart_daughters.at(tau_idx)) {
-            if(PdG::isNeutrino(GenPart_pdgId[tau_daughter]))
-                ++n_neutrinos;
-            const GenStatusFlags status(GenPart_statusFlags.at(tau_daughter));
-            const int tau_daughter_pdg = std::abs(GenPart_pdgId[tau_daughter]);
-            if(!((tau_daughter_pdg == PdG::e() || tau_daughter_pdg == PdG::mu())
-                && status.isDirectPromptTauDecayProduct())) continue;
-            if(lepton_idx != tau_idx)
-                throw analysis::exception("Invalid tau decay. tau_idx = %1%") % tau_idx;
-            lepton_idx = tau_daughter;
-        }
+      int lepton_idx = tau_idx;
+      size_t n_neutrinos = 0;
+      for(int tau_daughter : GenPart_daughters.at(tau_idx)) {
+          if(PdG::isNeutrino(GenPart_pdgId[tau_daughter]))
+              ++n_neutrinos;
+          const GenStatusFlags status(GenPart_statusFlags.at(tau_daughter));
+          const int tau_daughter_pdg = std::abs(GenPart_pdgId[tau_daughter]);
+          if(!((tau_daughter_pdg == PdG::e() || tau_daughter_pdg == PdG::mu())
+              && status.isDirectPromptTauDecayProduct())) continue;
+          if(lepton_idx != tau_idx)
+              throw analysis::exception("Invalid tau decay. tau_idx = %1%") % tau_idx;
+          lepton_idx = tau_daughter;
+      }
 
-        if(!((lepton_idx == tau_idx && n_neutrinos == 1) || (lepton_idx != tau_idx && n_neutrinos == 2)))
-            throw analysis::exception("Invalid number of neutrinos = %1% in tau decay. tau_idx = %2%")
-                % n_neutrinos % tau_idx;
+      if(!((lepton_idx == tau_idx && n_neutrinos == 1) || (lepton_idx != tau_idx && n_neutrinos == 2)))
+          throw analysis::exception("Invalid number of neutrinos = %1% in tau decay. tau_idx = %2%")
+              % n_neutrinos % tau_idx;
 
-        lepton_idx = GetLastCopy(lepton_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
-        htt_cand.leg_index.at(leg_idx) = lepton_idx;
-        ++leg_idx;
+      lepton_idx = GetLastCopy(lepton_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
+      htt_cand.leg_index.at(leg_idx) = lepton_idx;
+      ++leg_idx;
     }
     int leg0_pdg = std::abs(GenPart_pdgId.at(htt_cand.leg_index.at(0)));
     int leg1_pdg = std::abs(GenPart_pdgId.at(htt_cand.leg_index.at(1)));
@@ -84,7 +264,7 @@ std::shared_ptr<HTTCand<2>> GetGenHTTCandidate(int evt, const RVecI& GenPart_pdg
 }
 
 int GetGenHBBIndex(int evt, const RVecI& GenPart_pdgId,
-                           const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags)
+                   const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags)
 {
   try {
     std::set<int> hbb_indices;

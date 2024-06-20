@@ -3,7 +3,7 @@
 #include "AnalysisTools.h"
 #include "GenTools.h"
 
-enum class Wleg { PromptElectron = 1, PromptMuon = 2, TauDecayedToElectron = 3, TauDecayedToMuon = 4,
+enum class Wleg { None = 0, PromptElectron = 1, PromptMuon = 2, TauDecayedToElectron = 3, TauDecayedToMuon = 4,
                       TauDecayedToHadrons = 5, Nu = 6, Jet = 7 };
 
 struct WCand
@@ -23,7 +23,7 @@ struct HWWCand
   LorentzVectorM cand_p4;
 };
 
-struct HbbCand
+struct HBBCand
 {
   static constexpr size_t n_legs = 2;
   std::array<int, n_legs> leg_index;

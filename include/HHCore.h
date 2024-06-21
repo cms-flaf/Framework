@@ -3,8 +3,8 @@
 #include "AnalysisTools.h"
 #include "GenTools.h"
 
-enum class Wleg { None = 0, PromptElectron = 1, PromptMuon = 2, TauDecayedToElectron = 3, TauDecayedToMuon = 4,
-                      TauDecayedToHadrons = 5, Nu = 6, Jet = 7 };
+enum class Wleg { PromptElectron = 1, PromptMuon = 2, TauDecayedToElectron = 3, TauDecayedToMuon = 4,
+                  TauDecayedToHadrons = 5, Nu = 6, Jet = 7 };
 
 struct WCand
 {

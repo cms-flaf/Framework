@@ -7,8 +7,7 @@
 
 
 void AssignHadronicWCand(WCand& cand, int cand_idx, const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters,
-                         const RVecF& GenPart_pt, const RVecF& GenPart_eta,
-                         const RVecF& GenPart_phi, const RVecF& GenPart_mass)
+                         const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass)
 {
   cand.leg_kind[0] = Wleg::Jet;
   cand.leg_kind[1] = Wleg::Jet;
@@ -26,9 +25,8 @@ void AssignHadronicWCand(WCand& cand, int cand_idx, const RVecI& GenPart_pdgId, 
   cand.leg_vis_p4[1] = LorentzVectorM{};
 }
 
-void AssignLeptonicWCand(WCand& cand, int cand_idx,
-                         const RVecI& GenPart_pdgId, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
-                         const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
+void AssignLeptonicWCand(WCand& cand, int cand_idx, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
+                         const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
                          const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass)
 {
   cand.cand_p4 = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, cand_idx);
@@ -57,10 +55,9 @@ void AssignLeptonicWCand(WCand& cand, int cand_idx,
 }
 
 
-WCand GetGenWCand(int evt, int w_idx, const RVecI& GenPart_pdgId, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
-                  const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
-                  const RVecF& GenPart_pt, const RVecF& GenPart_eta,
-                  const RVecF& GenPart_phi, const RVecF& GenPart_mass)
+WCand GetGenWCand(int evt, int w_idx, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
+                  const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
+                  const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass)
 {
   WCand res;
   RVecI daughters = GenPart_daughters.at(w_idx);
@@ -80,7 +77,7 @@ WCand GetGenWCand(int evt, int w_idx, const RVecI& GenPart_pdgId, std::vector<re
   bool decays_to_leptons = std::all_of(daughters.begin(), daughters.end(), [&](int idx){ return PdG::isNeutrino(GenPart_pdgId[idx]) || PdG::isLepton(GenPart_pdgId[idx]); });
   if (decays_to_leptons)
   {
-    AssignLeptonicWCand(res, w_idx, GenPart_pdgId, gen_leptons, GenPart_daughters, GenPart_statusFlags,
+    AssignLeptonicWCand(res, w_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
                         GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
   }
 
@@ -92,10 +89,9 @@ WCand GetGenWCand(int evt, int w_idx, const RVecI& GenPart_pdgId, std::vector<re
   return res;
 }
 
-HWWCand GetGenHWWCandidate(int evt, const RVecI& GenPart_pdgId, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
-                           const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
-                           const RVecF& GenPart_pt, const RVecF& GenPart_eta,
-                           const RVecF& GenPart_phi, const RVecF& GenPart_mass,
+HWWCand GetGenHWWCandidate(int evt, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
+                           const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
+                           const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass,
                            bool throw_error_if_not_found)
 {
   try
@@ -140,9 +136,9 @@ HWWCand GetGenHWWCandidate(int evt, const RVecI& GenPart_pdgId, std::vector<reco
     W1_idx = GetLastCopy(W1_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
     W2_idx = GetLastCopy(W2_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
 
-    HWW_cand.legs.at(0) = GetGenWCand(evt, W1_idx, GenPart_pdgId, gen_leptons, GenPart_daughters, GenPart_statusFlags,
+    HWW_cand.legs.at(0) = GetGenWCand(evt, W1_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
                                       GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
-    HWW_cand.legs.at(1) = GetGenWCand(evt, W2_idx, GenPart_pdgId, gen_leptons, GenPart_daughters, GenPart_statusFlags,
+    HWW_cand.legs.at(1) = GetGenWCand(evt, W2_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
                                       GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
 
     return HWW_cand;

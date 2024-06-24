@@ -67,6 +67,10 @@ class Task(law.Task):
     def fs_anaCacheTuple(self):
         return self.setup.get_fs('anaCacheTuple')
 
+    @property
+    def fs_Histograms(self):
+        return self.setup.get_fs('histograms')
+
     def ana_path(self):
         return os.getenv("ANALYSIS_PATH")
 

@@ -1,6 +1,9 @@
 GLOBAL:
   era: 'Run2_2018'
   luminosity: 59830.
+  fs_nanoAOD:
+  - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018'
+  nano_version: v12
   MET_flags:
     - Flag_goodVertices
     - Flag_globalSuperTightHalo2016Filter
@@ -17,50 +20,6 @@ GLOBAL:
   # https://twiki.cern.ch/twiki/bin/view/CMS/DCUserPage2018Analysis
   # lumiFile: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt
   lumiFile: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt
-  signal_types:
-    - GluGluToRadion
-    - GluGluToBulkGraviton
-    - VBFToRadion
-    - VBFToBulkGraviton
-  genuineTau_SFtype:
-    eTau: pt
-    muTau: pt
-    tauTau: dm
-  deepTauWPs:
-    eTau:
-      VSe: VVLoose
-      VSmu: Tight
-      VSjet: Loose
-    muTau:
-      VSe: VVLoose
-      VSmu: Tight
-      VSjet: Loose
-    tauTau:
-      VSe: VVLoose
-      VSmu: Tight
-      VSjet: Loose
-  corrections:
-    - tauID
-    - tauES
-    - JEC_JER
-  deepTauVersion: 2p1
-  channelSelection:
-    #- eTau
-    #- muTau
-    - tauTau
-  QCDRegions:
-    - OS_Iso
-    - SS_Iso
-    - OS_AntiIso
-    - SS_AntiIso
-  categories:
-    - res1b
-    - res2b
-    - inclusive
-    - boosted
-    - btag_shape
-    - baseline
-  storeExtraJets: False
   sampleSelection:
     #- drop ^.*$
     #- keep ^GluGluToRadion*

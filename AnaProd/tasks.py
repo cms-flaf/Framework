@@ -124,6 +124,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 branches[branch_idx] = (sample_id, sample_name, self.samples[sample_name]['sampleType'],
                                         self.remote_target(input_file, fs=self.fs_nanoAOD))
                 branch_idx += 1
+        #print(branches)
         return branches
 
     def workflow_requires(self):
@@ -229,9 +230,8 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self, force_pre_output=False):
         outFileName = 'nanoHTT_0.root'
-        finalFile = os.path.join(self.version, self.period, 'data', outFileName)
-        #finalFile = os.path.join('anaTuples',self.version, self.period, sample_name, outFileName)
-        return remote_file_target(finalFile, self.fs_files)
+        output_path = os.path.join('anaTuples', self.version, self.period, 'data', outFileName)
+        return self.remote_target(output_path, fs=self.fs_anaTuple)
 
     def run(self):
         producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
@@ -267,7 +267,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branches = {}
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
         sample_id_data = 0
-        for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
+        for prod_br,(sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
             if sample_type =='QCD':
                 continue
             branches[n] = (sample_name, sample_type,prod_br)
@@ -282,7 +282,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         #print(outFileName)
         outDir = os.path.join('anaCache', self.period, sample_name, self.version)
         finalFile = os.path.join(outDir, outFileName)
-        return remote_file_target(finalFile, self.fs_read)
+        return self.remote_target(finalFile, fs=self.fs_anaCacheTuple)
 
     def run(self):
         sample_name, sample_type,prod_br = self.branch_data
@@ -339,9 +339,8 @@ class DataCacheMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self, force_pre_output=False):
         outFileName = 'nanoHTT_0.root'
-        outDir = os.path.join('anaCache', self.period, 'data', self.version)
-        finalFile = os.path.join(outDir, outFileName)
-        return remote_file_target(finalFile, self.fs_read)
+        output_path = os.path.join('anaCache', self.period, 'data',self.version, outFileName)
+        return self.remote_target(output_path, fs=self.fs_anaCache)
 
     def run(self):
         producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')

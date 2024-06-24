@@ -2,6 +2,9 @@ GLOBAL:
   era: 'Run2_2017'
   luminosity : 41480. # pb^-1 2016 postVFP
   #luminosity: 36310.
+  fs_nanoAOD:
+  - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2017'
+  nano_version: v12
   MET_flags: # https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#2017_data_and_MC_UL
     - Flag_goodVertices
     - Flag_globalSuperTightHalo2016Filter
@@ -13,55 +16,11 @@ GLOBAL:
     - Flag_eeBadScFilter
     #- Flag_hfNoisyHitsFilter
     #- Flag_BadChargedCandidateFilter
-  triggerFile: config/triggers_2017.yaml
+  triggerFile: config/Run2_2017/triggers.yaml
   crossSectionsFile : config/crossSections13TeV.yaml
   # from https://twiki.cern.ch/twiki/bin/viewauth/CMS/DCUserPage
   # useful link: https://twiki.cern.ch/twiki/bin/view/CMS/DCUserPage2017Analysis
   lumiFile: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/Legacy_2017/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt
-  signal_types:
-    - GluGluToRadion
-    - GluGluToBulkGraviton
-    - VBFToRadion
-    - VBFToBulkGraviton
-  genuineTau_SFtype:
-    eTau: dm
-    muTau: dm
-    tauTau: dm
-  deepTauWPs:
-    eTau:
-      VSe: VVLoose
-      VSmu: Tight
-      VSjet: Medium
-    muTau:
-      VSe: VVLoose
-      VSmu: Tight
-      VSjet: Medium
-    tauTau:
-      VSe: VVLoose
-      VSmu: Tight
-      VSjet: Medium
-  corrections:
-    - tauID
-    - tauES
-    - JEC_JER
-  deepTauVersion: 2p1
-  channelSelection:
-    #- eTau
-    #- muTau
-    - tauTau
-  QCDRegions:
-    - OS_Iso
-    - SS_Iso
-    - OS_AntiIso
-    - SS_AntiIso
-  categories:
-    - res1b
-    - res2b
-    - inclusive
-    - boosted
-    - btag_shape
-    - baseline
-  storeExtraJets: False
   sampleSelection:
     - drop ^VBFToRadion*
     - drop ^VBFToBulkGraviton*
@@ -87,6 +46,7 @@ GLOBAL:
     #- drop ^TTZToNuNu$
     #- drop ^TTZToBB$
     #- drop ^TTZToLL_M-1to10$
+
 
 
 GluGluToRadionToHHTo2B2Tau_M-250:
@@ -1512,6 +1472,10 @@ TTZZTo4b_ext1:
  miniAOD: /TTZZTo4b_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM
  sampleType: TTVV
  crossSection: TTZZTo4b
+TTZZToNon4b:
+ miniAOD:
+ sampleType: TTVV
+ crossSection: TTZZToNon4b
 TTGG:
   miniAOD:
   sampleType: TTVV

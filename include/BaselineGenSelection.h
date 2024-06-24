@@ -153,6 +153,67 @@ HWWCand GetGenHWWCandidate(int evt, std::vector<reco_tau::gen_truth::GenLepton> 
   }
 }
 
+HBBCand GetGenHBBCandidate(int evt, const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
+                           const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass,
+                           bool throw_error_if_not_found)
+{
+  try
+  {
+    int sz = GenPart_pdgId.size();
+    std::set<int> Hbb_indices;
+    for (int i = 0; i < sz; ++i)
+    {
+      const GenStatusFlags status(GenPart_statusFlags.at(i));
+      bool is_higgs = GenPart_pdgId[i] == PdG::Higgs();
+      if (!(is_higgs && status.isLastCopy()))
+      {
+        continue;
+      }
+      auto const& daughters = GenPart_daughters.at(i);
+      auto IsBquark = [&](int idx){ return std::abs(GenPart_pdgId[idx]) == PdG::b(); };
+      int n_b_from_H = std::count_if(daughters.begin(), daughters.end(), IsBquark);
+      if (n_b_from_H == 2)
+      {
+        Hbb_indices.insert(i);
+      }
+    }
+
+    if(Hbb_indices.empty())
+    {
+      throw analysis::exception("H->bb not found.");
+    }
+    if(Hbb_indices.size() != 1)
+    {
+      throw analysis::exception("Multiple H->bb candidates.");
+    }
+
+    int const Hbb_index = *Hbb_indices.begin();
+    HBBCand Hbb_cand;
+
+    Hbb_cand.cand_p4 = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, Hbb_index);
+
+    RVecI b_from_H = GenPart_daughters.at(Hbb_index);
+    Hbb_cand.leg_index[0] = b_from_H.at(0);
+    Hbb_cand.leg_index[1] = b_from_H.at(1);
+
+    Hbb_cand.leg_p4[0] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, Hbb_cand.leg_index[0]);
+    Hbb_cand.leg_p4[1] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, Hbb_cand.leg_index[1]);
+
+    Hbb_cand.leg_vis_p4[0] = LorentzVectorM{};
+    Hbb_cand.leg_vis_p4[1] = LorentzVectorM{};
+
+    return Hbb_cand;
+  }
+  catch (analysis::exception& e)
+  {
+    if(throw_error_if_not_found)
+    {
+      throw analysis::exception("GetGenHBBCandidate (event=%1%): %2%") % evt % e.message();
+    }
+    return {};
+  }
+}
+
 std::shared_ptr<HTTCand<2>> GetGenHTTCandidate(int evt, const RVecI& GenPart_pdgId,
                                                const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
                                                const RVecF& GenPart_pt, const RVecF& GenPart_eta,

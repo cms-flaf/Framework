@@ -812,6 +812,7 @@ GluGluToHHTo2B2Tau_node_SM:
   miniAOD: /GluGluToHHTo2B2Tau_TuneCP5_PSWeights_node_SM_13TeV-madgraph-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM
   sampleType: HHnonRes
   crossSection: ggHH_bbTauTau_SM
+
 WJetsToLNu:
   miniAOD: /WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM
   sampleType: W
@@ -838,30 +839,31 @@ W4JetsToLNu:
 #  miniAOD: /WJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM
 #  sampleType: W
 #  crossSectionStitch: WJetsToLNu_NLO
-W0JetsToLNu-amcatnloFXFX:
-  miniAOD: /WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
-  sampleType: W
-  crossSectionStitch: W0JetsToLNu_NLO
-W1JetsToLNu-amcatnloFXFX:
-  miniAOD: /WJetsToLNu_1J_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
-  sampleType: W
-  crossSectionStitch: W1JetsToLNu_NLO
-W2JetsToLNu-amcatnloFXFX:
-  miniAOD: /WJetsToLNu_2J_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
-  sampleType: W
-  crossSectionStitch: W2JetsToLNu_NLO
-WToTauNu_M-200:
-  miniAOD: /WToTauNu_M-200_TuneCP5_13TeV-pythia8-tauola/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
-  sampleType: WLep
-  crossSection: WToTauNu_M-200
-WToMuNu_M-200:
-  miniAOD: /WToMuNu_M-200_TuneCP5_13TeV-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
-  sampleType: WLep
-  crossSection: WToMuNu_M-200
-WGToLNuG:
-  miniAOD: /WGToLNuG_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
-  sampleType: WG
-  crossSection: WGToLNuG
+#W0JetsToLNu-amcatnloFXFX:
+#  miniAOD: /WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
+#  sampleType: W
+#  crossSectionStitch: W0JetsToLNu_NLO
+#W1JetsToLNu-amcatnloFXFX:
+#  miniAOD: /WJetsToLNu_1J_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
+#  sampleType: W
+#  crossSectionStitch: W1JetsToLNu_NLO
+#W2JetsToLNu-amcatnloFXFX:
+#  miniAOD: /WJetsToLNu_2J_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
+#  sampleType: W
+#  crossSectionStitch: W2JetsToLNu_NLO
+#WToTauNu_M-200:
+#  miniAOD: /WToTauNu_M-200_TuneCP5_13TeV-pythia8-tauola/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
+#  sampleType: WLep
+#  crossSection: WToTauNu_M-200
+#WToMuNu_M-200:
+#  miniAOD: /WToMuNu_M-200_TuneCP5_13TeV-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
+#  sampleType: WLep
+#  crossSection: WToMuNu_M-200
+#WGToLNuG:
+#  miniAOD: /WGToLNuG_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
+#  sampleType: WG
+#  crossSection: WGToLNuG
+
 EWK_WplusToLNu:
   miniAOD: /EWKWPlus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV-madgraph-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
   sampleType: EWK
@@ -922,30 +924,30 @@ WJetsToLNu_HT-800To1200_ext1:
   sampleType: W
   crossSectionStitch: WJetsToLNu_HT-800To1200_LO
 
-DYJetsToLL_M-10to50-madgraphMLM:
-  miniAOD: /DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
-  sampleType: DY
-  crossSectionStitch: DY_LO_M-10to50
+#DYJetsToLL_M-10to50-madgraphMLM:
+#  miniAOD: /DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
+#  sampleType: DY
+#  crossSectionStitch: DY_LO_M-10to50
 #DYJetsToLL_M-50-madgraphMLM:
 #  miniAOD: /DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
 #  sampleType: DY
 #  crossSectionStitch: DY_LO
-DY1JetsToLL_M-50-madgraphMLM:
-  miniAOD: /DY1JetsToLL_M-50_MatchEWPDG20_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
-  sampleType: DY
-  crossSectionStitch: DY_LO_1J
-DY2JetsToLL_M-50-madgraphMLM:
-  miniAOD: /DY2JetsToLL_M-50_MatchEWPDG20_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
-  sampleType: DY
-  crossSectionStitch: DY_LO_2J
-DY3JetsToLL_M-50-madgraphMLM:
-  miniAOD: /DY3JetsToLL_M-50_MatchEWPDG20_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
-  sampleType: DY
-  crossSectionStitch: DY_LO_3J
-DY4JetsToLL_M-50-madgraphMLM:
-  miniAOD: /DY4JetsToLL_M-50_MatchEWPDG20_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
-  sampleType: DY
-  crossSectionStitch: DY_LO_4J
+#DY1JetsToLL_M-50-madgraphMLM:
+#  miniAOD: /DY1JetsToLL_M-50_MatchEWPDG20_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
+#  sampleType: DY
+#  crossSectionStitch: DY_LO_1J
+#DY2JetsToLL_M-50-madgraphMLM:
+#  miniAOD: /DY2JetsToLL_M-50_MatchEWPDG20_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
+#  sampleType: DY
+#  crossSectionStitch: DY_LO_2J
+#DY3JetsToLL_M-50-madgraphMLM:
+#  miniAOD: /DY3JetsToLL_M-50_MatchEWPDG20_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
+#  sampleType: DY
+#  crossSectionStitch: DY_LO_3J
+#DY4JetsToLL_M-50-madgraphMLM:
+#  miniAOD: /DY4JetsToLL_M-50_MatchEWPDG20_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
+#  sampleType: DY
+#  crossSectionStitch: DY_LO_4J
 
 DYJetsToLL_M-50-amcatnloFXFX:
   miniAOD: /DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM
@@ -1170,11 +1172,11 @@ ggHToZZTo2L2Q:
 
 GluGluHToTauTau_M125:
   miniAOD: /GluGluHToTauTau_M125_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM
-  sampleType: VH
+  sampleType: H
   crossSection: GluGluHToTauTau
 VBFHToTauTau_M125:
   miniAOD: /VBFHToTauTau_M125_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM
-  sampleType: VH
+  sampleType: H
   crossSection: VBFHToTauTau
 WplusHToTauTau_M125:
   miniAOD: /WplusHToTauTau_M125_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM
@@ -1771,7 +1773,7 @@ TTZHTo4b_ext1:
  crossSection: TTZHTo4b
 TT4b:
  miniAOD:
- sampleType: TT
+ sampleType: TTJ
  crossSection: TT4b
 TTGJets:
  miniAOD:

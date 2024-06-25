@@ -124,7 +124,6 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 branches[branch_idx] = (sample_id, sample_name, self.samples[sample_name]['sampleType'],
                                         self.remote_target(input_file, fs=self.fs_nanoAOD))
                 branch_idx += 1
-        #print(branches)
         return branches
 
     def workflow_requires(self):
@@ -287,7 +286,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def run(self):
         sample_name, sample_type,prod_br = self.branch_data
         sample_config = self.sample_config
-        unc_config = os.path.join(self.ana_path(), 'config', f'weight_definition_{getYear(self.period)}.yaml')
+        unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         producer_anacachetuples = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheTupleProducer.py')
 
         thread = threading.Thread(target=update_kinit_thread)

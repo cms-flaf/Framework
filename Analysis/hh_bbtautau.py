@@ -55,12 +55,12 @@ filters = {
         }
 
 
-def createKeyFilterDict(sample_cfg_dict):
+def createKeyFilterDict(global_cfg_dict):
     reg_dict = {}
     filter_str = ""
-    channels_to_consider = sample_cfg_dict['channelSelection']
-    qcd_regions_to_consider = sample_cfg_dict['QCDRegions']
-    categories_to_consider = sample_cfg_dict["categories"]
+    channels_to_consider = global_cfg_dict['channelSelection']
+    qcd_regions_to_consider = global_cfg_dict['QCDRegions']
+    categories_to_consider = global_cfg_dict["categories"]
     for ch in channels_to_consider:
         for reg in qcd_regions_to_consider:
             for cat in categories_to_consider:
@@ -187,7 +187,7 @@ def CompareYields(histograms, all_samples_list, channel, category, uncName, scal
         print(f"{sample} || {key_C} || {n_sample_C}")
         print(f"{sample} || {key_D} || {n_sample_D}")
 
-def AddQCDInHistDict(var, all_histograms, channels, categories, sample_type, uncName, all_samples_list, scales, wantNegativeContributions=True):
+def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_samples_list, scales, wantNegativeContributions=False):
     if 'QCD' not in all_histograms.keys():
             all_histograms['QCD'] = {}
     for channel in channels:
@@ -204,7 +204,7 @@ def AddQCDInHistDict(var, all_histograms, channels, categories, sample_type, unc
                 key =( (channel, 'OS_Iso', cat), (uncName, scale))
                 all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale,wantNegativeContributions)
 
-def ApplyBTagWeight(cat,applyBtag=True, finalWeight_name = 'final_weight_0'):
+def ApplyBTagWeight(cat,applyBtag=False, finalWeight_name = 'final_weight_0'):
     btag_weight = "1"
     btagshape_weight = "1"
     if applyBtag:

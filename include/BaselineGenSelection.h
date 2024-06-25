@@ -13,8 +13,10 @@ void AssignHadronicWCand(WCand& cand, int cand_idx, const RVecI& GenPart_pdgId, 
   cand.leg_kind[1] = Wleg::Jet;
 
   RVecI daughters = GenPart_daughters.at(cand_idx);
-  cand.leg_index[0] = daughters[0];
-  cand.leg_index[1] = daughters[1];
+  int first = GenPart_pt[daughters[0]] > GenPart_pt[daughters[1]] ? 0 : 1;
+  int second = GenPart_pt[daughters[0]] > GenPart_pt[daughters[1]] ? 1 : 0;
+  cand.leg_index[0] = daughters[first];
+  cand.leg_index[1] = daughters[second];
 
   cand.cand_p4 = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, cand_idx);
 
@@ -141,6 +143,12 @@ HWWCand GetGenHWWCandidate(int evt, std::vector<reco_tau::gen_truth::GenLepton> 
     HWW_cand.legs.at(1) = GetGenWCand(evt, W2_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
                                       GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
 
+    // let leg 0 be always W->qq and leg 1 leg be W->lv
+    if (HWW_cand.legs.at(0).leg_kind.at(0) != Wleg::Jet)
+    {
+      std::swap(HWW_cand.legs.at(0), HWW_cand.legs.at(1));
+    }
+
     return HWW_cand;
   }
   catch (analysis::exception& e)
@@ -193,8 +201,10 @@ HBBCand GetGenHBBCandidate(int evt, const RVecI& GenPart_pdgId, const RVecVecI& 
     Hbb_cand.cand_p4 = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, Hbb_index);
 
     RVecI b_from_H = GenPart_daughters.at(Hbb_index);
-    Hbb_cand.leg_index[0] = b_from_H.at(0);
-    Hbb_cand.leg_index[1] = b_from_H.at(1);
+    int first = GenPart_pt[b_from_H[0]] > GenPart_pt[b_from_H[1]] ? 0 : 1;
+    int second = GenPart_pt[b_from_H[0]] > GenPart_pt[b_from_H[1]] ? 1 : 0;
+    Hbb_cand.leg_index[0] = b_from_H.at(first);
+    Hbb_cand.leg_index[1] = b_from_H.at(second);
 
     Hbb_cand.leg_p4[0] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, Hbb_cand.leg_index[0]);
     Hbb_cand.leg_p4[1] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, Hbb_cand.leg_index[1]);

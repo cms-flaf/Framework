@@ -22,44 +22,26 @@ GLOBAL:
   #lumiFile: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Final/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON.txt
   lumiFile: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Legacy_2016/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt
   sampleSelection:
-    #- drop ^.*$
-    #- keep ^GluGluToRadion*
-    #- keep ^GluGluToBulkGraviton*
     - drop ^VBFToRadion*
     - drop ^VBFToBulkGraviton*
-    #- keep ^TTTo*
-    #- keep ^DY*
-    #- keep ^EWK*
-    #- keep ^ST_*
     - drop ^.*NoFully
-    #- keep ^WJetsToLNu$
-    #- keep ^W[1-4]JetsToLNu$
-    #- keep ^ZJets*
-    #- keep ^ZH*
-    #- keep ^GluGlu*
-    #- keep ^[W,Z]{1,3}$
-    #- keep ^.*HToTauTau
-    #- keep ^ttHTo*
-    #- keep ^TTWJetsTo*
-    #- keep ^TTZToLLNuNu_M-10$
-    #- keep ^TTWW$
-    #- keep ^TTZZ$
-    #- keep ^TTWZ$
-    #- keep ^GluGluToHHTo2B2Tau_node_SM$
-    #- keep ^SingleMuon_Run2018*
-    #- keep ^EGamma_Run2018*
-    #- keep ^MET_Run2018*
-    #- keep ^Tau_Run2018*
-    #- keep ^T{2,3}?
-    #- keep ^QCD_Pt*
-    #- keep ^QCD_HT*
     - drop ^.*Enriched
-    - drop ^JetHT_Run2016*
+    - drop ^JetHT_Run2017*
     - drop ^Double*
-    #- drop ^ZJetsToQQ_HT-200to400$
-    #- drop ^ZJetsToQQ_HT-400to600$
-    #- drop ^ZJetsToQQ_HT-600to800$
-    #- drop ^ZJetsToQQ_HT-800toInf$
+    - drop ^WWTo*
+    - drop ^WZTo*
+    - drop ^ZZTo*
+    - drop ^ttHToNonbb_M125$
+    - drop ^ttHTobb_M125$
+    - drop ^TTZToLLNuNu_M*
+    - drop ^WToTauNu_M*
+    - drop ^WGToLNuG*
+    - drop ^WToMuNu_M*
+    - drop ^TTZZTo*
+    - drop ^TTZHTo*
+    - drop ^TTWHTo*
+    - drop ^TTHHTo*
+    - drop ^.*erdON
 
 
 GluGluToRadionToHHTo2B2Tau_M-250:

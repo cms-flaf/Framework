@@ -281,11 +281,10 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         #print(outFileName)
         outDir = os.path.join('anaCache', self.period, sample_name, self.version)
         finalFile = os.path.join(outDir, outFileName)
-        return self.remote_target(finalFile, fs=self.fs_anaCacheTuple)
+        return self.remote_target(finalFile, fs=self.fs_anaCache)
 
     def run(self):
         sample_name, sample_type,prod_br = self.branch_data
-        sample_config = self.sample_config
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         producer_anacachetuples = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheTupleProducer.py')
 
@@ -300,8 +299,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     anaCacheTupleProducer_cmd.extend(['--compute_unc_variations', 'True'])
                 if self.version.split('_')[1]=='deepTau2p5':
                     anaCacheTupleProducer_cmd.extend([ '--deepTauVersion', 'v2p5'])
-                #print(anaCacheTupleProducer_cmd)#, env=self.cmssw_env(),verbose=1)
-                ps_call(anaCacheTupleProducer_cmd, env=self.cmssw_env(),verbose=1)
+                ps_call(anaCacheTupleProducer_cmd, env=self.cmssw_env, verbose=1)
             print(f"finished to produce anacachetuple")
 
         finally:

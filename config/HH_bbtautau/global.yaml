@@ -24,9 +24,14 @@ deepTauWPs:
 corrections:
   - tauID
   - tauES
-  - JEC_JER
+  - JEC
+  - JER
   - trg
-  - btag
+  - btagWP
+  - btagShape
+  - mu
+  - ele
+  - puJetID
   - pu
 deepTauVersion: 2p1
 channelSelection:

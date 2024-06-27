@@ -222,13 +222,13 @@ TT4b:
   sampleType: TTJ
 TTGG:
   sampleType: TTVV
-TTZZTo4b:
+TTZZ:
   sampleType: TTVV
-TTZZTo4b:
-  sampleType: TTVV
-  hasExt1: True
-TTZZToNon4b:
-  sampleType: TTVV
+#TTZZTo4b:
+#  sampleType: TTVV
+#  hasExt1: True
+#TTZZToNon4b:
+#  sampleType: TTVV
 #TTZHTo4b:
 #  sampleType: TTVV
 #  hasExt1: True

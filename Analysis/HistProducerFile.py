@@ -223,64 +223,65 @@ if __name__ == "__main__":
 
     create_new_hist = key_not_exist or df_empty
 
-    #try:
-    dfWrapped_central = DataFrameBuilder(ROOT.RDataFrame('Events',args.inFile), args.deepTauVersion)
-    all_dataframes = {}
-    all_histograms = {}
-    sample_type = sample_cfg_dict[args.dataset]['sampleType'] if args.dataset != 'data' else 'data'
-    key_central = (sample_type, "Central", "Central")
-    key_filter_dict = createKeyFilterDict(global_cfg_dict)
-    outfile  = ROOT.TFile(args.outFileName,'RECREATE')
-    col_names_central =  dfWrapped_central.colNames
-    col_tpyes_central =  dfWrapped_central.colTypes
+    if not create_new_hist:
+        dfWrapped_central = DataFrameBuilder(ROOT.RDataFrame('Events',args.inFile), args.deepTauVersion)
+        all_dataframes = {}
+        all_histograms = {}
+        sample_type = sample_cfg_dict[args.dataset]['sampleType'] if args.dataset != 'data' else 'data'
+        key_central = (sample_type, "Central", "Central")
+        key_filter_dict = createKeyFilterDict(global_cfg_dict)
+        outfile  = ROOT.TFile(args.outFileName,'RECREATE')
+        col_names_central =  dfWrapped_central.colNames
+        col_tpyes_central =  dfWrapped_central.colTypes
 
-    hasCache= args.cacheFile != ''
-    if hasCache:
-        dfWrapped_cache_central = DataFrameBuilder(ROOT.RDataFrame('Events',args.cacheFile), args.deepTauVersion)
-        AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache_central, "cache_map_Central")
+        hasCache= args.cacheFile != ''
+        if hasCache:
+            dfWrapped_cache_central = DataFrameBuilder(ROOT.RDataFrame('Events',args.cacheFile), args.deepTauVersion)
+            AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache_central, "cache_map_Central")
 
-    if key_central not in all_dataframes:
-        all_dataframes[key_central] = [PrepareDfWrapped(dfWrapped_central).df]
-    central_histograms = GetHistogramDictFromDataframes(args.var, all_dataframes,  key_central , key_filter_dict, unc_cfg_dict['norm'],hist_cfg_dict,args.furtherCut)
-    #print(central_histograms)
-    # central quantities definition
-    compute_variations = ( args.compute_unc_variations or args.compute_rel_weights ) and args.dataset != 'data'
-    if compute_variations:
-        all_dataframes[key_central][0] = createCentralQuantities(all_dataframes[key_central][0], col_tpyes_central, col_names_central)
-        if all_dataframes[key_central][0].Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
+        if key_central not in all_dataframes:
+            all_dataframes[key_central] = [PrepareDfWrapped(dfWrapped_central).df]
+        central_histograms = GetHistogramDictFromDataframes(args.var, all_dataframes,  key_central , key_filter_dict, unc_cfg_dict['norm'],hist_cfg_dict,args.furtherCut)
+        #print(central_histograms)
+        # central quantities definition
+        compute_variations = ( args.compute_unc_variations or args.compute_rel_weights ) and args.dataset != 'data'
+        if compute_variations:
+            all_dataframes[key_central][0] = createCentralQuantities(all_dataframes[key_central][0], col_tpyes_central, col_names_central)
+            if all_dataframes[key_central][0].Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
 
-    # norm weight histograms
-    if args.compute_rel_weights and args.dataset!='data':
-        for uncName in unc_cfg_dict['norm'].keys():
-            for scale in scales:
-                #print(uncName, scale)
-                key_2 = (sample_type, uncName, scale)
-                if key_2 not in all_dataframes.keys():
-                    all_dataframes[key_2] = []
-                all_dataframes[key_2] = [all_dataframes[key_central][0]]
-                norm_histograms =  GetHistogramDictFromDataframes(args.var,all_dataframes, key_2, key_filter_dict,unc_cfg_dict['norm'], hist_cfg_dict, args.furtherCut)
-                central_histograms.update(norm_histograms)
+        # norm weight histograms
+        if args.compute_rel_weights and args.dataset!='data':
+            for uncName in unc_cfg_dict['norm'].keys():
+                for scale in scales:
+                    #print(uncName, scale)
+                    key_2 = (sample_type, uncName, scale)
+                    if key_2 not in all_dataframes.keys():
+                        all_dataframes[key_2] = []
+                    all_dataframes[key_2] = [all_dataframes[key_central][0]]
+                    norm_histograms =  GetHistogramDictFromDataframes(args.var,all_dataframes, key_2, key_filter_dict,unc_cfg_dict['norm'], hist_cfg_dict, args.furtherCut)
+                    central_histograms.update(norm_histograms)
 
-    # save histograms
-    SaveHists(central_histograms, outfile)
+        # save histograms
+        SaveHists(central_histograms, outfile)
 
-    # shape weight  histograms
-    if args.compute_unc_variations and args.dataset!='data':
-        for uncName in unc_cfg_dict['shape']:
-            #print(uncName)
-            for scale in scales:
-                key_2 = (sample_type, uncName, scale)
-                #print(key_2)
-                GetShapeDataFrameDict(all_dataframes, key_2, key_central, args.inFile, args.cacheFile, compute_variations, args.deepTauVersion, col_names_central, col_tpyes_central, hasCache)
-                if key_2 not in all_dataframes.keys(): continue
-                if not all_dataframes[key_2] : continue
-                shape_histograms=  GetHistogramDictFromDataframes(args.var, all_dataframes, key_2 , key_filter_dict,unc_cfg_dict['shape'], hist_cfg_dict, args.furtherCut)
-                SaveHists(shape_histograms, outfile)
+        # shape weight  histograms
+        if args.compute_unc_variations and args.dataset!='data':
+            for uncName in unc_cfg_dict['shape']:
+                #print(uncName)
+                for scale in scales:
+                    key_2 = (sample_type, uncName, scale)
+                    #print(key_2)
+                    GetShapeDataFrameDict(all_dataframes, key_2, key_central, args.inFile, args.cacheFile, compute_variations, args.deepTauVersion, col_names_central, col_tpyes_central, hasCache)
+                    if key_2 not in all_dataframes.keys(): continue
+                    if not all_dataframes[key_2] : continue
+                    shape_histograms=  GetHistogramDictFromDataframes(args.var, all_dataframes, key_2 , key_filter_dict,unc_cfg_dict['shape'], hist_cfg_dict, args.furtherCut)
+                    SaveHists(shape_histograms, outfile)
 
 
-    outfile.Close()
-    #except:
-    #    createVoidHist(args.outFileName, hist_cfg_dict)
+        outfile.Close()
+    else:
+        print(f"NO HISTOGRAM CREATED!!!! dataset: {args.dataset} ")
+        createVoidHist(args.outFileName, hist_cfg_dict)
 
     #finally:
     executionTime = (time.time() - startTime)

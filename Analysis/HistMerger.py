@@ -300,10 +300,7 @@ if __name__ == "__main__":
             if uncNameType != 'Central':
                 if sample_type == 'data' : continue
                 if uncScale == 'Central': continue
-                if args.year in uncNameType :
-                    hist_name+=f"_{uncNameType}_{uncScale}"
-                else:
-                    hist_name+=f"_{uncNameType}_{args.year}_{uncScale}"
+                hist_name+=f"_{uncNameType}_{uncScale}"
             else:
                 if uncScale!='Central':continue
             hist.SetTitle(hist_name)

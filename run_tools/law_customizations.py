@@ -79,6 +79,9 @@ class Task(law.Task):
     def remote_target(self, *path, fs=None):
         fs = fs or self.setup.fs_default
         path = os.path.join(*path)
+        if type(fs) == str:
+            path = os.path.join(fs, path)
+            return law.LocalFileTarget(path)
         return WLCGFileTarget(path, fs)
 
     def law_job_home(self):

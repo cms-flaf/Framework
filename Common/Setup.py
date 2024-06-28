@@ -131,7 +131,10 @@ class Setup:
         if fs_name not in self.fs_dict:
             full_fs_name = f'fs_{fs_name}'
             if full_fs_name in self.global_params:
-                self.fs_dict[fs_name] = WLCGFileSystem(self.global_params[full_fs_name])
+                if self.global_params[full_fs_name].startswith('/'):
+                    self.fs_dict[fs_name] = self.global_params[full_fs_name]
+                else:
+                    self.fs_dict[fs_name] = WLCGFileSystem(self.global_params[full_fs_name])
             else:
                 if fs_name == 'default':
                     raise RuntimeError(f'No default file system defined')

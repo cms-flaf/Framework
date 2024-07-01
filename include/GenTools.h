@@ -83,6 +83,7 @@ struct PdG {
   static int bbar() { static const int pdg = ParticleDB::GetParticleInfo("bbar").pdgId; return pdg; }
   static int Wplus() { static const int pdg = ParticleDB::GetParticleInfo("W+").pdgId; return pdg; }
   static int Wminus() { static const int pdg = ParticleDB::GetParticleInfo("W-").pdgId; return pdg; }
+  static int Z() { static const int pdg = ParticleDB::GetParticleInfo("Z0").pdgId; return pdg; }
 
   static bool isNeutrino(int pdg)
   {

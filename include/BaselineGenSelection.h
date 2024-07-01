@@ -6,11 +6,11 @@
 #include "HHCore.h"
 
 
-void AssignHadronicWCand(WCand& cand, int cand_idx, const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters,
+void AssignHadronicVCand(VCand& cand, int cand_idx, const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters,
                          const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass)
 {
-  cand.leg_kind[0] = Wleg::Jet;
-  cand.leg_kind[1] = Wleg::Jet;
+  cand.leg_kind[0] = Vleg::Jet;
+  cand.leg_kind[1] = Vleg::Jet;
 
   RVecI daughters = GenPart_daughters.at(cand_idx);
   int first = GenPart_pt[daughters[0]] > GenPart_pt[daughters[1]] ? 0 : 1;
@@ -27,7 +27,7 @@ void AssignHadronicWCand(WCand& cand, int cand_idx, const RVecI& GenPart_pdgId, 
   cand.leg_vis_p4[1] = LorentzVectorM{};
 }
 
-void AssignLeptonicWCand(WCand& cand, int cand_idx, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
+void AssignLeptonicVCand(VCand& cand, int cand_idx, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
                          const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
                          const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass)
 {
@@ -35,6 +35,51 @@ void AssignLeptonicWCand(WCand& cand, int cand_idx, std::vector<reco_tau::gen_tr
 
   RVecI daughters = GenPart_daughters.at(cand_idx);
   std::sort(daughters.begin(), daughters.end(), [&GenPart_pdgId](int x, int y){ return std::abs(GenPart_pdgId[x]) < std::abs(GenPart_pdgId[y]); });
+
+  bool invisible = PdG::isNeutrino(GenPart_pdgId[daughters[0]]) && PdG::isNeutrino(GenPart_pdgId[daughters[1]]);
+  bool lep_pair = PdG::isLepton(GenPart_pdgId[daughters[0]]) && PdG::isLepton(GenPart_pdgId[daughters[1]]);
+
+  if (invisible)
+  {
+    cand.leg_index[0] = daughters[0];
+    cand.leg_kind[0] = Vleg::Nu;
+    cand.leg_p4[0] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, daughters[0]);
+    cand.leg_vis_p4[0] = LorentzVectorM(0, 0, 0, 0);
+
+    cand.leg_index[1] = daughters[1];
+    cand.leg_kind[1] = Vleg::Nu;
+    cand.leg_p4[1] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass,  daughters[1]);
+    cand.leg_vis_p4[1] = LorentzVectorM(0, 0, 0, 0);
+
+    return;
+  }
+
+  if (lep_pair)
+  {
+    reco_tau::gen_truth::GenLepton const* l1_ptr = findLeptonByIndex(gen_leptons, daughters[0]);
+    if (!l1_ptr)
+    {
+      throw analysis::exception("Could not find first gen lepton by index");
+    }
+
+    cand.leg_index[0] = daughters[0];
+    cand.leg_kind[0] = static_cast<Vleg>(l1_ptr->kind());
+    cand.leg_p4[0] = l1_ptr->lastCopy().p4;
+    cand.leg_vis_p4[0] = LorentzVectorM(l1_ptr->visibleP4());
+
+    reco_tau::gen_truth::GenLepton const* l2_ptr = findLeptonByIndex(gen_leptons, daughters[1]);
+    if (!l2_ptr)
+    {
+      throw analysis::exception("Could not find second gen lepton by index");
+    }
+
+    cand.leg_index[1] = daughters[1];
+    cand.leg_kind[1] = static_cast<Vleg>(l2_ptr->kind());
+    cand.leg_p4[1] = l2_ptr->lastCopy().p4;
+    cand.leg_vis_p4[1] = LorentzVectorM(l2_ptr->visibleP4());
+
+    return;
+  }
 
   int nu_idx = daughters.at(1);
   int lep_idx = daughters.at(0);
@@ -46,52 +91,51 @@ void AssignLeptonicWCand(WCand& cand, int cand_idx, std::vector<reco_tau::gen_tr
   }
 
   cand.leg_index[1] = nu_idx;
-  cand.leg_kind[1] = Wleg::Nu;
+  cand.leg_kind[1] = Vleg::Nu;
   cand.leg_p4[1] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, nu_idx);
   cand.leg_vis_p4[1] = LorentzVectorM(0, 0, 0, 0);
 
   cand.leg_index[0] = lep_idx;
-  cand.leg_kind[0] = static_cast<Wleg>(lep_ptr->kind());
+  cand.leg_kind[0] = static_cast<Vleg>(lep_ptr->kind());
   cand.leg_p4[0] = lep_ptr->lastCopy().p4;
   cand.leg_vis_p4[0] = LorentzVectorM(lep_ptr->visibleP4());
 }
 
 
-WCand GetGenWCand(int evt, int w_idx, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
+VCand GetGenVCand(int evt, int v_idx, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
                   const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
                   const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass)
 {
-  WCand res;
-  RVecI daughters = GenPart_daughters.at(w_idx);
+  VCand res;
+  RVecI daughters = GenPart_daughters.at(v_idx);
   if (daughters.size() != 2)
   {
-    throw analysis::exception("W candidate has wrong number of daughters");
+    throw analysis::exception("Vector boson candidate has wrong number of daughters");
   }
 
-  // potentially problematic: what if W->gamma W ?
   bool decays_to_hadrons = std::all_of(daughters.begin(), daughters.end(), [&](int idx){ return std::abs(GenPart_pdgId[idx]) <= PdG::b(); });
   if (decays_to_hadrons)
   {
-    AssignHadronicWCand(res, w_idx, GenPart_pdgId, GenPart_daughters,
+    AssignHadronicVCand(res, v_idx, GenPart_pdgId, GenPart_daughters,
                         GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
   }
 
   bool decays_to_leptons = std::all_of(daughters.begin(), daughters.end(), [&](int idx){ return PdG::isNeutrino(GenPart_pdgId[idx]) || PdG::isLepton(GenPart_pdgId[idx]); });
   if (decays_to_leptons)
   {
-    AssignLeptonicWCand(res, w_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
+    AssignLeptonicVCand(res, v_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
                         GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
   }
 
   if (!decays_to_hadrons && !decays_to_leptons)
   {
-    throw analysis::exception("Encountered neither leptonic nor hadronic W decay");
+    throw analysis::exception("Encountered neither leptonic nor hadronic vector boson decay");
   }
 
   return res;
 }
 
-HWWCand GetGenHWWCandidate(int evt, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
+HVVCand GetGenHVVCandidate(int evt, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
                            const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
                            const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass,
                            bool throw_error_if_not_found)
@@ -99,7 +143,7 @@ HWWCand GetGenHWWCandidate(int evt, std::vector<reco_tau::gen_truth::GenLepton> 
   try
   {
     int sz = GenPart_pdgId.size();
-    std::set<int> HWW_indices;
+    std::set<int> HVV_indices;
     for (int i = 0; i < sz; ++i)
     {
       const GenStatusFlags status(GenPart_statusFlags.at(i));
@@ -109,57 +153,235 @@ HWWCand GetGenHWWCandidate(int evt, std::vector<reco_tau::gen_truth::GenLepton> 
         continue;
       }
       auto const& daughters = GenPart_daughters.at(i);
-      auto IsW = [&](int idx){ return GenPart_pdgId[idx] == PdG::Wplus() || GenPart_pdgId[idx] == PdG::Wminus(); };
-      int n_W_from_H = std::count_if(daughters.begin(), daughters.end(), IsW);
-      if (n_W_from_H == 2)
+      auto IsV = [&](int idx){ return GenPart_pdgId[idx] == PdG::Wplus() || GenPart_pdgId[idx] == PdG::Wminus() || GenPart_pdgId[idx] == PdG::Z(); };
+      int n_V_from_H = std::count_if(daughters.begin(), daughters.end(), IsV);
+      if (n_V_from_H == 2)
       {
-        HWW_indices.insert(i);
+        HVV_indices.insert(i);
       }
     }
 
-    if(HWW_indices.empty())
+    if(HVV_indices.empty())
     {
-      throw analysis::exception("H->WW not found.");
+      throw analysis::exception("H->VV not found.");
     }
-    if(HWW_indices.size() != 1)
+    if(HVV_indices.size() != 1)
     {
-      throw analysis::exception("Multiple H->WW candidates.");
+      throw analysis::exception("Multiple H->VV candidates.");
     }
 
-    int const HWW_index = *HWW_indices.begin();
-    HWWCand HWW_cand;
+    int const HVV_index = *HVV_indices.begin();
+    HVVCand HVV_cand;
 
-    HWW_cand.cand_p4 = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, HWW_index);
+    HVV_cand.cand_p4 = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, HVV_index);
 
-    RVecI W_from_H = GenPart_daughters.at(HWW_index);
-    int W1_idx = W_from_H.at(0);
-    int W2_idx = W_from_H.at(1);
+    RVecI V_from_H = GenPart_daughters.at(HVV_index);
+    int v1_idx = V_from_H.at(0);
+    int v2_idx = V_from_H.at(1);
 
-    W1_idx = GetLastCopy(W1_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
-    W2_idx = GetLastCopy(W2_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
+    v1_idx = GetLastCopy(v1_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
+    v2_idx = GetLastCopy(v2_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
 
-    HWW_cand.legs.at(0) = GetGenWCand(evt, W1_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
+    RVecI daughters_v1 = GenPart_daughters.at(v1_idx);
+    bool v1_to_hadrons = std::all_of(daughters_v1.begin(), daughters_v1.end(),
+                                      [&](int idx){ return std::abs(GenPart_pdgId[idx]) <= PdG::b(); });
+    bool v1_to_leptons = std::all_of(daughters_v1.begin(), daughters_v1.end(),
+                                      [&](int idx){ return PdG::isNeutrino(GenPart_pdgId[idx]) || PdG::isLepton(GenPart_pdgId[idx]); });
+
+    RVecI daughters_v2 = GenPart_daughters.at(v2_idx);
+    bool v2_to_hadrons = std::all_of(daughters_v2.begin(), daughters_v2.end(),
+                                      [&](int idx){ return std::abs(GenPart_pdgId[idx]) <= PdG::b(); });
+    bool v2_to_leptons = std::all_of(daughters_v2.begin(), daughters_v2.end(),
+                                      [&](int idx){ return PdG::isNeutrino(GenPart_pdgId[idx]) || PdG::isLepton(GenPart_pdgId[idx]); });
+
+    bool single_lepton = (v1_to_hadrons && v2_to_leptons) || (v1_to_leptons && v2_to_hadrons);
+    bool double_lepton = v2_to_leptons && v1_to_leptons;
+
+    if (!single_lepton && !double_lepton)
+    {
+      throw analysis::exception("Encountered decay neither in single lepton nor double lepton channel");
+    }
+
+    HVV_cand.legs.at(0) = GetGenVCand(evt, v1_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
                                       GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
-    HWW_cand.legs.at(1) = GetGenWCand(evt, W2_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
+    HVV_cand.legs.at(1) = GetGenVCand(evt, v2_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
                                       GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
 
-    // let leg 0 be always W->qq and leg 1 leg be W->lv
-    if (HWW_cand.legs.at(0).leg_kind.at(0) != Wleg::Jet)
+    if (single_lepton)
     {
-      std::swap(HWW_cand.legs.at(0), HWW_cand.legs.at(1));
+      // let leg 0 be always W->qq and leg 1 leg be W->lv
+      if (HVV_cand.legs.at(0).leg_kind.at(0) != Vleg::Jet)
+      {
+        std::swap(HVV_cand.legs.at(0), HVV_cand.legs.at(1));
+      }
     }
 
-    return HWW_cand;
+    return HVV_cand;
   }
   catch (analysis::exception& e)
   {
     if(throw_error_if_not_found)
     {
-      throw analysis::exception("GetGenHWWCandidate (event=%1%): %2%") % evt % e.message();
+      throw analysis::exception("GetGenHVVCandidate (event=%1%): %2%") % evt % e.message();
     }
     return {};
   }
 }
+
+// void AssignHadronicWCand(WCand& cand, int cand_idx, const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters,
+//                          const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass)
+// {
+//   cand.leg_kind[0] = Wleg::Jet;
+//   cand.leg_kind[1] = Wleg::Jet;
+
+//   RVecI daughters = GenPart_daughters.at(cand_idx);
+//   int first = GenPart_pt[daughters[0]] > GenPart_pt[daughters[1]] ? 0 : 1;
+//   int second = GenPart_pt[daughters[0]] > GenPart_pt[daughters[1]] ? 1 : 0;
+//   cand.leg_index[0] = daughters[first];
+//   cand.leg_index[1] = daughters[second];
+
+//   cand.cand_p4 = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, cand_idx);
+
+//   cand.leg_p4[0] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, cand.leg_index[0]); // use get mass function
+//   cand.leg_p4[1] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, cand.leg_index[1]); // fix later
+
+//   cand.leg_vis_p4[0] = LorentzVectorM{}; // fix later
+//   cand.leg_vis_p4[1] = LorentzVectorM{};
+// }
+
+// void AssignLeptonicWCand(WCand& cand, int cand_idx, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
+//                          const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
+//                          const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass)
+// {
+//   cand.cand_p4 = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, cand_idx);
+
+//   RVecI daughters = GenPart_daughters.at(cand_idx);
+//   std::sort(daughters.begin(), daughters.end(), [&GenPart_pdgId](int x, int y){ return std::abs(GenPart_pdgId[x]) < std::abs(GenPart_pdgId[y]); });
+
+//   int nu_idx = daughters.at(1);
+//   int lep_idx = daughters.at(0);
+
+//   reco_tau::gen_truth::GenLepton const* lep_ptr = findLeptonByIndex(gen_leptons, lep_idx);
+//   if (!lep_ptr)
+//   {
+//     throw analysis::exception("Could not find gen lepton by index");
+//   }
+
+//   cand.leg_index[1] = nu_idx;
+//   cand.leg_kind[1] = Wleg::Nu;
+//   cand.leg_p4[1] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, nu_idx);
+//   cand.leg_vis_p4[1] = LorentzVectorM(0, 0, 0, 0);
+
+//   cand.leg_index[0] = lep_idx;
+//   cand.leg_kind[0] = static_cast<Wleg>(lep_ptr->kind());
+//   cand.leg_p4[0] = lep_ptr->lastCopy().p4;
+//   cand.leg_vis_p4[0] = LorentzVectorM(lep_ptr->visibleP4());
+// }
+
+
+// WCand GetGenWCand(int evt, int w_idx, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
+//                   const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
+//                   const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass)
+// {
+//   WCand res;
+//   RVecI daughters = GenPart_daughters.at(w_idx);
+//   if (daughters.size() != 2)
+//   {
+//     throw analysis::exception("W candidate has wrong number of daughters");
+//   }
+
+//   // potentially problematic: what if W->gamma W ?
+//   bool decays_to_hadrons = std::all_of(daughters.begin(), daughters.end(), [&](int idx){ return std::abs(GenPart_pdgId[idx]) <= PdG::b(); });
+//   if (decays_to_hadrons)
+//   {
+//     AssignHadronicWCand(res, w_idx, GenPart_pdgId, GenPart_daughters,
+//                         GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
+//   }
+
+//   bool decays_to_leptons = std::all_of(daughters.begin(), daughters.end(), [&](int idx){ return PdG::isNeutrino(GenPart_pdgId[idx]) || PdG::isLepton(GenPart_pdgId[idx]); });
+//   if (decays_to_leptons)
+//   {
+//     AssignLeptonicWCand(res, w_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
+//                         GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
+//   }
+
+//   if (!decays_to_hadrons && !decays_to_leptons)
+//   {
+//     throw analysis::exception("Encountered neither leptonic nor hadronic W decay");
+//   }
+
+//   return res;
+// }
+
+// HWWCand GetGenHWWCandidate(int evt, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
+//                            const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
+//                            const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass,
+//                            bool throw_error_if_not_found)
+// {
+//   try
+//   {
+//     int sz = GenPart_pdgId.size();
+//     std::set<int> HWW_indices;
+//     for (int i = 0; i < sz; ++i)
+//     {
+//       const GenStatusFlags status(GenPart_statusFlags.at(i));
+//       bool is_higgs = GenPart_pdgId[i] == PdG::Higgs();
+//       if (!(is_higgs && status.isLastCopy()))
+//       {
+//         continue;
+//       }
+//       auto const& daughters = GenPart_daughters.at(i);
+//       auto IsW = [&](int idx){ return GenPart_pdgId[idx] == PdG::Wplus() || GenPart_pdgId[idx] == PdG::Wminus(); };
+//       int n_W_from_H = std::count_if(daughters.begin(), daughters.end(), IsW);
+//       if (n_W_from_H == 2)
+//       {
+//         HWW_indices.insert(i);
+//       }
+//     }
+
+//     if(HWW_indices.empty())
+//     {
+//       throw analysis::exception("H->WW not found.");
+//     }
+//     if(HWW_indices.size() != 1)
+//     {
+//       throw analysis::exception("Multiple H->WW candidates.");
+//     }
+
+//     int const HWW_index = *HWW_indices.begin();
+//     HWWCand HWW_cand;
+
+//     HWW_cand.cand_p4 = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, HWW_index);
+
+//     RVecI W_from_H = GenPart_daughters.at(HWW_index);
+//     int W1_idx = W_from_H.at(0);
+//     int W2_idx = W_from_H.at(1);
+
+//     W1_idx = GetLastCopy(W1_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
+//     W2_idx = GetLastCopy(W2_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
+
+//     HWW_cand.legs.at(0) = GetGenWCand(evt, W1_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
+//                                       GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
+//     HWW_cand.legs.at(1) = GetGenWCand(evt, W2_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
+//                                       GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
+
+//     // let leg 0 be always W->qq and leg 1 leg be W->lv
+//     if (HWW_cand.legs.at(0).leg_kind.at(0) != Wleg::Jet)
+//     {
+//       std::swap(HWW_cand.legs.at(0), HWW_cand.legs.at(1));
+//     }
+
+//     return HWW_cand;
+//   }
+//   catch (analysis::exception& e)
+//   {
+//     if(throw_error_if_not_found)
+//     {
+//       throw analysis::exception("GetGenHWWCandidate (event=%1%): %2%") % evt % e.message();
+//     }
+//     return {};
+//   }
+// }
 
 HBBCand GetGenHBBCandidate(int evt, const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
                            const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass,
@@ -331,8 +553,6 @@ int GetGenHBBIndex(int evt, const RVecI& GenPart_pdgId,
       throw analysis::exception("GetGenHBBCandidate (event=%1%): %2%") % evt % e.message();
     }
 }
-
-
 
 bool PassGenAcceptance(const HTTCand<2>& HTT_Cand){
     for(size_t i = 0; i < HTT_Cand.leg_p4.size(); ++i){

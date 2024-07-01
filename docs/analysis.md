@@ -15,6 +15,7 @@ Remarks:
 - if you want to run only on few files, you can specify list of branches to run using `--branches` argument. E.g. `--branches 2,7-10,17`.
 - to get status, use `--print-stauts N,K` where N is depth for task dependencies, K is depths for file dependencies. E.g. `--print-status 3,1`.
 - to remove task output use `--remove-output N,a`, where N is depth for task dependencies. E.g. `--remove-output 0,a`.
+- it is highly recommended to limitate the maximum number of parallel jobs running adding `--parallel-jobs M` where M is the number of the parallel jobs (e.g. M=100)
 
 ## Create input file list
 
@@ -25,12 +26,11 @@ law run InputFileTask  --period ${ERA} --version dev
 ## Create anaCache
 
 ```sh
-law run AnaCacheTask  --period ${ERA} --workflow local --version dev
+law run AnaCacheTask  --period ${ERA} --version dev
 ```
 
 ## Create anaTuple
 
 ```sh
-law run AnaTupleTask --period ${ERA} --workflow local --version dev
+law run AnaTupleTask --period ${ERA} --version dev
 ```
-

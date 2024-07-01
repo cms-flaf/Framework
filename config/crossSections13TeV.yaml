@@ -1,14 +1,14 @@
 ############## TT ##############
 TTTo2L2Nu:
-  crossSec:  833.9 * 0.4544
+  crossSec:  833.9 * (1 - 0.6741) * (1 - 0.6741)
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO#Proposed_citation_and_list_of_re
   unc: +20.5 -30.0 (scale) +/-  21.0 (PDF alphas) -22.5 +23.2 (mass) (to be multiplied by the BR)
 TTToSemiLeptonic:
-  crossSec: 833.9 * 0.4392
+  crossSec: 833.9 * 0.6741 * (1-0.6741) * 2
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO#Proposed_citation_and_list_of_re
   unc: +20.5 -30.0 (scale) +/-  21.0 (PDF alphas) -22.5 +23.2 (mass) (to be multiplied by the BR)
 TTToHadronic:
-  crossSec: 833.9 * 0.1061
+  crossSec: 833.9 * 0.6741 * 0.6741
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO#Proposed_citation_and_list_of_re
   unc: +20.5 -30.0 (scale) +/-  21.0 (PDF alphas) -22.5 +23.2 (mass) (to be multiplied by the BR)
 
@@ -169,7 +169,7 @@ VBFHToTauTau:
   unc: VBF (+0,4 -0,3 +/-2,1 +/-2,1 +/-0,5) (scale,  PDF+ alfas, PDF, alfas) hTauTau (+1.17 -1.16 +0.98 -0.99 +0.62 -0.62) (thu, pu[mq], pu[alphas])
 
 ggHToZZTo2L2Q:
-  crossSec: 48.58 * 0.02619 * 0.003658 * 0.6911
+  crossSec: 48.58 * 0.02619 * (0.03658 * 3) * 0.6911 * 2
   ref: Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV + https://pdg.lbl.gov/2022/listings/rpp2022-list-z-boson.pdf
   unc: ggH (+4.6 -6.7  +/-3.9 +/-3.2 +/-1.9 +/-2.6) (th pos [%] neg [%] Gauss [%],  PDF+ alfas, PDF, alfas) * HZZ (+0,99 -0,99 +0,99 -0,98 +0,66 -0,63 ) (thu, pu[mq], pu[alphas]) others are too small, can be neglected
 #ggHToZZTo2L2Q:
@@ -178,7 +178,7 @@ ggHToZZTo2L2Q:
 #  unc: 0.02027
 
 GluGluHToWWTo2L2Nu:
-  crossSec: 48.58*0.2137*2*0.1086
+  crossSec: 48.58 * 0.2137 * 2 * 0.1086 * 3 * 2
   reference: Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV + https://pdg.lbl.gov/2019/listings/rpp2019-list-w-boson.pdf
   unc: ggH (+4.6 -6.7  +/-3.9 +/-3.2 +/-1.9 +/-2.6) (th pos [%] neg [%] Gauss [%],  PDF+ alfas, PDF, alfas) HWW (+0,99 -0,99 +0,99 -0,98 +0,66 -0,63) (thu, pu[mq], pu[alphas]) Wlnu (0.0009)
 #GluGluHToWWTo2L2Nu:
@@ -187,7 +187,7 @@ GluGluHToWWTo2L2Nu:
 #  unc: 0.01033
 
 VBFHToWWTo2L2Nu:
-  crossSec: 3.782*0.2137*2*0.1086
+  crossSec: 3.782  * 0.2137 * 2 * 0.1086 * 3 * 2
   reference: Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV + https://pdg.lbl.gov/2019/listings/rpp2019-list-w-boson.pdf
   unc:  VBF (+0,4 -0,3 +/-2,1 +/-2,1 +/-0,5) (scale,  PDF+ alfas, PDF, alfas) HWW (+0,99 -0,99 +0,99 -0,98 +0,66 -0,63) (thu, pu[mq], pu[alphas]) Wlnu (0.0009)
 #  crossSec: 3.892
@@ -211,12 +211,12 @@ ZHToTauTau:
   unc: ZH (+3,8 -3,1 +/-1,6 +/-1,3 +/-0,9) HTauTau (+1.17 -1.16 +0.98 -0.99 +0.62 -0.62) (thu, pu[mq], pu[alphas])
 
 ZH_Hbb_Zll:
-  crossSec:  0.8839*0.5824*0.003658
+  crossSec:  0.8839 * 0.5824 * 0.03658 * 3
   reference: Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV + https://pdg.lbl.gov/2022/listings/rpp2022-list-z-boson.pdf
   unc: ZH (+3,8 -3,1 +/-1,6 +/-1,3 +/-0,9) Hbb (+0,65 -0,65 +0,72 -0,74 +0,78 -0,80) (thu, pu[mq], pu[alphas]) others are too small, can be neglected
 
 ZH_Hbb_Zqq:
-  crossSec:  0.8839*0.5824*0.6911
+  crossSec:  0.8839 * 0.5824 * 0.6911
   reference: Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV + https://pdg.lbl.gov/2022/listings/rpp2022-list-z-boson.pdf
   unc: ZH (+3,8 -3,1 +/-1,6 +/-1,3 +/-0,9) Hbb (+0,65 -0,65 +0,72 -0,74 +0,78 -0,80) (thu, pu[mq], pu[alphas]) others are too small, can be neglected
 
@@ -234,7 +234,7 @@ HZJ_HToWW:
   unc: 0.1618
 
 GluGluZH_HToWW_ZTo2L:
-  crossSec: 0.1227 * 0.2137 * 0.003658
+  crossSec: 0.1227 * 0.2137 * 0.03658 * 3
   reference: Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV + https://pdg.lbl.gov/2022/listings/rpp2022-list-z-boson.pdf
   unc: ZH (+3,8 -3,1 +/-1,6 +/-1,3 +/-0,9) HWW (+0,99 -0,99 +0,99 -0,98 +0,66 -0,63) others are too small, can be neglected
 #GluGluZH_HToWW_ZTo2L:

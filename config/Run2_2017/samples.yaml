@@ -639,7 +639,7 @@ WJetsToLNu:
   sampleType: W
   isReference: True
   crossSection: WJetsToLNu_NNLO
-  #crossSectionStitch: WJetsToLNu_LO
+  crossSectionStitch: WJetsToLNu_LO
 
 W1JetsToLNu:
   sampleType: W

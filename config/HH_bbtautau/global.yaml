@@ -20,7 +20,7 @@ deepTauWPs:
   tauTau:
     VSe: VVLoose
     VSmu: Tight
-    VSjet: Medium
+    VSjet: Loose
 corrections:
   - tauID
   - tauES

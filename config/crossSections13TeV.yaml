@@ -1,3 +1,9 @@
+############## For signals ##############
+1pb:
+  crossSec: 1
+  reference:
+  unc:
+
 ############## TT ##############
 TTTo2L2Nu:
   crossSec:  833.9 * (1 - 0.6741) * (1 - 0.6741)

@@ -1,7 +1,7 @@
 GLOBAL:
   era: 'Run2_2016'
   luminosity : 16800 # pb^-1 2016 postVFP
-  f
+  fs_nanoAOD:
   - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2016'
   nano_version: v12
   MET_flags: # https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#2016_data_and_MC_UL

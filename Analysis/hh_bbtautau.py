@@ -342,6 +342,7 @@ class DataFrameBuilder(DataFrameBuilderBase):
     def __init__(self, df, deepTauVersion='v2p1', bTagWP = 2, pNetWP = 0.9172):
         super(DataFrameBuilder, self).__init__(df)
         self.deepTauVersion = deepTauVersion
+        print(self.deepTauVersion)
         self.bTagWP = bTagWP
         self.pNetWP = pNetWP
 

@@ -28,6 +28,11 @@ FatJetObservables = ["area", "btagCSVV2", "btagDDBvLV2", "btagDeepB", "btagHbb",
                      "particleNetWithMass_QCD", "particleNetWithMass_HbbvsQCD", "particleNet_massCorr" # 2016
                      ]
 
+RecoJetObservables = ["PNetRegPtRawCorr", "PNetRegPtRawCorrNeutrino", "PNetRegPtRawRes",
+                      "btagDeepFlavB", "btagDeepFlavCvB", "btagDeepFlavCvL", "btagDeepFlavQG",
+                      "btagPNetB", "btagPNetCvB", "btagPNetCvL", "btagPNetQvG", "btagPNetTauVJet",
+                      "hadronFlavour", "partonFlavour"] # 2023
+
 # in this PR https://github.com/cms-sw/cmssw/commit/17457a557bd75ab479dfb78013edf9e551ecd6b7, particleNet MD have been removed therefore we will switch to take
 
 
@@ -104,6 +109,12 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
     for var in PtEtaPhiM:
         name = f"Sel_Jet_{var}"
         dfw.DefineAndAppend(name, f"v_ops::{var}(Jet_p4[Jet_sel])")
+
+    reco_jet_obs = []
+    reco_jet_obs.extend(RecoJetObservables)
+    for jet_obs in reco_jet_obs:
+        name = f"Sel_Jet_{jet_obs}"
+        dfw.DefineAndAppend(name, f"Jet_{jet_obs}[Jet_sel]")
 
     # save gen H->WW
     dfw.Define("H_to_VV", """GetGenHVVCandidate(event, genLeptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags, GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, true)""")

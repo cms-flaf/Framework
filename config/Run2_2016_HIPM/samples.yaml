@@ -613,7 +613,7 @@ WJetsToLNu:
   sampleType: W
   isReference: True
   crossSection: WJetsToLNu_NNLO
-  #crossSectionStitch: WJetsToLNu_LO
+  crossSectionStitch: WJetsToLNu_LO
 
 W1JetsToLNu:
   sampleType: W
@@ -634,22 +634,37 @@ WJetsToLNu_HT-100To200:
 WJetsToLNu_HT-1200To2500:
   sampleType: W
   crossSectionStitch: WJetsToLNu_HT-1200To2500_LO
+WJetsToLNu_HT-1200To2500_ext1:
+  sampleType: W
+  crossSectionStitch: WJetsToLNu_HT-1200To2500_LO
 WJetsToLNu_HT-200To400:
   sampleType: W
   crossSectionStitch: WJetsToLNu_HT-200To400_LO
 WJetsToLNu_HT-2500ToInf:
   sampleType: W
   crossSectionStitch: WJetsToLNu_HT-2500ToInf_LO
+WJetsToLNu_HT-2500ToInf_ext1:
+  sampleType: W
+  crossSectionStitch: WJetsToLNu_HT-2500ToInf_LO
 WJetsToLNu_HT-400To600:
   sampleType: W
   crossSectionStitch: WJetsToLNu_HT-400To600_LO
+WJetsToLNu_HT-400To600_ext1:
+  sampleType: W
+  crossSectionStitch: WJetsToLNu_HT-400To600_LO
 WJetsToLNu_HT-600To800:
+  sampleType: W
+  crossSectionStitch: WJetsToLNu_HT-600To800_LO
+WJetsToLNu_HT-600To800_ext1:
   sampleType: W
   crossSectionStitch: WJetsToLNu_HT-600To800_LO
 WJetsToLNu_HT-70To100:
   sampleType: W
   crossSectionStitch: WJetsToLNu_HT-70To100_LO
 WJetsToLNu_HT-800To1200:
+  sampleType: W
+  crossSectionStitch: WJetsToLNu_HT-800To1200_LO
+WJetsToLNu_HT-800To1200_ext1:
   sampleType: W
   crossSectionStitch: WJetsToLNu_HT-800To1200_LO
 
@@ -727,6 +742,9 @@ WminusHToTauTau_M125:
   sampleType: VH
   crossSection: WminusHToTauTau
 ZHToTauTau_M125:
+  sampleType: VH
+  crossSection: ZHToTauTau
+ZHToTauTau_M125_ext1:
   sampleType: VH
   crossSection: ZHToTauTau
 ZH_Hbb_Zll:

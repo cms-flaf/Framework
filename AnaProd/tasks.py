@@ -297,7 +297,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 anaCacheTupleProducer_cmd = ['python3', producer_anacachetuples,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config]
                 if sample_name !='data':
                     anaCacheTupleProducer_cmd.extend(['--compute_unc_variations', 'True'])
-                if self.version.split('_')[1]=='deepTau2p5':
+                if 'deepTau2p5' in self.version.split('_'):
                     anaCacheTupleProducer_cmd.extend([ '--deepTauVersion', 'v2p5'])
                 ps_call(anaCacheTupleProducer_cmd, env=self.cmssw_env, verbose=1)
             print(f"finished to produce anacachetuple")

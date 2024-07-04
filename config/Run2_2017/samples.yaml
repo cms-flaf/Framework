@@ -758,6 +758,9 @@ WminusHToTauTau_M125:
 ZHToTauTau_M125:
   sampleType: VH
   crossSection: ZHToTauTau
+ZHToTauTau_M125_ext1:
+  sampleType: VH
+  crossSection: ZHToTauTau
 ZH_Hbb_Zll:
   sampleType: VH
   crossSection: ZH_HToBB_ZToLL

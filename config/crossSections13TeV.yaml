@@ -240,7 +240,7 @@ HZJ_HToWW:
   unc: 0.1618
 
 GluGluZH_HToWW_ZTo2L:
-  crossSec: 0.8839 * 0.2137 * 0.03658 * 3
+  crossSec: 0.1227 * 0.2137 * 0.03658 * 3
   reference: Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV + https://pdg.lbl.gov/2022/listings/rpp2022-list-z-boson.pdf
   unc: ZH (+3,8 -3,1 +/-1,6 +/-1,3 +/-0,9) HWW (+0,99 -0,99 +0,99 -0,98 +0,66 -0,63) others are too small, can be neglected
 #GluGluZH_HToWW_ZTo2L:

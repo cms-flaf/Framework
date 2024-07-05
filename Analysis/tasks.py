@@ -98,7 +98,7 @@ def GetSamples(samples, backgrounds, wantExt=True, signals=['GluGluToRadion','Gl
 backgrounds = None
 def load_background_samples():
     global backgrounds
-    background_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config','background_samples.yaml')
+    background_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'HH_bbtautau','background_samples.yaml')
     with open(background_config,'r') as f:
         backgrounds= yaml.safe_load(f)
     return backgrounds
@@ -140,11 +140,20 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         samples_to_consider = GetSamples(self.samples, backgrounds, True)
         for var in vars_to_plot:
             for prod_br,(sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-                sample_name_split = sample_name.split('_')
-                sample_name_ext1 = sample_name
+                ext_samples = []
+                isData = self.samples[sample_name]['sampleType'] == 'data'
+                if 'ext' in self.samples[sample_name].keys():
+                    ext_samples = self.samples[sample_name]['ext']
+                branches[sample_id] = (sample_name, ext_samples, isData)
+                '''
+                if ext_samples :
+                    for ext_name in ext_samples:
+                        sample_name_ext = sample_name + '_'+ext_name
+                        input_files += InputFileTask.load_input_files(self.input()[0].path, sample_name_ext)
+                '''
                 if sample_name_split[-1]=='ext1':
                     sample_name = '_'.join(sample_name_split[:-1])
-                if sample_name not in samples_to_consider or sample_name=='data': continue
+                if sample_name not in samples_to_consider or isData: continue
                 #print(sample_name)
                 branches[n] = (sample_name,sample_name_ext1, prod_br,var, n)
                 n+=1
@@ -327,7 +336,6 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_config = os.path.join(self.ana_path(), 'config',self.period, f'samples.yaml')
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
-        jsonFile_name = os.path.join('jsonFiles', self.period, self.version, 'all_ratios',f'all_ratios_{var}_{uncName}.yaml')
         MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger.py')
         all_inputs = []
         samples_to_consider = GetSamples(self.samples, backgrounds, True)
@@ -343,11 +351,10 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             for inp, smpl in all_inputs:
                 local_inputs.append(stack.enter_context(inp.localize('r')).path)
                 all_datasets.append(smpl)
-            with self.output().localize("w") as tmp_local_file, self.remote_target(jsonFile_name, fs=self.fs_json).localize("w") as json_file :
+            with self.output().localize("w") as tmp_local_file:
                 tmpFile = tmp_local_file.path
-                jsonFile = json_file.path
                 dataset_names = ','.join(smpl for smpl in all_datasets)
-                MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmpFile, '--jsonFile', jsonFile, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config]#, '--remove-files', 'True']
+                MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmpFile, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config]#, '--remove-files', 'True']
                 MergerProducer_cmd.extend(local_inputs)
                 ps_call(MergerProducer_cmd,verbose=1)
 
@@ -404,8 +411,8 @@ class HaddMergedTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         all_uncertainties_string = ','.join(unc for unc in all_uncertainties)
         HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
         RenameHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'renameHists.py')
-        ShapeOrLogNormalProducer = os.path.join(self.ana_path(), 'Analysis', 'ShapeOrLogNormal.py')
-        jsonFile_name = os.path.join('jsonFiles', self.period, self.version, 'fitResults',f'slopeInfo_{var}.yaml')
+        #ShapeOrLogNormalProducer = os.path.join(self.ana_path(), 'Analysis', 'ShapeOrLogNormal.py')
+        #jsonFile_name = os.path.join('jsonFiles', self.period, self.version, 'fitResults',f'slopeInfo_{var}.yaml')
         with contextlib.ExitStack() as stack:
             local_inputs = []
             for inp in all_inputs:

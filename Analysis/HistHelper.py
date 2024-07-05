@@ -12,7 +12,7 @@ unc_2018 = ['JES_BBEC1_2018', 'JES_Absolute_2018', 'JES_EC2_2018', 'JES_HF_2018'
 unc_2017 = ['JES_BBEC1_2017', 'JES_Absolute_2017', 'JES_EC2_2017', 'JES_HF_2017', 'JES_RelativeSample_2017' ]
 unc_2016preVFP = ['JES_BBEC1_2016preVFP', 'JES_Absolute_2016preVFP', 'JES_EC2_2016preVFP', 'JES_HF_2016preVFP', 'JES_RelativeSample_2016preVFP' ]
 unc_2016postVFP = ['JES_BBEC1_2016postVFP', 'JES_Absolute_2016postVFP', 'JES_EC2_2016postVFP', 'JES_HF_2016postVFP', 'JES_RelativeSample_2016postVFP' ]
-sample_types_to_merge = ['DY','TT','ZJNuNu','ZQQ','W', 'ttH']
+sample_types_to_merge = ['DY','TT','W']
 
 uncs_to_exclude = {
     'Run2_2018': unc_2017+ unc_2016preVFP + unc_2016postVFP,
@@ -27,20 +27,18 @@ def GetUncNameTypes(unc_cfg_dict):
     uncNames.extend([unc for unc in unc_cfg_dict['shape']])
     return uncNames
 
-def GetSamplesStuff(sample_cfg_dict,global_cfg_dict,wantSignals=True,wantAllMasses=True,wantOneMass=True,mass=500):
+def GetSamplesStuff(bckg_samples,sample_cfg_dict,global_cfg_dict,wantSignals=True,wantAllMasses=True,wantOneMass=True,mass=500):
     all_samples_list = []
     all_samples_types = {'data':['data'],}
     signals = list(global_cfg_dict['signal_types'])
     for sample in sample_cfg_dict.keys():
         if sample == 'GLOBAL' : continue
+        isSignal = sample in signals
+        isBckg = sample in bckg_samples
         if 'sampleType' not in sample_cfg_dict[sample].keys(): continue
         sample_type = sample_cfg_dict[sample]['sampleType']
-        if sample_type in ['QCD', 'VBFToRadion','VBFToBulkGraviton', 'data']: continue
-        if sample != 'GluGluToHHTo2B2Tau_node_SM' and sample_type == 'HHnonRes': continue
-        if sample == "W0JetsToLNu-amcatnloFXFX": continue
-        if sample == "W1JetsToLNu-amcatnloFXFX": continue
-        if sample == "W2JetsToLNu-amcatnloFXFX": continue
-        sample_name = sample_type if sample_type in ['DY','TT','ZJNuNu','ZQQ','W'] else sample
+        if not isSignal and not isBckg: continue
+        sample_name = sample_type if sample_type in sample_types_to_merge else sample
         if wantOneMass:
             if 'mass' in sample_cfg_dict[sample].keys():
                 if sample_type in signals and sample_cfg_dict[sample]['mass']!=mass : continue

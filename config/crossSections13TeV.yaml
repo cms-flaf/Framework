@@ -184,7 +184,7 @@ ggHToZZTo2L2Q:
 #  unc: 0.02027
 
 GluGluHToWWTo2L2Nu:
-  crossSec: 48.58 * 0.2137 * 2 * 0.1086 * 3 * 2
+  crossSec: 48.58 * 0.2137 * 0.1086 * 3 * 0.1086 * 3
   reference: Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV + https://pdg.lbl.gov/2019/listings/rpp2019-list-w-boson.pdf
   unc: ggH (+4.6 -6.7  +/-3.9 +/-3.2 +/-1.9 +/-2.6) (th pos [%] neg [%] Gauss [%],  PDF+ alfas, PDF, alfas) HWW (+0,99 -0,99 +0,99 -0,98 +0,66 -0,63) (thu, pu[mq], pu[alphas]) Wlnu (0.0009)
 #GluGluHToWWTo2L2Nu:
@@ -193,7 +193,7 @@ GluGluHToWWTo2L2Nu:
 #  unc: 0.01033
 
 VBFHToWWTo2L2Nu:
-  crossSec: 3.782  * 0.2137 * 2 * 0.1086 * 3 * 2
+  crossSec:  3.782  * 0.2137 * 0.1086 * 3 * 0.1086 * 3
   reference: Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV + https://pdg.lbl.gov/2019/listings/rpp2019-list-w-boson.pdf
   unc:  VBF (+0,4 -0,3 +/-2,1 +/-2,1 +/-0,5) (scale,  PDF+ alfas, PDF, alfas) HWW (+0,99 -0,99 +0,99 -0,98 +0,66 -0,63) (thu, pu[mq], pu[alphas]) Wlnu (0.0009)
 #  crossSec: 3.892
@@ -207,12 +207,12 @@ WplusHToTauTau:
   unc: WH (+0,5 -0,7 +/-1,9 +/-1,7 +/-0,9) (scale,  PDF+ alfas, PDF, alfas) HTauTau (+1.17 -1.16 +0.98 -0.99 +0.62 -0.62) (thu, pu[mq], pu[alphas])
 
 WminusHToTauTau:
-  crossSec: 0.5328*0.0627
+  crossSec: 0.5328*0.06272
   reference: Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV
   unc: WH (+0,5 -0,7 +/-1,9 +/-1,7 +/-0,9)  (scale,  PDF+ alfas, PDF, alfas) HTauTau (+1.17 -1.16 +0.98 -0.99 +0.62 -0.62) (thu, pu[mq], pu[alphas])
 
 ZHToTauTau:
-  crossSec: 0.8839*0.0627
+  crossSec: 0.8839*0.06272
   reference: Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV
   unc: ZH (+3,8 -3,1 +/-1,6 +/-1,3 +/-0,9) HTauTau (+1.17 -1.16 +0.98 -0.99 +0.62 -0.62) (thu, pu[mq], pu[alphas])
 
@@ -240,7 +240,7 @@ HZJ_HToWW:
   unc: 0.1618
 
 GluGluZH_HToWW_ZTo2L:
-  crossSec: 0.1227 * 0.2137 * 0.03658 * 3
+  crossSec: 0.8839 * 0.2137 * 0.03658 * 3
   reference: Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV + https://pdg.lbl.gov/2022/listings/rpp2022-list-z-boson.pdf
   unc: ZH (+3,8 -3,1 +/-1,6 +/-1,3 +/-0,9) HWW (+0,99 -0,99 +0,99 -0,98 +0,66 -0,63) others are too small, can be neglected
 #GluGluZH_HToWW_ZTo2L:
@@ -257,14 +257,14 @@ WW:
   unc: +2.5%-2.2% #0.1124
 
 WZ:
-  crossSec: 27.59
-  reference: XSDB WZ_TuneCP5_13TeV-pythia8 modifiedOn 2021-06-21 10:01:15
-  unc: 0.03993
+  crossSec: 46.74
+  reference: JHEP07(2011)018 https://link.springer.com/article/10.1007/JHEP07(2011)018
+  unc:  +4.1% -3.3%
 
 ZZ:
-  crossSec: 12.17
-  reference: XSDB ZZ_TuneCP5_13TeV-pythia8 modifiedOn 2021-06-21 10:02:41
-  unc: 0.01966
+  crossSec: 15.99
+  reference: JHEP07(2011)018 https://link.springer.com/article/10.1007/JHEP07(2011)018
+  unc: +3.7% -2.6%
 
 ############## VV non-inclusive ##############
 WWTo1L1Nu2Q:
@@ -522,7 +522,7 @@ ttHToNonbb:
 ############## HHbbTauTau NonRes ##############
 
 ggHH_bbTauTau_SM:
-  crossSec: 31.05*0.001*0.5824*0.06272*2
+  crossSec: 30.77*0.001*0.5824*0.06272*2
   reference: HH twiki https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWGHH#Latest_recommendations_for_gluon and Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV
   unc:
 

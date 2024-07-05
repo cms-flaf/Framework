@@ -3,7 +3,6 @@ import sys
 import os
 import math
 import shutil
-import json
 import time
 from RunKit.run_tools import ps_call
 if __name__ == "__main__":
@@ -127,11 +126,9 @@ def MergeHistogramsPerType(all_histograms):
 
 def GetBTagWeightDict(var, all_histograms):
     all_histograms_1D = {}
-    final_json_dict = {}
     for sample_type in all_histograms.keys():
         #print(sample_type)
         all_histograms_1D[sample_type] = {}
-        final_json_dict[sample_type]={}
         for key_name,histogram in all_histograms[sample_type].items():
             (key_1, key_2) = key_name
             ch, reg, cat = key_1
@@ -140,34 +137,16 @@ def GetBTagWeightDict(var, all_histograms):
             key_tuple_den = ((ch, reg, 'inclusive'), key_2)
             ratio_num_hist = all_histograms[sample_type][key_tuple_num] if key_tuple_num in all_histograms[sample_type].keys() else None
             ratio_den_hist = all_histograms[sample_type][key_tuple_den] if key_tuple_den in all_histograms[sample_type].keys() else None
-            histlist =[]
-            second_key = f'{ch}_{reg}_{cat}_{uncName}{scale}'
-            if second_key not in final_json_dict[sample_type].keys():
-                final_json_dict[sample_type][second_key]={}
-            if 'yBin' not in final_json_dict[sample_type][second_key].keys():
-                final_json_dict[sample_type][second_key]['yBin']=[]
-            if 'nJets' not in final_json_dict[sample_type][second_key].keys():
-                final_json_dict[sample_type][second_key]['nJets']=[]
-            if 'num' not in final_json_dict[sample_type][second_key].keys():
-                final_json_dict[sample_type][second_key]['num']=[]
-            if 'den' not in final_json_dict[sample_type][second_key].keys():
-                final_json_dict[sample_type][second_key]['den']=[]
-            if 'ratio' not in final_json_dict[sample_type][second_key].keys():
-                final_json_dict[sample_type][second_key]['ratio']=[]
-
             num = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)
             den = ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
             ratio = 0.
             if ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1) != 0 :
                 ratio = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)/ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
-            final_json_dict[sample_type][second_key]['num'].append(num)
-            final_json_dict[sample_type][second_key]['den'].append(den)
-            final_json_dict[sample_type][second_key]['ratio'].append(ratio)
             #if ratio == 0 and hist1D.Integral(0, hist1D.GetNbinsX()+1) ==0 :
             #    continue
             histogram.Scale(ratio)
             all_histograms_1D[sample_type][key_name] = histogram
-    return all_histograms_1D,final_json_dict
+    return all_histograms_1D
 
 
 if __name__ == "__main__":
@@ -177,7 +156,6 @@ if __name__ == "__main__":
     parser.add_argument('inputFile', nargs='+', type=str)
     #parser.add_argument('datasetFile', nargs='+', type=str)
     parser.add_argument('--outFile', required=True, type=str)
-    parser.add_argument('--jsonFile', required=True, type=str)
     parser.add_argument('--year', required=True, type=str)
     parser.add_argument('--datasetFile', required=True, type=str)
     parser.add_argument('--var', required=True, type=str)
@@ -211,7 +189,6 @@ if __name__ == "__main__":
     files_separated = {}
     all_histograms ={}
     #all_histograms_1D ={}
-    #final_json_dict = {}
     all_infiles = [ fileName for fileName in args.inputFile ]
     #print(all_samples_list)
     #print(len(all_infiles), len(all_samples_list))
@@ -273,15 +250,13 @@ if __name__ == "__main__":
     #print()
     #print('data' in all_histograms.keys())
     MergeHistogramsPerType(all_histograms)
-    all_histograms_1D,final_json_dict=GetBTagWeightDict(args.var,all_histograms)
+    all_histograms_1D=GetBTagWeightDict(args.var,all_histograms)
     fixNegativeContributions=True
     if args.var == 'kinFit_m':
         fixNegativeContributions=False
 
     AddQCDInHistDict(args.var,all_histograms_1D, channels, categories, args.uncSource, all_samples_types.keys(), scales,fixNegativeContributions)
 
-    with open(f"{args.jsonFile}.json", "w") as write_file:
-        json.dump(final_json_dict, write_file, indent=4)
 
     outFile = ROOT.TFile(args.outFile, "RECREATE")
 

@@ -34,7 +34,7 @@ GLOBAL:
     - drop ^TTZToLLNuNu_M*
     - drop ^TTZZTo*
     - drop ^TTZHTo*
-    - drop ^TTWHTo*
+    #- drop ^TTWHTo*
     - drop ^TTHHTo*
     #- drop ^.*erdON
 
@@ -863,19 +863,12 @@ HZJ_HToWW_M125:
   sampleType: VH
   generator: powheg
   crossSection: HZJ_HToWW
-HZJ_HToWW_M125_ext1:
-  sampleType: VH
-  generator: powheg
-  crossSection: HZJ_HToWW
+  ext: ['HZJ_HToWW_M125_ext1']
 GluGluZH_HToWW_ZTo2L_M125:
   sampleType: VH
   generator: powheg
   crossSection: GluGluZH_HToWW_ZTo2L
-GluGluZH_HToWW_ZTo2L_M125_ext1:
-  sampleType: VH
-  generator: powheg
-  crossSection: GluGluZH_HToWW_ZTo2L
-
+  ext: ['GluGluZH_HToWW_ZTo2L_M125_ext1']
 ############## VV inclusive ##############
 WW:
   sampleType: VV
@@ -946,34 +939,22 @@ WWW_4F:
   sampleType: VVV
   generator: amcatnlo
   crossSection: WWW_4F
-WWW_4F_ext1:
-  sampleType: VVV
-  generator: amcatnlo
-  crossSection: WWW_4F
+  ext: ['WWW_4F_ext1']
 WWZ_4F:
   sampleType: VVV
   generator: amcatnlo
   crossSection: WWZ_4F
-WWZ_4F_ext1:
-  sampleType: VVV
-  generator: amcatnlo
-  crossSection: WWZ_4F
+  ext: ['WWZ_4F_ext1']
 WZZ:
   sampleType: VVV
   generator: amcatnlo
   crossSection: WZZ
-WZZ_ext1:
-  sampleType: VVV
-  generator: amcatnlo
-  crossSection: WZZ
+  ext: ['WZZ_ext1']
 ZZZ:
   sampleType: VVV
   generator: amcatnlo
   crossSection: ZZZ
-ZZZ_ext1:
-  sampleType: VVV
-  generator: amcatnlo
-  crossSection: ZZZ
+  ext: ['ZZZ_ext1']
 
 ############## ST #############
 ST_t-channel_antitop_4f_InclusiveDecays:
@@ -1134,10 +1115,7 @@ TTZHTo4b:
   sampleType: TTX
   generator: madgraph
   crossSection: TTZHTo4b
-TTZHTo4b_ext1:
-  sampleType: TTX
-  generator: madgraph
-  crossSection: TTZHTo4b
+  ext: ['TTZHTo4b_ext1']
 TTZHToNon4b:
   sampleType: TTX
   generator: madgraph
@@ -1147,10 +1125,7 @@ TTZZTo4b:
   sampleType: TTX
   generator: madgraph
   crossSection: TTZZTo4b
-TTZZTo4b_ext1:
-  sampleType: TTX
-  generator: madgraph
-  crossSection: TTZZTo4b
+  ext: ['TTZZTo4b_ext1']
 TTZZToNon4b:
   sampleType: TTX
   generator: madgraph

@@ -351,4 +351,3 @@ class DataCacheMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 ps_call(dataMerge_cmd,verbose=1)
 
 
-

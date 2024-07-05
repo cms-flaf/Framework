@@ -124,501 +124,601 @@ MET_Run2017F:
 ############## Signals ##############
 GluGluToRadionToHHTo2B2Tau_M-250:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 250
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-260:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 260
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-270:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 270
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-280:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 280
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-300:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 300
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-320:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 320
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-350:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 350
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-400:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 400
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-450:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 450
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-500:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 500
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-550:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 550
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-600:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 600
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-650:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 650
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-700:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 700
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-750:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 750
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-800:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 800
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-850:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 850
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-900:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 900
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-1000:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 1000
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-1250:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 1250
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-1500:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 1500
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-1750:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 1750
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-2000:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 2000
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-2500:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 2500
   spin: 0
   crossSection: 1pb
 GluGluToRadionToHHTo2B2Tau_M-3000:
   sampleType: GluGluToRadion
+  generator: madgraph
   mass: 3000
   spin: 0
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-250:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 250
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-260:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 260
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-270:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 270
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-280:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 280
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-300:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 300
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-320:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 320
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-350:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 350
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-400:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 400
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-450:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 450
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-500:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 500
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-550:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 550
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-600:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 600
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-650:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 650
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-700:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 700
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-750:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 750
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-800:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 800
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-850:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 850
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-900:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 900
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-1000:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 1000
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-1250:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 1250
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-1500:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 1500
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-1750:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 1750
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-2000:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 2000
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-2500:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 2500
   spin: 2
   crossSection: 1pb
 GluGluToBulkGravitonToHHTo2B2Tau_M-3000:
   sampleType: GluGluToBulkGraviton
+  generator: madgraph
   mass: 3000
   spin: 2
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-250:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 250
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-260:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 260
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-270:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 270
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-280:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 280
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-300:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 300
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-320:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 320
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-350:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 350
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-400:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 400
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-450:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 450
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-500:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 500
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-550:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 550
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-600:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 600
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-650:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 650
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-700:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 700
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-750:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 750
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-800:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 800
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-850:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 850
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-900:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 900
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-1000:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 1000
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-1250:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 1250
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-1500:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 1500
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-1750:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 1750
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-2000:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 2000
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-2500:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 2500
   spin: 0
   crossSection: 1pb
 VBFToRadionToHHTo2B2Tau_M-3000:
   sampleType: VBFToRadion
+  generator: madgraph
   mass: 3000
   spin: 0
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-250:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 250
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-260:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 260
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-270:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 270
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-280:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 280
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-300:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 300
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-320:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 320
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-350:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 350
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-400:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 400
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-450:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 450
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-500:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 500
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-550:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 550
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-600:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 600
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-650:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 650
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-700:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 700
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-750:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 750
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-800:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 800
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-850:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 850
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-900:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 900
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-1000:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 1000
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-1250:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 1250
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-1500:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 1500
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-1750:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 1750
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-2000:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 2000
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-2500:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 2500
   spin: 2
   crossSection: 1pb
 VBFToBulkGravitonToHHTo2B2Tau_M-3000:
   sampleType: VBFToBulkGraviton
+  generator: madgraph
   mass : 3000
   spin: 2
   crossSection: 1pb
@@ -626,599 +726,726 @@ VBFToBulkGravitonToHHTo2B2Tau_M-3000:
 ############## TT ##############
 TTTo2L2Nu:
   sampleType: TT
+  generator: powheg
   crossSection: TTTo2L2Nu
 TTToHadronic:
   sampleType: TT
+  generator: powheg
   crossSection: TTToHadronic
 TTToSemiLeptonic:
   sampleType: TT
+  generator: powheg
   crossSection: TTToSemiLeptonic
 
 ############## WJetsToLNu ##############
 WJetsToLNu:
   sampleType: W
+  generator: madgraph
   isReference: True
   crossSection: WJetsToLNu_NNLO
   crossSectionStitch: WJetsToLNu_LO
 
 W1JetsToLNu:
   sampleType: W
+  generator: madgraph
   crossSectionStitch: W1JetsToLNu_LO
 W2JetsToLNu:
   sampleType: W
+  generator: madgraph
   crossSectionStitch: W2JetsToLNu_LO
 W3JetsToLNu:
   sampleType: W
+  generator: madgraph
   crossSectionStitch: W3JetsToLNu_LO
 W4JetsToLNu:
   sampleType: W
+  generator: madgraph
   crossSectionStitch: W4JetsToLNu_LO
 
 WJetsToLNu_HT-100To200:
   sampleType: W
+  generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-100To200_LO
 WJetsToLNu_HT-1200To2500:
   sampleType: W
+  generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-1200To2500_LO
 WJetsToLNu_HT-200To400:
   sampleType: W
+  generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-200To400_LO
 WJetsToLNu_HT-2500ToInf:
   sampleType: W
+  generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-2500ToInf_LO
 WJetsToLNu_HT-400To600:
   sampleType: W
+  generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-400To600_LO
 WJetsToLNu_HT-600To800:
   sampleType: W
+  generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-600To800_LO
 WJetsToLNu_HT-70To100:
   sampleType: W
+  generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-70To100_LO
-WJetsToLNu_HT-70To100_ext1:
-  sampleType: W
-  crossSectionStitch: WJetsToLNu_HT-70To100_LO
+  ext: ['WJetsToLNu_HT-70To100_ext1']
 WJetsToLNu_HT-800To1200:
   sampleType: W
+  generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-800To1200_LO
 
 
 ############## DY ##############
 DYJetsToLL_M-50-amcatnloFXFX:
   sampleType: DY
+  generator: amcatnlo
   isReference: True
   crossSection: DY_LO
   crossSectionStitch: DY_NLO
 DYJetsToLL_0J-amcatnloFXFX:
   sampleType: DY
+  generator: amcatnlo
   crossSectionStitch: DY_NLO_0J
 DYJetsToLL_1J-amcatnloFXFX:
   sampleType: DY
+  generator: amcatnlo
   crossSectionStitch: DY_NLO_1J
 DYJetsToLL_2J-amcatnloFXFX:
   sampleType: DY
+  generator: amcatnlo
   crossSectionStitch: DY_NLO_2J
 DYJetsToLL_LHEFilterPtZ-0To50-amcatnloFXFX:
   sampleType: DY
+  generator: amcatnlo
   crossSectionStitch: DY_NLO_LHEFilterPtZ-0To50
 DYJetsToLL_LHEFilterPtZ-50To100-amcatnloFXFX:
   sampleType: DY
+  generator: amcatnlo
   crossSectionStitch: DY_NLO_LHEFilterPtZ-50To100
 DYJetsToLL_LHEFilterPtZ-100To250-amcatnloFXFX:
   sampleType: DY
+  generator: amcatnlo
   crossSectionStitch: DY_NLO_LHEFilterPtZ-100To250
 DYJetsToLL_LHEFilterPtZ-250To400-amcatnloFXFX:
   sampleType: DY
+  generator: amcatnlo
   crossSectionStitch: DY_NLO_LHEFilterPtZ-250To400
 DYJetsToLL_LHEFilterPtZ-400To650-amcatnloFXFX:
   sampleType: DY
+  generator: amcatnlo
   crossSectionStitch: DY_NLO_LHEFilterPtZ-400To650
 DYJetsToLL_LHEFilterPtZ-650ToInf-amcatnloFXFX:
   sampleType: DY
+  generator: amcatnlo
   crossSectionStitch: DY_NLO_LHEFilterPtZ-650ToInf
 
 ############## EWK ##############
 EWK_ZTo2L:
   sampleType: EWK
+  generator: madgraph
   crossSection: EWK_ZTo2L
 EWK_ZTo2Nu:
   sampleType: EWK
+  generator: madgraph
   crossSection: EWK_ZTo2Nu
 EWK_WplusToLNu:
   sampleType: EWK
+  generator: madgraph
   crossSection: EWK_WplusToLNu
 EWK_WminusToLNu:
   sampleType: EWK
+  generator: madgraph
   crossSection: EWK_WminusToLNu
 
 ############## single Higgs ##############
 ggHToZZTo2L2Q:
   sampleType: H
+  generator: powheg
   crossSection: ggHToZZTo2L2Q
 GluGluHToTauTau_M125:
   sampleType: H
+  generator: powheg
   crossSection: GluGluHToTauTau
 VBFHToTauTau_M125:
   sampleType: H
+  generator: powheg
   crossSection: VBFHToTauTau
 GluGluHToWWTo2L2Nu_M125:
   sampleType: H
+  generator: powheg
   crossSection: GluGluHToWWTo2L2Nu
 VBFHToWWTo2L2Nu_M125:
   sampleType: H
+  generator: powheg
   crossSection: VBFHToWWTo2L2Nu
 
 ############## VH non-inclusive ##############
 WplusHToTauTau_M125:
   sampleType: VH
+  generator: powheg
   crossSection: WplusHToTauTau
 WminusHToTauTau_M125:
   sampleType: VH
+  generator: powheg
   crossSection: WminusHToTauTau
 ZHToTauTau_M125:
   sampleType: VH
+  generator: powheg
   crossSection: ZHToTauTau
-ZHToTauTau_M125_ext1:
-  sampleType: VH
-  crossSection: ZHToTauTau
+  ext: ['ZHToTauTau_M125_ext1']
 ZH_Hbb_Zll:
   sampleType: VH
+  generator: powheg
   crossSection: ZH_HToBB_ZToLL
 ZH_Hbb_Zqq:
   sampleType: VH
+  generator: powheg
   crossSection: ZH_HToBB_ZToQQ
   HWplusJ_HToWW_M125:
   sampleType: VH
+  generator: powheg
   crossSection: HWplusJ_HToWW
 HWminusJ_HToWW_M125:
   sampleType: VH
+  generator: powheg
   crossSection: HWminusJ_HToWW
 HZJ_HToWW_M125:
   sampleType: VH
+  generator: powheg
   crossSection: HZJ_HToWW
-HZJ_HToWW_M125_ext1:
-  sampleType: VH
-  crossSection: HZJ_HToWW
+  ext: ['HZJ_HToWW_M125_ext1']
 GluGluZH_HToWW_ZTo2L_M125:
   sampleType: VH
+  generator: powheg
   crossSection: GluGluZH_HToWW_ZTo2L
-GluGluZH_HToWW_ZTo2L_M125_ext1:
-  sampleType: VH
-  crossSection: GluGluZH_HToWW_ZTo2L
+  ext: ['GluGluZH_HToWW_ZTo2L_M125_ext1']
 
 ############## VV inclusive ##############
 WW:
   sampleType: VV
+  generator: pythia
   crossSection: WW
 WZ:
   sampleType: VV
+  generator: pythia
   crossSection: WZ
 ZZ:
   sampleType: VV
+  generator: pythia
   crossSection: ZZ
 
 ############## VV non-inclusive ##############
 WWTo1L1Nu2Q:
   sampleType: VV
+  generator: amcatnlo
   crossSection: WWTo1L1Nu2Q
 WWTo2L2Nu:
   sampleType: VV
+  generator: powheg
   crossSection: WWTo2L2Nu
 WWTo4Q:
   sampleType: VV
+  generator: amcatnlo
   crossSection: WWTo4Q
 WZTo1L1Nu2Q:
   sampleType: VV
+  generator: amcatnlo
   crossSection: WZTo1L1Nu2Q
 WZTo2Q2L:
   sampleType: VV
+  generator: amcatnlo
   crossSection: WZTo2Q2L
 WZTo3LNu:
   sampleType: VV
+  generator: amcatnlo
   crossSection: WZTo3LNu
+WZTo1L3Nu:
+  sampleType: VV
+  generator: amcatnlo
+  crossSection: WZTo1L3Nu
 ZZTo2L2Nu:
   sampleType: VV
+  generator: powheg
   crossSection: ZZTo2L2Nu
 ZZTo2Q2L:
   sampleType: VV
+  generator: amcatnlo
   crossSection: ZZTo2Q2L
 ZZTo2Q2Nu:
   sampleType: VV
+  generator: amcatnlo
   crossSection: ZZTo2Q2Nu
 ZZTo4L:
   sampleType: VV
+  generator: powheg
   crossSection: ZZTo4L
 ZZTo4Q:
   sampleType: VV
+  generator: amcatnlo
   crossSection: ZZTo4Q
 
 
 ############## VVV inclusive ##############
 WWW_4F:
   sampleType: VVV
+  generator: amcatnlo
   crossSection: WWW_4F
-WWW_4F_ext1:
-  sampleType: VVV
-  crossSection: WWW_4F
+  ext: ['WWW_4F_ext1']
 WWZ_4F:
   sampleType: VVV
+  generator: amcatnlo
   crossSection: WWZ_4F
-WWZ_4F_ext1:
-  sampleType: VVV
-  crossSection: WWZ_4F
+  ext: ['WWZ_4F_ext1']
 WZZ:
   sampleType: VVV
+  generator: amcatnlo
   crossSection: WZZ
-WZZ_ext1:
-  sampleType: VVV
-  crossSection: WZZ
+  ext: ['WZZ_ext1']
 ZZZ:
   sampleType: VVV
+  generator: amcatnlo
   crossSection: ZZZ
-ZZZ_ext1:
-  sampleType: VVV
-  crossSection: ZZZ
+  ext: ['ZZZ_ext1']
 
 ############## ST #############
 ST_t-channel_antitop_4f_InclusiveDecays:
   sampleType: ST
+  generator: powheg
   crossSection: ST_t-channel_antitop
 ST_t-channel_top_4f_InclusiveDecays:
   sampleType: ST
+  generator: powheg
   crossSection: ST_t-channel_top
 ST_tW_antitop_5f_InclusiveDecays:
   sampleType: ST
+  generator: powheg
   crossSection: ST_tW
 ST_tW_top_5f_InclusiveDecays:
   sampleType: ST
+  generator: powheg
   crossSection: ST_tW
-
-#ST_tW_antitop_5f_NoFullyHadronicDecays:
-#
-#  sampleType: ST
-#  crossSection: ST_tW_antitop
-#ST_tW_top_5f_NoFullyHadronicDecays:
-#
-#  sampleType: ST
-#  crossSection: ST_tW_top
-#ST_t-channel_antitop_4f_InclusiveDecays_erdON:
-#
-#  sampleType: ST
-#  crossSection: ST_t-channel_antitop
-#ST_t-channel_top_4f_InclusiveDecays_erdON:
-#
-#  sampleType: ST
-#  crossSection: ST_t-channel_top
 
 
 ############## TTX inclusive ##############
 TTHH:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTHH
 TTWH:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTWH
 TTZZ:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTZZ
 TTWW:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTWW
-TTWH:
-  sampleType: TTX
-  crossSection: TTWH
 TTZH:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTZH
-TTZZ:
-  sampleType: TTX
-  crossSection: TTZZ
 TTWZ:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTWZ
 TTTT:
   sampleType: TTX
+  generator: amcatnlo
   crossSection: TTTT
 TTTW:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTTW
 TTTJ:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTTJ
 TTGG:
   sampleType: TTX
+  generator: amcatnlo
   crossSection: TTGG
 TTGJets:
   sampleType: TTX
+  generator: amcatnlo
   crossSection: TTGJets
 ############## TTX non-inclusive ##############
 TT4b:
   sampleType: TTX
+  generator: madgraph
   crossSection: TT4b
 TTGamma_Dilept:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTGamma_Dilept
 TTGamma_Hadronic:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTGamma_Hadronic
 TTGamma_SingleLept:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTGamma_SingleLept
 
 
 TTWJetsToLNu:
   sampleType: TTX
+  generator: amcatnlo
   crossSection: TTWJetsToLNu
 TTWJetsToQQ:
   sampleType: TTX
+  generator: amcatnlo
   crossSection: TTWJetsToQQ
 
 TTZToQQ_Dilept:
   sampleType: TTX
+  generator: amcatnlo
   crossSection: TTZToQQ_Dilept
 TTZToNuNu:
   sampleType: TTX
+  generator: amcatnlo
   crossSection: TTZToNuNu
 TTZToBB:
   sampleType: TTX
+  generator: amcatnlo
   crossSection: TTZToBB
 TTZToLL_M-1to10:
   sampleType: TTX
+  generator: amcatnlo
   crossSection: TTZToLL_M-1to10
 TTZToLLNuNu_M-10:
   sampleType: TTX
+  generator: amcatnlo
   crossSection: TTZToLLNuNu_M-10
 TTZToQQ:
   sampleType: TTX
+  generator: amcatnlo
   crossSection: TTZToQQ
 
 TTHHTo4b:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTHHTo4b
 TTHHToNon4b:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTHHToNon4b
 TTHHTo2B2Tau:
   sampleType: TTX
+  generator: madgraph
   crossSection: 1pb
 
 TTZHTo4b:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTZHTo4b
-TTZHTo4b_ext1:
-  sampleType: TTX
-  crossSection: TTZHTo4b
+  ext: ['TTZHTo4b_ext1']
 TTZHToNon4b:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTZHToNon4b
 
 TTZZTo4b:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTZZTo4b
-TTZZTo4b_ext1:
-  sampleType: TTX
-  crossSection: TTZZTo4b
+  ext: ['TTZZTo4b_ext1']
 TTZZToNon4b:
   sampleType: TTX
+  generator: madgraph
   crossSection: TTZZToNon4b
 
 ############## ttH ##############
 ttHToNonbb_M125:
   sampleType: ttH
+  generator: powheg
   crossSection: ttHToNonbb
 ttHTobb_M125:
   sampleType: ttH
+  generator: powheg
   crossSection: ttHTobb
 ttHToTauTau_M125:
   sampleType: ttH
+  generator: powheg
   crossSection: ttHToTauTau
 
 ############## HHbbTauTau NonRes ##############
 GluGluToHHTo2B2Tau_node_SM:
   sampleType: HHnonRes
+  generator: madgraph
   crossSection: ggHH_bbTauTau_SM
 GluGluToHHTo2B2Tau_node_1:
   sampleType: HHnonRes
+  generator: madgraph
   crossSection: 1pb
 GluGluToHHTo2B2Tau_node_2:
   sampleType: HHnonRes
+  generator: madgraph
   crossSection: 1pb
 GluGluToHHTo2B2Tau_node_3:
   sampleType: HHnonRes
+  generator: madgraph
   crossSection: 1pb
 GluGluToHHTo2B2Tau_node_4:
   sampleType: HHnonRes
+  generator: madgraph
   crossSection: 1pb
 GluGluToHHTo2B2Tau_node_5:
   sampleType: HHnonRes
+  generator: madgraph
   crossSection: 1pb
 GluGluToHHTo2B2Tau_node_6:
   sampleType: HHnonRes
+  generator: madgraph
   crossSection: 1pb
 GluGluToHHTo2B2Tau_node_7:
   sampleType: HHnonRes
+  generator: madgraph
   crossSection: 1pb
 GluGluToHHTo2B2Tau_node_8:
   sampleType: HHnonRes
+  generator: madgraph
   crossSection: 1pb
 GluGluToHHTo2B2Tau_node_9:
   sampleType: HHnonRes
+  generator: madgraph
   crossSection: 1pb
 GluGluToHHTo2B2Tau_node_10:
   sampleType: HHnonRes
+  generator: madgraph
   crossSection: 1pb
 GluGluToHHTo2B2Tau_node_11:
   sampleType: HHnonRes
+  generator: madgraph
   crossSection: 1pb
 GluGluToHHTo2B2Tau_node_12:
   sampleType: HHnonRes
+  generator: madgraph
   crossSection: 1pb
 
 
 ############## QCD ##############
 QCD_HT50to100_MLM:
   sampleType: QCD
+  generator: madgraph
   crossSection: QCD_HT50to100
 QCD_HT50to100:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_HT50to100
 QCD_HT100to200_MLM:
   sampleType: QCD
+  generator: madgraph
   crossSection: QCD_HT100to200
 QCD_HT100to200:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_HT100to200
 QCD_HT200to300_MLM:
   sampleType: QCD
+  generator: madgraph
   crossSection: QCD_HT200to300
 QCD_HT200to300:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_HT200to300
 QCD_HT300to500_MLM:
   sampleType: QCD
+  generator: madgraph
   crossSection: QCD_HT300to500
 QCD_HT300to500:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_HT300to500
 QCD_HT500to700_MLM:
   sampleType: QCD
+  generator: madgraph
   crossSection: QCD_HT500to700
 QCD_HT500to700:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_HT500to700
 QCD_HT700to1000_MLM:
   sampleType: QCD
+  generator: madgraph
   crossSection: QCD_HT700to1000
 QCD_HT700to1000:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_HT700to1000
 QCD_HT1000to1500_MLM:
   sampleType: QCD
+  generator: madgraph
   crossSection: QCD_HT1000to1500
 QCD_HT1000to1500:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_HT1000to1500
 QCD_HT1500to2000_MLM:
   sampleType: QCD
+  generator: madgraph
   crossSection: QCD_HT1500to2000
 QCD_HT1500to2000:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_HT1500to2000
 QCD_HT2000toInf_MLM:
   sampleType: QCD
+  generator: madgraph
   crossSection: QCD_HT2000toInf
 QCD_HT2000toInf:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_HT2000toInf
 
 QCD_Pt_15to30:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt_15to30
 QCD_Pt_30to50:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt_30to50
 QCD_Pt_50to80:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt_50to80
 QCD_Pt_80to120:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt_80to120
 QCD_Pt_120to170:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt_120to170
 QCD_Pt_170to300:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt_170to300
 QCD_Pt_300to470:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt_300to470
 QCD_Pt_470to600:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt_470to600
 QCD_Pt_600to800:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt_600to800
 QCD_Pt_800to1000:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt_800to1000
 QCD_Pt_1000to1400:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt_1000to1400
 QCD_Pt_1400to1800:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt_1400to1800
 QCD_Pt_1800to2400:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt_1800to2400
 QCD_Pt_2400to3200:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt_2400to3200
 QCD_Pt_3200toInf:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt_3200toInf
 
 QCD_Pt-20_MuEnrichedPt15:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-20_MuEnrichedPt15
 
 QCD_Pt-15To20_MuEnrichedPt5:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-15To20_MuEnrichedPt5
 QCD_Pt-20To30_MuEnrichedPt5:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-20To30_MuEnrichedPt5
 QCD_Pt-30To50_MuEnrichedPt5:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-30To50_MuEnrichedPt5
 QCD_Pt-50To80_MuEnrichedPt5:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-50To80_MuEnrichedPt5
 QCD_Pt-80To120_MuEnrichedPt5:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-80To120_MuEnrichedPt5
 QCD_Pt-120To170_MuEnrichedPt5:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-120To170_MuEnrichedPt5
 QCD_Pt-170To300_MuEnrichedPt5:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-170To300_MuEnrichedPt5
 QCD_Pt-300To470_MuEnrichedPt5:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-300To470_MuEnrichedPt5
 QCD_Pt-470To600_MuEnrichedPt5:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-470To600_MuEnrichedPt5
 QCD_Pt-600To800_MuEnrichedPt5:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-600To800_MuEnrichedPt5
 QCD_Pt-800To1000_MuEnrichedPt5:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-800To1000_MuEnrichedPt5
 QCD_Pt-1000_MuEnrichedPt5:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-1000_MuEnrichedPt5
 
 QCD_Pt-15to20_EMEnriched:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-15to20_EMEnriched
 QCD_Pt-20to30_EMEnriched:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-20to30_EMEnriched
 QCD_Pt-30to50_EMEnriched:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-30to50_EMEnriched
 QCD_Pt-50to80_EMEnriched:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-50to80_EMEnriched
 QCD_Pt-80to120_EMEnriched:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-80to120_EMEnriched
 QCD_Pt-120to170_EMEnriched:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-120to170_EMEnriched
 QCD_Pt-170to300_EMEnriched:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-170to300_EMEnriched
 QCD_Pt-300toInf_EMEnriched:
   sampleType: QCD
+  generator: pythia
   crossSection: QCD_Pt-300toInf_EMEnriched

@@ -90,8 +90,8 @@ HWminusJ_HToWW_M125:
   sampleType: VH
 HZJ_HToWW_M125:
   sampleType: VH
-GluGluZH_HToWW_ZTo2L_M125:
-  sampleType: VH
+#GluGluZH_HToWW_ZTo2L_M125:
+#  sampleType: VH
 
 ############## VV inclusive ##############
 WW:

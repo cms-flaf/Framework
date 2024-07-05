@@ -36,6 +36,7 @@ GLOBAL:
     - drop ^TTZHTo*
     #- drop ^TTWHTo*
     - drop ^TTHHTo*
+    - drop ^.*ext*
     #- drop ^.*erdON
 
 
@@ -864,11 +865,19 @@ HZJ_HToWW_M125:
   generator: powheg
   crossSection: HZJ_HToWW
   ext: ['HZJ_HToWW_M125_ext1']
+HZJ_HToWW_M125_ext1:
+  sampleType: VH
+  generator: powheg
+  crossSection: HZJ_HToWW
 GluGluZH_HToWW_ZTo2L_M125:
   sampleType: VH
   generator: powheg
   crossSection: GluGluZH_HToWW_ZTo2L
   ext: ['GluGluZH_HToWW_ZTo2L_M125_ext1']
+GluGluZH_HToWW_ZTo2L_M125_ext1:
+  sampleType: VH
+  generator: powheg
+  crossSection: GluGluZH_HToWW_ZTo2L
 ############## VV inclusive ##############
 WW:
   sampleType: VV
@@ -940,21 +949,37 @@ WWW_4F:
   generator: amcatnlo
   crossSection: WWW_4F
   ext: ['WWW_4F_ext1']
+WWW_4F_ext1:
+  sampleType: VVV
+  generator: amcatnlo
+  crossSection: WWW_4F
 WWZ_4F:
   sampleType: VVV
   generator: amcatnlo
   crossSection: WWZ_4F
   ext: ['WWZ_4F_ext1']
+WWZ_4F_ext1:
+  sampleType: VVV
+  generator: amcatnlo
+  crossSection: WWZ_4F
 WZZ:
   sampleType: VVV
   generator: amcatnlo
   crossSection: WZZ
   ext: ['WZZ_ext1']
+WZZ_ext1:
+  sampleType: VVV
+  generator: amcatnlo
+  crossSection: WZZ
 ZZZ:
   sampleType: VVV
   generator: amcatnlo
   crossSection: ZZZ
   ext: ['ZZZ_ext1']
+ZZZ_ext1:
+  sampleType: VVV
+  generator: amcatnlo
+  crossSection: ZZZ
 
 ############## ST #############
 ST_t-channel_antitop_4f_InclusiveDecays:
@@ -1116,6 +1141,10 @@ TTZHTo4b:
   generator: madgraph
   crossSection: TTZHTo4b
   ext: ['TTZHTo4b_ext1']
+TTZHTo4b_ext1:
+  sampleType: TTX
+  generator: madgraph
+  crossSection: TTZHTo4b
 TTZHToNon4b:
   sampleType: TTX
   generator: madgraph
@@ -1126,6 +1155,10 @@ TTZZTo4b:
   generator: madgraph
   crossSection: TTZZTo4b
   ext: ['TTZZTo4b_ext1']
+TTZZTo4b_ext1:
+  sampleType: TTX
+  generator: madgraph
+  crossSection: TTZZTo4b
 TTZZToNon4b:
   sampleType: TTX
   generator: madgraph

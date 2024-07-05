@@ -62,21 +62,15 @@ if __name__ == "__main__":
     parser.add_argument('--input-files', required=True, type=str)
     parser.add_argument('--output', required=False, default=None, type=str)
     parser.add_argument('--global-params', required=True, type=str)
-    parser.add_argument('--sample', required=True, type=str)
-    parser.add_argument('--period', required=True, type=str)
+    parser.add_argument('--generator-name', required=True, type=str)
     parser.add_argument('--n-events', type=int, default=None)
     parser.add_argument('--verbose', type=int, default=1)
-    parser.add_argument('--customisations', type=str, default=None)
     args = parser.parse_args()
 
     from Common.Utilities import DeserializeObjectFromString
-    from Common.Setup import Setup
     input_files = args.input_files.split(',')
     global_params = DeserializeObjectFromString(args.global_params)
-    setup = Setup.getGlobal(os.environ['ANALYSIS_PATH'], args.period, args.customisations)
-    sample_config = setup.samples[args.sample]
-    generator_name = sample_config['generator']
-    anaCache = computeAnaCache(input_files, global_params, generator_name,range=args.n_events)
+    anaCache = computeAnaCache(input_files, global_params, args.generator_name,range=args.n_events)
     if args.verbose > 0:
         print(json.dumps(anaCache))
 

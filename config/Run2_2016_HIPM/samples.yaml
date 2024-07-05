@@ -34,6 +34,7 @@ GLOBAL:
     - drop ^ttHTobb*
     - drop ^TTZToLLNuNu_M*
     - drop ^TTZZTo*
+    - drop ^*_ext*
     - drop ^TTZHTo*
     - drop ^TTWHTo*
     - drop ^TTHHTo*
@@ -745,6 +746,10 @@ WJetsToLNu_HT-1200To2500:
   generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-1200To2500_LO
   ext: ['WJetsToLNu_HT-1200To2500_ext1']
+WJetsToLNu_HT-1200To2500_ext1:
+  sampleType: W
+  generator: madgraph
+  crossSectionStitch: WJetsToLNu_HT-1200To2500_LO
 WJetsToLNu_HT-200To400:
   sampleType: W
   generator: madgraph
@@ -754,16 +759,28 @@ WJetsToLNu_HT-2500ToInf:
   generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-2500ToInf_LO
   ext: ['WJetsToLNu_HT-2500ToInf_ext1']
+WJetsToLNu_HT-2500ToInf_ext1:
+  sampleType: W
+  generator: madgraph
+  crossSectionStitch: WJetsToLNu_HT-2500ToInf_LO
 WJetsToLNu_HT-400To600:
   sampleType: W
   generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-400To600_LO
   ext: ['WJetsToLNu_HT-400To600_ext1']
+WJetsToLNu_HT-400To600_ext1:
+  sampleType: W
+  generator: madgraph
+  crossSectionStitch: WJetsToLNu_HT-400To600_LO
 WJetsToLNu_HT-600To800:
   sampleType: W
   generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-600To800_LO
   ext: ['WJetsToLNu_HT-600To800_ext1']
+WJetsToLNu_HT-600To800_ext1:
+  sampleType: W
+  generator: madgraph
+  crossSectionStitch: WJetsToLNu_HT-600To800_LO
 WJetsToLNu_HT-70To100:
   sampleType: W
   generator: madgraph
@@ -773,6 +790,10 @@ WJetsToLNu_HT-800To1200:
   generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-800To1200_LO
   ext: ['WJetsToLNu_HT-800To1200_ext1']
+WJetsToLNu_HT-800To1200_ext1:
+  sampleType: W
+  generator: madgraph
+  crossSectionStitch: WJetsToLNu_HT-800To1200_LO
 
 
 ############## DY ##############
@@ -873,6 +894,10 @@ ZHToTauTau_M125:
   generator: powheg
   crossSection: ZHToTauTau
   ext: ['ZHToTauTau_M125_ext1']
+ZHToTauTau_M125_ext1:
+  sampleType: VH
+  generator: powheg
+  crossSection: ZHToTauTau
 ZH_Hbb_Zll:
   sampleType: VH
   generator: powheg
@@ -894,11 +919,19 @@ HZJ_HToWW_M125:
   generator: powheg
   crossSection: HZJ_HToWW
   ext: ['HZJ_HToWW_M125_ext1']
+HZJ_HToWW_M125_ext1:
+  sampleType: VH
+  generator: powheg
+  crossSection: HZJ_HToWW
 GluGluZH_HToWW_ZTo2L_M125:
   sampleType: VH
   generator: powheg
   crossSection: GluGluZH_HToWW_ZTo2L
   ext: ['GluGluZH_HToWW_ZTo2L_M125_ext1']
+GluGluZH_HToWW_ZTo2L_M125_ext1:
+  sampleType: VH
+  generator: powheg
+  crossSection: GluGluZH_HToWW_ZTo2L
 
 ############## VV inclusive ##############
 WW:
@@ -971,22 +1004,37 @@ WWW_4F:
   generator: amcatnlo
   crossSection: WWW_4F
   ext: ['WWW_4F_ext1']
+WWW_4F_ext1:
+  sampleType: VVV
+  generator: amcatnlo
+  crossSection: WWW_4F
 WWZ_4F:
   sampleType: VVV
   generator: amcatnlo
   crossSection: WWZ_4F
   ext: ['WWZ_4F_ext1']
+WWZ_4F_ext1:
+  sampleType: VVV
+  generator: amcatnlo
+  crossSection: WWZ_4F
 WZZ:
   sampleType: VVV
   generator: amcatnlo
   crossSection: WZZ
   ext: ['WZZ_ext1']
+WZZ_ext1:
+  sampleType: VVV
+  generator: amcatnlo
+  crossSection: WZZ
 ZZZ:
   sampleType: VVV
   generator: amcatnlo
   crossSection: ZZZ
   ext: ['ZZZ_ext1']
-
+ZZZ_ext1:
+  sampleType: VVV
+  generator: amcatnlo
+  crossSection: ZZZ
 
 ############## ST #############
 ST_t-channel_antitop_4f_InclusiveDecays:
@@ -1148,6 +1196,10 @@ TTZHTo4b:
   generator: madgraph
   crossSection: TTZHTo4b
   ext: ['TTZHTo4b_ext1']
+TTZHTo4b_ext1:
+  sampleType: TTX
+  generator: madgraph
+  crossSection: TTZHTo4b
 TTZHToNon4b:
   sampleType: TTX
   generator: madgraph
@@ -1158,6 +1210,10 @@ TTZZTo4b:
   generator: madgraph
   crossSection: TTZZTo4b
   ext: ['TTZZTo4b_ext1']
+TTZZTo4b_ext1:
+  sampleType: TTX
+  generator: madgraph
+  crossSection: TTZZTo4b
 TTZZToNon4b:
   sampleType: TTX
   generator: madgraph

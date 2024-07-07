@@ -86,12 +86,6 @@ ZH_Hbb_Zqq:
   sampleType: VH
   HWplusJ_HToWW_M125:
   sampleType: VH
-HWminusJ_HToWW_M125:
-  sampleType: VH
-HZJ_HToWW_M125:
-  sampleType: VH
-#GluGluZH_HToWW_ZTo2L_M125:
-#  sampleType: VH
 
 ############## VV inclusive ##############
 WW:
@@ -124,12 +118,6 @@ ST_tW_top_5f_InclusiveDecays:
 
 
 ############## TTX inclusive ##############
-TTHH:
-  sampleType: TTX
-TTWH:
-  sampleType: TTX
-TTZZ:
-  sampleType: TTX
 TTWW:
   sampleType: TTX
 TTWH:

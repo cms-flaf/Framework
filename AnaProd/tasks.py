@@ -83,7 +83,7 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         producer = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheProducer.py')
         input_files = InputFileTask.load_input_files(self.input()[0].path, sample_name)
         ana_caches = []
-        generator_name = self.samples[sample_name]['generator']
+        generator_name = self.samples[sample_name]['generator'] if not isData else ''
         global_params_str = SerializeObjectToString(self.global_params)
         n_inputs = len(input_files)
         for input_idx, input_file in enumerate(input_files):

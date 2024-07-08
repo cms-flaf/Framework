@@ -110,112 +110,112 @@ GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-5000:
   spin: 0
   crossSection: 1pb
 ############## Signals(SL,S=2)##############
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M250:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-250:
   sampleType: GluGluToGraviton
   mass: 250
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M260:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-260:
   sampleType: GluGluToGraviton
   mass: 260
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M270:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-270:
   sampleType: GluGluToGraviton
   mass: 270
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M280:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-280:
   sampleType: GluGluToGraviton
   mass: 280
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M300:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-300:
   sampleType: GluGluToGraviton
   mass: 300
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M350:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-350:
   sampleType: GluGluToGraviton
   mass: 350
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M450:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-450:
   sampleType: GluGluToGraviton
   mass: 450
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M550:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-550:
   sampleType: GluGluToGraviton
   mass: 550
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M600:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-600:
   sampleType: GluGluToGraviton
   mass: 600
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M650:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-650:
   sampleType: GluGluToGraviton
   mass: 650
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M700:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-700:
   sampleType: GluGluToGraviton
   mass: 700
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M800:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-800:
   sampleType: GluGluToGraviton
   mass: 800
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M1000:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-1000:
   sampleType: GluGluToGraviton
   mass: 1000
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M1200:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-1200:
   sampleType: GluGluToGraviton
   mass: 1200
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M1400:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-1400:
   sampleType: GluGluToGraviton
   mass: 1400
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M1600:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-1600:
   sampleType: GluGluToGraviton
   mass: 1600
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M1800:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-1800:
   sampleType: GluGluToGraviton
   mass: 1800
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M2000:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-2000:
   sampleType: GluGluToGraviton
   mass: 2000
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M2500:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-2500:
   sampleType: GluGluToGraviton
   mass: 2500
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M3000:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-3000:
   sampleType: GluGluToGraviton
   mass: 3000
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M4000:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-4000:
   sampleType: GluGluToGraviton
   mass: 4000
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M5000:
+GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-5000:
   sampleType: GluGluToGraviton
   mass: 5000
   spin: 2
@@ -332,112 +332,112 @@ GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-5000:
   spin: 0
   crossSection: 1pb
 ############## Signals(DL,S=2)##############
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M250:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-250:
   sampleType: GluGluToGraviton
   mass: 250
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M260:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-260:
   sampleType: GluGluToGraviton
   mass: 260
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M270:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-270:
   sampleType: GluGluToGraviton
   mass: 270
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M280:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-280:
   sampleType: GluGluToGraviton
   mass: 280
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M300:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-300:
   sampleType: GluGluToGraviton
   mass: 300
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M350:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-350:
   sampleType: GluGluToGraviton
   mass: 350
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M450:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-450:
   sampleType: GluGluToGraviton
   mass: 450
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M550:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-550:
   sampleType: GluGluToGraviton
   mass: 550
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M600:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-600:
   sampleType: GluGluToGraviton
   mass: 600
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M650:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-650:
   sampleType: GluGluToGraviton
   mass: 650
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M700:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-700:
   sampleType: GluGluToGraviton
   mass: 700
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M800:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-800:
   sampleType: GluGluToGraviton
   mass: 800
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M1000:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-1000:
   sampleType: GluGluToGraviton
   mass: 1000
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M1200:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-1200:
   sampleType: GluGluToGraviton
   mass: 1200
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M1400:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-1400:
   sampleType: GluGluToGraviton
   mass: 1400
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M1600:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-1600:
   sampleType: GluGluToGraviton
   mass: 1600
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M1800:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-1800:
   sampleType: GluGluToGraviton
   mass: 1800
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M2000:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-2000:
   sampleType: GluGluToGraviton
   mass: 2000
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M2500:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-2500:
   sampleType: GluGluToGraviton
   mass: 2500
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M3000:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-3000:
   sampleType: GluGluToGraviton
   mass: 3000
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M4000:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-4000:
   sampleType: GluGluToGraviton
   mass: 4000
   spin: 2
   crossSection: 1pb
-GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M5000:
+GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-5000:
   sampleType: GluGluToGraviton
   mass: 5000
   spin: 2

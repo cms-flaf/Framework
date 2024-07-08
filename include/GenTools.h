@@ -104,8 +104,6 @@ inline Leg PdGToLeg(int pdg)
       { PdG::e(), Leg::e },
       { PdG::mu(), Leg::mu },
       { PdG::tau(), Leg::tau },
-      // { PdG::Wplus(), Leg::w_plus },
-      // { PdG::Wminus(), Leg::w_minus }
     };
     const auto iter = pdg_to_leg.find(std::abs(pdg));
     if(iter == pdg_to_leg.end())

@@ -7,7 +7,8 @@
 
 
 void AssignHadronicVCand(VCand& cand, int cand_idx, const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters,
-                         const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass)
+                         const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass,
+                         RVecLV const& GenJet_p4)
 {
   cand.leg_kind[0] = Vleg::Jet;
   cand.leg_kind[1] = Vleg::Jet;
@@ -20,11 +21,14 @@ void AssignHadronicVCand(VCand& cand, int cand_idx, const RVecI& GenPart_pdgId, 
 
   cand.cand_p4 = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, cand_idx);
 
-  cand.leg_p4[0] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, cand.leg_index[0]); // use get mass function
-  cand.leg_p4[1] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, cand.leg_index[1]); // fix later
+  cand.leg_p4[0] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, ParticleDB::GetMass(GenPart_pdgId[cand.leg_index[0]], GenPart_mass[cand.leg_index[0]]), cand.leg_index[0]);
+  cand.leg_p4[1] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, ParticleDB::GetMass(GenPart_pdgId[cand.leg_index[1]], GenPart_mass[cand.leg_index[1]]), cand.leg_index[1]);
 
-  cand.leg_vis_p4[0] = LorentzVectorM{}; // fix later
-  cand.leg_vis_p4[1] = LorentzVectorM{};
+  int match_1 = FindMatching(cand.leg_p4[0], GenJet_p4, 0.4);
+  int match_2 = FindMatching(cand.leg_p4[1], GenJet_p4, 0.4);
+
+  cand.leg_vis_p4[0] = match_1 == -1 ? LorentzVectorM{} : GenJet_p4[match_1];
+  cand.leg_vis_p4[1] = match_2 == -1 ? LorentzVectorM{} : GenJet_p4[match_2];
 }
 
 void AssignLeptonicVCand(VCand& cand, int cand_idx, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
@@ -104,7 +108,8 @@ void AssignLeptonicVCand(VCand& cand, int cand_idx, std::vector<reco_tau::gen_tr
 
 VCand GetGenVCand(int evt, int v_idx, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
                   const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
-                  const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass)
+                  const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass,
+                  RVecLV const& GenJet_p4)
 {
   VCand res;
   RVecI daughters = GenPart_daughters.at(v_idx);
@@ -117,7 +122,7 @@ VCand GetGenVCand(int evt, int v_idx, std::vector<reco_tau::gen_truth::GenLepton
   if (decays_to_hadrons)
   {
     AssignHadronicVCand(res, v_idx, GenPart_pdgId, GenPart_daughters,
-                        GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
+                        GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, GenJet_p4);
   }
 
   bool decays_to_leptons = std::all_of(daughters.begin(), daughters.end(), [&](int idx){ return PdG::isNeutrino(GenPart_pdgId[idx]) || PdG::isLepton(GenPart_pdgId[idx]); });
@@ -138,6 +143,7 @@ VCand GetGenVCand(int evt, int v_idx, std::vector<reco_tau::gen_truth::GenLepton
 HVVCand GetGenHVVCandidate(int evt, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
                            const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
                            const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass,
+                           RVecLV const& GenJet_p4,
                            bool throw_error_if_not_found)
 {
   try
@@ -203,9 +209,9 @@ HVVCand GetGenHVVCandidate(int evt, std::vector<reco_tau::gen_truth::GenLepton> 
     }
 
     HVV_cand.legs.at(0) = GetGenVCand(evt, v1_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
-                                      GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
+                                      GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, GenJet_p4);
     HVV_cand.legs.at(1) = GetGenVCand(evt, v2_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
-                                      GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass);
+                                      GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, GenJet_p4);
 
     if (single_lepton)
     {

@@ -23,21 +23,18 @@ GLOBAL:
   sampleSelection:
     - drop ^VBFToRadion*
     - drop ^VBFToBulkGraviton*
-    #- drop ^.*NoFully
+    - drop ^.*NoFully
     - drop ^.*Enriched
     - drop ^JetHT_Run201*
     - drop ^WWTo*
     - drop ^WZTo*
     - drop ^ZZTo*
-    - drop ^ttHToNonbb*
-    - drop ^ttHTobb*
     - drop ^TTZToLLNuNu_M*
     - drop ^TTZZTo*
     - drop ^TTZHTo*
-    #- drop ^TTWHTo*
     - drop ^TTHHTo*
     - drop ^.*ext*
-    #- drop ^.*erdON
+    - drop ^.*erdON
 
 
 ############## Data ##############

@@ -143,8 +143,8 @@ TTGJets:
 ############## ttH ##############
 #ttHToNonbb_M125:
 #  sampleType: ttH
-#ttHTobb_M125:
-#  sampleType: ttH
+ttHTobb_M125:
+  sampleType: ttH
 ttHToTauTau_M125:
   sampleType: ttH
 

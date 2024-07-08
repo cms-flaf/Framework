@@ -76,6 +76,7 @@ if __name__ == "__main__":
     parser.add_argument('--var', required=False, type=str, default = 'tau1_pt')
     parser.add_argument('--mass', required=False, type=int, default=1250)
     parser.add_argument('--sampleConfig', required=True, type=str)
+    parser.add_argument('--bckgConfig', required=True, type=str)
     parser.add_argument('--channel',required=False, type=str, default = 'tauTau')
     parser.add_argument('--category',required=False, type=str, default = 'inclusive')
     parser.add_argument('--wantData', required=False, type=bool, default=False)
@@ -104,6 +105,10 @@ if __name__ == "__main__":
     samples_list = [ s['name'] for s in inputs_cfg_dict]
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
+
+    with open(args.bckgConfig, 'r') as f:
+        bckg_cfg_dict = yaml.safe_load(f)
+
     all_samples_separated = [k['name'] for k in inputs_cfg_dict]
     #print(all_samples_separated)
     all_histlist = {}
@@ -114,8 +119,7 @@ if __name__ == "__main__":
     wantAllMasses=False
     wantOneMass=True
 
-    #all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir,True,False,True,args.mass)
-    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict, wantSignals, wantAllMasses, wantOneMass, args.mass)
+    all_samples_list,all_samples_types = GetSamplesStuff(bckg_cfg_dict.keys(),sample_cfg_dict, wantSignals, wantAllMasses, wantOneMass, args.mass)
     all_samples_types.update({"QCD":"QCD"})
     #print(all_samples_types)
     histNamesDict = {}

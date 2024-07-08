@@ -83,6 +83,7 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         producer = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheProducer.py')
         input_files = InputFileTask.load_input_files(self.input()[0].path, sample_name)
         ana_caches = []
+        generator_name = self.samples[sample_name]['generator'] if not isData else ''
         global_params_str = SerializeObjectToString(self.global_params)
         n_inputs = len(input_files)
         for input_idx, input_file in enumerate(input_files):
@@ -90,7 +91,7 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             print(f'[{input_idx+1}/{n_inputs}] {input_target.uri()}')
             with input_target.localize("r") as input_local:
                 returncode, output, err = ps_call([ 'python3', producer, '--input-files', input_local.path,
-                                                    '--global-params', global_params_str, '--verbose', '1' ],
+                                                    '--global-params', global_params_str, '--generator-name',generator_name,'--verbose', '1' ],
                                                   env=self.cmssw_env, catch_stdout=True)
             ana_cache = json.loads(output)
             print(json.dumps(ana_cache))
@@ -229,9 +230,8 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self, force_pre_output=False):
         outFileName = 'nanoHTT_0.root'
-        finalFile = os.path.join(self.version, self.period, 'data', outFileName)
-        #finalFile = os.path.join('anaTuples',self.version, self.period, sample_name, outFileName)
-        return remote_file_target(finalFile, self.fs_files)
+        output_path = os.path.join('anaTuples', self.version, self.period, 'data', outFileName)
+        return self.remote_target(output_path, fs=self.fs_anaTuple)
 
     def run(self):
         producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
@@ -267,7 +267,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branches = {}
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
         sample_id_data = 0
-        for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
+        for prod_br,(sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
             if sample_type =='QCD':
                 continue
             branches[n] = (sample_name, sample_type,prod_br)
@@ -282,12 +282,11 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         #print(outFileName)
         outDir = os.path.join('anaCache', self.period, sample_name, self.version)
         finalFile = os.path.join(outDir, outFileName)
-        return remote_file_target(finalFile, self.fs_read)
+        return self.remote_target(finalFile, fs=self.fs_anaCache)
 
     def run(self):
         sample_name, sample_type,prod_br = self.branch_data
-        sample_config = self.sample_config
-        unc_config = os.path.join(self.ana_path(), 'config', f'weight_definition_{getYear(self.period)}.yaml')
+        unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         producer_anacachetuples = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheTupleProducer.py')
 
         thread = threading.Thread(target=update_kinit_thread)
@@ -299,10 +298,9 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 anaCacheTupleProducer_cmd = ['python3', producer_anacachetuples,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config]
                 if sample_name !='data':
                     anaCacheTupleProducer_cmd.extend(['--compute_unc_variations', 'True'])
-                if self.version.split('_')[1]=='deepTau2p5':
+                if 'deepTau2p5' in self.version.split('_'):
                     anaCacheTupleProducer_cmd.extend([ '--deepTauVersion', 'v2p5'])
-                #print(anaCacheTupleProducer_cmd)#, env=self.cmssw_env(),verbose=1)
-                ps_call(anaCacheTupleProducer_cmd, env=self.cmssw_env(),verbose=1)
+                ps_call(anaCacheTupleProducer_cmd, env=self.cmssw_env, verbose=1)
             print(f"finished to produce anacachetuple")
 
         finally:
@@ -339,9 +337,8 @@ class DataCacheMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self, force_pre_output=False):
         outFileName = 'nanoHTT_0.root'
-        outDir = os.path.join('anaCache', self.period, 'data', self.version)
-        finalFile = os.path.join(outDir, outFileName)
-        return remote_file_target(finalFile, self.fs_read)
+        output_path = os.path.join('anaCache', self.period, 'data',self.version, outFileName)
+        return self.remote_target(output_path, fs=self.fs_anaCache)
 
     def run(self):
         producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
@@ -353,6 +350,5 @@ class DataCacheMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 dataMerge_cmd.extend(local_inputs)
                 #print(dataMerge_cmd)
                 ps_call(dataMerge_cmd,verbose=1)
-
 
 

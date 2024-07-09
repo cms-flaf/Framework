@@ -10,25 +10,18 @@ void AssignHadronicVCand(VCand& cand, int cand_idx, const RVecI& GenPart_pdgId, 
                          const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass,
                          RVecLV const& GenJet_p4)
 {
-  cand.leg_kind[0] = Vleg::Jet;
-  cand.leg_kind[1] = Vleg::Jet;
+  const RVecI& daughters = GenPart_daughters.at(cand_idx);
+  const int first = GenPart_pt[daughters[0]] > GenPart_pt[daughters[1]] ? 0 : 1;
+  const int second = (first + 1) % 2;
 
-  RVecI daughters = GenPart_daughters.at(cand_idx);
-  int first = GenPart_pt[daughters[0]] > GenPart_pt[daughters[1]] ? 0 : 1;
-  int second = GenPart_pt[daughters[0]] > GenPart_pt[daughters[1]] ? 1 : 0;
-  cand.leg_index[0] = daughters[first];
-  cand.leg_index[1] = daughters[second];
-
-  cand.cand_p4 = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, cand_idx);
-
-  cand.leg_p4[0] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, ParticleDB::GetMass(GenPart_pdgId[cand.leg_index[0]], GenPart_mass[cand.leg_index[0]]), cand.leg_index[0]);
-  cand.leg_p4[1] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, ParticleDB::GetMass(GenPart_pdgId[cand.leg_index[1]], GenPart_mass[cand.leg_index[1]]), cand.leg_index[1]);
-
-  int match_1 = FindMatching(cand.leg_p4[0], GenJet_p4, 0.4);
-  int match_2 = FindMatching(cand.leg_p4[1], GenJet_p4, 0.4);
-
-  cand.leg_vis_p4[0] = match_1 == -1 ? LorentzVectorM{} : GenJet_p4[match_1];
-  cand.leg_vis_p4[1] = match_2 == -1 ? LorentzVectorM{} : GenJet_p4[match_2];
+  for(size_t leg_id = 0; leg_id < cand.leg_p4.size(); ++leg_id) {
+    cand.leg_kind[leg_id] = Vleg::Jet;
+    const int leg_idx = cand.leg_index[leg_id];
+    const double mass = ParticleDB::GetMass(GenPart_pdgId[leg_idx], GenPart_mass[leg_idx]);
+    cand.leg_p4[leg_id] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, mass, leg_idx);
+    const int match = FindMatching(cand.leg_p4[leg_id], GenJet_p4, 0.4);
+    cand.leg_vis_p4[leg_id] = match == -1 ? LorentzVectorM{} : GenJet_p4[match];
+  }
 }
 
 void AssignLeptonicVCand(VCand& cand, int cand_idx, std::vector<reco_tau::gen_truth::GenLepton> const& gen_leptons,
@@ -40,69 +33,21 @@ void AssignLeptonicVCand(VCand& cand, int cand_idx, std::vector<reco_tau::gen_tr
   RVecI daughters = GenPart_daughters.at(cand_idx);
   std::sort(daughters.begin(), daughters.end(), [&GenPart_pdgId](int x, int y){ return std::abs(GenPart_pdgId[x]) < std::abs(GenPart_pdgId[y]); });
 
-  bool invisible = PdG::isNeutrino(GenPart_pdgId[daughters[0]]) && PdG::isNeutrino(GenPart_pdgId[daughters[1]]);
-  bool lep_pair = PdG::isLepton(GenPart_pdgId[daughters[0]]) && PdG::isLepton(GenPart_pdgId[daughters[1]]);
-
-  if (invisible)
-  {
-    cand.leg_index[0] = daughters[0];
-    cand.leg_kind[0] = Vleg::Nu;
-    cand.leg_p4[0] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, daughters[0]);
-    cand.leg_vis_p4[0] = LorentzVectorM(0, 0, 0, 0);
-
-    cand.leg_index[1] = daughters[1];
-    cand.leg_kind[1] = Vleg::Nu;
-    cand.leg_p4[1] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass,  daughters[1]);
-    cand.leg_vis_p4[1] = LorentzVectorM(0, 0, 0, 0);
-
-    return;
-  }
-
-  if (lep_pair)
-  {
-    reco_tau::gen_truth::GenLepton const* l1_ptr = findLeptonByIndex(gen_leptons, daughters[0]);
-    if (!l1_ptr)
-    {
-      throw analysis::exception("Could not find first gen lepton by index");
+  for(size_t lep_id = 0; lep_id < cand.leg_p4.size(); ++lep_id) {
+    cand.leg_index[lep_id] = daughters[lep_id];
+    if(PdG::isNeutrino(GenPart_pdgId[daughters[lep_id]])) {
+      cand.leg_kind[lep_id] = Vleg::Nu;
+      cand.leg_p4[lep_id] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, daughters[lep_id]);
+      cand.leg_vis_p4[lep_id] = LorentzVectorM(0, 0, 0, 0);
+    } else {
+      reco_tau::gen_truth::GenLepton const* lep_ptr = findLeptonByIndex(gen_leptons, daughters[lep_id]);
+      if (!lep_ptr)
+        throw analysis::exception("Could not find gen lepton by index");
+      cand.leg_kind[lep_id] = static_cast<Vleg>(lep_ptr->kind());
+      cand.leg_p4[lep_id] = lep_ptr->lastCopy().p4;
+      cand.leg_vis_p4[lep_id] = LorentzVectorM(lep_ptr->visibleP4());
     }
-
-    cand.leg_index[0] = daughters[0];
-    cand.leg_kind[0] = static_cast<Vleg>(l1_ptr->kind());
-    cand.leg_p4[0] = l1_ptr->lastCopy().p4;
-    cand.leg_vis_p4[0] = LorentzVectorM(l1_ptr->visibleP4());
-
-    reco_tau::gen_truth::GenLepton const* l2_ptr = findLeptonByIndex(gen_leptons, daughters[1]);
-    if (!l2_ptr)
-    {
-      throw analysis::exception("Could not find second gen lepton by index");
-    }
-
-    cand.leg_index[1] = daughters[1];
-    cand.leg_kind[1] = static_cast<Vleg>(l2_ptr->kind());
-    cand.leg_p4[1] = l2_ptr->lastCopy().p4;
-    cand.leg_vis_p4[1] = LorentzVectorM(l2_ptr->visibleP4());
-
-    return;
   }
-
-  int nu_idx = daughters.at(1);
-  int lep_idx = daughters.at(0);
-
-  reco_tau::gen_truth::GenLepton const* lep_ptr = findLeptonByIndex(gen_leptons, lep_idx);
-  if (!lep_ptr)
-  {
-    throw analysis::exception("Could not find gen lepton by index");
-  }
-
-  cand.leg_index[1] = nu_idx;
-  cand.leg_kind[1] = Vleg::Nu;
-  cand.leg_p4[1] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, nu_idx);
-  cand.leg_vis_p4[1] = LorentzVectorM(0, 0, 0, 0);
-
-  cand.leg_index[0] = lep_idx;
-  cand.leg_kind[0] = static_cast<Vleg>(lep_ptr->kind());
-  cand.leg_p4[0] = lep_ptr->lastCopy().p4;
-  cand.leg_vis_p4[0] = LorentzVectorM(lep_ptr->visibleP4());
 }
 
 
@@ -125,7 +70,7 @@ VCand GetGenVCand(int evt, int v_idx, std::vector<reco_tau::gen_truth::GenLepton
                         GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, GenJet_p4);
   }
 
-  bool decays_to_leptons = std::all_of(daughters.begin(), daughters.end(), [&](int idx){ return PdG::isNeutrino(GenPart_pdgId[idx]) || PdG::isLepton(GenPart_pdgId[idx]); });
+  bool decays_to_leptons = std::all_of(daughters.begin(), daughters.end(), [&](int idx){ return PdG::isNeutrino(GenPart_pdgId[idx]) || PdG::isChargedLepton(GenPart_pdgId[idx]); });
   if (decays_to_leptons)
   {
     AssignLeptonicVCand(res, v_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
@@ -181,46 +126,25 @@ HVVCand GetGenHVVCandidate(int evt, std::vector<reco_tau::gen_truth::GenLepton> 
 
     HVV_cand.cand_p4 = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, HVV_index);
 
-    RVecI V_from_H = GenPart_daughters.at(HVV_index);
-    int v1_idx = V_from_H.at(0);
-    int v2_idx = V_from_H.at(1);
-
-    v1_idx = GetLastCopy(v1_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
-    v2_idx = GetLastCopy(v2_idx, GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
-
-    RVecI daughters_v1 = GenPart_daughters.at(v1_idx);
-    bool v1_to_hadrons = std::all_of(daughters_v1.begin(), daughters_v1.end(),
-                                      [&](int idx){ return std::abs(GenPart_pdgId[idx]) <= PdG::b(); });
-    bool v1_to_leptons = std::all_of(daughters_v1.begin(), daughters_v1.end(),
-                                      [&](int idx){ return PdG::isNeutrino(GenPart_pdgId[idx]) || PdG::isLepton(GenPart_pdgId[idx]); });
-
-    RVecI daughters_v2 = GenPart_daughters.at(v2_idx);
-    bool v2_to_hadrons = std::all_of(daughters_v2.begin(), daughters_v2.end(),
-                                      [&](int idx){ return std::abs(GenPart_pdgId[idx]) <= PdG::b(); });
-    bool v2_to_leptons = std::all_of(daughters_v2.begin(), daughters_v2.end(),
-                                      [&](int idx){ return PdG::isNeutrino(GenPart_pdgId[idx]) || PdG::isLepton(GenPart_pdgId[idx]); });
-
-    bool single_lepton = (v1_to_hadrons && v2_to_leptons) || (v1_to_leptons && v2_to_hadrons);
-    bool double_lepton = v2_to_leptons && v1_to_leptons;
-
-    if (!single_lepton && !double_lepton)
+    const RVecI& V_from_H = GenPart_daughters.at(HVV_index);
+    size_t n_leptons = 0;
+    for(size_t v_id = 0; v_id < HVV_cand.legs.size(); ++v_id)
     {
-      throw analysis::exception("Encountered decay neither in single lepton nor double lepton channel");
-    }
-
-    HVV_cand.legs.at(0) = GetGenVCand(evt, v1_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
-                                      GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, GenJet_p4);
-    HVV_cand.legs.at(1) = GetGenVCand(evt, v2_idx, gen_leptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags,
-                                      GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, GenJet_p4);
-
-    if (single_lepton)
-    {
-      // let leg 0 be always W->qq and leg 1 leg be W->lv
-      if (HVV_cand.legs.at(0).leg_kind.at(0) != Vleg::Jet)
-      {
-        std::swap(HVV_cand.legs.at(0), HVV_cand.legs.at(1));
+      const int v_idx = GetLastCopy(V_from_H.at(v_id), GenPart_pdgId, GenPart_statusFlags, GenPart_daughters);
+      HVV_cand.legs.at(v_id) = GetGenVCand(evt, v_idx, gen_leptons, GenPart_pdgId, GenPart_daughters,
+                                           GenPart_statusFlags, GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass,
+                                           GenJet_p4);
+      HVV_cand.legs.at(v_id).index = v_idx;
+      for(size_t leg_id = 0; leg_id < HVV_cand.legs.at(v_id).leg_p4.size(); ++leg_id) {
+        if(HVV_cand.legs.at(v_id).leg_kind[leg_id] != Vleg::Jet) {
+          ++n_leptons;
+        }
       }
     }
+    if(n_leptons != 2 && n_leptons != 4)
+      throw analysis::exception("Encountered decay neither in single lepton nor double lepton channel");
+    if(n_leptons == 2 && HVV_cand.legs.at(0).leg_kind.at(0) != Vleg::Jet)
+      std::swap(HVV_cand.legs.at(0), HVV_cand.legs.at(1));
 
     return HVV_cand;
   }
@@ -234,57 +158,30 @@ HVVCand GetGenHVVCandidate(int evt, std::vector<reco_tau::gen_truth::GenLepton> 
   }
 }
 
+int GetGenHBBIndex(int evt, const RVecI& GenPart_pdgId,
+                   const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags);
+
 HBBCand GetGenHBBCandidate(int evt, const RVecI& GenPart_pdgId, const RVecVecI& GenPart_daughters, const RVecI& GenPart_statusFlags,
                            const RVecF& GenPart_pt, const RVecF& GenPart_eta, const RVecF& GenPart_phi, const RVecF& GenPart_mass,
+                           RVecLV const& GenJet_p4,
                            bool throw_error_if_not_found)
 {
   try
   {
-    int sz = GenPart_pdgId.size();
-    std::set<int> Hbb_indices;
-    for (int i = 0; i < sz; ++i)
-    {
-      const GenStatusFlags status(GenPart_statusFlags.at(i));
-      bool is_higgs = GenPart_pdgId[i] == PdG::Higgs();
-      if (!(is_higgs && status.isLastCopy()))
-      {
-        continue;
-      }
-      auto const& daughters = GenPart_daughters.at(i);
-      auto IsBquark = [&](int idx){ return std::abs(GenPart_pdgId[idx]) == PdG::b(); };
-      int n_b_from_H = std::count_if(daughters.begin(), daughters.end(), IsBquark);
-      if (n_b_from_H == 2)
-      {
-        Hbb_indices.insert(i);
-      }
-    }
-
-    if(Hbb_indices.empty())
-    {
-      throw analysis::exception("H->bb not found.");
-    }
-    if(Hbb_indices.size() != 1)
-    {
-      throw analysis::exception("Multiple H->bb candidates.");
-    }
-
-    int const Hbb_index = *Hbb_indices.begin();
+    int const Hbb_index = GetGenHBBIndex(evt, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags);
     HBBCand Hbb_cand;
-
     Hbb_cand.cand_p4 = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, Hbb_index);
-
-    RVecI b_from_H = GenPart_daughters.at(Hbb_index);
-    int first = GenPart_pt[b_from_H[0]] > GenPart_pt[b_from_H[1]] ? 0 : 1;
-    int second = GenPart_pt[b_from_H[0]] > GenPart_pt[b_from_H[1]] ? 1 : 0;
+    const RVecI& b_from_H = GenPart_daughters.at(Hbb_index);
+    const int first = GenPart_pt[b_from_H[0]] > GenPart_pt[b_from_H[1]] ? 0 : 1;
+    const int second = (first + 1) % 2;
     Hbb_cand.leg_index[0] = b_from_H.at(first);
     Hbb_cand.leg_index[1] = b_from_H.at(second);
-
-    Hbb_cand.leg_p4[0] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, Hbb_cand.leg_index[0]);
-    Hbb_cand.leg_p4[1] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, Hbb_cand.leg_index[1]);
-
-    Hbb_cand.leg_vis_p4[0] = LorentzVectorM{};
-    Hbb_cand.leg_vis_p4[1] = LorentzVectorM{};
-
+    for(size_t leg_id = 0; leg_id < Hbb_cand.leg_p4.size(); ++leg_id) {
+      const int leg_idx = Hbb_cand.leg_index[leg_id];
+      Hbb_cand.leg_p4[leg_id] = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, leg_idx);
+      const int match = FindMatching(Hbb_cand.leg_p4[leg_id], GenJet_p4, 0.4);
+      Hbb_cand.leg_vis_p4[leg_id] = match == -1 ? LorentzVectorM{} : GenJet_p4[match];
+    }
     return Hbb_cand;
   }
   catch (analysis::exception& e)

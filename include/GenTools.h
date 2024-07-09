@@ -91,7 +91,7 @@ struct PdG {
     return neutrinos.count(std::abs(pdg)) > 0;
   }
 
-  static bool isLepton(int pdg)
+  static bool isChargedLepton(int pdg)
   {
     static const std::set<int> leptons = { e(), mu(), tau() };
     return leptons.count(std::abs(pdg)) > 0;

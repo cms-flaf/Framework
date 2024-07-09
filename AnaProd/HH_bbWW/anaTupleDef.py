@@ -112,18 +112,17 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         dfw.DefineAndAppend(name, f"Take(Jet_{jet_obs}[Jet_sel], centralJet_idxSorted)")
 
     if isSignal:
-        # save gen H->WW
+        # save gen H->VV
         dfw.Define("H_to_VV", """GetGenHVVCandidate(event, genLeptons, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags, GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, GenJet_p4, true)""")
-        dfw.DefineAndAppend(f"genHVV_pt", f"H_to_VV.cand_p4.pt()")
-        dfw.DefineAndAppend(f"genHVV_eta", f"H_to_VV.cand_p4.eta()")
-        dfw.DefineAndAppend(f"genHVV_phi", f"H_to_VV.cand_p4.phi()")
-        dfw.DefineAndAppend(f"genHVV_mass", f"H_to_VV.cand_p4.mass()")
+        for var in PtEtaPhiM:
+            dfw.DefineAndAppend(f"genHVV_{var}", f"H_to_VV.cand_p4.{var}()")
 
         # save gen level vector bosons from H->VV
         for boson in [1, 2]:
+            name = f"genV{boson}"
+            dfw.DefineAndAppend(f"{name}_pdgId", f"GenPart_pdgId[ H_to_VV.legs[{boson - 1}].index ]")
             for var in PtEtaPhiM:
-                name = f"genV{boson}_{var}"
-                dfw.DefineAndAppend(name, f"H_to_VV.legs[{boson - 1}].cand_p4.{var}()")
+                dfw.DefineAndAppend(f"{name}_{var}", f"H_to_VV.legs[{boson - 1}].cand_p4.{var}()")
 
         # save gen level products of vector boson decays (prod - index of product (quark, leptons or neutrinos))
         for boson in [1, 2]:
@@ -132,14 +131,12 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
                 for var in PtEtaPhiM:
                     dfw.DefineAndAppend(f"{name}_{var}", f"H_to_VV.legs[{boson - 1}].leg_p4[{prod - 1}].{var}()")
                 dfw.DefineAndAppend(f"{name}_legType", f"static_cast<int>(H_to_VV.legs[{boson - 1}].leg_kind[{prod - 1}])")
-                dfw.DefineAndAppend(f"{name}_motherPdgId", f"GenPart_pdgId[ GenPart_genPartIdxMother[H_to_VV.legs.at({boson - 1}).leg_index.at({prod - 1})] ]")
+                dfw.DefineAndAppend(f"{name}_pdgId", f"GenPart_pdgId[ H_to_VV.legs.at({boson - 1}).leg_index.at({prod - 1}) ]")
 
         # save gen level H->bb
-        dfw.Define("H_to_bb", """GetGenHBBCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags, GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, true)""")
-        dfw.DefineAndAppend("genHbb_pt", "H_to_bb.cand_p4.pt()")
-        dfw.DefineAndAppend("genHbb_eta", "H_to_bb.cand_p4.eta()")
-        dfw.DefineAndAppend("genHbb_phi", "H_to_bb.cand_p4.phi()")
-        dfw.DefineAndAppend("genHbb_mass", "H_to_bb.cand_p4.mass()")
+        dfw.Define("H_to_bb", """GetGenHBBCandidate(event, GenPart_pdgId, GenPart_daughters, GenPart_statusFlags, GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, GenJet_p4, true)""")
+        for var in PtEtaPhiM:
+            dfw.DefineAndAppend(f"genHbb_{var}", f"H_to_bb.cand_p4.{var}()")
 
         #save gen level b quarks
         for b_quark in [1, 2]:

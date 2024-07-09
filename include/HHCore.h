@@ -9,6 +9,7 @@ enum class Vleg { PromptElectron = 1, PromptMuon = 2, TauDecayedToElectron = 3, 
 struct VCand
 {
   static constexpr size_t n_legs = 2;
+  int index;
   std::array<Vleg, n_legs> leg_kind;
   std::array<int, n_legs> leg_index;
   std::array<LorentzVectorM, n_legs> leg_p4; // p4 of quark from W->qq or lep p4

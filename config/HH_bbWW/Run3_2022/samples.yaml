@@ -132,133 +132,133 @@ GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-5000:
   generator: madgraph
 ############## Signals(SL,S=2)##############
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-250:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 250
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-260:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 260
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-270:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 270
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-280:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 280
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-300:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 300
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-350:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 350
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-450:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 450
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-550:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 550
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-600:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 600
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-650:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 650
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-700:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 700
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-800:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 800
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-1000:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 1000
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-1200:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 1200
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-1400:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 1400
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-1600:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 1600
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-1800:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 1800
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-2000:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 2000
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-2500:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 2500
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-3000:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 3000
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-4000:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 4000
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-5000:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 5000
   spin: 2
   crossSection: 1pb
@@ -398,133 +398,133 @@ GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-5000:
   generator: madgraph
 ############## Signals(DL,S=2)##############
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-250:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 250
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-260:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 260
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-270:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 270
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-280:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 280
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-300:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 300
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-350:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 350
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-450:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 450
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-550:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 550
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-600:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 600
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-650:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 650
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-700:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 700
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-800:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 800
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-1000:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 1000
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-1200:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 1200
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-1400:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 1400
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-1600:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 1600
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-1800:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 1800
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-2000:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 2000
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-2500:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 2500
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-3000:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 3000
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-4000:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 4000
   spin: 2
   crossSection: 1pb
   generator: madgraph
 GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-5000:
-  sampleType: GluGluToGraviton
+  sampleType: GluGlutoBulkGraviton
   mass: 5000
   spin: 2
   crossSection: 1pb
@@ -537,7 +537,7 @@ GluGlutoHHto2B2V_kl-1p00_kt-1p00_c2-0p00:
   sampleType: HHnonRes
   generator: powheg
   #crossSection: To_be_added
-GluGlutoHHto2B2V_kl-1p00_kt-1p00_c2-0p00:
+GluGlutoHHto2B2Vto2L2Nu_kl-1p00_kt-1p00_c2-0p00:
   sampleType: HHnonRes
   generator: powheg
   #crossSection: To_be_added

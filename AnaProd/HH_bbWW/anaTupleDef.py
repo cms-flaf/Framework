@@ -138,10 +138,21 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         for var in PtEtaPhiM:
             dfw.DefineAndAppend(f"genHbb_{var}", f"H_to_bb.cand_p4.{var}()")
 
-        #save gen level b quarks
+        # save gen level b quarks
         for b_quark in [1, 2]:
             for var in PtEtaPhiM:
                 name = f"genb{b_quark}_{var}"
                 dfw.DefineAndAppend(name, f"H_to_bb.leg_p4[{b_quark - 1}].{var}()")
+    elif not isData:
+        # save gen leptons matched to reco leptons
+        for lep in [1, 2]:
+            name = f"matchedGenLep{lep}"
+            dfw.Define(f"{name}_idx", f"MatchGenLepton(lep{lep}_p4, genLeptons, 0.4)")
+            dfw.Define(f"{name}_p4", f"return {name}_idx == -1 ? LorentzVectorM() : GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, idx)")
+            dfw.Define(f"{name}_mother_p4", f"GetP4(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, GenPart_genPartIdxMother[{name}_idx])")
 
-
+            dfw.DefineAndAppend(f"{name}_motherPdgId", f"GenPart_pdgId[ GenPart_genPartIdxMother[{name}_idx] ]")
+            dfw.DefineAndAppend(f"{name}_pdgId", f"GenPart_pdgId[{name}_idx]")
+            for var in PtEtaPhiM:
+                dfw.DefineAndAppend(f"{name}_mother_{var}", f"{name}_mother_p4.{var}()")
+                dfw.DefineAndAppend(f"{name}_{var}", f"{name}_p4.{var}()")

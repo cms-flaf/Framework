@@ -391,6 +391,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#merge-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Merge data
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -492,6 +501,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#merge-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Merge data
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -537,20 +555,28 @@
 </li>
 <li><code>--workflow</code> can be <code>htcondor</code> or <code>local</code>. It is recommended to develop and test locally and then switch to <code>htcondor</code> for production. In examples below <code>--workflow local</code> is used for illustration purposes.</li>
 <li>when running on <code>htcondor</code> it is recommended to add <code>--transfer-logs</code> to the command to transfer logs to local.</li>
-<li><code>--customisations</code> argument is used to pass custom parameters to the task in form param1=value1,param2=value2,...</li>
+<li><code>--customisations</code> argument is used to pass custom parameters to the task in form param1=value1,param2=value2,...
+    IMPORTANT for HHbbTauTau analysis: if running using deepTau 2p5 add <code>--customisations deepTauVersion=2p5</code></li>
 <li>if you want to run only on few files, you can specify list of branches to run using <code>--branches</code> argument. E.g. <code>--branches 2,7-10,17</code>.</li>
 <li>to get status, use <code>--print-stauts N,K</code> where N is depth for task dependencies, K is depths for file dependencies. E.g. <code>--print-status 3,1</code>.</li>
 <li>to remove task output use <code>--remove-output N,a</code>, where N is depth for task dependencies. E.g. <code>--remove-output 0,a</code>.</li>
+<li>it is highly recommended to limitate the maximum number of parallel jobs running adding <code>--parallel-jobs M</code> where M is the number of the parallel jobs (e.g. M=100)</li>
 </ul>
 <h2 id="create-input-file-list">Create input file list<a class="headerlink" href="#create-input-file-list" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>law<span class="w"> </span>run<span class="w"> </span>InputFileTask<span class="w">  </span>--period<span class="w"> </span><span class="si">${</span><span class="nv">ERA</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span>dev
 </code></pre></div>
 <h2 id="create-anacache">Create anaCache<a class="headerlink" href="#create-anacache" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>law<span class="w"> </span>run<span class="w"> </span>AnaCacheTask<span class="w">  </span>--period<span class="w"> </span><span class="si">${</span><span class="nv">ERA</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span><span class="nb">local</span><span class="w"> </span>--version<span class="w"> </span>dev
+<div class="highlight"><pre><span></span><code>law<span class="w"> </span>run<span class="w"> </span>AnaCacheTask<span class="w">  </span>--period<span class="w"> </span><span class="si">${</span><span class="nv">ERA</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span>dev
 </code></pre></div>
 <h2 id="create-anatuple">Create anaTuple<a class="headerlink" href="#create-anatuple" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>law<span class="w"> </span>run<span class="w"> </span>AnaTupleTask<span class="w"> </span>--period<span class="w"> </span><span class="si">${</span><span class="nv">ERA</span><span class="si">}</span><span class="w"> </span>--workflow<span class="w"> </span><span class="nb">local</span><span class="w"> </span>--version<span class="w"> </span>dev
+<div class="highlight"><pre><span></span><code>law<span class="w"> </span>run<span class="w"> </span>AnaTupleTask<span class="w"> </span>--period<span class="w"> </span><span class="si">${</span><span class="nv">ERA</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span>dev
 </code></pre></div>
+<h2 id="merge-data">Merge data<a class="headerlink" href="#merge-data" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>law<span class="w"> </span>run<span class="w"> </span>DataMergeTask<span class="w"> </span>--period<span class="w"> </span><span class="si">${</span><span class="nv">ERA</span><span class="si">}</span><span class="w"> </span>--version<span class="w"> </span>dev
+</code></pre></div>
+<ul>
+<li>note: It's very important to first run <code>InputFileTask</code> then the other tasks dependencies are automatically fixed (e.g. if running <code>AnaTupleTask</code> without <code>AnaCacheTask</code>, it will first run <code>AnaCacheTask</code> then <code>AnaTupleTask</code>). If you do not run <code>InputFileTask</code>, running other tasks will raise error.</li>
+</ul>
 
 
 

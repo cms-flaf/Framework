@@ -1,6 +1,12 @@
 
 GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-450:
   sampleType: GluGluToRadion
-  mass: 260
+  mass: 450
   spin: 0
   crossSection: 1pb
+
+# GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-350:
+#   sampleType: GluGluToRadion
+#   mass: 350
+#   spin: 0
+#   crossSection: 1pb

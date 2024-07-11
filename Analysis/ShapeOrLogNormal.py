@@ -135,6 +135,7 @@ if __name__ == "__main__":
     parser.add_argument('--inFileName', required=True)
     parser.add_argument('--mass', required=False, type=int, default=1250)
     parser.add_argument('--sampleConfig', required=True, type=str)
+    parser.add_argument('--bckgConfig', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--wantBTag', required=False, type=bool, default=False)
     parser.add_argument('--suffix', required=False, type=str, default='')
@@ -149,8 +150,11 @@ if __name__ == "__main__":
 
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
+
+    with open(args.bckgConfig, 'r') as f:
+        bckg_cfg_dict = yaml.safe_load(f)
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
-    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict,args.histDir,True,True,False)
+    all_samples_list,all_samples_types = GetSamplesStuff(bckg_cfg_dict.keys(),sample_cfg_dict,args.histDir,True,True,False)
     all_histlist = {}
     histNamesDict = {}
     #all_vars = list(hist_cfg_dict.keys())

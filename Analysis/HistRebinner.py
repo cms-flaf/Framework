@@ -70,6 +70,7 @@ if __name__ == "__main__":
     parser.add_argument('--inFile', required=True)
     parser.add_argument('--outFile', required=True)
     parser.add_argument('--sampleConfig', required=True, type=str)
+    parser.add_argument('--bckgConfig', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--histConfig', required=True, type=str)
     parser.add_argument('--suffix', required=False, type=str, default='')
@@ -86,11 +87,15 @@ if __name__ == "__main__":
 
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
+
+    with open(args.bckgConfig, 'r') as f:
+        bckg_cfg_dict = yaml.safe_load(f)
+
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
     wantSignals=False
     wantAllMasses=False
     wantOneMass=False
-    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict, wantSignals, wantAllMasses, wantOneMass)
+    all_samples_list,all_samples_types = GetSamplesStuff(bckg_cfg_dict.keys(),sample_cfg_dict, wantSignals, wantAllMasses, wantOneMass)
     unc_cfg_dict = {}
     with open(args.uncConfig, 'r') as f:
         unc_cfg_dict = yaml.safe_load(f)

@@ -99,7 +99,8 @@ EOF
   run_cmd cd "$cmssw_base/src"
   run_cmd eval `scramv1 runtime -sh`
   if ! [ -d "CombineHarvester" ]; then
-    run_cmd bash <(curl -s https://raw.githubusercontent.com/cms-analysis/CombineHarvester/main/CombineTools/scripts/sparse-checkout-ssh.sh)
+    #run_cmd bash <(curl -s https://raw.githubusercontent.com/cms-analysis/CombineHarvester/main/CombineTools/scripts/sparse-checkout-ssh.sh)
+    run_cmd bash <(https://raw.githubusercontent.com/nucleosynthesis/work-tools/master/sparse-checkout-SL-ssh.sh)
     run_cmd scram b -j8
   fi
   run_cmd mkdir -p "$this_dir/inference/data"
@@ -170,8 +171,8 @@ action() {
   local os_prefix=$(get_os_prefix $os_version)
   local node_os=$os_prefix$os_version
 
-  # local default_cmssw_ver=CMSSW_13_0_15
-  local default_cmssw_ver=CMSSW_14_0_8
+  local default_cmssw_ver=CMSSW_13_0_15
+  #local default_cmssw_ver=CMSSW_14_0_8
   local target_os_version=9
   local target_os_prefix=$(get_os_prefix $target_os_version)
   local target_os_gt_prefix=$(get_os_prefix $target_os_version 1)
@@ -180,26 +181,23 @@ action() {
   export DEFAULT_CMSSW_ARCH="${target_os_gt_prefix}${target_os_version}_amd64_gcc12"
   run_cmd install_cmssw $node_os $target_os $DEFAULT_CMSSW_ARCH $default_cmssw_ver
 
-  local cmb_cmssw_ver=CMSSW_11_3_4
-  local cmb_scram_arch="slc7_amd64_gcc900"
-  local cmb_ver="v9.2.1"
-  local cmb_os_version=7
+  local cmb_cmssw_ver=CMSSW_14_1_0_pre4
+  local cmb_scram_arch="el9_amd64_gcc12"
+  local cmb_ver="v10.0.1"
+  local cmb_os_version=9
   local cmb_os_prefix=$(get_os_prefix $cmb_os_version)
   local cmb_os=$cmb_os_prefix$cmb_os_version
   export CMB_CMSSW_BASE="$this_dir/inference/data/software/combine_${cmb_ver}_${cmb_scram_arch}/${cmb_cmssw_ver}"
   run_cmd install_inference $node_os $cmb_os $cmb_scram_arch $cmb_cmssw_ver $cmb_ver $CMB_CMSSW_BASE
-
   if [ ! -z $ZSH_VERSION ]; then
     autoload bashcompinit
     bashcompinit
   fi
-
   source /afs/cern.ch/work/k/kandroso/public/flaf_env/bin/activate
   source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.30.06/x86_64-almalinux9.3-gcc114-opt/bin/thisroot.sh
   run_cmd source /afs/cern.ch/user/m/mrieger/public/law_sw/setup.sh
   source "$( law completion )"
   source /cvmfs/cms.cern.ch/rucio/setup-py3.sh &> /dev/null
-
   alias cmsEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY CENTRAL_STORAGE=$CENTRAL_STORAGE ANALYSIS_BIG_DATA_PATH=$ANALYSIS_BIG_DATA_PATH DEFAULT_CMSSW_BASE=$DEFAULT_CMSSW_BASE DEFAULT_CMSSW_ARCH=$DEFAULT_CMSSW_ARCH $ANALYSIS_PATH/RunKit/cmsEnv.sh"
   alias cmbEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY CENTRAL_STORAGE=$CENTRAL_STORAGE ANALYSIS_BIG_DATA_PATH=$ANALYSIS_BIG_DATA_PATH /cvmfs/cms.cern.ch/common/cmssw-cc7 -- $ANALYSIS_PATH/cmb_env.sh"
 }

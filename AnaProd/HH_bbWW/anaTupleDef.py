@@ -130,6 +130,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
                 name = f"genV{boson}prod{prod}"
                 for var in PtEtaPhiM:
                     dfw.DefineAndAppend(f"{name}_{var}", f"H_to_VV.legs[{boson - 1}].leg_p4[{prod - 1}].{var}()")
+                    dfw.DefineAndAppend(f"{name}_vis_{var}", f"H_to_VV.legs[{boson - 1}].leg_vis_p4[{prod - 1}].{var}()")
                 dfw.DefineAndAppend(f"{name}_legType", f"static_cast<int>(H_to_VV.legs[{boson - 1}].leg_kind[{prod - 1}])")
                 dfw.DefineAndAppend(f"{name}_pdgId", f"GenPart_pdgId[ H_to_VV.legs.at({boson - 1}).leg_index.at({prod - 1}) ]")
 
@@ -140,13 +141,15 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
 
         # save gen level b quarks
         for b_quark in [1, 2]:
+            name = f"genb{b_quark}"
             for var in PtEtaPhiM:
                 name = f"genb{b_quark}_{var}"
-                dfw.DefineAndAppend(name, f"H_to_bb.leg_p4[{b_quark - 1}].{var}()")
+                dfw.DefineAndAppend(f"{name}_{var}", f"H_to_bb.leg_p4[{b_quark - 1}].{var}()")
+                dfw.DefineAndAppend(f"{name}_vis_{var}", f"H_to_bb.leg_vis_p4[{b_quark - 1}].{var}()")
     elif not isData:
         # save gen leptons matched to reco leptons
         for lep in [1, 2]:
-            name = f"matchedGenLep{lep}"
+            name = f"lep{lep}_genLep"
             # MatchGenLepton returns index of in genLetpons collection if match exists
             dfw.Define(f"{name}_idx", f"MatchGenLepton(lep{lep}_p4, genLeptons, 0.4)")
             dfw.Define(f"{name}_p4", f"return {name}_idx == -1 ? LorentzVectorM() : LorentzVectorM(genLeptons.at({name}_idx).visibleP4());")

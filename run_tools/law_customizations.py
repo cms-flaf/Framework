@@ -64,6 +64,10 @@ class Task(law.Task):
         return self.setup.get_fs('anaTuple')
 
     @property
+    def fs_anaCacheTuple(self):
+        return self.setup.get_fs('anaCacheTuple')
+
+    @property
     def fs_histograms(self):
         return self.setup.get_fs('histograms')
 

@@ -1,17 +1,11 @@
 import law
-import luigi
 import os
-import shutil
-import time
 import yaml
 import contextlib
-import ROOT
 
-from RunKit.run_tools import ps_call, natural_sort
-from RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
+from RunKit.run_tools import ps_call
 from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param
-from Common.Utilities import SerializeObjectToString
-from AnaProd.tasks import AnaTupleTask, DataMergeTask
+from AnaProd.tasks import AnaTupleTask, DataMergeTask, AnaCacheTupleTask, DataCacheMergeTask
 
 unc_2018 = ['JES_BBEC1_2018', 'JES_Absolute_2018', 'JES_EC2_2018', 'JES_HF_2018', 'JES_RelativeSample_2018' ]
 unc_2017 = ['JES_BBEC1_2017', 'JES_Absolute_2017', 'JES_EC2_2017', 'JES_HF_2017', 'JES_RelativeSample_2017' ]
@@ -65,20 +59,46 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
     def workflow_requires(self):
-        anaTupleReq = {}
-        dataMergeReq = {}
+        need_data = False
+        need_data_cache = False
+        branch_set = set()
+        branch_set_cache = set()
         for idx, (sample, br, var, need_cache) in self.branch_map.items():
             if sample == 'data':
-                dataMergeReq[idx] = DataMergeTask.req(self, branch=0, branches=())
+                need_data = True
+                if need_cache:
+                    need_data_cache = True
             else:
-                anaTupleReq[idx] = AnaTupleTask.req(self, branch=br, branches=())
-        return { "anaTuple": anaTupleReq, "dataMergeTuple": dataMergeReq }
+                branch_set.add(br)
+                if need_cache:
+                    branch_set_cache.add(br)
+        reqs = {}
+        if len(branch_set) > 0:
+            reqs['anaTuple'] = AnaTupleTask.req(self, branches=tuple(branch_set))
+        if len(branch_set_cache) > 0:
+            reqs['anaCacheTuple'] = AnaCacheTupleTask.req(self, branches=tuple(branch_set_cache))
+        if need_data:
+            reqs['dataMergeTuple'] = DataMergeTask.req(self, branches=())
+        if need_data_cache:
+            reqs['dataCacheMergeTuple'] = DataCacheMergeTask.req(self, branches=())
+        return reqs
 
     def requires(self):
         sample_name, prod_br, var, need_cache = self.branch_data
+        deps = []
         if sample_name =='data':
-            return [ DataMergeTask.req(self, max_runtime=DataMergeTask.max_runtime._default, branch=prod_br, branches=())]
-        return [ AnaTupleTask.req(self, branch=prod_br, max_runtime=AnaTupleTask.max_runtime._default, branches=())]
+            deps.append(DataMergeTask.req(self, max_runtime=DataMergeTask.max_runtime._default, branch=prod_br,
+                                          branches=(prod_br,)))
+            if need_cache:
+                deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default,
+                                                   branch=prod_br, branches=(prod_br,)))
+        else:
+            deps.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br,
+                                         branches=(prod_br,)))
+            if need_cache:
+                deps.append(AnaCacheTupleTask.req(self, max_runtime=AnaCacheTupleTask.max_runtime._default,
+                                                  branch=prod_br, branches=(prod_br,)))
+        return deps
 
     def create_branch_map(self):
         n = 0
@@ -97,26 +117,19 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return branches
 
     def output(self):
-        if len(self.branch_data) == 0:
-            return self.local_target('dummy.txt')
-
         sample_name, prod_br, var, need_cache = self.branch_data
-        input_file = self.input()[0].path
         outFileName = os.path.basename(self.input()[0].path)
-        output_path = os.path.join(self.period, sample_name, self.version,'tmp', var, outFileName)
+        output_path = os.path.join(self.version, self.period, 'prod', var, f'{sample_name}_{outFileName}')
         return self.remote_target(output_path,  fs=self.fs_histograms)
 
     def run(self):
         sample_name, prod_br, var, need_cache = self.branch_data
-        if len(self.input()) > 1:
-            raise RuntimeError(f"multple input files!! {' '.join(f.path for f in self.input())}")
         input_file = self.input()[0]
-        inputFileName = os.path.basename(self.input()[0].path)
         print(f'input file is {input_file.path}')
         global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         sample_config = os.path.join(self.ana_path(), 'config',self.period, f'samples.yaml')
-        anaCacheTuple_path = os.path.join('anaCacheTuple', self.period, sample_name, self.version, inputFileName)
+
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
         print(f'output file is {self.output().path}')
         with input_file.localize("r") as local_input, self.output().localize("w") as local_output:
@@ -133,7 +146,8 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 print("deepTau2p5 in use")
                 HistProducerFile_cmd.extend([ '--deepTauVersion', 'v2p5'])
             if need_cache:
-                with self.remote_target(anaCache_path, fs=self.fs_anaCache).localize("r") as local_anacache:
+                anaCache_file = self.input()[1]
+                with anaCache_file.localize("r") as local_anacache:
                     HistProducerFile_cmd.extend(['--cacheFile', local_anacache.path])
                     ps_call(HistProducerFile_cmd, verbose=1)
             else:
@@ -144,20 +158,19 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
     def workflow_requires(self):
-        workflow_deps = {}
+        branch_set = set()
         for br_idx, (sample_name, dep_br_list, var) in self.branch_map.items():
-            workflow_deps[br_idx] = [
-                HistProducerFileTask.req(self, branch=dep_br, branches=()) for dep_br in dep_br_list
-            ]
-        return workflow_deps
+            branch_set.update(dep_br_list)
+        branches = tuple(branch_set)
+        return { "HistProducerFileTask": HistProducerFileTask.req(self, branches=branches) }
 
     def requires(self):
         sample_name, dep_br_list, var = self.branch_data
-        deps = []
-        for dep_br in dep_br_list:
-            deps.append(HistProducerFileTask.req(self, max_runtime=HistProducerFileTask.max_runtime._default,
-                                                 branch=dep_br, branches=()))
-        return deps
+        return [
+            HistProducerFileTask.req(self, max_runtime=HistProducerFileTask.max_runtime._default,
+                                                 branch=dep_br, branches=(dep_br,))
+            for dep_br in dep_br_list
+        ]
 
     def create_branch_map(self):
         branches = {}
@@ -180,9 +193,7 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         sample_name, idx_list, var  = self.branch_data
-        local_files_target = []
-        outFileName_histProdSample = f'{var}.root'
-        output_path = os.path.join(self.period, sample_name, self.version, var, outFileName_histProdSample)
+        output_path = os.path.join(self.version, self.period, 'split', var, f'{sample_name}.root')
         return self.remote_target(output_path,  fs=self.fs_histograms)
 
     def run(self):
@@ -247,7 +258,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         if len(self.branch_data) == 0:
             return self.local_target('dummy.txt')
         uncName, var, branches_idx = self.branch_data
-        outDir_MergeHists = os.path.join(self.period, 'all_histograms', self.version, var)
+        outDir_MergeHists = os.path.join(self.version, self.period, 'all_histograms',  var)
         outFileName_MergeHists = f'all_histograms_{var}_{uncName}.root'
         output_path = os.path.join(outDir_MergeHists, outFileName_MergeHists)
         return self.remote_target(output_path,  fs=self.fs_histograms)
@@ -300,7 +311,7 @@ class HaddMergedTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         var = self.branch_data
-        output_path = os.path.join(self.period, 'all_histograms', self.version, var, f'all_histograms_{var}_HAdded.root')
+        output_path = os.path.join(self.version, self.period, 'merged', f'{var}.root')
         return self.remote_target(output_path, fs=self.fs_histograms)
 
 

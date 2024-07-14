@@ -694,7 +694,7 @@ WJetsToLNu:
   generator: madgraph
   isReference: True
   crossSection: WJetsToLNu_NNLO
-  #crossSectionStitch: WJetsToLNu_LO
+  crossSectionStitch: WJetsToLNu_LO
 
 W1JetsToLNu:
   sampleType: W
@@ -847,11 +847,11 @@ ZHToTauTau_M125:
 ZH_Hbb_Zll:
   sampleType: VH
   generator: powheg
-  crossSection: ZH_HToBB_ZToLL
+  crossSection: ZH_Hbb_Zll
 ZH_Hbb_Zqq:
   sampleType: VH
   generator: powheg
-  crossSection: ZH_HToBB_ZToQQ
+  crossSection: ZH_Hbb_Zqq
 HWplusJ_HToWW_M125:
   sampleType: VH
   generator: powheg

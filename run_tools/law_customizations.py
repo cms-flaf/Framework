@@ -117,6 +117,8 @@ class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
                                         description="maximum runtime, default unit is hours")
     n_cpus = luigi.IntParameter(default=1, description="number of cpus")
     poll_interval = copy_param(law.htcondor.HTCondorWorkflow.poll_interval, 5)
+    transfer_logs = luigi.BoolParameter(default=True, significant=False,
+                                        description="transfer job logs to the output directory")
 
     def htcondor_check_job_completeness(self):
         return False

@@ -7,7 +7,6 @@ import yaml
 import contextlib
 import ROOT
 
-
 from RunKit.run_tools import ps_call, natural_sort
 from RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
 from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param
@@ -25,41 +24,6 @@ uncs_to_exclude = {
     'Run2_2016': unc_2017+ unc_2018 + unc_2016preVFP,
     'Run2_2016_HIPM':unc_2017+ unc_2018 + unc_2016postVFP,
     }
-vars_to_plot = None
-def load_vars_to_plot(hists):
-    global vars_to_plot
-    #### Kinematics #####
-    vars_to_plot = ["kinFit_m"]
-    #vars_to_plot += ["tau1_pt", "tau1_eta","tau2_pt", "tau2_eta"]
-    #vars_to_plot += ["b1_pt", "b1_eta","b2_pt","b2_eta"]
-    #vars_to_plot += ["b1_phi", "b1_mass","b2_phi","b2_mass"]
-    #vars_to_plot += ["tau1_phi", "tau1_mass","tau2_phi","tau2_mass"]
-    #vars_to_plot += ["tau1_charge","tau1_iso","tau2_charge","tau2_iso"]
-
-
-    #### Global Obs #####
-    #vars_to_plot += ["tautau_m_vis", "bb_m_vis", "bbtautau_mass", "dR_tautau", "nBJets"]
-    #vars_to_plot += ["met_pt", "met_phi"]
-
-    #### Vars ANACACHE ####
-    # vars_to_plot = ["kinFit_m","kinFit_convergence", "kinFit_result_probability", "kinFit_chi2"]
-    # vars_to_plot += ["SVfit_valid", "SVfit_pt", "SVfit_eta", "SVfit_phi", "SVfit_m", "SVfit_mt", "MT2"]
-    # vars_to_plot += ["SVfit_pt_error",  "SVfit_eta_error",  "SVfit_phi_error", "SVfit_m_error", "SVfit_mt_error"]
-
-    #### Taggers #####
-    #vars_to_plot += ["tau1_idDeepTau2017v2p1VSe", "tau1_idDeepTau2017v2p1VSmu", "tau1_idDeepTau2017v2p1VSjet", "tau1_idDeepTau2018v2p5VSe", "tau1_idDeepTau2018v2p5VSmu", "tau1_idDeepTau2018v2p5VSjet"]
-    #vars_to_plot += ["tau2_idDeepTau2017v2p1VSe", "tau2_idDeepTau2017v2p1VSmu", "tau2_idDeepTau2017v2p1VSjet", "tau2_idDeepTau2018v2p5VSe", "tau2_idDeepTau2018v2p5VSmu", "tau2_idDeepTau2018v2p5VSjet"]
-    #vars_to_plot += ["b1_btagDeepFlavB", "b1_btagDeepFlavCvB", "b1_btagDeepFlavCvL", "b1_particleNetAK4_B", "b1_particleNetAK4_CvsB", "b1_particleNetAK4_CvsL", "b1_HHbtag"]#, "b1_hadronFlavour"]
-    #vars_to_plot += ["b2_btagDeepFlavB", "b2_btagDeepFlavCvB", "b2_btagDeepFlavCvL", "b2_particleNetAK4_B", "b2_particleNetAK4_CvsB", "b2_particleNetAK4_CvsL", "b2_HHbtag"]#, "b2_hadronFlavour"]
-
-    return vars_to_plot
-
-hists = None
-def load_hist_config(hist_config):
-    global hists
-    with open(hist_config, 'r') as f:
-        hists = yaml.safe_load(f)
-    return hists
 
 unc_cfg_dict = None
 def load_unc_config(unc_cfg):
@@ -77,189 +41,152 @@ def getYear(period):
     }
     return year_dict[period]
 
+def parseVarEntry(var_entry):
+    if type(var_entry) == str:
+        var_name = var_entry
+        need_cache = False
+    else:
+        var_name = var_entry['name']
+        need_cache = var_entry.get('need_cache', False)
+    return var_name, need_cache
 
-def GetSamples(samples, backgrounds, wantExt=True, signals=['GluGluToRadion','GluGluToBulkGraviton']):
+def GetSamples(samples, backgrounds, signals=['GluGluToRadion','GluGluToBulkGraviton']):
     global samples_to_consider
     samples_to_consider = ['data']
 
     for sample_name in samples.keys():
-        if sample_name == 'GLOBAL': continue
         sample_type = samples[sample_name]['sampleType']
-        if sample_type in signals:
+        if sample_type in signals or sample_name in backgrounds:
             samples_to_consider.append(sample_name)
-            continue
-        if sample_type not in signals and sample_name not in backgrounds.keys(): continue
-        #print(sample_name)
-        if 'hasExt1' in backgrounds[sample_name].keys() and backgrounds[sample_name]['hasExt1']==True and wantExt == True:
-            samples_to_consider.append("{sample_name}_ext1")
-        samples_to_consider.append(sample_name)
     return samples_to_consider
 
-backgrounds = None
-def load_background_samples():
-    global backgrounds
-    background_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'HH_bbtautau','background_samples.yaml')
-    with open(background_config,'r') as f:
-        backgrounds= yaml.safe_load(f)
-    return backgrounds
-
-# **************** 1D HISTOGRAMS *******************
 class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
-    hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
-    hists = load_hist_config(hist_config)
-    vars_to_plot = load_vars_to_plot(hists)
-    backgrounds = load_background_samples()
-
 
     def workflow_requires(self):
-        branch_map = self.create_branch_map()
-        workflow_dict = {}
-        workflow_dict["anaTuple"] = {
-            idx: AnaTupleTask.req(self, branch=br, branches=())
-            for idx, (sample,sample_name_ext1, br,var, n_branch) in branch_map.items() if sample !='data' #and var==vars_to_plot[0]
-        }
-        workflow_dict["dataMergeTuple"] = {
-            idx: DataMergeTask.req(self, branch=0, branches=())
-            for idx, (sample, sample_name_ext1,br,var, n_branch) in branch_map.items() if sample =='data'
-        }
-        return workflow_dict
-
+        anaTupleReq = {}
+        dataMergeReq = {}
+        for idx, (sample, br, var, need_cache) in self.branch_map.items():
+            if sample == 'data':
+                dataMergeReq[idx] = DataMergeTask.req(self, branch=0, branches=())
+            else:
+                anaTupleReq[idx] = AnaTupleTask.req(self, branch=br, branches=())
+        return { "anaTuple": anaTupleReq, "dataMergeTuple": dataMergeReq }
 
     def requires(self):
-        sample_name,sample_name_ext1, prod_br,var,n_branch = self.branch_data
+        sample_name, prod_br, var, need_cache = self.branch_data
         if sample_name =='data':
-            return [ DataMergeTask.req(self,max_runtime=DataMergeTask.max_runtime._default, branch=prod_br, branches=())]
+            return [ DataMergeTask.req(self, max_runtime=DataMergeTask.max_runtime._default, branch=prod_br, branches=())]
         return [ AnaTupleTask.req(self, branch=prod_br, max_runtime=AnaTupleTask.max_runtime._default, branches=())]
 
     def create_branch_map(self):
         n = 0
         branches = {}
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
-        samples_to_consider = GetSamples(self.samples, backgrounds, True)
-        for var in vars_to_plot:
+        samples_to_consider = GetSamples(self.samples, self.setup.backgrounds)
+        for var_entry in self.global_params['vars_to_plot']:
+            var_name, need_cache = parseVarEntry(var_entry)
             for prod_br,(sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-                ext_samples = []
                 isData = self.samples[sample_name]['sampleType'] == 'data'
-                if 'ext' in self.samples[sample_name].keys():
-                    ext_samples = self.samples[sample_name]['ext']
-                branches[sample_id] = (sample_name, ext_samples, isData)
-                '''
-                if ext_samples :
-                    for ext_name in ext_samples:
-                        sample_name_ext = sample_name + '_'+ext_name
-                        input_files += InputFileTask.load_input_files(self.input()[0].path, sample_name_ext)
-                '''
-                if sample_name_split[-1]=='ext1':
-                    sample_name = '_'.join(sample_name_split[:-1])
                 if sample_name not in samples_to_consider or isData: continue
-                #print(sample_name)
-                branches[n] = (sample_name,sample_name_ext1, prod_br,var, n)
-                n+=1
-            branches[n] = ('data','data', 0, var, n)
-            n+=1
+                branches[n] = (sample_name, prod_br, var_name, need_cache)
+                n += 1
+            branches[n] = ('data', 0, var_name, need_cache)
+            n += 1
         return branches
 
     def output(self):
         if len(self.branch_data) == 0:
             return self.local_target('dummy.txt')
 
-        sample_name,sample_name_ext1, prod_br,var,n_branch = self.branch_data
+        sample_name, prod_br, var, need_cache = self.branch_data
         input_file = self.input()[0].path
         outFileName = os.path.basename(self.input()[0].path)
-        #print(outFileName)
-        if sample_name_ext1 != sample_name:
-            outFileName_split = outFileName.split('.')
-            outFileName = f'{outFileName_split[0]}_{prod_br}.root'
         output_path = os.path.join(self.period, sample_name, self.version,'tmp', var, outFileName)
         return self.remote_target(output_path,  fs=self.fs_histograms)
 
     def run(self):
-        sample_name,sample_name_ext1, prod_br,var,n_branch = self.branch_data
+        sample_name, prod_br, var, need_cache = self.branch_data
         if len(self.input()) > 1:
             raise RuntimeError(f"multple input files!! {' '.join(f.path for f in self.input())}")
         input_file = self.input()[0]
         inputFileName = os.path.basename(self.input()[0].path)
         print(f'input file is {input_file.path}')
-        hist_config = self.hist_config
         global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
-        unc_cfg_dict = load_unc_config(unc_config)
         sample_config = os.path.join(self.ana_path(), 'config',self.period, f'samples.yaml')
-        anaCache_path = os.path.join('anaCache',self.period, sample_name_ext1, self.version, inputFileName)
+        anaCacheTuple_path = os.path.join('anaCacheTuple', self.period, sample_name, self.version, inputFileName)
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
         print(f'output file is {self.output().path}')
-        with input_file.localize("r") as local_input, self.remote_target(anaCache_path, fs=self.fs_anaCache).localize("r") as local_anacache, self.output().localize("w") as local_output:
-            #print(outFile.path)
-            HistProducerFile_cmd = ['python3', HistProducerFile,'--inFile', local_input.path, '--cacheFile', local_anacache.path, '--outFileName',local_output.path, '--dataset', sample_name, '--compute_unc_variations', 'True', '--compute_rel_weights', 'True', '--uncConfig', unc_config, '--histConfig', hist_config,'--globalConfig', global_config, '--sampleConfig', sample_config, '--var', var]
+        with input_file.localize("r") as local_input, self.output().localize("w") as local_output:
+            HistProducerFile_cmd = [ 'python3', HistProducerFile,
+                                    '--inFile', local_input.path, '--outFileName',local_output.path,
+                                    '--dataset', sample_name, '--uncConfig', unc_config,
+                                    '--histConfig', self.setup.hist_config_path,
+                                    '--globalConfig', global_config, '--sampleConfig', sample_config, '--var', var ]
+            if self.global_params['store_noncentral']:
+                HistProducerFile_cmd.extend(['--compute_unc_variations', 'True'])
+            if self.global_params['compute_unc_variations']:
+                HistProducerFile_cmd.extend(['--compute_rel_weights', 'True'])
             if 'deepTau2p5' in self.version.split('_'):
                 print("deepTau2p5 in use")
                 HistProducerFile_cmd.extend([ '--deepTauVersion', 'v2p5'])
-            ps_call(HistProducerFile_cmd,verbose=1)
-
+            if need_cache:
+                with self.remote_target(anaCache_path, fs=self.fs_anaCache).localize("r") as local_anacache:
+                    HistProducerFile_cmd.extend(['--cacheFile', local_anacache.path])
+                    ps_call(HistProducerFile_cmd, verbose=1)
+            else:
+                ps_call(HistProducerFile_cmd, verbose=1)
 
 class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
-    hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
-    hists = load_hist_config(hist_config)
-    vars_to_plot = load_vars_to_plot(hists)
-    backgrounds = load_background_samples()
-
 
     def workflow_requires(self):
-        self_map = self.create_branch_map()
-        all_samples = {}
-        branches = {}
-        for br_idx, (smpl_name, idx_list, var) in self_map.items():
-            if var not in all_samples:
-                all_samples[var] = []
-            for idx_list_idx in idx_list:
-                all_samples[var].append(idx_list_idx)
-        workflow_dict = {}
-        n=0
-        for var in all_samples.keys():
-            workflow_dict[var] = {
-                n: HistProducerFileTask.req(self, branches=tuple((idx,) for idx in all_samples[var]))
-            }
-            n+=1
-        return workflow_dict
+        workflow_deps = {}
+        for br_idx, (sample_name, dep_br_list, var) in self.branch_map.items():
+            workflow_deps[br_idx] = [
+                HistProducerFileTask.req(self, branch=dep_br, branches=()) for dep_br in dep_br_list
+            ]
+        return workflow_deps
 
     def requires(self):
-        sample_name, idx_list,var  = self.branch_data
-        deps = [HistProducerFileTask.req(self, max_runtime=HistProducerFileTask.max_runtime._default,branch=idx) for idx in idx_list ]
+        sample_name, dep_br_list, var = self.branch_data
+        deps = []
+        for dep_br in dep_br_list:
+            deps.append(HistProducerFileTask.req(self, max_runtime=HistProducerFileTask.max_runtime._default,
+                                                 branch=dep_br, branches=()))
         return deps
 
     def create_branch_map(self):
         branches = {}
         histProducerFile_map = HistProducerFileTask.req(self,branch=-1, branches=()).create_branch_map()
         all_samples = {}
-        samples_to_consider = GetSamples(self.samples, backgrounds, True)
-        for j,(sample_name,sample_name_ext1,prod_br,var,n_branch)  in histProducerFile_map.items():
+        samples_to_consider = GetSamples(self.samples, self.setup.backgrounds)
+        for n_branch, (sample_name, prod_br, var, need_cache)  in histProducerFile_map.items():
+            if sample_name not in samples_to_consider: continue
             if sample_name not in all_samples:
                 all_samples[sample_name] = {}
             if var not in all_samples[sample_name]:
                 all_samples[sample_name][var]=[]
             all_samples[sample_name][var].append(n_branch)
-        k=0
-        for n, key in enumerate(all_samples.items()):
-            (smpl_name, dictionary)=key
-            if smpl_name not in samples_to_consider: continue
-            for m, (var, idx_list) in enumerate(dictionary.items()):
-                branches[k] = (smpl_name, idx_list, var)
-                k+=1
+        k = 0
+        for sample_name, sample_entry in all_samples.items():
+            for var, branch_idx_list in sample_entry.items():
+                branches[k] = (sample_name, branch_idx_list, var)
+                k += 1
         return branches
 
     def output(self):
-        sample_name, idx_list,var  = self.branch_data
+        sample_name, idx_list, var  = self.branch_data
         local_files_target = []
         outFileName_histProdSample = f'{var}.root'
         output_path = os.path.join(self.period, sample_name, self.version, var, outFileName_histProdSample)
         return self.remote_target(output_path,  fs=self.fs_histograms)
 
     def run(self):
-        sample_name, idx_list,var  = self.branch_data
+        sample_name, idx_list, var  = self.branch_data
         HistProducerSample = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample.py')
         with contextlib.ExitStack() as stack:
             #print(self.input())
@@ -269,13 +196,8 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 HistProducerSample_cmd.extend(local_inputs)
                 ps_call(HistProducerSample_cmd,verbose=1)
 
-
 class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
-    hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
-    hists = load_hist_config(hist_config)
-    backgrounds = load_background_samples()
-
 
     def workflow_requires(self):
         histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=()).create_branch_map()
@@ -321,7 +243,6 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 k+=1
         return branches
 
-
     def output(self):
         if len(self.branch_data) == 0:
             return self.local_target('dummy.txt')
@@ -338,7 +259,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
         MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger.py')
         all_inputs = []
-        samples_to_consider = GetSamples(self.samples, backgrounds, True)
+        samples_to_consider = GetSamples(self.samples, self.setup.backgrounds)
         for sample_name in self.samples.keys():
             if sample_name not in samples_to_consider: continue
             output_path_hist_prod_sample = os.path.join(self.period, sample_name, self.version, var, f'{var}.root')
@@ -361,10 +282,6 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 class HaddMergedTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
-    hist_config = os.path.join(os.getenv("ANALYSIS_PATH"), 'config', 'plot','histograms.yaml')
-    hists = load_hist_config(hist_config)
-    vars_to_plot=load_vars_to_plot(hists)
-    backgrounds = load_background_samples()
 
     def workflow_requires(self):
         return { "Merge" : MergeTask.req(self, branches=()) }
@@ -375,8 +292,9 @@ class HaddMergedTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def create_branch_map(self):
         n = 0
         branches = {}
-        for var in vars_to_plot :
-            branches[n] = var
+        for var_entry in self.global_params['vars_to_plot'] :
+            var_name, need_cache = parseVarEntry(var_entry)
+            branches[n] = var_name
             n += 1
         return branches
 

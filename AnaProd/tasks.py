@@ -288,14 +288,15 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_name, sample_type,prod_br = self.branch_data
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         producer_anacachetuples = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheTupleProducer.py')
-
+        global_config_path = os.path.join(self.ana_path(),'config','HH_bbtautau','global.yaml')
         thread = threading.Thread(target=update_kinit_thread)
         thread.start()
         try:
             job_home, remove_job_home = self.law_job_home()
             input_file = self.input()[0]
+
             with input_file.localize("r") as local_input, self.output().localize("w") as outFile:
-                anaCacheTupleProducer_cmd = ['python3', producer_anacachetuples,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config]
+                anaCacheTupleProducer_cmd = ['python3', producer_anacachetuples,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config, '--globalConfig', global_config_path ]
                 if sample_name !='data':
                     anaCacheTupleProducer_cmd.extend(['--compute_unc_variations', 'True'])
                 if 'deepTau2p5' in self.version.split('_'):

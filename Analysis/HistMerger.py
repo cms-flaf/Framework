@@ -38,14 +38,15 @@ def checkFile(inFileRoot, channels, qcdRegions, categories, var):
         for qcdRegion in QCDregions:
             dir_1 = dir_0.Get(qcdRegion)
             keys_categories = [str(key.GetName()) for key in dir_1.GetListOfKeys()]
-            if var in bjet_vars and 'boosted' not in keys_categories:
-                keys_categories.extend(['boosted'])
+            #if var in bjet_vars and 'boosted' not in keys_categories:
+            #    keys_categories.extend(['boosted'])
             if not checkLists(keys_categories, categories):
                     print("check list not worked for categories")
                     return False
             for cat in categories:
-                if cat == 'boosted' and var in bjet_vars: continue
-                if cat != 'boosted' and var in var_to_add_boosted: continue
+                if cat == 'boosted' and (var.startswith('b1') or var.startswith('b2')): continue
+                if cat != 'boosted' and var.startswith('SelectedFatJet'): continue
+                #if cat == 'boosted' and uncName in global_cfg_dict['unc_to_not_consider_boosted']: continue
                 #print(cat, var)
                 dir_2 = dir_1.Get(cat)
                 keys_histograms = [str(key.GetName()) for key in dir_2.GetListOfKeys()]
@@ -65,9 +66,9 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, categories
             dir_1 = dir_0.Get(qcdRegion)
             #print(dir_1.GetListOfKeys())
             for cat in categories:
-                if cat == 'boosted' and var in bjet_vars: continue
-                if cat != 'boosted' and var in var_to_add_boosted: continue
-                if cat == 'boosted' and uncSource in unc_to_not_consider_boosted: continue
+                if cat == 'boosted' and (var.startswith('b1') or var.startswith('b2')): continue
+                if cat != 'boosted' and var.startswith('SelectedFatJet'): continue
+                if cat == 'boosted' and uncSource in global_cfg_dict['unc_to_not_consider_boosted']: continue
                 #print(cat, var)
                 dir_2 = dir_1.Get(cat)
                 for key in dir_2.GetListOfKeys():
@@ -186,6 +187,7 @@ if __name__ == "__main__":
     QCDregions = list(global_cfg_dict['QCDRegions'])
     channels = list(global_cfg_dict['channelSelection'])
     signals = list(global_cfg_dict['signal_types'])
+    unc_to_not_consider_boosted = list(global_cfg_dict['unc_to_not_consider_boosted'])
     files_separated = {}
     all_histograms ={}
     #all_histograms_1D ={}
@@ -251,11 +253,11 @@ if __name__ == "__main__":
     #print('data' in all_histograms.keys())
     MergeHistogramsPerType(all_histograms)
     all_histograms_1D=GetBTagWeightDict(args.var,all_histograms)
-    fixNegativeContributions=True
-    if args.var == 'kinFit_m':
-        fixNegativeContributions=False
-
-    AddQCDInHistDict(args.var,all_histograms_1D, channels, categories, args.uncSource, all_samples_types.keys(), scales,fixNegativeContributions)
+    fixNegativeContributions=False
+    #if args.var == 'kinFit_m':
+        #fixNegativeContributions=FatJetObservables
+    #    fixNegativeContributions=False
+    AddQCDInHistDict(args.var,all_histograms_1D, channels, categories, args.uncSource, all_samples_types.keys(), scales,unc_to_not_consider_boosted,fixNegativeContributions)
 
 
     outFile = ROOT.TFile(args.outFile, "RECREATE")

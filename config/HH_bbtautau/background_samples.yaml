@@ -29,6 +29,15 @@ WJetsToLNu_HT-800To1200:
   sampleType: W
 
 
+############## TT ##############
+TTTo2L2Nu:
+  sampleType: TT
+TTToHadronic:
+  sampleType: TT
+TTToSemiLeptonic:
+  sampleType: TT
+
+
 ############## DY ##############
 DYJetsToLL_M-50-amcatnloFXFX:
   sampleType: DY

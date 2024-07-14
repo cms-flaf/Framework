@@ -117,7 +117,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branch_map = self.create_branch_map()
         workflow_dict = {}
         workflow_dict["anaTuple"] = {
-            idx: AnaTupleTask.req(self, branch=br, branches=())
+            idx: AnaTupleTask.req(self, branch=n_branch, branches=())
             for idx, (sample,sample_name_ext1, br,var, n_branch) in branch_map.items() if sample !='data' #and var==vars_to_plot[0]
         }
         workflow_dict["dataMergeTuple"] = {
@@ -144,28 +144,22 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 isData = self.samples[sample_name]['sampleType'] == 'data'
                 if 'ext' in self.samples[sample_name].keys():
                     ext_samples = self.samples[sample_name]['ext']
-                branches[sample_id] = (sample_name, ext_samples, isData)
-                '''
-                if ext_samples :
-                    for ext_name in ext_samples:
-                        sample_name_ext = sample_name + '_'+ext_name
-                        input_files += InputFileTask.load_input_files(self.input()[0].path, sample_name_ext)
-                '''
+                sample_name_ext1 = sample_name
+                sample_name_split = sample_name.split('_')
                 if sample_name_split[-1]=='ext1':
                     sample_name = '_'.join(sample_name_split[:-1])
-                if sample_name not in samples_to_consider or isData: continue
-                #print(sample_name)
+                if sample_name not in samples_to_consider: continue
                 branches[n] = (sample_name,sample_name_ext1, prod_br,var, n)
                 n+=1
             branches[n] = ('data','data', 0, var, n)
             n+=1
+        #print(branches)
         return branches
 
     def output(self):
         if len(self.branch_data) == 0:
             return self.local_target('dummy.txt')
-
-        sample_name,sample_name_ext1, prod_br,var,n_branch = self.branch_data
+        sample_name,sample_name_ext1,prod_br,var,n_branch = self.branch_data
         input_file = self.input()[0].path
         outFileName = os.path.basename(self.input()[0].path)
         #print(outFileName)
@@ -186,13 +180,13 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         unc_cfg_dict = load_unc_config(unc_config)
-        sample_config = os.path.join(self.ana_path(), 'config',self.period, f'samples.yaml')
+        sample_type = self.samples[sample_name_ext1]['sampleType'] if sample_name_ext1 != 'data' else 'data'
         anaCache_path = os.path.join('anaCache',self.period, sample_name_ext1, self.version, inputFileName)
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
         print(f'output file is {self.output().path}')
         with input_file.localize("r") as local_input, self.remote_target(anaCache_path, fs=self.fs_anaCache).localize("r") as local_anacache, self.output().localize("w") as local_output:
             #print(outFile.path)
-            HistProducerFile_cmd = ['python3', HistProducerFile,'--inFile', local_input.path, '--cacheFile', local_anacache.path, '--outFileName',local_output.path, '--dataset', sample_name, '--compute_unc_variations', 'True', '--compute_rel_weights', 'True', '--uncConfig', unc_config, '--histConfig', hist_config,'--globalConfig', global_config, '--sampleConfig', sample_config, '--var', var]
+            HistProducerFile_cmd = ['python3', HistProducerFile,'--inFile', local_input.path, '--cacheFile', local_anacache.path, '--outFileName',local_output.path, '--dataset', sample_name, '--compute_unc_variations', 'True', '--compute_rel_weights', 'True', '--uncConfig', unc_config, '--histConfig', hist_config,'--globalConfig', global_config, '--sampleType', sample_type, '--var', var]
             if 'deepTau2p5' in self.version.split('_'):
                 print("deepTau2p5 in use")
                 HistProducerFile_cmd.extend([ '--deepTauVersion', 'v2p5'])

@@ -20,7 +20,7 @@ deepTauWPs:
   tauTau:
     VSe: VVLoose
     VSmu: Tight
-    VSjet: Loose
+    VSjet: Medium
 corrections:
   - tauID
   - tauES
@@ -51,3 +51,143 @@ categories:
   - btag_shape
   - baseline
 storeExtraJets: False
+deepTauYears:
+  v2p1: 2017
+  v2p5: 2018
+
+
+
+
+gen_channels:
+  eTau:
+    - 3
+    - 5
+  muTau:
+    - 4
+    - 5
+  tauTau:
+    - 5
+    - 5
+
+channelDefinition:
+  eTau: 13
+  muTau: 23
+  tauTau: 33
+
+
+triggers:
+  eTau:  HLT_singleEle || HLT_etau || HLT_singleTau || HLT_MET
+  muTau: HLT_singleMu || HLT_mutau || HLT_singleTau || HLT_MET
+  tauTau: HLT_ditau || HLT_singleTau || HLT_MET
+
+btag_wps:
+  res2b: Medium
+  res1b: Medium
+  boosted: Loose
+
+mass_cut_limits:
+  bb_m_vis:
+    - 50
+    - 270
+  tautau_m_vis:
+    - 20
+    - 130
+
+scales:
+  - Up
+  - Down
+
+bjet_vars:
+  - b1_pt
+  - b2_pt
+  - b1_eta
+  - b2_eta
+
+filters :
+  channels:
+    - eTau,eTau && HLT_singleEle
+    - muTau,muTau && HLT_singleMu
+    - tauTau,tauTau && HLT_ditau
+  QCD_regions:
+    - (OS_Iso,OS_Iso)
+    - (SS_Iso,SS_Iso)
+    - (OS_AntiIso,OS_AntiIso)
+    - (SS_AntiIso,SS_AntiIso)
+  categories:
+    - (res2b, res2b)
+    - (res1b, res1b)
+    - (inclusive, return true;)
+    - (btag_shape, return true;)
+    - (baseline, return true;)
+
+FatJetObservables :
+  - area
+  - btagCSVV2
+  - btagDDBvLV2
+  - btagDeepB
+  - btagHbb
+  - deepTagMD_HbbvsQCD
+  - deepTagMD_ZHbbvsQCD
+  - deepTagMD_ZbbvsQCD
+  - deepTagMD_bbvsLight
+  - deepTag_H
+  - jetId
+  - msoftdrop
+  - nBHadrons
+  - nCHadrons
+  - nConstituents
+  - rawFactor
+  - particleNetMD_QCD
+  - particleNetMD_Xbb
+  - particleNet_HbbvsQCD
+  - particleNet_mass
+  - particleNet_QCD
+  - particleNet_XbbVsQCD
+  - particleNetLegacy_QCD
+  - particleNetLegacy_Xbb
+  - particleNetLegacy_mass
+  - particleNetWithMass_QCD
+  - particleNetWithMass_HbbvsQCD
+  - particleNet_massCorr
+  - p4
+  - pt
+  - eta
+  - phi
+  - mass
+
+
+unc_to_not_consider_boosted:
+  - PUJetID
+  - JER
+  - JES_FlavorQCD
+  - JES_RelativeBal
+  - JES_HF
+  - JES_BBEC1
+  - JES_EC2
+  - JES_Absolute
+  - JES_Total
+  - JES_BBEC1_2018
+  - JES_Absolute_2018
+  - JES_EC2_2018
+  - JES_HF_2018
+  - JES_RelativeSample_2018
+  - bTagSF_Loose_btagSFbc_correlated
+  - bTagSF_Loose_btagSFbc_uncorrelated
+  - bTagSF_Loose_btagSFlight_correlated
+  - bTagSF_Loose_btagSFlight_uncorrelated
+  - bTagSF_Medium_btagSFbc_correlated
+  - bTagSF_Medium_btagSFbc_uncorrelated
+  - bTagSF_Medium_btagSFlight_correlated
+  - bTagSF_Medium_btagSFlight_uncorrelated
+  - bTagSF_Tight_btagSFbc_correlated
+  - bTagSF_Tight_btagSFbc_uncorrelated
+  - bTagSF_Tight_btagSFlight_correlated
+  - bTagSF_Tight_btagSFlight_uncorrelated
+  - bTagShapeSF_lf
+  - bTagShapeSF_hf
+  - bTagShapeSF_lfstats1
+  - bTagShapeSF_lfstats2
+  - bTagShapeSF_hfstats1
+  - bTagShapeSF_hfstats2
+  - bTagShapeSF_cferr1
+  - bTagShapeSF_cferr2

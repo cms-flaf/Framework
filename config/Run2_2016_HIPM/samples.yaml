@@ -899,11 +899,11 @@ ZHToTauTau_M125_ext1:
 ZH_Hbb_Zll:
   sampleType: VH
   generator: powheg
-  crossSection: ZH_HToBB_ZToLL
+  crossSection: ZH_Hbb_Zll
 ZH_Hbb_Zqq:
   sampleType: VH
   generator: powheg
-  crossSection: ZH_HToBB_ZToQQ
+  crossSection: ZH_Hbb_Zqq
   HWplusJ_HToWW_M125:
   sampleType: VH
   generator: powheg

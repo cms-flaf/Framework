@@ -79,16 +79,25 @@ def CreateNamesDict(histNamesDict, sample_types, uncName, scales, sample_cfg_dic
 
 
 
-def defineP4(df, name):
-    df = df.Define(f"{name}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({name}_pt,{name}_eta,{name}_phi,{name}_mass)")
-    return df
+def createVoidHist(outFileName, hist_cfg_dict):
+    x_bins = hist_cfg_dict['x_bins']
+    if type(hist_cfg_dict['x_bins'])==list:
+        x_bins_vec = Utilities.ListToVector(x_bins, "double")
+        hvoid = ROOT.TH1F("", "", x_bins_vec.size()-1, x_bins_vec.data())
+    else:
+        n_bins, bin_range = x_bins.split('|')
+        start,stop = bin_range.split(':')
+        hvoid = ROOT.TH1F("", "",int(n_bins), float(start), float(stop))
+    outFile = ROOT.TFile(outFileName, "RECREATE")
+    hvoid.Write()
+    outFile.Close()
 
 def defineAllP4(df):
     df = df.Define(f"SelectedFatJet_idx", f"CreateIndexes(SelectedFatJet_pt.size())")
     df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")
     for idx in [0,1]:
-        df = defineP4(df, f"tau{idx+1}")
-        df = defineP4(df, f"b{idx+1}")
+        df = Utilities.defineP4(df, f"tau{idx+1}")
+        df = Utilities.defineP4(df, f"b{idx+1}")
     return df
 
 def createInvMass(df):
@@ -143,51 +152,6 @@ def FixNegativeContributions(histogram):
     RenormalizeHistogram(histogram, original_Integral, True)
     return True, ss_debug, ss_negative
 
-class DataFrameBuilderBase:
-    def CreateColumnTypes(self):
-        #colNames = [str(c) for c in self.df.GetColumnNames() if 'kinFit_result' not in str(c)]
-        colNames = [str(c) for c in self.df.GetColumnNames()]#if 'kinFit_result' not in str(c)]
-        entryIndexIdx = colNames.index("entryIndex")
-        runIdx = colNames.index("run")
-        eventIdx = colNames.index("event")
-        lumiIdx = colNames.index("luminosityBlock")
-        colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
-        colNames[runIdx], colNames[1] = colNames[1], colNames[runIdx]
-        colNames[eventIdx], colNames[2] = colNames[2], colNames[eventIdx]
-        colNames[lumiIdx], colNames[3] = colNames[3], colNames[lumiIdx]
-        self.colNames = colNames
-        #if "kinFit_result" in self.colNames:
-        #    self.colNames.remove("kinFit_result")
-        self.colTypes = [str(self.df.GetColumnType(c)) for c in self.colNames]
-
-    def __init__(self, df):
-        self.df = df
-        self.colNames=[]
-        self.colTypes=[]
-        self.var_list = []
-        self.CreateColumnTypes()
-
-    def CreateFromDelta(self,central_columns,central_col_types):
-        var_list =[]
-        for var_idx,var_name in enumerate(self.colNames):
-            if not var_name.endswith("Diff"):
-                continue
-            var_name_forDelta = var_name.removesuffix("Diff")
-            central_col_idx = central_columns.index(var_name_forDelta)
-            if central_columns[central_col_idx]!=var_name_forDelta:
-                raise RuntimeError(f"CreateFromDelta: {central_columns[central_col_idx]} != {var_name_forDelta}")
-            self.df = self.df.Define(f"{var_name_forDelta}", f"""analysis::FromDelta({var_name},
-                                     analysis::GetEntriesMap()[std::make_tuple(entryIndex, run, event, luminosityBlock)]->GetValue<{self.colTypes[var_idx]}>({central_col_idx}) )""")
-            var_list.append(f"{var_name_forDelta}")
-        for central_col_idx,central_col in enumerate(central_columns):
-            if central_col in var_list or central_col in self.colNames: continue
-            self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[std::make_tuple(entryIndex, run, event, luminosityBlock)]->GetValue<{central_col_types[central_col_idx]}>({central_col_idx})""")
-
-    def AddCacheColumns(self,cache_cols,cache_col_types):
-        for cache_col_idx,cache_col in enumerate(cache_cols):
-            if  cache_col in self.df.GetColumnNames(): continue
-            if cache_col.replace('.','_') in self.df.GetColumnNames(): continue
-            self.df = self.df.Define(cache_col.replace('.','_'), f"""analysis::GetCacheEntriesMap().at(std::make_tuple(entryIndex, run, event, luminosityBlock))->GetValue<{cache_col_types[cache_col_idx]}>({cache_col_idx})""")
 
 def GetModel(hist_cfg, var):
     x_bins = hist_cfg[var]['x_bins']
@@ -211,25 +175,4 @@ def Get2DModel(hist_cfg, var):
         start,stop = bin_range.split(':')
         model = ROOT.RDF.TH2DModel("", "",int(n_bins), float(start), float(stop), 13, -0.5, 12.5)
     return model
-
-
-def mkdir(file, path):
-    dir_names = path.split('/')
-    current_dir = file
-    for n, dir_name in enumerate(dir_names):
-        dir_obj = current_dir.Get(dir_name)
-        full_name = f'{file.GetPath()}' + '/'.join(dir_names[:n])
-        if dir_obj:
-            if not dir_obj.IsA().InheritsFrom(ROOT.TDirectory.Class()):
-                raise RuntimeError(f'{dir_name} already exists in {full_name} and it is not a directory')
-        else:
-            dir_obj = current_dir.mkdir(dir_name)
-            if not dir_obj:
-
-                raise RuntimeError(f'Failed to create {dir_name} in {full_name}')
-        current_dir = dir_obj
-    return current_dir
-
-
-
 

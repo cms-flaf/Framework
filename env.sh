@@ -171,8 +171,8 @@ action() {
   local os_prefix=$(get_os_prefix $os_version)
   local node_os=$os_prefix$os_version
 
-  local default_cmssw_ver=CMSSW_13_0_15
-  #local default_cmssw_ver=CMSSW_14_0_8
+  #local default_cmssw_ver=CMSSW_13_0_15
+  local default_cmssw_ver=CMSSW_14_0_8
   local target_os_version=9
   local target_os_prefix=$(get_os_prefix $target_os_version)
   local target_os_gt_prefix=$(get_os_prefix $target_os_version 1)

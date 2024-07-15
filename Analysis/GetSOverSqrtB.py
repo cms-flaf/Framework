@@ -107,6 +107,7 @@ if __name__ == "__main__":
     parser.add_argument('--outDir', required=True)
     parser.add_argument('--plotDir', required=True)
     parser.add_argument('--inFileName', required=True)
+    parser.add_argument('--bckgConfig', required=True, type=str)
     parser.add_argument('--sampleConfig', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--wantBTag', required=False, type=bool, default=False)
@@ -126,8 +127,11 @@ if __name__ == "__main__":
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
 
+    with open(args.bckgConfig, 'r') as f:
+        bckg_cfg_dict = yaml.safe_load(f)
+
     signals = list(sample_cfg_dict['GLOBAL']['signal_types'])
-    all_samples_list,all_samples_types = GetSamplesStuff(sample_cfg_dict, os.path.join(args.histDir,f'v9_deepTau2p1'),False)
+    all_samples_list,all_samples_types = GetSamplesStuff(bckg_cfg_dict.keys(),sample_cfg_dict, os.path.join(args.histDir,f'v9_deepTau2p1'),False)
     for deepTauVersion in ['2p1', '2p5']:
         inDir = os.path.join(args.histDir,f'v9_deepTau{deepTauVersion}', 'all_histograms',args.var,btag_dir)
         outDir = os.path.join(args.outDir,f'v9_deepTau{deepTauVersion}', 's_sqrt_b',args.var, btag_dir)

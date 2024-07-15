@@ -6,12 +6,3 @@ GLOBAL:
   nano_version: v14
   crossSectionsFile : config/crossSections13TeV.yaml
   use_stitching: false
-
-# DYto2L_M-50_madgraphMLM:
-#   sampleType: DY
-#   crossSection: DY_NNLO
-#   crossSectionStitch: DY_NLO
-#   isReference: true
-
-# SingleMuon_Run2022C:
-#   sampleType: data

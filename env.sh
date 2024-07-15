@@ -99,8 +99,7 @@ EOF
   run_cmd cd "$cmssw_base/src"
   run_cmd eval `scramv1 runtime -sh`
   if ! [ -d "CombineHarvester" ]; then
-    #run_cmd bash <(curl -s https://raw.githubusercontent.com/cms-analysis/CombineHarvester/main/CombineTools/scripts/sparse-checkout-ssh.sh)
-    run_cmd bash <(https://raw.githubusercontent.com/nucleosynthesis/work-tools/master/sparse-checkout-SL-ssh.sh)
+    git clone https://github.com/cms-analysis/CombineHarvester.git CombineHarvester
     run_cmd scram b -j8
   fi
   run_cmd mkdir -p "$this_dir/inference/data"

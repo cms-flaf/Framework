@@ -178,6 +178,16 @@ std::string GetBinaryString(T x)
   return ss.str();
 }
 
+inline LorentzVectorM GetP4(const RVecF& pt, const RVecF& eta, const RVecF& phi, const RVecF& mass, int idx)
+{
+  return LorentzVectorM(pt[idx], eta[idx], phi[idx], mass[idx]);
+}
+
+inline LorentzVectorM GetP4(const RVecF& pt, const RVecF& eta, const RVecF& phi, double mass, int idx)
+{
+  return LorentzVectorM(pt[idx], eta[idx], phi[idx], mass);
+}
+
 RVecLV GetP4(const RVecF& pt, const RVecF& eta, const RVecF& phi, const RVecF& mass, const RVecS &indices)
 {
   RVecLV p4;

@@ -143,7 +143,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         for b_quark in [1, 2]:
             name = f"genb{b_quark}"
             for var in PtEtaPhiM:
-                name = f"genb{b_quark}_{var}"
                 dfw.DefineAndAppend(f"{name}_{var}", f"H_to_bb.leg_p4[{b_quark - 1}].{var}()")
                 dfw.DefineAndAppend(f"{name}_vis_{var}", f"H_to_bb.leg_vis_p4[{b_quark - 1}].{var}()")
     elif not isData:

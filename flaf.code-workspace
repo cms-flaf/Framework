@@ -108,7 +108,8 @@
 			"charconv": "cpp",
 			"csignal": "cpp",
 			"format": "cpp",
-			"shared_mutex": "cpp"
+			"shared_mutex": "cpp",
+			"*.ipp": "cpp"
 		},
 		"git.ignoreLimitWarning": true
 	}

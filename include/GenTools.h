@@ -9,7 +9,7 @@
 
 struct ParticleInfo {
   int pdgId;
-  int charge;
+  float charge;
   std::string name;
   std::string type;
   float mass{-1.};
@@ -29,7 +29,7 @@ public:
        currentInfo.pdgId = analysis::Parse<int>(values.at(0));
        currentInfo.name = values.at(1);
        currentInfo.type= values.at(2);
-       currentInfo.charge= analysis::Parse<int>(values.at(3));
+       currentInfo.charge= analysis::Parse<float>(values.at(3));
        if(values.size()>4){
          currentInfo.mass = analysis::Parse<float>(values.at(4));
        }
@@ -222,16 +222,16 @@ void PrintDecayChainParticle(ULong64_t evt, int genPart_idx, const RVecI& GenPar
 
   os << particle_information.name
      << " <" << GenPart_pdgId[genPart_idx] << '>'
-     << " pt = " << genParticle_momentum.pt()
-     << " eta = " << genParticle_momentum.eta()
-     << " phi = " << genParticle_momentum.phi()
-     << " E = " << genParticle_momentum.energy()
-     << " m = "   << genParticle_momentum.mass()
-     << " index = " << genPart_idx
-     << " flag = " << GetBinaryString<int, 15>(GenPart_statusFlags[genPart_idx])
-     << " status = " << GenPart_status[genPart_idx]
-     << " charge = " << particle_information.charge
-     << " type = " << particle_information.type
+     << " pt=" << genParticle_momentum.pt()
+     << " eta=" << genParticle_momentum.eta()
+     << " phi=" << genParticle_momentum.phi()
+     << " E=" << genParticle_momentum.energy()
+     << " m="   << genParticle_momentum.mass()
+     << " index=" << genPart_idx
+     << " flags=" << GenStatusFlags(GenPart_statusFlags[genPart_idx]).toString()
+     << " status=" << GenPart_status[genPart_idx]
+     << " charge=" << particle_information.charge
+     << " type=" << particle_information.type
      << '\n';
 
   const RVecI& daughters = GenPart_daughters.at(genPart_idx);

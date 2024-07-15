@@ -88,9 +88,9 @@ class Setup:
         with open(user_config_path, 'r') as f:
             user_config = yaml.safe_load(f)
         sample_config_path = os.path.join(ana_path, 'config', period, 'samples.yaml')
-        analysis_config_area= os.path.join(ana_path, user_config['analysis_config_area'])
-        ana_global_config_path = os.path.join(analysis_config_area, 'global.yaml')
-        ana_sample_config_path = os.path.join(analysis_config_area, period, f'samples.yaml')
+        self.analysis_config_area= os.path.join(ana_path, user_config['analysis_config_area'])
+        ana_global_config_path = os.path.join(self.analysis_config_area, 'global.yaml')
+        ana_sample_config_path = os.path.join(self.analysis_config_area, period, 'samples.yaml')
 
         with open(sample_config_path, 'r') as f:
             sample_config = yaml.safe_load(f)
@@ -120,10 +120,11 @@ class Setup:
 
         self.fs_dict = {}
 
+        self.hist_config_path = os.path.join(self.ana_path, 'config', 'plot', 'histograms.yaml')
         self.hists_ = None
-        hist_config_path = os.path.join(ana_path, 'config', 'plot', 'histograms.yaml')
-        with open(hist_config_path, 'r') as f:
-            self.hists_ = yaml.safe_load(f)
+
+        self.background_config_path = os.path.join(self.analysis_config_area, 'background_samples.yaml')
+        self.backgrounds_ = None
 
         self.cmssw_env_ = None
 
@@ -131,7 +132,10 @@ class Setup:
         if fs_name not in self.fs_dict:
             full_fs_name = f'fs_{fs_name}'
             if full_fs_name in self.global_params:
-                self.fs_dict[fs_name] = WLCGFileSystem(self.global_params[full_fs_name])
+                if type(self.global_params[full_fs_name]) == str and self.global_params[full_fs_name].startswith('/'):
+                    self.fs_dict[fs_name] = self.global_params[full_fs_name]
+                else:
+                    self.fs_dict[fs_name] = WLCGFileSystem(self.global_params[full_fs_name])
             else:
                 if fs_name == 'default':
                     raise RuntimeError(f'No default file system defined')
@@ -151,10 +155,16 @@ class Setup:
     @property
     def hists(self):
         if self.hists_ is None:
-            hist_config_path = os.path.join(self.ana_path, 'config', 'plot', 'histograms.yaml')
-            with open(hist_config_path, 'r') as f:
+            with open(self.hist_config_path, 'r') as f:
                 self.hists_ = yaml.safe_load(f)
         return self.hists_
+
+    @property
+    def backgrounds(self):
+        if self.backgrounds_ is None:
+            with open(self.background_config_path, 'r') as f:
+                self.backgrounds_ = yaml.safe_load(f)
+        return self.backgrounds_
 
     @staticmethod
     def getGlobal(ana_path, period, customisations=None):

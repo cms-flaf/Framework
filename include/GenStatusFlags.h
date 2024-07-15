@@ -5,6 +5,8 @@
 #pragma once
 
 #include <bitset>
+#include <map>
+#include <sstream>
 
 class GenStatusFlags{
 public:
@@ -30,6 +32,8 @@ public:
         kIsLastCopy = 13,
         kIsLastCopyBeforeFSR = 14
     };
+
+    static constexpr size_t numberOfBits = 15;
 
     /////////////////////////////////////////////////////////////////////////////
     //these are robust, generator-independent functions for categorizing
@@ -112,7 +116,39 @@ public:
     bool isLastCopyBeforeFSR() const { return flags[kIsLastCopyBeforeFSR]; }
     void setIsLastCopyBeforeFSR(bool b) { flags[kIsLastCopyBeforeFSR] = b; }
 
-    const std::bitset<15>& getFlags() const {return flags;}
+    const std::bitset<numberOfBits>& getFlags() const {return flags;}
+
+    const std::string toString() const {
+        static const std::map<StatusBits, std::string> bitNames = {
+            {StatusBits::kIsPrompt, "IsPrompt"},
+            {StatusBits::kIsDecayedLeptonHadron, "IsDecayedLeptonHadron"},
+            {StatusBits::kIsTauDecayProduct, "IsTauDecayProduct"},
+            {StatusBits::kIsPromptTauDecayProduct, "IsPromptTauDecayProduct"},
+            {StatusBits::kIsDirectTauDecayProduct, "IsDirectTauDecayProduct"},
+            {StatusBits::kIsDirectPromptTauDecayProduct, "IsDirectPromptTauDecayProduct"},
+            {StatusBits::kIsDirectHadronDecayProduct, "IsDirectHadronDecayProduct"},
+            {StatusBits::kIsHardProcess, "IsHardProcess"},
+            {StatusBits::kFromHardProcess, "FromHardProcess"},
+            {StatusBits::kIsHardProcessTauDecayProduct, "IsHardProcessTauDecayProduct"},
+            {StatusBits::kIsDirectHardProcessTauDecayProduct, "IsDirectHardProcessTauDecayProduct"},
+            {StatusBits::kFromHardProcessBeforeFSR, "FromHardProcessBeforeFSR"},
+            {StatusBits::kIsFirstCopy, "IsFirstCopy"},
+            {StatusBits::kIsLastCopy, "IsLastCopy"},
+            {StatusBits::kIsLastCopyBeforeFSR, "IsLastCopyBeforeFSR"}
+        };
+        std::ostringstream ss;
+        ss << "(";
+        bool is_first = true;
+        for(size_t bit_idx = 0; bit_idx < numberOfBits; ++bit_idx){
+            if(flags[bit_idx]){
+                if(!is_first) ss << ",";
+                ss << bitNames.at(static_cast<StatusBits>(bit_idx));
+                is_first = false;
+            }
+        }
+        ss << ")";
+        return ss.str();
+    }
  private:
      std::bitset<15> flags;
 };

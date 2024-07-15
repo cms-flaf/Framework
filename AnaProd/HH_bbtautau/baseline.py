@@ -100,9 +100,7 @@ def RecoHttCandidateSelection(df, config):
         cand_columns.append(cand_column)
     cand_filters = [ f'{c}.size() > 0' for c in cand_columns ]
     stringfilter = " || ".join(cand_filters)
-    print(f" before Reco Baseline 2 {df.Count().GetValue()}")
     df = df.Filter(" || ".join(cand_filters), "Reco Baseline 2")
-    print(f" after Reco Baseline 2 {df.Count().GetValue()}")
     cand_list_str = ', '.join([ '&' + c for c in cand_columns])
     return df.Define('HttCandidate', f'GetBestHTTCandidate<2>({{ {cand_list_str} }}, event)')
 

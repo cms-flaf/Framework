@@ -64,6 +64,10 @@ class Task(law.Task):
         return self.setup.get_fs('anaTuple')
 
     @property
+    def fs_anaCacheTuple(self):
+        return self.setup.get_fs('anaCacheTuple')
+
+    @property
     def fs_histograms(self):
         return self.setup.get_fs('histograms')
 
@@ -83,6 +87,9 @@ class Task(law.Task):
     def remote_target(self, *path, fs=None):
         fs = fs or self.setup.fs_default
         path = os.path.join(*path)
+        if type(fs) == str:
+            path = os.path.join(fs, path)
+            return law.LocalFileTarget(path)
         return WLCGFileTarget(path, fs)
 
     def law_job_home(self):
@@ -114,6 +121,8 @@ class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
                                         description="maximum runtime, default unit is hours")
     n_cpus = luigi.IntParameter(default=1, description="number of cpus")
     poll_interval = copy_param(law.htcondor.HTCondorWorkflow.poll_interval, 5)
+    transfer_logs = luigi.BoolParameter(default=True, significant=False,
+                                        description="transfer job logs to the output directory")
 
     def htcondor_check_job_completeness(self):
         return False

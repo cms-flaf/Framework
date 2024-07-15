@@ -27,7 +27,7 @@ if __name__ == "__main__":
     if os.path.exists(args.outFile):
         os.remove(args.outFile)
     outDir = os.path.dirname(args.outFile)
-    if not os.path.exists(outDir):
+    if len(outDir) > 0 and not os.path.exists(outDir):
         os.makedirs(outDir)
 
     df = ROOT.RDataFrame("Events", args.inFile)

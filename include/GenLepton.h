@@ -5,6 +5,7 @@ Author: Konstantin Androsov
 #pragma once
 
 #include <bitset>
+#include <mutex>
 
 #include <Math/LorentzVector.h>
 #include <Math/PtEtaPhiM4D.h>
@@ -23,100 +24,173 @@ class GenParticle {
 public:
     enum class PdgId {
         electron = 11, electron_neutrino = 12, muon = 13, muon_neutrino = 14, tau = 15, tau_neutrino = 16,
-        pi0 = 111, pi = 211, K0_L = 130, K0_S = 310, K0 = 311, K = 321,
+        pi0 = 111, pi = 211, K0_L = 130, K0_S = 310, K0 = 311, K = 321, eta = 221, omega = 223, K_star = 323,
+        p = 2212, D = 411, J_psi = 443, D0 = 421, D_s = 431,
         down = 1, up = 2, strange = 3, charm = 4, bottom = 5, top = 6,
         gluon = 21, photon = 22, Z = 23, W = 24, h0 = 25
     };
 
+    static const PdgId PdgIdIntToEnum(int pdgId) { return static_cast<PdgId>(std::abs(pdgId)); }
+
     static const std::set<PdgId>& gluonQuarks() {
-        static const std::set<PdgId> s = { PdgId::gluon, PdgId::down, PdgId::up, PdgId::strange, PdgId::charm, PdgId::bottom, PdgId::top };
+        static const std::set<PdgId> s = {
+            PdgId::gluon, PdgId::down, PdgId::up, PdgId::strange, PdgId::charm, PdgId::bottom, PdgId::top,
+        };
         return s;
     }
 
-    static const std::set<PdgId>& ChargedLeptons() {
+    static const std::set<PdgId>& chargedLeptons() {
         static const std::set<PdgId> s = { PdgId::electron, PdgId::muon, PdgId::tau };
         return s;
     }
 
-    static const std::set<PdgId>& NeutralLeptons() {
+    static const std::set<PdgId>& neutralLeptons() {
         static const std::set<PdgId> s = { PdgId::electron_neutrino, PdgId::muon_neutrino, PdgId::tau_neutrino };
         return s;
     }
 
-    static const std::set<PdgId>& ChargedHadrons() {
-        static const std::set<PdgId> s = { PdgId::pi, PdgId::K };
+    static const std::set<PdgId>& chargedHadrons() {
+        static const std::set<PdgId> s = { PdgId::pi, PdgId::K, PdgId::K_star, PdgId::p, PdgId::D, PdgId::D_s };
         return s;
     }
 
-    static const std::set<PdgId>& NeutralHadrons() {
-        static const std::set<PdgId> s = { PdgId::pi0, PdgId::K0_L, PdgId::K0_S, PdgId::K0 };
+    static const std::set<PdgId>& neutralHadrons() {
+        static const std::set<PdgId> s = { PdgId::pi0, PdgId::K0_L, PdgId::K0_S, PdgId::K0, PdgId::eta,
+                                           PdgId::omega, PdgId::J_psi, PdgId::D0 };
         return s;
     }
-    static double GetMass(PdgId pdgId, double nanoAODmass) {
-        static const std::map<PdgId, double> pdgId_Masses {
-            {PdgId::electron,0.0005109989461},
-            {PdgId::electron_neutrino,0.},
-            {PdgId::muon,0.1056583745},
-            {PdgId::muon_neutrino,0.},
-            {PdgId::tau,1.77686},
-            {PdgId::tau_neutrino,0.},
-            {PdgId::photon, 0.},
-            {PdgId::pi, 0.13957039},
-            {PdgId::pi0, 0.1349768},
-            {PdgId::K, 0.493677},
-            {PdgId::K0, 0.497611},
-        };
-        auto iter=pdgId_Masses.find(pdgId);
-        if(iter==pdgId_Masses.end()) return nanoAODmass;
-        return iter->second;
+
+    static const std::set<PdgId>& neutralBosons() {
+        static const std::set<PdgId> s = { PdgId::photon, PdgId::Z, PdgId::W, PdgId::h0 };
+        return s;
     }
 
-    int getCharge() const {
-        static const std::map<PdgId, int> pdgId_charges {
-            {PdgId::electron, -1},
-            {PdgId::electron_neutrino, 0},
-            {PdgId::muon, -1},
-            {PdgId::muon_neutrino, 0},
-            {PdgId::tau, -1},
-            {PdgId::tau_neutrino, 0},
-            {PdgId::photon, 0},
-            {PdgId::pi, +1},
-            {PdgId::pi0, 0},
-            {PdgId::K, +1},
-            {PdgId::K0, 0},
-            {PdgId::K0_S, 0},
-            {PdgId::K0_L, 0},
-            {PdgId::h0, 0},
-            {PdgId::Z, 0},
-            {PdgId::W, 1},
+    static const std::set<PdgId>& chargedBosons() {
+        static const std::set<PdgId> s = { PdgId::photon, PdgId::Z, PdgId::W, PdgId::h0 };
+        return s;
+    }
+
+    static const std::set<PdgId>& knownParticles() {
+        static auto make = []() {
+            std::set<PdgId> s;
+            s.insert(gluonQuarks().begin(), gluonQuarks().end());
+            s.insert(chargedLeptons().begin(), chargedLeptons().end());
+            s.insert(neutralLeptons().begin(), neutralLeptons().end());
+            s.insert(chargedHadrons().begin(), chargedHadrons().end());
+            s.insert(neutralHadrons().begin(), neutralHadrons().end());
+            s.insert(neutralBosons().begin(), neutralBosons().end());
+            s.insert(chargedBosons().begin(), chargedBosons().end());
+            return s;
         };
-        auto iter=pdgId_charges.find(pdgCode());
-        if(iter==pdgId_charges.end()) return std::numeric_limits<int>::max();
-        int charge = iter->second;
+        static const std::set<PdgId> s = make();
+        return s;
+    }
+
+    static bool isQuarkGluon(PdgId pdgId) { return gluonQuarks().count(pdgId) > 0; }
+    static bool isChargedLepton(PdgId pdgId) { return chargedLeptons().count(pdgId) > 0; }
+    static bool isNeutralLepton(PdgId pdgId) { return neutralLeptons().count(pdgId) > 0; }
+    static bool isChargedHadron(PdgId pdgId) { return chargedHadrons().count(pdgId) > 0; }
+    static bool isNeutralHadron(PdgId pdgId) { return neutralHadrons().count(pdgId) > 0; }
+    static bool isNeutralBoson(PdgId pdgId) { return neutralBosons().count(pdgId) > 0; }
+    static bool isChargedBoson(PdgId pdgId) { return chargedBosons().count(pdgId) > 0; }
+    static bool isKnownParticle(PdgId pdgId) { return knownParticles().count(pdgId) > 0; }
+    static bool isLepton(PdgId pdgId) { return isChargedLepton(pdgId) || isNeutralLepton(pdgId); }
+    static bool isHadron(PdgId pdgId) { return isChargedHadron(pdgId) || isNeutralHadron(pdgId); }
+    static bool isBoson(PdgId pdgId) { return isChargedBoson(pdgId) || isNeutralBoson(pdgId); }
+
+    static bool checkPdgId(PdgId pdgId, bool verbose) {
+        static std::set<PdgId> unknownPdgIds;
+        static std::mutex mutex;
+        if(isKnownParticle(pdgId)) return true;
+        std::lock_guard<std::mutex> lock(mutex);
+        if(unknownPdgIds.count(pdgId) == 0) {
+            unknownPdgIds.insert(pdgId);
+            if(verbose)
+                std::cerr << "GenLepton: unknown pdgId = " << static_cast<int>(pdgId)  << std::endl;
+        }
+        return false;
+    }
+
+    static double getMass(PdgId pdgId, double nanoAODmass) {
+        static const std::map<PdgId, double> masses {
+            { PdgId::electron, 0.0005109989461 }, { PdgId::electron_neutrino, 0. },
+            { PdgId::muon, 0.1056583745 }, { PdgId::muon_neutrino, 0. },
+            { PdgId::tau, 1.77686 }, { PdgId::tau_neutrino, 0. },
+            { PdgId::pi, 0.13957039 }, { PdgId::pi0, 0.1349768 },
+            { PdgId::K, 0.493677 }, { PdgId::K0, 0.497611 },
+            { PdgId::D, 1.8695 }, { PdgId::D0, 1.86483 },
+            { PdgId::down, 0.0047 }, { PdgId::up, 0.00216 },
+            { PdgId::strange, 0.0935 }, { PdgId::charm, 1.273 }, { PdgId::bottom, 4.183 }
+        };
+        const auto iter = masses.find(pdgId);
+        return iter == masses.end() ? nanoAODmass : iter->second;
+    }
+
+    struct Charge {
+        int num, den;
+        Charge() : num(0), den(1) {}
+        Charge(int n) : num(n), den(1) {}
+        Charge(int n, int d) : num(n), den(d) {}
+
+        bool is_valid() const { return den != 0; }
+        bool is_integer() const { return den == 1; }
+        float to_float() const { return float(num) / den; }
+
+        static const Charge& unknown() { static const Charge c(0, 0); return c; }
+    };
+
+    static Charge getCharge(int pdgId) {
+        static const std::map<PdgId, Charge> charges {
+            { PdgId::electron, -1 }, { PdgId::electron_neutrino, 0 },
+            { PdgId::muon, -1 }, { PdgId::muon_neutrino, 0 },
+            { PdgId::tau, -1 }, { PdgId::tau_neutrino, 0 },
+            { PdgId::pi0, 0 }, { PdgId::pi, 1 },
+            { PdgId::K0_L, 0 }, { PdgId::K0_S, 0 }, { PdgId::K0, 0 }, { PdgId::K, 1 },
+            { PdgId::eta, 0 }, { PdgId::omega, 0 }, { PdgId::K_star, 1 },
+            { PdgId::p, 1 }, { PdgId::D, 1 }, { PdgId::J_psi, 0 }, { PdgId::D0, 0 }, { PdgId::D_s, 1 },
+            { PdgId::down, Charge(-1, 3) }, { PdgId::up, Charge(2, 3) },
+            { PdgId::strange, Charge(-1, 3) }, { PdgId::charm, Charge(2, 3) },
+            { PdgId::bottom, Charge(-1, 3) }, { PdgId::top, Charge(2, 3) },
+            { PdgId::gluon, 0 }, { PdgId::photon, 0 }, { PdgId::Z, 0 }, { PdgId::W, 1 }, { PdgId::h0, 0 },
+        };
+        const auto iter = charges.find(PdgIdIntToEnum(pdgId));
+        if(iter == charges.end()) return Charge::unknown();
+        Charge charge = iter->second;
         if(pdgId < 0)
-            charge *= -1;
+            charge.num *= -1;
         return charge;
     }
+
+    size_t index{0};
     int pdgId{0};
-    int charge{0};
+    Charge charge{0};
     bool isFirstCopy{false}, isLastCopy{false};
-    bool hasMissingDaughters{false};
     LorentzVectorM p4;
-    Point3D vertex;
+    std::optional<Point3D> vertex;
     std::set<const GenParticle*> mothers;
     std::set<const GenParticle*> daughters;
 
-    PdgId pdgCode() const { return static_cast<PdgId>(std::abs(pdgId)); }
-
-
+    PdgId pdgCode() const { return PdgIdIntToEnum(pdgId); }
 };
 
-inline std::ostream& operator<<(std::ostream& os, const GenParticle& p)
-{
-    os << "pdgId=" << p.pdgId << " pt=" << p.p4.pt() << " eta=" << p.p4.eta() << " phi=" << p.p4.phi()
-       << " E=" << p.p4.energy() << " m=" << p.p4.mass()
-       << " vx=" << p.vertex.x() << " vy=" << p.vertex.y() << " vz=" << p.vertex.z() << " vrho=" << p.vertex.rho()
-       << " vr=" << p.vertex.r() << " q=" << p.charge;
+inline std::ostream& operator<<(std::ostream& os, const GenParticle::Charge& c) {
+    if(c.is_valid()) {
+        os << c.num;
+        if(c.den != 1)
+            os << "/" << c.den;
+    } else {
+        os << "unknown";
+    }
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const GenParticle& p) {
+    os << "index=" << p.index << " pdgId=" << p.pdgId << " pt=" << p.p4.pt() << " eta=" << p.p4.eta()
+       << " phi=" << p.p4.phi() << " E=" << p.p4.energy() << " m=" << p.p4.mass() << " q=" << p.charge;
+    if(p.vertex) {
+        os << " vx=" << p.vertex->x() << " vy=" << p.vertex->y() << " vz=" << p.vertex->z()
+           << " vrho=" << p.vertex->rho() << " vr=" << p.vertex->r();
+    }
     return os;
 }
 
@@ -124,8 +198,6 @@ class GenLepton {
 public:
     enum class Kind { PromptElectron = 1, PromptMuon = 2, TauDecayedToElectron = 3, TauDecayedToMuon = 4,
                       TauDecayedToHadrons = 5, Other = 6 };
-
-    static constexpr size_t MaxNumberOfParticles = 1000;
 
     template<typename GenParticleT>
     static std::vector<GenLepton> fromGenParticleCollection(const std::vector<GenParticleT>& gen_particles)
@@ -135,63 +207,48 @@ public:
         for(const auto& particle : gen_particles) {
             if(processed_particles.count(&particle)) continue;
             if(!(particle.statusFlags().isPrompt() && particle.statusFlags().isFirstCopy())) continue;
-            const int abs_pdg = std::abs(particle.pdgId());
-            if(!GenParticle::ChargedLeptons().count(static_cast<GenParticle::PdgId>(abs_pdg)))
+            const auto pdg_code = GenParticle::PdgIdIntToEnum(particle.pdgId());
+            if(!GenParticle::isChargedLepton(pdg_code))
                 continue;
-
             GenLepton lepton;
             FillImpl<GenParticleT> fillImpl(lepton, processed_particles);
             fillImpl.FillAll(&particle);
             lepton.initialize();
-
             leptons.push_back(lepton);
         }
         return leptons;
     }
-    template<typename IntVector, typename FloatVector, typename ShortVector, typename UShortVector>
-    //template<typename IntVector, typename FloatVector>
-    static std::vector<GenLepton> fromNanoAOD( const FloatVector& GenPart_pt ,
-                                            const FloatVector& GenPart_eta,
-                                            const FloatVector& GenPart_phi,
-                                            const FloatVector& GenPart_mass,
-                                            const ShortVector& GenPart_genPartIdxMother,
-                                            //const IntVector& GenPart_genPartIdxMother,
-                                            const IntVector& GenPart_pdgId,
-                                            const UShortVector& GenPart_statusFlags,
-                                            //const IntVector& GenPart_statusFlags,
-                                            int event=0){
+    template<typename VectorPt, typename VectorEta, typename VectorPhi, typename VectorMass,
+             typename VectorIdxMother, typename VectorPdgId, typename VectorStatusFlags,
+             typename VectorVx, typename VectorVy, typename VectorVz>
+    static std::vector<GenLepton> fromNanoAOD(const VectorPt& GenPart_pt, const VectorEta& GenPart_eta,
+                                              const VectorPhi& GenPart_phi, const VectorMass& GenPart_mass,
+                                              const VectorIdxMother& GenPart_genPartIdxMother,
+                                              const VectorPdgId& GenPart_pdgId,
+                                              const VectorStatusFlags& GenPart_statusFlags,
+                                              const VectorVx& GenPart_vx, const VectorVy& GenPart_vy,
+                                              const VectorVz& GenPart_vz, unsigned long long event = 0)
+    {
+        using FillImpl = FillImplNano<VectorPt, VectorEta, VectorPhi, VectorMass,
+                                      VectorIdxMother, VectorPdgId, VectorStatusFlags,
+                                      VectorVx, VectorVy, VectorVz>;
         try {
             std::vector<GenLepton> genLeptons;
             std::set<size_t> processed_particles;
-            //if (event == 82819730) std::cout<<GenPart_pt.size()<<std::endl;
-            for(size_t genPart_idx=0; genPart_idx<GenPart_pt.size(); ++genPart_idx ){
+            for(size_t genPart_idx = 0; genPart_idx<GenPart_pt.size(); ++genPart_idx){
                 if(processed_particles.count(genPart_idx)) continue;
                 GenStatusFlags particle_statusFlags(GenPart_statusFlags.at(genPart_idx));
                 if(!(particle_statusFlags.isPrompt() && particle_statusFlags.isFirstCopy())) continue;
-                const int abs_pdg = std::abs(GenPart_pdgId.at(genPart_idx));
-                if(!GenParticle::ChargedLeptons().count(static_cast<GenParticle::PdgId>(abs_pdg)))
+                const auto pdg_code = GenParticle::PdgIdIntToEnum(GenPart_pdgId.at(genPart_idx));
+                if(!GenParticle::isChargedLepton(pdg_code))
                     continue;
-                //if (event == 82819730) std::cout<<genPart_idx<<std::endl;
-                //if (event == 82819730) std::cout<<GenPart_pt[genPart_idx]<<std::endl;
-                //if (event == 82819730) std::cout<<GenPart_eta[genPart_idx]<<std::endl;
-                //if (event == 82819730) std::cout<<GenPart_phi[genPart_idx]<<std::endl;
-                //if (event == 82819730) std::cout<<GenPart_mass[genPart_idx]<<std::endl;
-                //if (event == 82819730) std::cout<<GenPart_genPartIdxMother[genPart_idx]<<std::endl;
-                //if (event == 82819730) std::cout<<GenPart_pdgId[genPart_idx]<<std::endl;
-                //if (event == 82819730) std::cout<<GenPart_statusFlags[genPart_idx]<<std::endl;
-                //if (event == 82819730) std::cout<<"E"<<std::endl;
                 GenLepton lepton;
-                //if (event == 82819730) std::cout<<"F"<<std::endl;
-                //FillImplNano<IntVector, FloatVector> fillImplNano(lepton, processed_particles,GenPart_pt,GenPart_eta, GenPart_phi, GenPart_mass,
-                FillImplNano<IntVector, FloatVector, ShortVector, UShortVector> fillImplNano(lepton, processed_particles,GenPart_pt,GenPart_eta, GenPart_phi, GenPart_mass,
-                GenPart_genPartIdxMother, GenPart_pdgId, GenPart_statusFlags);
-                //if (event == 82819730) std::cout<<"G"<<std::endl;
+                FillImpl fillImplNano(lepton, processed_particles, GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass,
+                                      GenPart_genPartIdxMother, GenPart_pdgId, GenPart_statusFlags,
+                                      GenPart_vx, GenPart_vy, GenPart_vz);
                 fillImplNano.FillAll(genPart_idx);
-                //if (event == 82819730) std::cout<<"H"<<std::endl;
                 lepton.initialize();
-                //if (event == 82819730) std::cout<<"I"<<std::endl;
                 genLeptons.push_back(lepton);
-                //if (event == 82819730) std::cout<<"J"<<std::endl;
             }
             return genLeptons;
         } catch(std::runtime_error& e) {
@@ -199,6 +256,21 @@ public:
             throw;
         }
     }
+
+    template<typename VectorPt, typename VectorEta, typename VectorPhi, typename VectorMass,
+             typename VectorIdxMother, typename VectorPdgId, typename VectorStatusFlags>
+    static std::vector<GenLepton> fromNanoAOD(const VectorPt& GenPart_pt, const VectorEta& GenPart_eta,
+                                              const VectorPhi& GenPart_phi, const VectorMass& GenPart_mass,
+                                              const VectorIdxMother& GenPart_genPartIdxMother,
+                                              const VectorPdgId& GenPart_pdgId,
+                                              const VectorStatusFlags& GenPart_statusFlags,
+                                              unsigned long long event = 0)
+    {
+        std::vector<float> empty;
+        return fromNanoAOD(GenPart_pt, GenPart_eta, GenPart_phi, GenPart_mass, GenPart_genPartIdxMother,
+                           GenPart_pdgId, GenPart_statusFlags, empty, empty, empty, event);
+    }
+
     template<typename IntVector, typename LongVector, typename FloatVector>
     static GenLepton fromRootTuple(int lastMotherIndex,
                                    const IntVector& genParticle_pdgId,
@@ -214,6 +286,7 @@ public:
                                    const FloatVector& genParticle_vtx_y,
                                    const FloatVector& genParticle_vtx_z)
     {
+        static constexpr size_t MaxNumberOfParticles = 1000;
         try {
 
             const size_t N = genParticle_pdgId.size();
@@ -236,8 +309,10 @@ public:
             lepton.firstCopy_ = &lepton.particles_->at(lastMotherIndex + 1);
             for(size_t n = 0; n < N; ++n) {
                 GenParticle& p = lepton.particles_->at(n);
+                p.index = n;
                 p.pdgId = genParticle_pdgId.at(n);
                 p.charge = genParticle_charge.at(n);
+                GenParticle::checkPdgId(p.pdgCode(), true);
                 p.isFirstCopy = genParticle_isFirstCopy.at(n);
                 p.isLastCopy = genParticle_isLastCopy.at(n);
                 p.p4 = LorentzVectorM(genParticle_pt.at(n), genParticle_eta.at(n),
@@ -290,7 +365,7 @@ public:
     const GenParticle& firstCopy() const { return *firstCopy_; }
     const GenParticle& lastCopy() const { return *lastCopy_; }
     Kind kind() const { return kind_; }
-    int charge() const { return firstCopy().charge; }
+    int charge() const { return firstCopy().charge.num; }
     const std::set<const GenParticle*>& finalStateFromDecay() const { return finalStateFromDecay_; }
     const std::set<const GenParticle*>& finalStateFromRadiation() const { return finalStateFromRadiation_; }
     const std::set<const GenParticle*>& hadrons() const { return hadrons_; }
@@ -300,15 +375,16 @@ public:
 
     const LorentzVectorXYZ& visibleP4() const { return visibleP4_; }
     const LorentzVectorXYZ& radiatedP4() const { return radiatedP4_; }
+    LorentzVectorM invisibleP4() const { return lastCopy().p4 - visibleP4(); }
 
     size_t nChargedHadrons() const { return nChargedHadrons_; }
     size_t nNeutralHadrons() const { return nNeutralHadrons_; }
     size_t nFinalStateElectrons() const { return nFinalStateElectrons_; }
     size_t nFinalStateMuons() const { return nFinalStateMuons_; }
     size_t nFinalStateNeutrinos() const { return nFinalStateNeutrinos_; }
+    size_t nFinalStatePhotons() const { return nFinalStatePhotons_; }
 
-    void PrintDecay(const GenParticle& particle, const std::string& pre, std::ostream& os) const
-    {
+    void PrintDecay(const GenParticle& particle, const std::string& pre, std::ostream& os) const {
         os << particle << std::endl;
 
         for(auto d_iter = particle.daughters.begin(); d_iter != particle.daughters.end(); ++d_iter) {
@@ -320,8 +396,7 @@ public:
         }
     }
 
-    void PrintDecay(std::ostream& os) const
-    {
+    void PrintDecay(std::ostream& os) const {
         PrintDecay(firstCopy(), "", os);
     }
 
@@ -338,12 +413,9 @@ private:
         std::map<size_t, std::set<size_t>> relations_;
 
         FillImpl(GenLepton& lepton, std::map<const GenParticleT*, int>& processedParticles) :
-            lepton_(lepton), processedParticles_(processedParticles)
-        {
-        }
+            lepton_(lepton), processedParticles_(processedParticles) {}
 
-        void FillAll(const GenParticleT* particle)
-        {
+        void FillAll(const GenParticleT* particle) {
             size_t last_mother_index = NoneIndex;
 
             if(!particle->motherRefVector().empty()) {
@@ -372,8 +444,7 @@ private:
             }
         }
 
-        void FillDaughters(const GenParticleT* p, size_t mother_index, bool fill_recursively)
-        {
+        void FillDaughters(const GenParticleT* p, size_t mother_index, bool fill_recursively) {
             if(fill_recursively) {
                 if(processedParticles_.count(p)) {
                     const int proc_p_index = processedParticles_.at(p);
@@ -387,6 +458,7 @@ private:
             GenParticle output_p;
             output_p.pdgId = p->pdgId();
             output_p.charge = p->charge();
+            GenParticle::checkPdgId(output_p.pdgCode(), true);
             output_p.isFirstCopy = p->statusFlags().isFirstCopy();
             output_p.isLastCopy = p->statusFlags().isLastCopy();
             output_p.p4 = p->p4();
@@ -405,43 +477,40 @@ private:
             }
         }
     };
-    //template<typename IntVector, typename FloatVector>
-    template<typename IntVector, typename FloatVector, typename ShortVector, typename UShortVector>
+
+    template<typename VectorPt, typename VectorEta, typename VectorPhi, typename VectorMass,
+             typename VectorIdxMother, typename VectorPdgId, typename VectorStatusFlags,
+             typename VectorVx, typename VectorVy, typename VectorVz>
     struct FillImplNano {
         static constexpr size_t NoneIndex = std::numeric_limits<size_t>::max();
 
         GenLepton& lepton_;
         std::set<size_t> & processedParticles_;
         std::map<size_t, std::set<size_t>> relations_;
-        const FloatVector& GenPart_pt_;
-        const FloatVector& GenPart_eta_;
-        const FloatVector& GenPart_phi_;
-        const FloatVector& GenPart_mass_;
-        //const IntVector& GenPart_genPartIdxMother_;
-        const ShortVector& GenPart_genPartIdxMother_;
-        const IntVector& GenPart_pdgId_;
-        //const IntVector& GenPart_statusFlags_;
-        const UShortVector& GenPart_statusFlags_;
+        const VectorPt& GenPart_pt_;
+        const VectorEta& GenPart_eta_;
+        const VectorPhi& GenPart_phi_;
+        const VectorMass& GenPart_mass_;
+        const VectorIdxMother& GenPart_genPartIdxMother_;
+        const VectorPdgId& GenPart_pdgId_;
+        const VectorStatusFlags& GenPart_statusFlags_;
+        const VectorVx& GenPart_vx_;
+        const VectorVy& GenPart_vy_;
+        const VectorVz& GenPart_vz_;
 
         FillImplNano(GenLepton& lepton, std::set<size_t>& processedParticles,
-            const FloatVector& GenPart_pt ,
-            const FloatVector& GenPart_eta,
-            const FloatVector& GenPart_phi,
-            const FloatVector& GenPart_mass,
-            const ShortVector& GenPart_genPartIdxMother,
-            //const IntVector& GenPart_genPartIdxMother,
-            const IntVector& GenPart_pdgId,
-            //const IntVector& GenPart_statusFlags) :
-            const UShortVector& GenPart_statusFlags) :
+                     const VectorPt& GenPart_pt, const VectorEta& GenPart_eta,
+                     const VectorPhi& GenPart_phi, const VectorMass& GenPart_mass,
+                     const VectorIdxMother& GenPart_genPartIdxMother, const VectorPdgId& GenPart_pdgId,
+                     const VectorStatusFlags& GenPart_statusFlags,
+                     const VectorVx& GenPart_vx, const VectorVy& GenPart_vy, const VectorVz& GenPart_vz) :
             lepton_(lepton), processedParticles_(processedParticles),
             GenPart_pt_(GenPart_pt), GenPart_eta_(GenPart_eta), GenPart_phi_(GenPart_phi),
             GenPart_mass_(GenPart_mass), GenPart_genPartIdxMother_(GenPart_genPartIdxMother),
-            GenPart_pdgId_(GenPart_pdgId), GenPart_statusFlags_(GenPart_statusFlags)
-        {
-        }
+            GenPart_pdgId_(GenPart_pdgId), GenPart_statusFlags_(GenPart_statusFlags),
+            GenPart_vx_(GenPart_vx), GenPart_vy_(GenPart_vy), GenPart_vz_(GenPart_vz) {}
 
-        void FillAll(size_t partIdx)
-        {
+        void FillAll(size_t partIdx) {
             size_t last_mother_index = NoneIndex;
 
             if(GenPart_genPartIdxMother_.at(partIdx)>=0) {
@@ -468,8 +537,7 @@ private:
             }
         }
 
-        void FillDaughters(size_t part_idx, size_t mother_index, bool fill_recursively)
-        {
+        void FillDaughters(size_t part_idx, size_t mother_index, bool fill_recursively) {
             if(fill_recursively) {
                 if(processedParticles_.count(part_idx)) {
                     ThrowErrorStatic("particle already processed!");
@@ -477,14 +545,18 @@ private:
             }
 
             GenParticle output_p;
+            output_p.index = part_idx;
             output_p.pdgId = GenPart_pdgId_.at(part_idx);
-            output_p.charge = output_p.getCharge();
+            output_p.charge = GenParticle::getCharge(output_p.pdgId);
+            GenParticle::checkPdgId(output_p.pdgCode(), true);
             GenStatusFlags output_pStatusFlags(GenPart_statusFlags_.at(part_idx));
             output_p.isFirstCopy = output_pStatusFlags.isFirstCopy();
             output_p.isLastCopy = output_pStatusFlags.isLastCopy();
-            double output_pMass=GenParticle::GetMass(output_p.pdgCode(), GenPart_mass_.at(part_idx));
-            output_p.p4 = LorentzVectorM(GenPart_pt_.at(part_idx),GenPart_eta_.at(part_idx),GenPart_phi_.at(part_idx),output_pMass);
-            output_p.vertex = Point3D(0.,0.,0.);
+            const double output_pMass = GenParticle::getMass(output_p.pdgCode(), GenPart_mass_.at(part_idx));
+            output_p.p4 = LorentzVectorM(GenPart_pt_.at(part_idx), GenPart_eta_.at(part_idx),
+                                         GenPart_phi_.at(part_idx), output_pMass);
+            if(GenPart_vx_.size() == GenPart_pt_.size())
+                output_p.vertex = Point3D(GenPart_vx_.at(part_idx), GenPart_vy_.at(part_idx), GenPart_vz_.at(part_idx));
 
             size_t p_index = lepton_.particles_->size();
             if(mother_index != NoneIndex)
@@ -498,33 +570,24 @@ private:
 
                 for(size_t daughter_idx = part_idx+1; daughter_idx<GenPart_pt_.size();daughter_idx++) {
                     if(GenPart_genPartIdxMother_[daughter_idx]==part_idx) {
-                        const int daughter_pdg = std::abs(GenPart_pdgId_[daughter_idx]);
-                        if(GenParticle::gluonQuarks().count(static_cast<GenParticle::PdgId>(daughter_pdg))) {
-                            output_ref.hasMissingDaughters = true;
-                        } else {
-                            FillDaughters(daughter_idx, p_index, true);
-                        }
+                        FillDaughters(daughter_idx, p_index, true);
                     }
                 }
             }
         }
     };
 
-    void initialize()
-    {
+    void initialize() {
         if(particles_->empty())
             ThrowError("unable to initalize from an empty particle tree.");
-
         lastCopy_ = findTerminalCopy(*firstCopy_, false);
         std::set<const GenParticle*> processed;
         fillParticleCollections(*firstCopy_, false, processed);
-
         kind_ = determineKind();
     }
 
     void fillParticleCollections(const GenParticle& particle, bool fromLastCopy,
-                                 std::set<const GenParticle*>& processed)
-    {
+                                 std::set<const GenParticle*>& processed) {
         if(processed.count(&particle)) return;
         processed.insert(&particle);
         fromLastCopy = fromLastCopy || &particle == lastCopy_;
@@ -534,21 +597,23 @@ private:
             ThrowError("last copy flag is not set for a final state particle.");
         }
         if(particle.isLastCopy) {
-            const bool isChargedHadron = GenParticle::ChargedHadrons().count(particle.pdgCode());
-            const bool isNeutralHadron = GenParticle::NeutralHadrons().count(particle.pdgCode());
+            const bool isChargedHadron = GenParticle::isChargedHadron(particle.pdgCode());
+            const bool isNeutralHadron = GenParticle::isNeutralHadron(particle.pdgCode());
             const bool isOther = !(isFinalState || isChargedHadron || isNeutralHadron);
             if(isFinalState) {
                 auto& finalStateSet = fromLastCopy ? finalStateFromDecay_ : finalStateFromRadiation_;
                 finalStateSet.insert(&particle);
 
                 if(fromLastCopy) {
-                    if(GenParticle::NeutralLeptons().count(particle.pdgCode())) {
+                    if(GenParticle::isNeutralLepton(particle.pdgCode())) {
                         ++nFinalStateNeutrinos_;
                     } else {
                         if(particle.pdgCode() == GenParticle::PdgId::electron)
                             ++nFinalStateElectrons_;
                         if(particle.pdgCode() == GenParticle::PdgId::muon)
                             ++nFinalStateMuons_;
+                        if(particle.pdgCode() == GenParticle::PdgId::photon)
+                            ++nFinalStatePhotons_;
                         visibleP4_ += particle.p4;
                     }
                 } else {
@@ -559,8 +624,8 @@ private:
                 hadrons_.insert(&particle);
                 bool isIntermediate = false;
                 for(auto d : particle.daughters) {
-                    if(!GenParticle::ChargedLeptons().count(d->pdgCode())
-                            && !GenParticle::NeutralLeptons().count(d->pdgCode())
+                    if(!GenParticle::isChargedLepton(d->pdgCode())
+                            && !GenParticle::isNeutralLepton(d->pdgCode())
                             && d->pdgCode() != GenParticle::PdgId::photon) {
                         isIntermediate = true;
                         break;
@@ -581,15 +646,14 @@ private:
             fillParticleCollections(*daughter, fromLastCopy, processed);
     }
 
-    Kind determineKind() const
-    {
+    Kind determineKind() const {
         const auto pdg = lastCopy_->pdgCode();
         if(pdg == GenParticle::PdgId::electron)
             return Kind::PromptElectron;
         if(pdg == GenParticle::PdgId::muon)
             return Kind::PromptMuon;
         if(pdg != GenParticle::PdgId::tau)
-            std::cerr << "pdg code = "<<static_cast<int>(pdg) << std::endl;
+            std::cerr << "pdg code = " << lastCopy_->pdgId << std::endl;
         if(nChargedHadrons_ == 0 && nNeutralHadrons_ != 0)
             ThrowError("invalid hadron counts");
         if(nChargedHadrons_ != 0)
@@ -601,15 +665,13 @@ private:
         ThrowError("unable to determine gen lepton kind.");
     }
 
-    [[noreturn]] void ThrowError(const std::string& message) const
-    {
+    [[noreturn]] void ThrowError(const std::string& message) const {
         if(particles_->size())
             PrintDecay(std::cerr);
         ThrowErrorStatic(message);
     }
 
-    [[noreturn]] static void ThrowErrorStatic(const std::string& message)
-    {
+    [[noreturn]] static void ThrowErrorStatic(const std::string& message) {
         throw std::runtime_error("GenLepton: " + message);
     }
 
@@ -620,8 +682,33 @@ private:
     std::set<const GenParticle*> finalStateFromDecay_, finalStateFromRadiation_, hadrons_, intermediateHadrons_, other_;
     LorentzVectorXYZ visibleP4_, radiatedP4_;
     size_t nChargedHadrons_{0}, nNeutralHadrons_{0}, nFinalStateElectrons_{0}, nFinalStateMuons_{0},
-           nFinalStateNeutrinos_{0};
+           nFinalStateNeutrinos_{0}, nFinalStatePhotons_{0};
 };
+
+inline std::ostream& operator<<(std::ostream& os, const GenLepton& lepton) {
+    os << "kind=" << static_cast<int>(lepton.kind()) << " nChargedHadrons=" << lepton.nChargedHadrons()
+       << " nNeutralHadrons=" << lepton.nNeutralHadrons() << " nFinalStatePhotons=" << lepton.nFinalStatePhotons()
+       << " vis_pt=" << lepton.visibleP4().pt() << " vis_eta=" << lepton.visibleP4().eta()
+       << " vis_phi=" << lepton.visibleP4().phi() << " vis_E=" << lepton.visibleP4().energy()
+       << " vis_m=" << lepton.visibleP4().mass() << " rad_pt=" << lepton.radiatedP4().pt()
+       << " rad_eta=" << lepton.radiatedP4().eta() << " rad_phi=" << lepton.radiatedP4().phi()
+       << " rad_E=" << lepton.radiatedP4().energy() << " rad_m=" << lepton.radiatedP4().mass();
+    if(!lepton.mothers().empty()) {
+        const GenParticle& mother = **lepton.mothers().begin();
+        os << " mother_index=" << mother.index <<  " mother_pdgId=" << mother.pdgId;
+    }
+    os << '\n';
+    lepton.PrintDecay(os);
+    return os;
+}
+
+inline const GenLepton* findLeptonByIndex(const std::vector<GenLepton>& leptons, size_t index) {
+    for(const auto& lepton : leptons) {
+        if(lepton.firstCopy().index == index || lepton.lastCopy().index == index)
+            return &lepton;
+    }
+    return nullptr;
+}
 
 } // namespace gen_truth
 } // namespace reco_tau

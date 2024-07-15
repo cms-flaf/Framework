@@ -19,5 +19,5 @@ DYto2L_M-50_madgraphMLM:
   crossSectionStitch: DY_NLO
   isReference: true
   generator: madgraph
-SingleMuon_Run2022C:
-  sampleType: data
+Muon_Run2022E:
+  sampleType: data    

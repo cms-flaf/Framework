@@ -619,3 +619,20 @@ VBFHHto2B2Vto2L2Nu_CV-m2p12_C2V-3p87_C3-m5p96:
   generator: madgraph
   #crossSection: To_be_added
 ############## Finished non -Resonant Signal samples)##############
+############## Data ##############
+EGamma_Run2022C:
+  sampleType: data
+EGamma_Run2022D:
+  sampleType: data 
+Muon_Run2022C:
+  sampleType: data  
+Muon_Run2022D:
+  sampleType: data  
+SingleMuon_Run2022C:
+  sampleType: data  
+DoubleMuon_Run2022C:
+  sampleType: data  
+MuonEG_Run2022C:
+  sampleType: data  
+MuonEG_Run2022D:
+  sampleType: data  

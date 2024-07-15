@@ -1,17 +1,23 @@
 GLOBAL:
   era: Run3_2022
-  luminosity: 1000. # fb-1
+  luminosity: 7980.4 # fb-1
   fs_nanoAOD:
   - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/skim_2024_v1/Run3_2022'
   nano_version: v14
   crossSectionsFile : config/crossSections13TeV.yaml
   use_stitching: false
+GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-250:
+   sampleType: GluGluToRadion
+   mass: 250
+   spin: 0
+   crossSection: 1pb
+   generator: madgraph
 
 DYto2L_M-50_madgraphMLM:
   sampleType: DY
   crossSection: DY_NNLO
   crossSectionStitch: DY_NLO
   isReference: true
-
+  generator: madgraph
 SingleMuon_Run2022C:
   sampleType: data

@@ -99,7 +99,7 @@ EOF
   run_cmd cd "$cmssw_base/src"
   run_cmd eval `scramv1 runtime -sh`
   if ! [ -d "CombineHarvester" ]; then
-    git clone https://github.com/cms-analysis/CombineHarvester.git CombineHarvester
+    run_cmd git clone https://github.com/cms-analysis/CombineHarvester.git CombineHarvester
     run_cmd scram b -j8
   fi
   run_cmd mkdir -p "$this_dir/inference/data"
@@ -198,7 +198,7 @@ action() {
   source "$( law completion )"
   source /cvmfs/cms.cern.ch/rucio/setup-py3.sh &> /dev/null
   alias cmsEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY CENTRAL_STORAGE=$CENTRAL_STORAGE ANALYSIS_BIG_DATA_PATH=$ANALYSIS_BIG_DATA_PATH DEFAULT_CMSSW_BASE=$DEFAULT_CMSSW_BASE DEFAULT_CMSSW_ARCH=$DEFAULT_CMSSW_ARCH $ANALYSIS_PATH/RunKit/cmsEnv.sh"
-  alias cmbEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY CENTRAL_STORAGE=$CENTRAL_STORAGE ANALYSIS_BIG_DATA_PATH=$ANALYSIS_BIG_DATA_PATH /cvmfs/cms.cern.ch/common/cmssw-cc7 -- $ANALYSIS_PATH/cmb_env.sh"
+  alias cmbEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY CENTRAL_STORAGE=$CENTRAL_STORAGE ANALYSIS_BIG_DATA_PATH=$ANALYSIS_BIG_DATA_PATH $ANALYSIS_PATH/cmb_env.sh"
 }
 
 if [ "X$1" = "Xinstall_cmssw" ]; then

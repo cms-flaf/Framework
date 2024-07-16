@@ -1,8 +1,8 @@
 GLOBAL:
-  era: Run3_2022
-  luminosity: 7980.4 # pb-1
+  era: Run3_2022EE
+  luminosity: 26671.7 # pb-1
   fs_nanoAOD:
-  - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/skim_2024_v1/Run3_2022'
+  - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/skim_2024_v1/Run3_2022EE'
   nano_version: v14
   crossSectionsFile : config/crossSections13TeV.yaml
   use_stitching: false
@@ -14,31 +14,33 @@ DYto2L_M-50_madgraphMLM:
   isReference: true
   generator: madgraph
 ############## Data ##############
-EGamma_Run2022C:
+EGamma_Run2022E:
   sampleType: data
-EGamma_Run2022D:
+EGamma_Run2022F:
   sampleType: data
-Muon_Run2022C:
+EGamma_Run2022G:
   sampleType: data
-Muon_Run2022D:
+Muon_Run2022E:
   sampleType: data
-SingleMuon_Run2022C:
+Muon_Run2022F:
   sampleType: data
-DoubleMuon_Run2022C:
+Muon_Run2022G:
   sampleType: data
-MuonEG_Run2022C:
+MuonEG_Run2022E:
   sampleType: data
-MuonEG_Run2022D:
+MuonEG_Run2022F:
   sampleType: data
-Tau_Run2022C:
+MuonEG_Run2022G:
   sampleType: data
-Tau_Run2022D:
+Tau_Run2022E:
   sampleType: data
-JetHT_Run2022C:
+Tau_Run2022F:
   sampleType: data
-JetMET_Run2022C:
+Tau_Run2022G:
   sampleType: data
-MET_Run2022C:
+JetMET_Run2022E:
   sampleType: data
-JetMET_Run2022D:
+JetMET_Run2022F:
+  sampleType: data
+JetMET_Run2022G:
   sampleType: data

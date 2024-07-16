@@ -584,6 +584,10 @@ VBFHHto2B2V_CV-m2p12_C2V-3p87_C3-m5p96:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb
+VBFHHto2B2V_CV-m1p83_C2V-3p57_C3-m3p39:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: 1pb
 VBFHHto2B2Vto2L2Nu_CV_1_C2V_0_C3_1:
   sampleType: HHnonRes
   generator: madgraph
@@ -617,6 +621,10 @@ VBFHHto2B2Vto2L2Nu_CV-m1p60_C2V-2p72_C3-m1p36:
   generator: madgraph
   crossSection: 1pb
 VBFHHto2B2Vto2L2Nu_CV-m2p12_C2V-3p87_C3-m5p96:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: 1pb
+VBFHHto2B2Vto2L2Nu_CV-m1p83_C2V-3p57_C3-m3p39:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb

@@ -101,7 +101,7 @@ GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-1800:
   mass: 1800
   spin: 0
   crossSection: 1pb
-  generator: madgraph 
+  generator: madgraph
 GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-2000:
   sampleType: GluGluToRadion
   mass: 2000
@@ -119,7 +119,7 @@ GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-3000:
   mass: 3000
   spin: 0
   crossSection: 1pb
-  generator: madgraph 
+  generator: madgraph
 GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-4000:
   sampleType: GluGluToRadion
   mass: 4000
@@ -587,7 +587,7 @@ VBFHHto2B2V_CV-m2p12_C2V-3p87_C3-m5p96:
 VBFHHto2B2V_CV-m1p83_C2V-3p57_C3-m3p39:
   sampleType: HHnonRes
   generator: madgraph
-  crossSection: 1pb 
+  crossSection: 1pb
 VBFHHto2B2Vto2L2Nu_CV_1_C2V_0_C3_1:
   sampleType: HHnonRes
   generator: madgraph

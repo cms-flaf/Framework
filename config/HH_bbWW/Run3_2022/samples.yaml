@@ -23,7 +23,7 @@ GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-280:
   mass: 280
   spin: 0
   crossSection: 1pb
-  generator: madgraph  
+  generator: madgraph
 GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-300:
   sampleType: GluGluToRadion
   mass: 300
@@ -34,7 +34,7 @@ GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-350:
   sampleType: GluGluToRadion
   mass: 350
   spin: 0
-  crossSection: 1pb    
+  crossSection: 1pb 
   generator: madgraph
 GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-450:
   sampleType: GluGluToRadion
@@ -58,7 +58,7 @@ GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-650:
   sampleType: GluGluToRadion
   mass: 650
   spin: 0
-  crossSection: 1pb    
+  crossSection: 1pb 
   generator: madgraph
 GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-700:
   sampleType: GluGluToRadion
@@ -101,6 +101,7 @@ GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-1800:
   mass: 1800
   spin: 0
   crossSection: 1pb
+  generator: madgraph    
 GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-2000:
   sampleType: GluGluToRadion
   mass: 2000
@@ -118,6 +119,7 @@ GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-3000:
   mass: 3000
   spin: 0
   crossSection: 1pb 
+  generator: madgraph    
 GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-4000:
   sampleType: GluGluToRadion
   mass: 4000
@@ -262,7 +264,7 @@ GluGlutoBulkGravitontoHHto2B2Vto2B2JLNu_M-5000:
   mass: 5000
   spin: 2
   crossSection: 1pb
-  generator: madgraph    
+  generator: madgraph 
 ############## Signals(DL,S=0)##############
 GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-250:
   sampleType: GluGluToRadion
@@ -536,103 +538,86 @@ GluGlutoBulkGravitontoHHto2B2Vto2B2L2Nu_M-5000:
 GluGlutoHHto2B2V_kl-1p00_kt-1p00_c2-0p00:
   sampleType: HHnonRes
   generator: powheg
-  #crossSection: To_be_added
+  crossSection: 1pb
 GluGlutoHHto2B2Vto2L2Nu_kl-1p00_kt-1p00_c2-0p00:
   sampleType: HHnonRes
   generator: powheg
-  #crossSection: To_be_added
+  crossSection: 1pb
 GluGlutoHHto2B2Vto2L2Nu_kl-2p45_kt-1p00_c2-0p00:
   sampleType: HHnonRes
   generator: powheg
-  #crossSection: To_be_added
+  crossSection: 1pb
 #######VBF########
 VBFHHto2B2V_CV_1_C2V_0_C3_1:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added
+  crossSection: 1pb
 VBFHHto2B2V_CV_1_C2V_1_C3_1:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added  
+  crossSection: 1pb
 VBFHHto2B2V_CV-1p74_C2V-1p37_C3-14p4:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added  
+  crossSection: 1pb 
 VBFHHto2B2V_CV-m0p012_C2V-0p030_C3-10p2:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added  
+  crossSection: 1pb 
 VBFHHto2B2V_CV-m0p758_C2V-1p44_C3-m19p3:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added  
+  crossSection: 1pb 
 VBFHHto2B2V_CV-m0p962_C2V-0p959_C3-m1p43:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added  
+  crossSection: 1pb 
 VBFHHto2B2V_CV-m1p21_C2V-1p94_C3-m0p94:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added  
+  crossSection: 1pb 
 VBFHHto2B2V_CV-m1p60_C2V-2p72_C3-m1p36:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added  
+  crossSection: 1pb 
 VBFHHto2B2V_CV-m2p12_C2V-3p87_C3-m5p96:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added  
+  crossSection: 1pb 
 VBFHHto2B2Vto2L2Nu_CV_1_C2V_0_C3_1:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added  
+  crossSection: 1pb 
 VBFHHto2B2Vto2L2Nu_CV_1_C2V_1_C3_1:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added  
+  crossSection: 1pb 
 VBFHHto2B2Vto2L2Nu_CV-1p74_C2V-1p37_C3-14p4:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added  
+  crossSection: 1pb 
 VBFHHto2B2Vto2L2Nu_CV-m0p012_C2V-0p030_C3-10p2:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added  
+  crossSection: 1pb 
 VBFHHto2B2Vto2L2Nu_CV-m0p758_C2V-1p44_C3-m19p3:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added  
+  crossSection: 1pb
 VBFHHto2B2Vto2L2Nu_CV-m0p962_C2V-0p959_C3-m1p43:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added
+  crossSection: 1pb
 VBFHHto2B2Vto2L2Nu_CV-m1p21_C2V-1p94_C3-m0p94:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added
+  crossSection: 1pb
 VBFHHto2B2Vto2L2Nu_CV-m1p60_C2V-2p72_C3-m1p36:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added
+  crossSection: 1pb
 VBFHHto2B2Vto2L2Nu_CV-m2p12_C2V-3p87_C3-m5p96:
   sampleType: HHnonRes
   generator: madgraph
-  #crossSection: To_be_added
+  crossSection: 1pb
 ############## Finished non -Resonant Signal samples)##############
-############## Data ##############
-EGamma_Run2022C:
-  sampleType: data
-EGamma_Run2022D:
-  sampleType: data 
-Muon_Run2022C:
-  sampleType: data  
-Muon_Run2022D:
-  sampleType: data  
-SingleMuon_Run2022C:
-  sampleType: data  
-DoubleMuon_Run2022C:
-  sampleType: data  
-MuonEG_Run2022C:
-  sampleType: data  
-MuonEG_Run2022D:
-  sampleType: data  

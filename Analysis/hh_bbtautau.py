@@ -6,17 +6,13 @@ from Analysis.HistHelper import *
 from Common.Utilities import *
 
 
-
-scales = ['Up', 'Down']
-
-
 def createKeyFilterDict(global_cfg_dict):
     reg_dict = {}
     filter_str = ""
     channels_to_consider = global_cfg_dict['channelSelection']
     qcd_regions_to_consider = global_cfg_dict['QCDRegions']
     categories_to_consider = global_cfg_dict["categories"]
-    triggers = global_cfg_dict['triggers']
+    triggers = global_cfg_dict['hist_triggers']
     mass_cut_limits = global_cfg_dict['mass_cut_limits']
     for ch in channels_to_consider:
         for reg in qcd_regions_to_consider:
@@ -59,9 +55,9 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
     print(f"Initially Yield for data in SS AntiIso region is{key_D} is {n_data_D}")
     for sample in all_samples_list:
         if sample=='data' or 'GluGluToBulkGraviton' in sample or 'GluGluToRadion' in sample or 'VBFToBulkGraviton' in sample or 'VBFToRadion' in sample or sample=='QCD':
-            print(f"sample {sample} is not considered")
+            #print(f"sample {sample} is not considered")
             continue
-        print(sample)
+        #print(sample)
         # find kappa value
         hist_sample = histograms[sample]
         #print(histograms[sample].keys())
@@ -282,7 +278,6 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
 def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.df = defineAllP4(dfForHistograms.df)
-    #dfForHistograms.defineL1PrefiringRelativeWeights()
     dfForHistograms.defineChannels()
     dfForHistograms.defineQCDRegions()
     dfForHistograms.defineBoostedVariables()

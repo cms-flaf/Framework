@@ -80,6 +80,11 @@ triggers:
   muTau: HLT_singleMu || HLT_mutau || HLT_singleTau || HLT_MET
   tauTau: HLT_ditau || HLT_singleTau || HLT_MET
 
+hist_triggers:
+  eTau:  HLT_singleEle || HLT_etau || HLT_singleTau || HLT_MET
+  muTau: HLT_singleMu || HLT_mutau || HLT_singleTau || HLT_MET
+  tauTau: HLT_ditau || HLT_singleTau
+
 btag_wps:
   res2b: Medium
   res1b: Medium
@@ -97,28 +102,106 @@ scales:
   - Up
   - Down
 
+unc_2018:
+  - JES_BBEC1_2018
+  - JES_Absolute_2018
+  - JES_EC2_2018
+  - JES_HF_2018
+  - JES_RelativeSample_2018
+unc_2017:
+  -JES_BBEC1_2017
+  - JES_Absolute_2017
+  - JES_EC2_2017
+  - JES_HF_2017
+  - JES_RelativeSample_2017
+unc_2016preVFP:
+  -JES_BBEC1_2016preVFP
+  - JES_Absolute_2016preVFP
+  - JES_EC2_2016preVFP
+  - JES_HF_2016preVFP
+  - JES_RelativeSample_2016preVFP
+unc_2016postVFP:
+  -JES_BBEC1_2016postVFP
+  - JES_Absolute_2016postVFP
+  - JES_EC2_2016postVFP
+  - JES_HF_2016postVFP
+  - JES_RelativeSample_2016postVFP
+
+sample_types_to_merge:
+  - DY
+  - TT
+  - W
+
+uncs_to_exclude :
+  Run2_2018:
+    - JES_BBEC1_2017
+    - JES_Absolute_2017
+    - JES_EC2_2017
+    - JES_HF_2017
+    - JES_RelativeSample_2017
+    - JES_BBEC1_2016preVFP
+    - JES_Absolute_2016preVFP
+    - JES_EC2_2016preVFP
+    - JES_HF_2016preVFP
+    - JES_RelativeSample_2016preVFP
+    - JES_BBEC1_2016postVFP
+    - JES_Absolute_2016postVFP
+    - JES_EC2_2016postVFP
+    - JES_HF_2016postVFP
+    - JES_RelativeSample_2016postVFP
+  Run2_2017:
+    - JES_BBEC1_2018
+    - JES_Absolute_2018
+    - JES_EC2_2018
+    - JES_HF_2018
+    - JES_RelativeSample_2018
+    - JES_BBEC1_2016preVFP
+    - JES_Absolute_2016preVFP
+    - JES_EC2_2016preVFP
+    - JES_HF_2016preVFP
+    - JES_RelativeSample_2016preVFP
+    - JES_BBEC1_2016postVFP
+    - JES_Absolute_2016postVFP
+    - JES_EC2_2016postVFP
+    - JES_HF_2016postVFP
+    - JES_RelativeSample_2016postVFP
+  Run2_2016:
+    - JES_BBEC1_2018
+    - JES_Absolute_2018
+    - JES_EC2_2018
+    - JES_HF_2018
+    - JES_RelativeSample_2018
+    - JES_BBEC1_2017
+    - JES_Absolute_2017
+    - JES_EC2_2017
+    - JES_HF_2017
+    - JES_RelativeSample_2017
+    - JES_BBEC1_2016preVFP
+    - JES_Absolute_2016preVFP
+    - JES_EC2_2016preVFP
+    - JES_HF_2016preVFP
+    - JES_RelativeSample_2016preVFP
+  Run2_2016_HIPM:
+    - JES_BBEC1_2018
+    - JES_Absolute_2018
+    - JES_EC2_2018
+    - JES_HF_2018
+    - JES_RelativeSample_2018
+    - JES_BBEC1_2017
+    - JES_Absolute_2017
+    - JES_EC2_2017
+    - JES_HF_2017
+    - JES_RelativeSample_2017
+    - JES_BBEC1_2016postVFP
+    - JES_Absolute_2016postVFP
+    - JES_EC2_2016postVFP
+    - JES_HF_2016postVFP
+    - JES_RelativeSample_2016postVFP
 bjet_vars:
   - b1_pt
   - b2_pt
   - b1_eta
   - b2_eta
-
-filters :
-  channels:
-    - eTau,eTau && HLT_singleEle
-    - muTau,muTau && HLT_singleMu
-    - tauTau,tauTau && HLT_ditau
-  QCD_regions:
-    - (OS_Iso,OS_Iso)
-    - (SS_Iso,SS_Iso)
-    - (OS_AntiIso,OS_AntiIso)
-    - (SS_AntiIso,SS_AntiIso)
-  categories:
-    - (res2b, res2b)
-    - (res1b, res1b)
-    - (inclusive, return true;)
-    - (btag_shape, return true;)
-    - (baseline, return true;)
 
 FatJetObservables :
   - area
@@ -191,3 +274,8 @@ unc_to_not_consider_boosted:
   - bTagShapeSF_hfstats2
   - bTagShapeSF_cferr1
   - bTagShapeSF_cferr2
+
+vars_to_plot:
+    - tautau_m_vis
+    - bb_m_vis
+    - { name: kinFit_m, need_cache: true }

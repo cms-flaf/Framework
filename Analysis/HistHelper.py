@@ -7,19 +7,7 @@ if __name__ == "__main__":
 
 import Common.Utilities as Utilities
 
-scales = ['Up','Down']
-unc_2018 = ['JES_BBEC1_2018', 'JES_Absolute_2018', 'JES_EC2_2018', 'JES_HF_2018', 'JES_RelativeSample_2018' ]
-unc_2017 = ['JES_BBEC1_2017', 'JES_Absolute_2017', 'JES_EC2_2017', 'JES_HF_2017', 'JES_RelativeSample_2017' ]
-unc_2016preVFP = ['JES_BBEC1_2016preVFP', 'JES_Absolute_2016preVFP', 'JES_EC2_2016preVFP', 'JES_HF_2016preVFP', 'JES_RelativeSample_2016preVFP' ]
-unc_2016postVFP = ['JES_BBEC1_2016postVFP', 'JES_Absolute_2016postVFP', 'JES_EC2_2016postVFP', 'JES_HF_2016postVFP', 'JES_RelativeSample_2016postVFP' ]
-sample_types_to_merge = ['DY','TT','W']
 
-uncs_to_exclude = {
-    'Run2_2018': unc_2017+ unc_2016preVFP + unc_2016postVFP,
-    'Run2_2017': unc_2018+ unc_2016preVFP + unc_2016postVFP,
-    'Run2_2016': unc_2017+ unc_2018 + unc_2016preVFP,
-    'Run2_2016_HIPM':unc_2017+ unc_2018 + unc_2016postVFP,
-    }
 
 def GetUncNameTypes(unc_cfg_dict):
     uncNames = []
@@ -60,7 +48,7 @@ def GetSamplesStuff(bckg_samples,sample_cfg_dict,global_cfg_dict,wantSignals=Tru
     return all_samples_list, all_samples_types
 
 
-def CreateNamesDict(histNamesDict, sample_types, uncName, scales, sample_cfg_dict,global_cfg_dict):
+def CreateNamesDict(histNamesDict, sample_types, uncName, sample_cfg_dict,global_cfg_dict):
     signals = list(global_cfg_dict['signal_types'])
     for sample_key in sample_types.keys():
         final_sampleKey=f"{sample_key}"
@@ -72,7 +60,7 @@ def CreateNamesDict(histNamesDict, sample_types, uncName, scales, sample_cfg_dic
                 histNamesDict[final_sampleKey] = (sample_key, 'Central','Central')
                 continue
             else:
-                for scale in scales:
+                for scale in global_cfg_dict['scales']:
                     histName = f"{final_sampleKey}_{uncName}{scale}"
                     histKey = (sample_key,  uncName, scale)
                     histNamesDict[histName] = histKey

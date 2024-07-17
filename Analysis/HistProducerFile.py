@@ -200,6 +200,8 @@ if __name__ == "__main__":
     if not key_not_exist and ROOT.RDataFrame('Events',args.inFile).Count().GetValue() == 0:
         df_empty = True
 
+    scales = global_cfg_dict['scales']
+
     create_new_hist = key_not_exist or df_empty
 
     if not create_new_hist:

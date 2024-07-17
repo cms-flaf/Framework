@@ -46,7 +46,6 @@ def checkFile(inFileRoot, channels, qcdRegions, categories, var):
             for cat in categories:
                 if cat == 'boosted' and (var.startswith('b1') or var.startswith('b2')): continue
                 if cat != 'boosted' and var.startswith('SelectedFatJet'): continue
-                #if cat == 'boosted' and uncName in global_cfg_dict['unc_to_not_consider_boosted']: continue
                 #print(cat, var)
                 dir_2 = dir_1.Get(cat)
                 keys_histograms = [str(key.GetName()) for key in dir_2.GetListOfKeys()]
@@ -55,7 +54,7 @@ def checkFile(inFileRoot, channels, qcdRegions, categories, var):
     return True
 
 
-def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, categories, uncSource,sample_name):
+def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, categories, uncSource,sample_name,sample_types_to_merge):
     #print("STARTING GET HIST DICT")
     #print(sample_name)
     for channel in channels:
@@ -188,6 +187,8 @@ if __name__ == "__main__":
     channels = list(global_cfg_dict['channelSelection'])
     signals = list(global_cfg_dict['signal_types'])
     unc_to_not_consider_boosted = list(global_cfg_dict['unc_to_not_consider_boosted'])
+    sample_types_to_merge = list(global_cfg_dict['sample_types_to_merge'])
+    scales = list(global_cfg_dict['scales'])
     files_separated = {}
     all_histograms ={}
     #all_histograms_1D ={}
@@ -230,10 +231,10 @@ if __name__ == "__main__":
         #print("AFTER CHECK FILES")
         #print(inFileName)
         #print(sample_name)
-        if sample_name == 'data':
-            print("BEFORE GET HIST DICT DEFINING SAMPLES_TYPES")
-            print(sample_name)
-        getHistDict(args.var,all_histograms, inFileRoot,channels, QCDregions, categories, args.uncSource,sample_name)
+        #if sample_name == 'data':
+            #print("BEFORE GET HIST DICT DEFINING SAMPLES_TYPES")
+            #print(sample_name)
+        getHistDict(args.var,all_histograms, inFileRoot,channels, QCDregions, categories, args.uncSource,sample_name,sample_types_to_merge)
         #print(all_histograms)
         if sample_name == 'data':
             all_samples_types['data'] = ['data']
@@ -246,14 +247,16 @@ if __name__ == "__main__":
         inFileRoot.Close()
         #if sample_name == 'data':
         #    print("AFTER DEFINING SAMPLES_TYPES")
-        print(sample_name)
+        #print(sample_name)
     #print()
     #print("STARTING MERGE HISTOGRAMS PER TYPE")
     #print()
     #print('data' in all_histograms.keys())
     MergeHistogramsPerType(all_histograms)
     all_histograms_1D=GetBTagWeightDict(args.var,all_histograms)
-    fixNegativeContributions=False
+    fixNegativeContributions = False
+    if args.var != 'kinFit_m':
+        fixNegativeContributions=True
     #if args.var == 'kinFit_m':
         #fixNegativeContributions=FatJetObservables
     #    fixNegativeContributions=False

@@ -1,5 +1,5 @@
 GLOBAL:
-  era: 'Run2_2018'
+  era: 'Run2_2018' # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVDatasetsUL2018
   luminosity: 59830.
   fs_nanoAOD:
   - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2018'

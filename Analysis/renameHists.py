@@ -166,7 +166,7 @@ for channel in channels:
         for key_hist in dir_1.GetListOfKeys():
             key_name = key_hist.GetName()
             if key_name not in all_histnames.keys():
-                print(f"{key_name} not in all_histnames keys")
+                #print(f"{key_name} not in all_histnames keys")
                 continue
             #key_hist = dir_1.Get(key_name)
             obj = key_hist.ReadObj()

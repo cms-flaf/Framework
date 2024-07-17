@@ -211,7 +211,7 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def workflow_requires(self):
         branch_set = set()
-        for idx, prod_branches in prod_branches.items():
+        for idx, prod_branches in self.branch_map.items():
             branch_set.update(prod_branches)
         return { "anaTuple" : AnaTupleTask.req(self, branches=tuple(branch_set)) }
 
@@ -277,7 +277,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_name, sample_type = self.branch_data
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         producer_anacachetuples = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheTupleProducer.py')
-        global_config_path = os.path.join(self.ana_path(),'config','HH_bbtautau','global.yaml')
+        global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
         thread = threading.Thread(target=update_kinit_thread)
         thread.start()
         try:
@@ -285,7 +285,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             input_file = self.input()[0]
 
             with input_file.localize("r") as local_input, self.output().localize("w") as outFile:
-                anaCacheTupleProducer_cmd = ['python3', producer_anacachetuples,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config]
+                anaCacheTupleProducer_cmd = ['python3', producer_anacachetuples,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config, '--globalConfig', global_config]
                 if self.global_params['store_noncentral'] and sample_type != 'data':
                     anaCacheTupleProducer_cmd.extend(['--compute_unc_variations', 'True'])
                 if 'deepTau2p5' in self.version.split('_'):

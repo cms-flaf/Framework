@@ -15,55 +15,6 @@ def GetUncNameTypes(unc_cfg_dict):
     uncNames.extend([unc for unc in unc_cfg_dict['shape']])
     return uncNames
 
-def GetSamplesStuff(bckg_samples,sample_cfg_dict,global_cfg_dict,wantSignals=True,wantAllMasses=True,wantOneMass=True,mass=500):
-    all_samples_list = []
-    all_samples_types = {'data':['data'],}
-    signals = list(global_cfg_dict['signal_types'])
-    for sample in sample_cfg_dict.keys():
-        if sample == 'GLOBAL' : continue
-        isSignal = sample in signals
-        isBckg = sample in bckg_samples
-        if 'sampleType' not in sample_cfg_dict[sample].keys(): continue
-        sample_type = sample_cfg_dict[sample]['sampleType']
-        if not isSignal and not isBckg: continue
-        sample_name = sample_type if sample_type in sample_types_to_merge else sample
-        if wantOneMass:
-            if 'mass' in sample_cfg_dict[sample].keys():
-                if sample_type in signals and sample_cfg_dict[sample]['mass']!=mass : continue
-        if not wantAllMasses and not wantOneMass:
-            if 'mass' in sample_cfg_dict[sample].keys(): continue
-        isSignal = False
-        if sample_type in signals:
-            isSignal = True
-            if not wantSignals: continue
-            sample_name=sample
-        if sample_name not in all_samples_types.keys() :
-            all_samples_types[sample_name] = []
-        all_samples_types[sample_name].append(sample)
-        if not wantAllMasses and isSignal: continue
-        if sample_type in all_samples_list: continue
-        all_samples_list.append(sample_name)
-        #print(sample_type, sample_name, all_samples_types)
-    print(all_samples_types)
-    return all_samples_list, all_samples_types
-
-
-def CreateNamesDict(histNamesDict, sample_types, uncName, sample_cfg_dict,global_cfg_dict):
-    signals = list(global_cfg_dict['signal_types'])
-    for sample_key in sample_types.keys():
-        final_sampleKey=f"{sample_key}"
-        if sample_key == 'data':
-            histNamesDict[final_sampleKey] = (sample_key, 'Central','Central')
-            continue
-        else:
-            if uncName == 'Central':
-                histNamesDict[final_sampleKey] = (sample_key, 'Central','Central')
-                continue
-            else:
-                for scale in global_cfg_dict['scales']:
-                    histName = f"{final_sampleKey}_{uncName}{scale}"
-                    histKey = (sample_key,  uncName, scale)
-                    histNamesDict[histName] = histKey
 
 
 

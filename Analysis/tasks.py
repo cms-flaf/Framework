@@ -106,7 +106,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         n = 0
         branches = {}
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
-        samples_to_consider = GetSamples(self.samples, self.setup.backgrounds)
+        samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
         for var_entry in self.global_params['vars_to_plot']:
             var_name, need_cache = parseVarEntry(var_entry)
             for prod_br,(sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
@@ -178,7 +178,7 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branches = {}
         histProducerFile_map = HistProducerFileTask.req(self,branch=-1, branches=()).create_branch_map()
         all_samples = {}
-        samples_to_consider = GetSamples(self.samples, self.setup.backgrounds)
+        samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
         for n_branch, (sample_name, prod_br, var, need_cache)  in histProducerFile_map.items():
             if sample_name not in samples_to_consider: continue
             if sample_name not in all_samples:
@@ -273,7 +273,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
         output_path_hist_prod_sample_data = os.path.join(self.version, self.period, 'split', var, f'data.root')
         all_inputs = [(self.remote_target(output_path_hist_prod_sample_data, fs=self.fs_histograms),'data')]
-        samples_to_consider = GetSamples(self.samples, self.setup.backgrounds)
+        samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
         for sample_name in self.samples.keys():
             if sample_name not in samples_to_consider: continue
             output_path_hist_prod_sample = os.path.join(self.version, self.period, 'split', var, f'{sample_name}.root')

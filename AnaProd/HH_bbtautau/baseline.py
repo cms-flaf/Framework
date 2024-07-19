@@ -61,6 +61,7 @@ def RecoHttCandidateSelection(df, config):
     df = df.Define("Muon_B2_muTau_1", f"""
         Muon_B0 &&  ( (Muon_tightId && Muon_pfRelIso04_all < 0.15) || (Muon_highPtId && Muon_tkRelIso < 0.15) )
     """)
+        #Muon_B0 &&  (Muon_tightId && Muon_pfRelIso04_all < 0.15)
 
 
     for ch in [ "eTau", "muTau", "tauTau" ]:

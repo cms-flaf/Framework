@@ -1,7 +1,6 @@
 GLOBAL:
-  era: 'Run2_2017'
-  luminosity : 41480. # pb^-1 2016 postVFP
-  #luminosity: 36310.
+  era: 'Run2_2017' # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVDatasetsUL2017
+  luminosity : 41480.
   fs_nanoAOD:
   - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2017'
   nano_version: v12
@@ -24,21 +23,18 @@ GLOBAL:
   sampleSelection:
     - drop ^VBFToRadion*
     - drop ^VBFToBulkGraviton*
-    #- drop ^.*NoFully
+    - drop ^.*NoFully
     - drop ^.*Enriched
     - drop ^JetHT_Run201*
-    - drop ^*_ext*
     - drop ^WWTo*
     - drop ^WZTo*
     - drop ^ZZTo*
-    - drop ^ttHToNonbb*
-    - drop ^ttHTobb*
     - drop ^TTZToLLNuNu_M*
     - drop ^TTZZTo*
     - drop ^TTZHTo*
-    - drop ^TTWHTo*
     - drop ^TTHHTo*
-    #- drop ^.*erdON
+    - drop ^.*ext*
+    - drop ^.*erdON
 
 ############## Data ##############
 SingleElectron_Run2017B:
@@ -807,7 +803,7 @@ DYJetsToLL_M-50-amcatnloFXFX:
   sampleType: DY
   generator: amcatnlo
   isReference: True
-  crossSection: DY_LO
+  crossSection: DY_NNLO
   crossSectionStitch: DY_NLO
 DYJetsToLL_0J-amcatnloFXFX:
   sampleType: DY
@@ -907,11 +903,11 @@ ZHToTauTau_M125_ext1:
 ZH_Hbb_Zll:
   sampleType: VH
   generator: powheg
-  crossSection: ZH_HToBB_ZToLL
+  crossSection: ZH_Hbb_Zll
 ZH_Hbb_Zqq:
   sampleType: VH
   generator: powheg
-  crossSection: ZH_HToBB_ZToQQ
+  crossSection: ZH_Hbb_Zqq
   HWplusJ_HToWW_M125:
   sampleType: VH
   generator: powheg

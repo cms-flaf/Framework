@@ -55,6 +55,18 @@ mutau:
         cut: TrigObj_id==15 && (TrigObj_filterBits&32)!=0  && (TrigObj_filterBits&1)!=0
       doMatching: True
 
+MET:
+    channels:
+      - tauTau
+      - muTau
+      - eTau
+    path:
+      - HLT_PFMETNoMu120_PFMHTNoMu120_IDTight
+    legs:
+      - offline_obj:
+          type: MET
+          cut: metnomu_pt > 150
+        doMatching: False
 
 singleEle:
   channels:
@@ -71,7 +83,18 @@ singleEle:
       online_obj:
         cut: TrigObj_id == 11 && (TrigObj_filterBits&2)!=0
       doMatching: True
-
+MET:
+    channels:
+      - tauTau
+      - muTau
+      - eTau
+    path:
+      - HLT_PFMETNoMu120_PFMHTNoMu120_IDTight
+    legs:
+      - offline_obj:
+          type: MET
+          cut: metnomu_pt > 150
+        doMatching: False
 etau:
   channels:
     - eTau

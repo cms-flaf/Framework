@@ -274,8 +274,3 @@ unc_to_not_consider_boosted:
   - bTagShapeSF_hfstats2
   - bTagShapeSF_cferr1
   - bTagShapeSF_cferr2
-
-vars_to_plot:
-    - tautau_m_vis
-    - bb_m_vis
-    - { name: kinFit_m, need_cache: true }

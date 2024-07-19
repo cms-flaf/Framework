@@ -17,14 +17,14 @@ from Analysis.hh_bbtautau import *
 processes= ["DY","EWK_WminusToLNu","EWK_WplusToLNu","EWK_ZTo2L","EWK_ZTo2Nu","GluGluHToTauTau_M125","GluGluHToWWTo2L2Nu_M125","GluGluToBulkGravitonToHHTo2B2Tau_M-1000","GluGluToBulkGravitonToHHTo2B2Tau_M-1250","GluGluToBulkGravitonToHHTo2B2Tau_M-1500","GluGluToBulkGravitonToHHTo2B2Tau_M-1750","GluGluToBulkGravitonToHHTo2B2Tau_M-2000","GluGluToBulkGravitonToHHTo2B2Tau_M-250","GluGluToBulkGravitonToHHTo2B2Tau_M-2500","GluGluToBulkGravitonToHHTo2B2Tau_M-260","GluGluToBulkGravitonToHHTo2B2Tau_M-270","GluGluToBulkGravitonToHHTo2B2Tau_M-280","GluGluToBulkGravitonToHHTo2B2Tau_M-300","GluGluToBulkGravitonToHHTo2B2Tau_M-3000","GluGluToBulkGravitonToHHTo2B2Tau_M-320","GluGluToBulkGravitonToHHTo2B2Tau_M-350","GluGluToBulkGravitonToHHTo2B2Tau_M-400","GluGluToBulkGravitonToHHTo2B2Tau_M-450","GluGluToBulkGravitonToHHTo2B2Tau_M-500","GluGluToBulkGravitonToHHTo2B2Tau_M-550","GluGluToBulkGravitonToHHTo2B2Tau_M-600","GluGluToBulkGravitonToHHTo2B2Tau_M-650","GluGluToBulkGravitonToHHTo2B2Tau_M-700","GluGluToBulkGravitonToHHTo2B2Tau_M-750","GluGluToBulkGravitonToHHTo2B2Tau_M-800","GluGluToBulkGravitonToHHTo2B2Tau_M-850","GluGluToBulkGravitonToHHTo2B2Tau_M-900","GluGluToRadionToHHTo2B2Tau_M-1000","GluGluToRadionToHHTo2B2Tau_M-1250","GluGluToRadionToHHTo2B2Tau_M-1500","GluGluToRadionToHHTo2B2Tau_M-1750","GluGluToRadionToHHTo2B2Tau_M-2000","GluGluToRadionToHHTo2B2Tau_M-250","GluGluToRadionToHHTo2B2Tau_M-2500","GluGluToRadionToHHTo2B2Tau_M-260","GluGluToRadionToHHTo2B2Tau_M-270","GluGluToRadionToHHTo2B2Tau_M-280","GluGluToRadionToHHTo2B2Tau_M-300","GluGluToRadionToHHTo2B2Tau_M-3000","GluGluToRadionToHHTo2B2Tau_M-320","GluGluToRadionToHHTo2B2Tau_M-350","GluGluToRadionToHHTo2B2Tau_M-400","GluGluToRadionToHHTo2B2Tau_M-450","GluGluToRadionToHHTo2B2Tau_M-500","GluGluToRadionToHHTo2B2Tau_M-550","GluGluToRadionToHHTo2B2Tau_M-600","GluGluToRadionToHHTo2B2Tau_M-650","GluGluToRadionToHHTo2B2Tau_M-700","GluGluToRadionToHHTo2B2Tau_M-750","GluGluToRadionToHHTo2B2Tau_M-800","GluGluToRadionToHHTo2B2Tau_M-850","GluGluToRadionToHHTo2B2Tau_M-900","GluGluZH_HToWW_ZTo2L_M125","HWminusJ_HToWW_M125","HWplusJ_HToWW_M125","HZJ_HToWW_M125","ST_t-channel_antitop_4f_InclusiveDecays","ST_t-channel_top_4f_InclusiveDecays","ST_tW_antitop_5f_InclusiveDecays","ST_tW_top_5f_InclusiveDecays","TT4b","TTGG","TTGamma_Dilept","TTGamma_Hadronic","TTGamma_SingleLept","TTTJ","TTTT","TTTW","TT","TTWH","TTWJetsToLNu","TTWJetsToQQ","TTWW","TTWZ","TTZH","TTZHTo4b","TTZHToNon4b","TTZToLLNuNu_M-10","TTZToNuNu","TTZToQQ","TTZZ","TTZZTo4b","TTZZToNon4b","VBFHToTauTau_M125","VBFHToWWTo2L2Nu_M125","W","WW","WWW_4F","WWZ_4F","WZ","WZZ","WminusHToTauTau_M125","WplusHToTauTau_M125","ZHToTauTau_M125","ZH_Hbb_Zll","ZH_Hbb_Zqq","ZJNuNu","ZZ","ZZZ","ggHToZZTo2L2Q","ttH","data","QCD"]
 
 uncReNames = {
-    "bTagShapeSF_lf":"CMS_btag_LF",
-    "bTagShapeSF_hf":"CMS_btag_HF",
-    "bTagShapeSF_lfstats1":"CMS_btag_lfstats1_{}",
-    "bTagShapeSF_lfstats2":"CMS_btag_lfstats2_{}",
-    "bTagShapeSF_hfstats1":"CMS_btag_hfstats1_{}",
-    "bTagShapeSF_hfstats2":"CMS_btag_hfstats2_{}",
-    "bTagShapeSF_cferr1":"CMS_btag_cferr1",
-    "bTagShapeSF_cferr2":"CMS_btag_cferr2",
+    "bTagShape_lf":"CMS_btag_LF",
+    "bTagShape_hf":"CMS_btag_HF",
+    "bTagShape_lfstats1":"CMS_btag_lfstats1_{}",
+    "bTagShape_lfstats2":"CMS_btag_lfstats2_{}",
+    "bTagShape_hfstats1":"CMS_btag_hfstats1_{}",
+    "bTagShape_hfstats2":"CMS_btag_hfstats2_{}",
+    "bTagShape_cferr1":"CMS_btag_cferr1",
+    "bTagShape_cferr2":"CMS_btag_cferr2",
     "EleID":"CMS_eff_e_{}",
     "PUJetID":"CMS_eff_j_PUJET_id_{}",
     "HighPtMuon_HighPtID":"CMS_eff_m_highpt_id_HighPtID_{}",

@@ -28,23 +28,14 @@ def createKeyFilterDict(global_cfg_dict):
                         filter_str+=f" && {mass_name} >= {mass_limits[0]} && {mass_name} <= {mass_limits[1]}"
                 key = (ch, reg, cat)
                 reg_dict[key] = filter_str
-                #print(key, filter_str)
-                #print()
     return reg_dict
 
 def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, scale, wantNegativeContributions):
-    #print(channel, category)
-    #print(histograms.keys())
-    #key_B_data = ((channel, 'OS_AntiIso', category), ('Central', 'Central'))
     key_B = ((channel, 'OS_AntiIso', category), (uncName, scale))
-    #key_C_data = ((channel, 'SS_Iso', category), ('Central', 'Central'))
     key_C = ((channel, 'SS_Iso', category), (uncName, scale))
-    #key_D_data = ((channel, 'SS_AntiIso', category), ('Central', 'Central'))
     key_D = ((channel, 'SS_AntiIso', category), (uncName, scale))
     hist_data = histograms['data']
-    #print(hist_data.keys())
     hist_data_B = hist_data[key_B].Clone()
-    #if channel != 'tauTau' and category != 'inclusive': return hist_data_B
     hist_data_C = hist_data[key_C].Clone()
     hist_data_D = hist_data[key_D].Clone()
     n_data_B = hist_data_B.Integral(0, hist_data_B.GetNbinsX()+1)
@@ -57,10 +48,7 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
         if sample=='data' or 'GluGluToBulkGraviton' in sample or 'GluGluToRadion' in sample or 'VBFToBulkGraviton' in sample or 'VBFToRadion' in sample or sample=='QCD':
             #print(f"sample {sample} is not considered")
             continue
-        #print(sample)
-        # find kappa value
         hist_sample = histograms[sample]
-        #print(histograms[sample].keys())
         hist_sample_B = hist_sample[key_B].Clone()
         hist_sample_C = hist_sample[key_C].Clone()
         hist_sample_D = hist_sample[key_D].Clone()
@@ -146,9 +134,6 @@ def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_sam
             all_histograms['QCD'] = {}
     for channel in channels:
         for cat in categories:
-            #if cat == 'btag_shape': continue
-            #key =( (channel, 'OS_Iso', cat), ('Central', 'Central'))
-            #all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, 'Central', 'Central')
             for scale in scales + ['Central']:
                 if uncName=='Central' and scale != 'Central': continue
                 if uncName!='Central' and scale == 'Central': continue

@@ -1,7 +1,6 @@
 import law
 import os
 import yaml
-import threading
 import contextlib
 
 from RunKit.run_tools import ps_call
@@ -274,11 +273,13 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         output_path_hist_prod_sample_data = os.path.join(self.version, self.period, 'split', var, f'data.root')
         all_inputs = [(self.remote_target(output_path_hist_prod_sample_data, fs=self.fs_histograms),'data')]
         samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
+        print(samples_to_consider)
         for sample_name in self.samples.keys():
             if sample_name not in samples_to_consider: continue
+            print(sample_name)
             output_path_hist_prod_sample = os.path.join(self.version, self.period, 'split', var, f'{sample_name}.root')
             all_inputs.append((self.remote_target(output_path_hist_prod_sample, fs=self.fs_histograms),sample_name))
-
+        print(all_inputs)
         all_datasets=[]
         all_outputs_merged = []
 
@@ -301,6 +302,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     ps_call(MergerProducer_cmd,verbose=1)
         all_uncertainties_string = ','.join(unc for unc in uncNames)
         tmp_outFile = self.remote_target( os.path.join(outdir_histograms,f'all_histograms_{var}_hadded.root'), fs=self.fs_histograms)
+        print(all_outputs_merged)
         with contextlib.ExitStack() as stack:
             local_merged_files = []
             for infile_merged in all_outputs_merged:

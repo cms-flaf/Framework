@@ -29,6 +29,15 @@ WJetsToLNu_HT-800To1200:
   sampleType: W
 
 
+############## TT ##############
+TTTo2L2Nu:
+  sampleType: TT
+TTToHadronic:
+  sampleType: TT
+TTToSemiLeptonic:
+  sampleType: TT
+
+
 ############## DY ##############
 DYJetsToLL_M-50-amcatnloFXFX:
   sampleType: DY
@@ -84,7 +93,11 @@ ZH_Hbb_Zll:
   sampleType: VH
 ZH_Hbb_Zqq:
   sampleType: VH
-  HWplusJ_HToWW_M125:
+HWplusJ_HToWW_M125:
+  sampleType: VH
+HWminusJ_HToWW_M125:
+  sampleType: VH
+HZJ_HToWW_M125:
   sampleType: VH
 
 ############## VV inclusive ##############
@@ -138,7 +151,8 @@ TTGG:
   sampleType: TTX
 TTGJets:
   sampleType: TTX
-
+TT4b:
+  sampleType: TTX
 
 ############## ttH ##############
 #ttHToNonbb_M125:

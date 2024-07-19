@@ -19,30 +19,32 @@ import Common.LegacyVariables as LegacyVariables
 import Common.Utilities as Utilities
 defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "X_spin", "isData"]
 scales = ['Up','Down']
-from Analysis.HistHelper import *
-from Analysis.hh_bbtautau import *
+#from Analysis.HistHelper import *
+#from Analysis.hh_bbtautau import *
 
 def getKeyNames(root_file_name):
-    print(root_file_name)
+    #print(root_file_name)
     root_file = ROOT.TFile(root_file_name, "READ")
-    print(root_file.GetListOfKeys())
+    #print(root_file.GetListOfKeys())
     key_names = [str(k.GetName()) for k in root_file.GetListOfKeys() ]
     root_file.Close()
     return key_names
 
 
 
-def applyLegacyVariables(dfw, is_central=True):
-    for channel,ch_value in channels.items():
-            dfw.df = dfw.df.Define(f"{channel}", f"channelId=={ch_value}")
-            for trigger in trigger_list[channel]:
-                if trigger not in dfw.df.GetColumnNames():
-                    dfw.df = dfw.df.Define(trigger, "1")
+def applyLegacyVariables(dfw, global_cfg_dict, is_central=True):
+    channels = global_cfg_dict['channelSelection']
+    for channel in channels :
+        ch_value = global_cfg_dict['channelDefinition'][channel]
+        dfw.df = dfw.df.Define(f"{channel}", f"channelId=={ch_value}")
+        trigger_list = global_cfg_dict['triggers'][channel].split(' || ')
+        for trigger in trigger_list:
+            if trigger not in dfw.df.GetColumnNames():
+                dfw.df = dfw.df.Define(trigger, "1")
     #entryvalid_stri = '((b1_pt > 0) & (b2_pt > 0)) & ('
     entryvalid_stri = '('
-    entryvalid_stri += ' || '.join(f'({ch} & {triggers[ch]})' for ch in channels)
+    entryvalid_stri += ' || '.join(f'({ch} & {global_cfg_dict["triggers"][ch]})' for ch in channels)
     entryvalid_stri += ')'
-    #print(entryvalid_stri)
     dfw.DefineAndAppend("entry_valid",entryvalid_stri)
     MT2Branches = dfw.Apply(LegacyVariables.GetMT2)
     dfw.colToSave.extend(MT2Branches)
@@ -55,116 +57,76 @@ def applyLegacyVariables(dfw, is_central=True):
 def createCentralQuantities(df_central, central_col_types, central_columns):
     map_creator = ROOT.analysis.MapCreator(*central_col_types)()
     df_central = map_creator.processCentral(ROOT.RDF.AsRNode(df_central), Utilities.ListToVector(central_columns))
-    #df_central = map_creator.getEventIdxFromShifted(ROOT.RDF.AsRNode(df_central))
     return df_central
 
-def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, snapshotOptions, compute_unc_variations, deepTauVersion):
+def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, snapshotOptions, compute_unc_variations, deepTauVersion):
     start_time = datetime.datetime.now()
-    print("1")
     verbosity = ROOT.Experimental.RLogScopedVerbosity(ROOT.Detail.RDF.RDFLogChannel(), ROOT.Experimental.ELogLevel.kInfo)
-    print("2")
     snaps = []
     all_files = []
     file_keys = getKeyNames(inFileName)
-    print("3")
     df = ROOT.RDataFrame('Events', inFileName)
-    print("4")
     df_begin = df
-    print("5")
     dfw = Utilities.DataFrameWrapper(df_begin,defaultColToSave)
-    print("6")
     LegacyVariables.Initialize()
-    print("7")
-    applyLegacyVariables(dfw, True)
-    print("8")
+    applyLegacyVariables(dfw, global_cfg_dict, True)
     varToSave = Utilities.ListToVector(dfw.colToSave)
-    print("9")
     all_files.append(f'{outFileName}_Central.root')
-    print("10")
     snaps.append(dfw.df.Snapshot(f"Events", f'{outFileName}_Central.root', varToSave, snapshotOptions))
     print("append the central snapshot")
 
     if compute_unc_variations:
-        dfWrapped_central = DataFrameBuilder(df_begin, deepTauVersion)
-        print("11")
+        dfWrapped_central = Utilities.DataFrameBuilderBase(df_begin)
         colNames =  dfWrapped_central.colNames
-        print("12")
         colTypes =  dfWrapped_central.colTypes
-        print("13")
         dfWrapped_central.df = createCentralQuantities(df_begin, colTypes, colNames)
-        print("14")
         if dfWrapped_central.df.Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
         print("finished defining central quantities")
         snapshotOptions.fLazy=False
-        print(file_keys)
+        #print(file_keys)
         for uncName in unc_cfg_dict['shape']:
             print(uncName)
             for scale in scales:
                 print(scale)
                 treeName = f"Events_{uncName}{scale}"
-                print(treeName)
+                #print(treeName)
                 treeName_noDiff = f"{treeName}_noDiff"
                 if treeName_noDiff in file_keys:
                     print(treeName_noDiff)
                     df_noDiff = ROOT.RDataFrame(treeName_noDiff, inFileName)
-                    #print("15")
                     print(df_noDiff.Count().GetValue())
-                    print(df_noDiff.GetColumnNames())
-                    dfWrapped_nonValid = DataFrameBuilder(df_noDiff, deepTauVersion)
-                    #print("16")
+                    #print(df_noDiff.GetColumnNames())
+                    dfWrapped_noDiff = Utilities.DataFrameBuilderBase(df_noDiff)
                     dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
-                    #print("17")
                     dfW_noDiff = Utilities.DataFrameWrapper(dfWrapped_noDiff.df,defaultColToSave)
-                    #print("18")
-                    applyLegacyVariables(dfW_noDiff,False)
-                    ##print(f"number of events in dfW_noDiff is {dfW_noDiff.df.Count().GetValue()}")
-                    #print("19")
+                    applyLegacyVariables(dfW_noDiff,global_cfg_dict, False)
                     varToSave = Utilities.ListToVector(dfW_noDiff.colToSave)
                     all_files.append(f'{outFileName}_{uncName}{scale}_noDiff.root')
-                    #print("20")
                     dfW_noDiff.df.Snapshot(treeName_noDiff, f'{outFileName}_{uncName}{scale}_noDiff.root', varToSave, snapshotOptions)
-                    #print("21")
                 treeName_Valid = f"{treeName}_Valid"
                 if treeName_Valid in file_keys:
-                    #print(treeName_Valid)
+                    print(treeName_Valid)
                     df_Valid = ROOT.RDataFrame(treeName_Valid, inFileName)
-                    #print("15")
                     print(df_Valid.Count().GetValue())
-                    print(df_Valid.GetColumnNames())
-                    dfWrapped_Valid = DataFrameBuilder(df_Valid, deepTauVersion)
-                    #print("16")
+                    #print(df_Valid.GetColumnNames())
+                    dfWrapped_Valid = Utilities.DataFrameBuilderBase(df_Valid)
                     dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
-                    #print("17")
                     dfW_Valid = Utilities.DataFrameWrapper(dfWrapped_Valid.df,defaultColToSave)
-                    #print("18")
-                    applyLegacyVariables(dfW_Valid,False)
-                    #print("19")
+                    applyLegacyVariables(dfW_Valid,global_cfg_dict, False)
                     varToSave = Utilities.ListToVector(dfW_Valid.colToSave)
-                    #print("20")
-                    ##print(f"number of events in dfW_Valid is {dfW_Valid.df.Count().GetValue()}")
                     all_files.append(f'{outFileName}_{uncName}{scale}_Valid.root')
-                    #print("21")
                     dfW_Valid.df.Snapshot(treeName_Valid, f'{outFileName}_{uncName}{scale}_Valid.root', varToSave, snapshotOptions)
-                    #print("22")
                 treeName_nonValid = f"{treeName}_nonValid"
                 if treeName_nonValid in file_keys:
-                    #print(treeName_nonValid)
+                    print(treeName_nonValid)
                     df_nonValid = ROOT.RDataFrame(treeName_nonValid, inFileName)
-                    #print("15")
-                    #print(df_nonValid.Count().GetValue())
-                    #print(df_nonValid.GetColumnNames())
-                    dfWrapped_nonValid = DataFrameBuilder(df_nonValid, deepTauVersion)
+                    print(df_nonValid.Count().GetValue())
+                    dfWrapped_nonValid = Utilities.DataFrameBuilderBase(df_nonValid)
                     dfW_nonValid = Utilities.DataFrameWrapper(dfWrapped_nonValid.df,defaultColToSave)
-                    #print("16")
-                    applyLegacyVariables(dfW_nonValid,False)
-                    #print("17")
-                    ##print(f"number of events in dfW_nonValid is {dfW_nonValid.df.Count().GetValue()}")
+                    applyLegacyVariables(dfW_nonValid,global_cfg_dict, False)
                     varToSave = Utilities.ListToVector(dfW_nonValid.colToSave)
-                    #print("18")
                     all_files.append(f'{outFileName}_{uncName}{scale}_nonValid.root')
-                    #print("19")
                     dfW_nonValid.df.Snapshot(treeName_nonValid, f'{outFileName}_{uncName}{scale}_nonValid.root', varToSave, snapshotOptions)
-                    #print("20")
     print(f"snaps len is {len(snaps)}")
     snapshotOptions.fLazy = True
     if snapshotOptions.fLazy == True:
@@ -181,12 +143,12 @@ if __name__ == "__main__":
     parser.add_argument('--inFileName', required=True, type=str)
     parser.add_argument('--outFileName', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str)
+    parser.add_argument('--globalConfig', required=True, type=str)
     parser.add_argument('--compute_unc_variations', type=bool, default=False)
     parser.add_argument('--compressionLevel', type=int, default=4)
     parser.add_argument('--compressionAlgo', type=str, default="ZLIB")
     parser.add_argument('--deepTauVersion', type=str, default="v2p1")
     args = parser.parse_args()
-    print("A")
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
     snapshotOptions.fLazy = True
@@ -194,19 +156,21 @@ if __name__ == "__main__":
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
     unc_cfg_dict = {}
-    print("B")
 
     with open(args.uncConfig, 'r') as f:
         unc_cfg_dict = yaml.safe_load(f)
-    print("C")
+
+    global_cfg_dict = {}
+    with open(args.globalConfig, 'r') as f:
+        global_cfg_dict = yaml.safe_load(f)
 
     startTime = time.time()
 
     outFileNameFinal = f'{args.outFileName}'
     print(outFileNameFinal)
+    print(args.outFileName.split('.')[0])
     try:
-        all_files = createAnaCacheTuple(args.inFileName, args.outFileName.strip('.root'), unc_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion)
-        print("D")
+        all_files = createAnaCacheTuple(args.inFileName, args.outFileName.split('.')[0], unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion)
         hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
         hadd_str += ' '.join(f for f in all_files)
         print(hadd_str)
@@ -219,7 +183,6 @@ if __name__ == "__main__":
                     if histFile == outFileNameFinal: continue
                     os.remove(histFile)
     except:
-        print("ffjfjfjfj")
         df = ROOT.RDataFrame(0)
         df=df.Define("test", "return true;")
         df.Snapshot("Events", outFileNameFinal, {"test"})

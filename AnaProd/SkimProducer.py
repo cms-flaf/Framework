@@ -20,7 +20,7 @@ def getTreeName(systFile):
   good_treeName = []
 
   for element in treeName_elements:
-    print (element)
+    #print (element)
     if 'nano' in element or 'Events' in element or element in [str(k) for k in range(0,10000)]: continue
     good_treeName.append(element)
   if args.test : print(f"good_treename elements are {good_treeName}")
@@ -59,12 +59,12 @@ if __name__ == "__main__":
   k=0
   for systFile in all_files:
     if args.test and k>=10 :
-      print(systFile)
+      #print(systFile)
       continue
     inFileShiftedName = os.path.join(args.inputDir, systFile)
     if args.test: print('shifted file = ', inFileShiftedName)
     if args.test: print('index = ', k)
-    print(getTreeName(systFile))
+    #print(getTreeName(systFile))
     treeName = getTreeName(systFile)
     #if args.test : print(f"final TreeName is {treeName}")
     skimEventsPython = os.path.join(os.environ['ANALYSIS_PATH'], "AnaProd/SkimEvents.py")
@@ -85,9 +85,9 @@ if __name__ == "__main__":
     #ConvertUproot.toUproot(inFileUproot,outFileUproot)
     if args.test : print(f"UprootFileName name is {outFileUproot}")
     syst_files_to_merge.append(outFileUproot)
-  if args.test:
-    for f in syst_files_to_merge:
-      print(f)
+  #if args.test:
+    #for f in syst_files_to_merge:
+      #print(f)
   outFileName = os.path.join(args.workingDir, args.outputFile)
   if args.test : print(f'outFileName is {outFileName}')
   hadd_str = f'hadd -f209 -j -O {outFileName} '

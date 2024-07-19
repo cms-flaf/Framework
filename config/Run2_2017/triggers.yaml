@@ -25,7 +25,7 @@ MET:
     legs:
       - offline_obj:
           type: MET
-          cut: MET_pt > 120
+          cut: metnomu_pt > 150
         doMatching: False
 singleTau:
     channels:

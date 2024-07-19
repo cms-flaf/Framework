@@ -5,55 +5,6 @@ if __name__ == "__main__":
 from Analysis.HistHelper import *
 from Common.Utilities import *
 
-deepTauYears = {'v2p1':'2017','v2p5':'2018'}
-QCDregions = ['OS_Iso', 'SS_Iso', 'OS_AntiIso', 'SS_AntiIso']
-
-#categories = ['res2b', 'res1b', 'inclusive', 'btag_shape']
-categories = ['res2b', 'res1b', 'inclusive', 'boosted', 'btag_shape','baseline']
-gen_channels = {'eTau':[3,5], 'muTau':[4,5], 'tauTau':[5,5]}
-channels = {'eTau':13, 'muTau':23, 'tauTau':33}
-triggers = {'eTau':  'HLT_singleTau || HLT_singleEle || HLT_etau || HLT_MET' , 'muTau': 'HLT_singleTau || HLT_singleMu || HLT_mutau || HLT_MET', 'tauTau' : 'HLT_singleTau || HLT_ditau || HLT_MET' }
-channels = {'eTau':13, 'muTau':23, 'tauTau':33}
-'''
-triggers = {
-    'eTau':  '(HLT_singleTau || HLT_singleEle || HLT_etau || HLT_MET)' ,
-    'muTau': '(HLT_singleTau || HLT_singleMu || HLT_mutau || HLT_MET)',
-    'tauTau' : '(HLT_singleTau || HLT_ditau || HLT_MET)'
-}
-
-trigger_list = {
-    'eTau':  ['HLT_singleTau', 'HLT_singleEle', 'HLT_etau', 'HLT_MET'] ,
-    'muTau': ['HLT_singleTau', 'HLT_singleMu', 'HLT_mutau', 'HLT_MET'],
-    'tauTau' : ['HLT_singleTau' , 'HLT_ditau', 'HLT_MET']
- }
-'''
-triggers = {
-    'eTau':  '( HLT_singleEle || HLT_etau )' ,
-    'muTau': '( HLT_singleMu || HLT_mutau )',
-    'tauTau' : '( HLT_ditau )'
-}
-trigger_list = {
-    'eTau':  [ 'HLT_singleEle', 'HLT_etau'] ,
-    'muTau': [ 'HLT_singleMu', 'HLT_mutau'],
-    'tauTau' : [ 'HLT_ditau']
- }
-btag_wps = {'res2b':'Medium', 'res1b':'Medium', 'boosted':"Loose", 'inclusive':'','btag_shape':'','baseline':''}
-
-mass_cut_limits = {'bb_m_vis':[50,270],'tautau_m_vis':[20,130]}
-
-scales = ['Up', 'Down']
-bjet_vars = ["b1_pt","b2_pt","b1_eta","b2_eta"]
-var_to_add_boosted= ["SelectedFatJet_pt_boosted","SelectedFatJet_eta_boosted"]
-unc_to_not_consider_boosted = ["PUJetID", "JER","JES_FlavorQCD","JES_RelativeBal","JES_HF","JES_BBEC1","JES_EC2","JES_Absolute","JES_Total","JES_BBEC1_2018","JES_Absolute_2018","JES_EC2_2018","JES_HF_2018","JES_RelativeSample_2018","bTagSF_Loose_btagSFbc_correlated",  "bTagSF_Loose_btagSFbc_uncorrelated",  "bTagSF_Loose_btagSFlight_correlated",  "bTagSF_Loose_btagSFlight_uncorrelated",  "bTagSF_Medium_btagSFbc_correlated",  "bTagSF_Medium_btagSFbc_uncorrelated",  "bTagSF_Medium_btagSFlight_correlated",  "bTagSF_Medium_btagSFlight_uncorrelated",  "bTagSF_Tight_btagSFbc_correlated",  "bTagSF_Tight_btagSFbc_uncorrelated",  "bTagSF_Tight_btagSFlight_correlated",  "bTagSF_Tight_btagSFlight_uncorrelated","bTagShapeSF_lf","bTagShapeSF_hf","bTagShapeSF_lfstats1","bTagShapeSF_lfstats2","bTagShapeSF_hfstats1","bTagShapeSF_hfstats2","bTagShapeSF_cferr1","bTagShapeSF_cferr2"]
-
-
-
-filters = {
-        'channels':[('eTau','eTau && HLT_singleEle'), ('muTau','muTau && HLT_singleMu'),('tauTau','tauTau && HLT_ditau')],
-        'QCD_regions':[('OS_Iso','OS_Iso'),('SS_Iso','SS_Iso'),('OS_AntiIso','OS_AntiIso'),('SS_AntiIso','SS_AntiIso')] ,
-        'categories': [('res2b', 'res2b'), ('res1b', 'res1b'), ('inclusive', 'return true;'),('btag_shape', 'return true;')],
-        }
-
 
 def createKeyFilterDict(global_cfg_dict):
     reg_dict = {}
@@ -61,6 +12,8 @@ def createKeyFilterDict(global_cfg_dict):
     channels_to_consider = global_cfg_dict['channelSelection']
     qcd_regions_to_consider = global_cfg_dict['QCDRegions']
     categories_to_consider = global_cfg_dict["categories"]
+    triggers = global_cfg_dict['hist_triggers']
+    mass_cut_limits = global_cfg_dict['mass_cut_limits']
     for ch in channels_to_consider:
         for reg in qcd_regions_to_consider:
             for cat in categories_to_consider:
@@ -75,23 +28,14 @@ def createKeyFilterDict(global_cfg_dict):
                         filter_str+=f" && {mass_name} >= {mass_limits[0]} && {mass_name} <= {mass_limits[1]}"
                 key = (ch, reg, cat)
                 reg_dict[key] = filter_str
-                #print(key, filter_str)
-                #print()
     return reg_dict
 
 def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, scale, wantNegativeContributions):
-    #print(channel, category)
-    #print(histograms.keys())
-    #key_B_data = ((channel, 'OS_AntiIso', category), ('Central', 'Central'))
     key_B = ((channel, 'OS_AntiIso', category), (uncName, scale))
-    #key_C_data = ((channel, 'SS_Iso', category), ('Central', 'Central'))
     key_C = ((channel, 'SS_Iso', category), (uncName, scale))
-    #key_D_data = ((channel, 'SS_AntiIso', category), ('Central', 'Central'))
     key_D = ((channel, 'SS_AntiIso', category), (uncName, scale))
     hist_data = histograms['data']
-    #print(hist_data.keys())
     hist_data_B = hist_data[key_B].Clone()
-    #if channel != 'tauTau' and category != 'inclusive': return hist_data_B
     hist_data_C = hist_data[key_C].Clone()
     hist_data_D = hist_data[key_D].Clone()
     n_data_B = hist_data_B.Integral(0, hist_data_B.GetNbinsX()+1)
@@ -102,12 +46,9 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
     print(f"Initially Yield for data in SS AntiIso region is{key_D} is {n_data_D}")
     for sample in all_samples_list:
         if sample=='data' or 'GluGluToBulkGraviton' in sample or 'GluGluToRadion' in sample or 'VBFToBulkGraviton' in sample or 'VBFToRadion' in sample or sample=='QCD':
-            print(f"sample {sample} is not considered")
+            #print(f"sample {sample} is not considered")
             continue
-        print(sample)
-        # find kappa value
         hist_sample = histograms[sample]
-        #print(histograms[sample].keys())
         hist_sample_B = hist_sample[key_B].Clone()
         hist_sample_C = hist_sample[key_C].Clone()
         hist_sample_D = hist_sample[key_D].Clone()
@@ -188,28 +129,25 @@ def CompareYields(histograms, all_samples_list, channel, category, uncName, scal
         print(f"{sample} || {key_C} || {n_sample_C}")
         print(f"{sample} || {key_D} || {n_sample_D}")
 
-def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_samples_list, scales, wantNegativeContributions=False):
+def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_samples_list, scales, unc_to_not_consider_boosted, wantNegativeContributions=False):
     if 'QCD' not in all_histograms.keys():
             all_histograms['QCD'] = {}
     for channel in channels:
         for cat in categories:
-            #if cat == 'btag_shape': continue
-            #key =( (channel, 'OS_Iso', cat), ('Central', 'Central'))
-            #all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, 'Central', 'Central')
             for scale in scales + ['Central']:
                 if uncName=='Central' and scale != 'Central': continue
                 if uncName!='Central' and scale == 'Central': continue
-                if cat == 'boosted' and var in bjet_vars: continue
+                if cat == 'boosted' and (var.startswith('b1') or var.startswith('b2')): continue
+                if cat != 'boosted' and var.startswith('SelectedFatJet'): continue
                 if cat == 'boosted' and uncName in unc_to_not_consider_boosted: continue
-                if cat != 'boosted' and var in var_to_add_boosted: continue
                 key =( (channel, 'OS_Iso', cat), (uncName, scale))
                 all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale,wantNegativeContributions)
 
-def ApplyBTagWeight(cat,applyBtag=False, finalWeight_name = 'final_weight_0'):
+def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = 'final_weight_0'):
     btag_weight = "1"
     btagshape_weight = "1"
     if applyBtag:
-        if btag_wps[cat]!='' : btag_weight = f"weight_bTagSF_{btag_wps[cat]}_Central"
+        if global_cfg_dict['btag_wps'][cat]!='' : btag_weight = f"weight_bTagSF_{btag_wps[cat]}_Central"
     else:
         if cat !='btag_shape' and cat !='boosted': btagshape_weight = "weight_bTagShape_Central"
     return f'{finalWeight_name}*{btag_weight}*{btagshape_weight}'
@@ -233,25 +171,18 @@ def GetWeight(channel, cat):
     return total_weight
 
 
-class DataFrameBuilder(DataFrameBuilderBase):
+class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineBoostedVariables(self):
-        #FatJetObservables = ["area", "btagCSVV2", "btagDDBvLV2", "btagDeepB", "btagHbb", "deepTagMD_HbbvsQCD",
-        #             "deepTagMD_ZHbbvsQCD", "deepTagMD_ZbbvsQCD", "deepTagMD_bbvsLight", "deepTag_H",
-        #             "jetId", "msoftdrop", "nBHadrons", "nCHadrons",
-        #             "nConstituents", "particleNetMD_QCD", "particleNetMD_Xbb", "particleNet_HbbvsQCD",
-        #             "particleNet_mass", "rawFactor", "p4","pt","eta","phi","mass" ]
-        FatJetObservables = ["area", "btagCSVV2", "btagDDBvLV2", "btagDeepB", "btagHbb", "deepTagMD_HbbvsQCD",
-                     "deepTagMD_ZHbbvsQCD", "deepTagMD_ZbbvsQCD", "deepTagMD_bbvsLight", "deepTag_H",
-                     "jetId", "msoftdrop", "nBHadrons", "nCHadrons", "nConstituents","rawFactor",
-                      "particleNetMD_QCD", "particleNetMD_Xbb", "particleNet_HbbvsQCD", "particleNet_mass", # 2018
-                     "particleNet_QCD","particleNet_XbbVsQCD", # 2016
-                     "particleNetLegacy_QCD", "particleNetLegacy_Xbb", "particleNetLegacy_mass", # 2016
-                     "particleNetWithMass_QCD", "particleNetWithMass_HbbvsQCD", "particleNet_massCorr", "p4","pt","eta","phi","mass"  # 2016
-                     ]
+        FatJetObservables = self.config['FatJetObservables']
+        particleNet_HbbvsQCD = 'particleNet_HbbvsQCD' if 'SelectedFatJet_particleNet_HbbvsQCD' in self.df.GetColumnNames() else 'particleNetWithMass_HbbvsQCD'
+        particleNet_Xbb= 'particleNetMD_Xbb' if 'SelectedFatJet_particleNetMD_Xbb' in self.df.GetColumnNames() else 'particleNetLegacy_Xbb'
+
+        self.df = self.df.Define("fatJet_presel", f"SelectedFatJet_pt>250 && SelectedFatJet_{particleNet_HbbvsQCD}>={self.pNetWP}")
+        self.df = self.df.Define("fatJet_sel"," RemoveOverlaps(SelectedFatJet_p4, fatJet_presel, { {tau1_p4, tau2_p4},}, 2, 0.8)")
+
         self.df = self.df.Define("SelectedFatJet_size_boosted","SelectedFatJet_p4[fatJet_sel].size()")
         # def the correct discriminator
-        particleNet_Xbb= 'particleNetMD_Xbb' if 'SelectedFatJet_particleNetMD_Xbb' in self.df.GetColumnNames() else 'particleNetLegacy_Xbb'
         self.df = self.df.Define(f"SelectedFatJet_{particleNet_Xbb}_boosted_vec",f"SelectedFatJet_{particleNet_Xbb}[fatJet_sel]")
         self.df = self.df.Define("SelectedFatJet_idxUnordered", "CreateIndexes(SelectedFatJet_p4[fatJet_sel].size())")
         self.df = self.df.Define("SelectedFatJet_idxOrdered", f"ReorderObjects(SelectedFatJet_{particleNet_Xbb}_boosted_vec, SelectedFatJet_idxUnordered)")
@@ -261,20 +192,17 @@ class DataFrameBuilder(DataFrameBuilderBase):
                 self.df = self.df.Define(f'SelectedFatJet_{fatJetVar}_boosted',f"""
                                     SelectedFatJet_{fatJetVar}_boosted_vec[SelectedFatJet_idxOrdered[0]];
                                    """)
-        #self.df.Display({"SelectedFatJet_p4_boosted", "SelectedFatJet_size_boosted"}).Print()
 
     def defineTriggers(self):
-        for ch in channels:
-            for trg in trigger_list[ch]:
-                #print(trg)
+        for ch in self.config['channelSelection']:
+            for trg in self.config['triggers'][ch].split(' || '):
                 if trg not in self.df.GetColumnNames():
+                    print(f"{trg} not present in colNames")
                     self.df = self.df.Define(trg, "1")
 
-    def defineSelectionRegions(self):
+    def defineCategories(self):
         self.df = self.df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {self.bTagWP}) + int(b2_idbtagDeepFlavB >= {self.bTagWP})")
-        particleNet_HbbvsQCD = 'particleNet_HbbvsQCD' if 'SelectedFatJet_particleNet_HbbvsQCD' in self.df.GetColumnNames() else 'particleNetWithMass_HbbvsQCD'
-
-        self.df = self.df.Define("fatJet_presel", f"SelectedFatJet_pt>250 && SelectedFatJet_{particleNet_HbbvsQCD}>={self.pNetWP}").Define("fatJet_sel"," RemoveOverlaps(SelectedFatJet_p4, fatJet_presel, { {tau1_p4, tau2_p4},}, 2, 0.8)").Define("boosted", "SelectedFatJet_p4[fatJet_sel].size()>0")
+        self.df = self.df.Define("boosted", "SelectedFatJet_p4[fatJet_sel].size()>0")
         self.df = self.df.Define("res1b", f"!boosted && nSelBtag == 1")
         self.df = self.df.Define("res2b", f"!boosted && nSelBtag == 2")
         self.df = self.df.Define("inclusive", f"!boosted")
@@ -282,18 +210,9 @@ class DataFrameBuilder(DataFrameBuilderBase):
         self.df = self.df.Define("baseline",f"return true;")
 
     def defineChannels(self):
-        for channel,ch_value in channels.items():
+        for channel in self.config['channelSelection']:
+            ch_value = self.config['channelDefinition'][channel]
             self.df = self.df.Define(f"{channel}", f"channelId=={ch_value}")
-            if 'genchannelId' in self.df.GetColumnNames():
-                self.df = self.df.Define(f"gen_{channel}", f"genchannelId=={ch_value}")
-        '''
-        for gen_channel,gen_ch_value in gen_channels.items():
-            if f"tau1_gen_kind" in self.df.GetColumnNames() and f"tau2_gen_kind" in self.df.GetColumnNames():
-                self.df = self.df.Define(f"gen_{gen_channel}", f"tau1_gen_kind == {gen_ch_value[0]} && tau2_gen_kind == {gen_ch_value[1]}")
-                print(f"gen_{gen_channel} && {gen_channel}",gen_channel, gen_ch_value, self.df.Filter(f"gen_{gen_channel} && {gen_channel}").Count().GetValue() )
-            else:
-                self.df = self.df.Define(f"gen_{gen_channel}", f"{gen_channel}")
-        '''
 
     def defineL1PrefiringRelativeWeights(self):
         if "weight_L1PreFiringDown_rel" not in self.df.GetColumnNames():
@@ -325,7 +244,7 @@ class DataFrameBuilder(DataFrameBuilderBase):
         self.df = self.df.Define("SS_AntiIso", f"tau1_iso_medium && !OS && AntiIso")
 
     def deepTauYear(self):
-        return deepTauYears[self.deepTauVersion]
+        return self.config['deepTauYears'][self.deepTauVersion]
 
     def selectTrigger(self, trigger):
         self.df = self.df.Filter(trigger)
@@ -334,25 +253,20 @@ class DataFrameBuilder(DataFrameBuilderBase):
         if cut!="":
             self.df = self.df.Filter(cut)
 
-    def ApplyMassCut(self):
-        for mass_name,mass_limits in mass_cut_limits.items():
-            self.df = self.df.Filter(f"{mass_name} >= {mass_limits[0]} && {mass_name} <= {mass_limits[1]}")
-
-
-    def __init__(self, df, deepTauVersion='v2p1', bTagWP = 2, pNetWP = 0.9172):
-        super(DataFrameBuilder, self).__init__(df)
+    def __init__(self, df, config, deepTauVersion='v2p1', bTagWP = 2, pNetWP = 0.9172):
+        super(DataFrameBuilderForHistograms, self).__init__(df)
         self.deepTauVersion = deepTauVersion
-        print(self.deepTauVersion)
+        #print(self.deepTauVersion)
+        self.config = config
         self.bTagWP = bTagWP
         self.pNetWP = pNetWP
 
-def PrepareDfWrapped(dfWrapped):
-    dfWrapped.df = defineAllP4(dfWrapped.df)
-    #dfWrapped.defineL1PrefiringRelativeWeights()
-    dfWrapped.defineQCDRegions()
-    dfWrapped.defineSelectionRegions()
-    dfWrapped.defineBoostedVariables()
-    dfWrapped.defineChannels()
-    dfWrapped.defineTriggers()
-    dfWrapped.df = createInvMass(dfWrapped.df)
-    return dfWrapped
+def PrepareDfForHistograms(dfForHistograms):
+    dfForHistograms.df = defineAllP4(dfForHistograms.df)
+    dfForHistograms.defineChannels()
+    dfForHistograms.defineQCDRegions()
+    dfForHistograms.defineBoostedVariables()
+    dfForHistograms.defineCategories()
+    dfForHistograms.defineTriggers()
+    dfForHistograms.df = createInvMass(dfForHistograms.df)
+    return dfForHistograms

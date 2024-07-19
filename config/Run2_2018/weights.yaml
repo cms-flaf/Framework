@@ -157,29 +157,29 @@ norm:
   bTagSF_Tight_btagSFlight_uncorrelated:
     expression: weight_bTagSF_Tight_btagSFlight_uncorrelated{scale}_rel * final_weight
     requires_btag: True
-  bTagShapeSF_lf:
-    expression: weight_bTagShapeSF_lf{scale}_rel * final_weight
+  bTagShape_lf:
+    expression: weight_bTagShape_lf{scale}_rel * final_weight
     requires_btag: False
-  bTagShapeSF_hf:
-    expression: weight_bTagShapeSF_hf{scale}_rel * final_weight
+  bTagShape_hf:
+    expression: weight_bTagShape_hf{scale}_rel * final_weight
     requires_btag: False
-  bTagShapeSF_lfstats1:
-    expression: weight_bTagShapeSF_lfstats1{scale}_rel * final_weight
+  bTagShape_lfstats1:
+    expression: weight_bTagShape_lfstats1{scale}_rel * final_weight
     requires_btag: False
-  bTagShapeSF_lfstats2:
-    expression: weight_bTagShapeSF_lfstats2{scale}_rel * final_weight
+  bTagShape_lfstats2:
+    expression: weight_bTagShape_lfstats2{scale}_rel * final_weight
     requires_btag: False
-  bTagShapeSF_hfstats1:
-    expression: weight_bTagShapeSF_hfstats1{scale}_rel * final_weight
+  bTagShape_hfstats1:
+    expression: weight_bTagShape_hfstats1{scale}_rel * final_weight
     requires_btag: False
-  bTagShapeSF_hfstats2:
-    expression: weight_bTagShapeSF_hfstats2{scale}_rel * final_weight
+  bTagShape_hfstats2:
+    expression: weight_bTagShape_hfstats2{scale}_rel * final_weight
     requires_btag: False
-  bTagShapeSF_cferr1:
-    expression: weight_bTagShapeSF_cferr1{scale}_rel * final_weight
+  bTagShape_cferr1:
+    expression: weight_bTagShape_cferr1{scale}_rel * final_weight
     requires_btag: False
-  bTagShapeSF_cferr2:
-    expression: weight_bTagShapeSF_cferr2{scale}_rel * final_weight
+  bTagShape_cferr2:
+    expression: weight_bTagShape_cferr2{scale}_rel * final_weight
     requires_btag: False
   PUJetID:
     expression: weight_Jet_PUJetID_eff{scale}_rel_b1 * weight_Jet_PUJetID_eff{scale}_rel_b2 * final_weight

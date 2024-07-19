@@ -1,5 +1,5 @@
 GLOBAL:
-  era: 'Run2_2016_HIPM'
+  era: 'Run2_2016_HIPM' # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVDatasetsUL2016
   luminosity: 19500 #36310.
   fs_nanoAOD:
   - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/HTT_skim_v1/Run2_2016_HIPM'
@@ -24,20 +24,18 @@ GLOBAL:
   sampleSelection:
     - drop ^VBFToRadion*
     - drop ^VBFToBulkGraviton*
-    #- drop ^.*NoFully
+    - drop ^.*NoFully
     - drop ^.*Enriched
     - drop ^JetHT_Run201*
     - drop ^WWTo*
     - drop ^WZTo*
     - drop ^ZZTo*
-    - drop ^ttHToNonbb*
-    - drop ^ttHTobb*
     - drop ^TTZToLLNuNu_M*
     - drop ^TTZZTo*
-    - drop ^*_ext*
     - drop ^TTZHTo*
-    - drop ^TTWHTo*
     - drop ^TTHHTo*
+    - drop ^.*ext*
+    - drop ^.*erdON
 
 ############## Data ##############
 SingleElectron_Run2016B:
@@ -901,11 +899,11 @@ ZHToTauTau_M125_ext1:
 ZH_Hbb_Zll:
   sampleType: VH
   generator: powheg
-  crossSection: ZH_HToBB_ZToLL
+  crossSection: ZH_Hbb_Zll
 ZH_Hbb_Zqq:
   sampleType: VH
   generator: powheg
-  crossSection: ZH_HToBB_ZToQQ
+  crossSection: ZH_Hbb_Zqq
   HWplusJ_HToWW_M125:
   sampleType: VH
   generator: powheg

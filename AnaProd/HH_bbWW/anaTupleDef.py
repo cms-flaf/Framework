@@ -14,8 +14,7 @@ Electron_observables = ["Electron_mvaNoIso_WP90", "Electron_mvaIso_WP90", "Elect
 JetObservables = ["PNetRegPtRawCorr", "PNetRegPtRawCorrNeutrino", "PNetRegPtRawRes",
                   "UParTAK4RegPtRawCorr", "UParTAK4RegPtRawCorrNeutrino", "UParTAK4RegPtRawRes",
                   "btagDeepFlavB", "btagDeepFlavCvB", "btagDeepFlavCvL", "btagDeepFlavQG",
-                  "btagPNetB", "btagPNetCvB", "btagPNetCvL", "btagPNetCvNotB", "btagPNetQvG",
-                  "btagUParTAK4B", "btagUParTAK4CvB", "btagUParTAK4CvL", "btagUParTAK4CvNotB", "btagUParTAK4QvG"] # 2024
+                  "btagPNetB", "btagPNetCvB", "btagPNetCvL", "btagPNetCvNotB", "btagPNetQvG"] # 2024
 
 JetObservablesMC = ["hadronFlavour", "partonFlavour"]
 

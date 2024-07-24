@@ -107,6 +107,10 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         name = f"centralJet_matchedGenJet_{var}"
         dfw.DefineAndAppend(name, f"Take(v_ops::{var}(GenJet_p4), centralJet_matchedGenJetIdx)")
 
+    for var in JetObservablesMC:
+        name = f"centralJet_matchedGenJet_{var}"
+        dfw.DefineAndAppend(name, f"Take(GenJet_{var}, centralJet_matchedGenJetIdx)")
+
     reco_jet_obs = []
     reco_jet_obs.extend(JetObservables)
     if not isData:

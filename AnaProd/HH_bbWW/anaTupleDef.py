@@ -101,6 +101,12 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         name = f"centralJet_{var}"
         dfw.DefineAndAppend(name, f"Take(v_ops::{var}(Jet_p4[Jet_sel]), centralJet_idxSorted)")
 
+    # save gen jets matched to selected reco jets
+    dfw.Define("centralJet_matchedGenJetIdx", f"Take(Jet_genJetIdx[Jet_sel], centralJet_idxSorted)")
+    for var in PtEtaPhiM:
+        name = f"centralJet_matchedGenJet_{var}"
+        dfw.DefineAndAppend(name, f"Take(v_ops::{var}(GenJet_p4), centralJet_matchedGenJetIdx)")
+
     reco_jet_obs = []
     reco_jet_obs.extend(JetObservables)
     if not isData:

@@ -2,6 +2,7 @@ import os
 import yaml
 import json
 import sys
+from RunKit.run_tools import natural_sort
 
 
 def ScrapeSkimDatasets(input_dir, output):
@@ -216,12 +217,18 @@ def ScrapeSkimDatasets(input_dir, output):
       dict_for_xsec[crossSection] = {'crossSec': xSec, 'reference': ref, 'unc': unc}
 
 
-  #f = open('temp_Run3_2022.yaml', 'w+')
+  #Lets sort the dicts roughly to save time later
+  tmp_dict = {}
+  for key in natural_sort(dict_for_yaml):
+    tmp_dict[key] = dict_for_yaml[key]
   f = open(yaml_filename, 'w+')
-  yaml.dump(dict_for_yaml, f, allow_unicode=True)
-  #t = open('temp_Run3_2022_xsec.yaml', 'w+')
+  yaml.dump(tmp_dict, f, allow_unicode=True, width=1000, sort_keys=False)
+
+  tmp_dict = {}
+  for key in natural_sort(dict_for_xsec):
+    tmp_dict[key] = dict_for_xsec[key]
   t = open(xsec_filename, 'w+')
-  yaml.dump(dict_for_xsec, t, allow_unicode=True)
+  yaml.dump(tmp_dict, t, allow_unicode=True, width=1000, sort_keys=False)
 
 
   print("Could not find a match for these cases")

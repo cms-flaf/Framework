@@ -43,7 +43,21 @@ def ScrapeXSDBManual(input, input_xsec, XSDB_website):
     elem.clear()
     elem.send_keys(f'process_name={process_name}')
     elem.send_keys(Keys.RETURN)
-    time.sleep(2)
+    #time.sleep(2)
+    not_done = True
+    not_done_counter = 0
+    sleep_time = 0.5
+    while not_done:
+      if "Found" in driver.page_source:
+        not_done = False
+      if "Network Error" in driver.page_source:
+        print("Network Error, search again")
+        elem.send_keys(Keys.RETURN)
+      time.sleep(sleep_time)
+      not_done_counter += sleep_time
+      if not_done_counter >= 10:
+        print(f'Timeout {process_name}')
+        not_done = False
     #Read the values!
     dfs = pd.read_html(driver.page_source)
     df = dfs[1]
@@ -80,14 +94,15 @@ def ScrapeXSDBManual(input, input_xsec, XSDB_website):
       print(df['DAS'])
       continue
 
+    print(f"{process_name} found with xsec {xsec}")
     ref = f"XSDB {process_name} modifiedOn {modifiedOn}"
     new_yaml[xsec_key]['crossSec'] = float(xsec)
     new_yaml[xsec_key]['unc'] = float(unc)
     new_yaml[xsec_key]['reference'] = ref
 
   #t = open('Run3_2022_xsec.yaml', 'w+')
-  t = open(f'Scrapped_{input_xsec}', 'w+')
-  yaml.dump(new_yaml, t, allow_unicode=True)
+  t = open(f'Scrape_{input_xsec}', 'w+')
+  yaml.dump(new_yaml, t, allow_unicode=True, width=1000, sort_keys=False)
 
   driver.close()
 

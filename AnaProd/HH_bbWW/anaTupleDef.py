@@ -12,7 +12,6 @@ Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all"]
 Electron_observables = ["Electron_mvaNoIso_WP90", "Electron_mvaIso_WP90", "Electron_pfRelIso03_all"]
 
 JetObservables = ["PNetRegPtRawCorr", "PNetRegPtRawCorrNeutrino", "PNetRegPtRawRes",
-                  "UParTAK4RegPtRawCorr", "UParTAK4RegPtRawCorrNeutrino", "UParTAK4RegPtRawRes",
                   "btagDeepFlavB", "btagDeepFlavCvB", "btagDeepFlavCvL", "btagDeepFlavQG",
                   "btagPNetB", "btagPNetCvB", "btagPNetCvL", "btagPNetCvNotB", "btagPNetQvG"] # 2024
 

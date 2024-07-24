@@ -1,6 +1,6 @@
 GLOBAL:
   era: Run3_2022
-  luminosity: 1000. # fb-1
+  luminosity: 7980.4 # pb-1
   fs_nanoAOD:
   - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/skim_2024_v1/Run3_2022'
   nano_version: v14
@@ -12,6 +12,33 @@ DYto2L_M-50_madgraphMLM:
   crossSection: DY_NNLO
   crossSectionStitch: DY_NLO
   isReference: true
-
+  generator: madgraph
+############## Data ##############
+EGamma_Run2022C:
+  sampleType: data
+EGamma_Run2022D:
+  sampleType: data
+Muon_Run2022C:
+  sampleType: data
+Muon_Run2022D:
+  sampleType: data
 SingleMuon_Run2022C:
+  sampleType: data
+DoubleMuon_Run2022C:
+  sampleType: data
+MuonEG_Run2022C:
+  sampleType: data
+MuonEG_Run2022D:
+  sampleType: data
+Tau_Run2022C:
+  sampleType: data
+Tau_Run2022D:
+  sampleType: data
+JetHT_Run2022C:
+  sampleType: data
+JetMET_Run2022C:
+  sampleType: data
+MET_Run2022C:
+  sampleType: data
+JetMET_Run2022D:
   sampleType: data

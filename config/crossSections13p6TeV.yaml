@@ -6,10 +6,9 @@
 
 ############## Backgrounds ##############
 DY_Stitched:
-  crossSec: 5467.0
-  reference: XSDB DYto2L-4Jets_MLL-50_TuneCP5_13p6TeV_madgraphMLM-pythia8 modifiedOn 2024-04-03 19:19:49
-  reference2: This is just a copy of DYto2L_M-50_madgraphMLM, make this better later
-  unc: 13.22
+  crossSec: 2094.2 * 3
+  reference: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MATRIXCrossSectionsat13p6TeV
+  unc: +0.7% - 1.1%
 DYto2E_MLL-10to50_powheg:
   crossSec: 6744.0
   reference: XSDB DYto2E_MLL-10to50_TuneCP5_13p6TeV_powheg-pythia8 modifiedOn 2024-04-03 19:18:40
@@ -232,14 +231,14 @@ DYto2TautoMuTauh_M-50_madgraphMLM:
 
 GluGluHToTauTau_M125:
   crossSec: 52.23 * (0.06272)
-  reference: XSDB GluGluHToTauTau_M-125_TuneCP5_13p6TeV_powheg-pythia8 modifiedOn 2023-03-26 13:56:41
+  reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap
   unc: +4.6% -6.7% (theory) +-3.9 (TH Gaussian) +-3.2 (PDF+alpha s) +-1.9 (PDF) +-2.6 (alpha s)
 GluGluHToTauTau_M125_amcatnloFXFX:
   crossSec: 52.23 * (0.06272)
-  reference: XSDB GluGluHto2Tau_M-125_TuneCP5_13p6TeV_amcatnloFXFX-pythia8 modifiedOn 2024-04-03 19:22:43
+  reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap
   unc: +4.6% -6.7% (theory) +-3.9 (TH Gaussian) +-3.2 (PDF+alpha s) +-1.9 (PDF) +-2.6 (alpha s)
 GluGluHToWWTo2L2Nu_M125:
-  crossSec: 52.23 * (0.2137)
+  crossSec: 52.23 * (0.2137) * (3 * 0.1086)
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap
   unc: +4.6% -6.7% (theory) +-3.9 (TH Gaussian) +-3.2 (PDF+alpha s) +-1.9 (PDF) +-2.6 (alpha s)
 
@@ -527,7 +526,7 @@ VBFHToTauTau_M125:
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap
   unc: +0.5% -0.3% (QCD Scale) +-2.1% (PDF alpha s) +-2.1% (PDF) +-0.5 (alpha s)
 VBFHToWWTo2L2Nu_M125:
-  crossSec: 4.078 * (0.2137)
+  crossSec: 4.078 * (0.2137) * (3 * 0.1086)
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap
   unc: +0.5% -0.3% (QCD Scale) +-2.1% (PDF alpha s) +-2.1% (PDF) +-0.5 (alpha s)
 

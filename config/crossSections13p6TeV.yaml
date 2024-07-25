@@ -1,3 +1,15 @@
+############## For signals ##############
+1pb:
+  crossSec: 1
+  reference:
+  unc:
+
+############## Backgrounds ##############
+DY_Stitched:
+  crossSec: 5467.0
+  reference: XSDB DYto2L-4Jets_MLL-50_TuneCP5_13p6TeV_madgraphMLM-pythia8 modifiedOn 2024-04-03 19:19:49
+  reference2: This is just a copy of DYto2L_M-50_madgraphMLM, make this better later
+  unc: 13.22
 DYto2E_MLL-10to50_powheg:
   crossSec: 6744.0
   reference: XSDB DYto2E_MLL-10to50_TuneCP5_13p6TeV_powheg-pythia8 modifiedOn 2024-04-03 19:18:40
@@ -511,11 +523,11 @@ TTZZ:
   unc: 3.248e-06
 
 VBFHToTauTau_M125:
-  crossSec: 4.078
+  crossSec: 4.078 * (0.06272)
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap
   unc: +0.5% -0.3% (QCD Scale) +-2.1% (PDF alpha s) +-2.1% (PDF) +-0.5 (alpha s)
 VBFHToWWTo2L2Nu_M125:
-  crossSec: 4.078
+  crossSec: 4.078 * (0.2137)
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap
   unc: +0.5% -0.3% (QCD Scale) +-2.1% (PDF alpha s) +-2.1% (PDF) +-0.5 (alpha s)
 

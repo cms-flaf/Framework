@@ -49,15 +49,15 @@ def RecoHWWCandidateSelection(df):
         Electron_presel && Electron_mvaIso_WP80 """)
 
     df = df.Define("Muon_sel", f"""
-        Muon_presel && ( (Muon_tightId && Muon_mediumPromptId ) || (Muon_highPtId && Muon_mediumPromptId ))""")
+        (Muon_presel && (Muon_tightId || Muon_highPtId ))""")
 
     df = df.Define("N_sel_Ele", "Electron_pt[Electron_sel].size()")
     df = df.Define("N_sel_Mu", "Muon_pt[Muon_sel].size()")
     df = df.Define("N_sel_lep", "N_sel_Ele + N_sel_Mu")
 
     df = df.Define("is_SL", "N_sel_lep == 1")
-    df = df.Define("is_DL", "N_sel_lep == 2")
-    df = df.Filter("is_SL ? (N_sel_lep == 1) : (N_sel_lep > 1);", "lepton selection")
+    df = df.Define("is_DL", "N_sel_lep >= 2")
+    df = df.Filter("is_SL ? (N_sel_lep == 1) : (N_sel_lep >= 2);", "lepton selection")
     df = df.Define("lep1_p4", "if (N_sel_Mu > 0) return Muon_p4[Muon_sel][0]; return Electron_p4[Electron_sel][0];")
     df = df.Define("lep1_type", "if (N_sel_Mu > 0) return 1; return 0;")
 
@@ -71,8 +71,8 @@ def RecoHWWCandidateSelection(df):
                                    return -1; """)
     return df
 def RecoHWWJetSelection(df):
-    df = df.Define("Jet_Incl", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 2.4 && ( Jet_jetId & 2 )")
-    df = df.Define("FatJet_Incl", "(v_ops::pt(FatJet_p4)>200 && abs(v_ops::eta(FatJet_p4)) < 2.4 ) && ( FatJet_jetId & 2 ) && (FatJet_msoftdrop > 30 && FatJet_msoftdrop < 210) && (FatJet_tau2 / FatJet_tau1 < 0.75) ")
+    df = df.Define("Jet_Incl", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 2.5 && ( Jet_jetId & 2 )")
+    df = df.Define("FatJet_Incl", "(v_ops::pt(FatJet_p4)>200 && abs(v_ops::eta(FatJet_p4)) < 2.5 ) && ( FatJet_jetId & 2 ) && (FatJet_msoftdrop > 30 && FatJet_msoftdrop < 210)")#&& (FatJet_tau2 / FatJet_tau1 < 0.75)
     df = df.Define("Jet_sel", """if (is_SL)
                                     return RemoveOverlaps(Jet_p4, Jet_Incl,{ {lep1_p4, },}, 1, 0.5);
                                  return RemoveOverlaps(Jet_p4, Jet_Incl,{ {lep1_p4, lep2_p4},}, 2, 0.5); """)
@@ -83,10 +83,10 @@ def RecoHWWJetSelection(df):
     df = df.Define("n_Jet_Sel", "Jet_p4[Jet_sel].size()")
     df = df.Define("n_FatJet_Sel", "FatJet_p4[FatJet_sel].size()")
 
-    df = df.Define("Boosted_SL","(FatJet_p4[FatJet_sel].size()>=1) && (Jet_p4[Jet_sel].size()>=1)")
-    df = df.Define("Resolved_SL","(FatJet_p4[FatJet_sel].size()==0) && (Jet_p4[Jet_sel].size()>=3)")
-    df = df.Define("Boosted_DL","(FatJet_p4[FatJet_sel].size()>=1)")
-    df = df.Define("Resolved_DL","(FatJet_p4[FatJet_sel].size()>=1) && (Jet_idx[Jet_sel].size()>=2)")
+    df = df.Define("Boosted_SL","(is_SL && (FatJet_p4[FatJet_sel].size()>=1) && (Jet_p4[Jet_sel].size()>=1))")
+    df = df.Define("Resolved_SL","(is_SL && (FatJet_p4[FatJet_sel].size()==0) && (Jet_p4[Jet_sel].size()>=3))")
+    df = df.Define("Boosted_DL","(is_DL && (FatJet_p4[FatJet_sel].size()>=1))")
+    df = df.Define("Resolved_DL","(is_DL && (FatJet_p4[FatJet_sel].size()>=1) && (Jet_idx[Jet_sel].size()>=2))")
     return df.Filter(" is_SL ? (Boosted_SL || Resolved_SL ) : (Boosted_DL || Resolved_DL);", "Reco bjet candidates")
 
 def RecoHttCandidateSelection(df, config):

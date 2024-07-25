@@ -35,6 +35,10 @@ def ScrapeSkimDatasets(input_dir, output):
         continue
       if dataset.startswith('GluGlutoHH') or dataset.startswith('VBFHH'):
         continue
+      if '2HDM' in dataset:
+        continue
+      if 'UncorrelatedDecay' in dataset:
+        continue
 
       if dataset.startswith('DY'):
         sampleType = 'DY'
@@ -184,6 +188,15 @@ def ScrapeSkimDatasets(input_dir, output):
         xSec = '1.0'
         ref = 'fill me!'
         unc = ''
+        if dataset.startswith('ttHTobb'):
+          xSec = '0.57 * 0.5824'
+          ref: 'https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap'
+          unc: '+6% -9.3% (QCD Scale) +-3.5% (PDF alpha s) +-3% (PDF) +-2 (alpha s)'
+        if dataset.startswith('ttHToNonbb'):
+          xSec: '0.57 * (1 - 0.5824)'
+          ref: 'https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap'
+          unc: '+6% -9.3% (QCD Scale) +-3.5% (PDF alpha s) +-3% (PDF) +-2 (alpha s)'
+
 
       if dataset.startswith('QCD'):
         sampleType = 'QCD'
@@ -196,6 +209,26 @@ def ScrapeSkimDatasets(input_dir, output):
         xSec = '1.0'
         ref = 'fill me!'
         unc = ''
+        if dataset.startswith('GluGluHToTauTau'):
+          xSec: '52.23 * (0.06272)'
+          ref: 'https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap'
+          unc: '+4.6% -6.7% (theory) +-3.9 (TH Gaussian) +-3.2 (PDF+alpha s) +-1.9 (PDF) +-2.6 (alpha s)'
+        if dataset.startswith('GluGluHToWW'):
+          GluGluHToWWTo2L2Nu_M125:
+          xSec: '52.23 * (0.2137) * (3 * 0.1086)'
+          ref: 'https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap'
+          unc: '+4.6% -6.7% (theory) +-3.9 (TH Gaussian) +-3.2 (PDF+alpha s) +-1.9 (PDF) +-2.6 (alpha s)
+        if dataset.startswith('VBFHToTauTau'):
+          xSec: '4.078 * (0.06272)'
+          ref: 'https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap'
+          unc: '+0.5% -0.3% (QCD Scale) +-2.1% (PDF alpha s) +-2.1% (PDF) +-0.5 (alpha s)'
+        if dataset.startswith('VBFHToWWTo2L2Nu'):
+          xSec: '4.078 * (0.2137) * (3 * 0.1086)'
+          ref: 'https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap'
+          unc: '+0.5% -0.3% (QCD Scale) +-2.1% (PDF alpha s) +-2.1% (PDF) +-0.5 (alpha s)'
+
+
+
 
       if sampleType == 'test':
         bad_cases.append(dataset)

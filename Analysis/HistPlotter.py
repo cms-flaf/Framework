@@ -19,13 +19,15 @@ def CreateNamesDict(histNamesDict, all_sample_types, uncName, sample_cfg_dict,gl
     for sample_type in all_sample_types.keys():
         for sample_name in all_sample_types[sample_type]:
             sample_namehist = sample_type if sample_type in global_cfg_dict['sample_types_to_merge'] else sample_name
-            if sample_name == 'data' or uncName == 'Central':
-                histNamesDict[sample_name] = (sample_namehist, 'Central','Central')
-            else:
-                for scale in global_cfg_dict['scales']:
+            onlyCentral = sample_name == 'data' or uncName == 'Central'
+            scales = ['Central'] if onlyCentral else global_cfg_dict['scales']
+            for scale in scales:
+                histKey = (sample_namehist,  uncName, scale)
+                histName = sample_namehist
+                if not onlyCentral:
                     histName = f"{sample_namehist}_{uncName}{scale}"
-                    histKey = (sample_namehist,  uncName, scale)
-                    histNamesDict[histName] = histKey
+                histNamesDict[histName] = histKey
+
 
 
 def GetHistograms(inFile, channel, category, uncSource, histNamesDict,all_histlist, wantData):
@@ -37,9 +39,12 @@ def GetHistograms(inFile, channel, category, uncSource, histNamesDict,all_histli
         if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
             obj.SetDirectory(0)
             key_name = key.GetName()
+            #print(key_name)
             if key_name not in histNamesDict.keys(): continue
+            #print(key_name)
             sample, uncName, scale = histNamesDict[key_name]
             sample_type = sample if not sample in sample_cfg_dict.keys() else sample_cfg_dict[sample]['sampleType']
+            #if sample_type == 'data' and not wantData: continue
             if sample_type in signals:
                 sample= sample_type
             if (uncName, scale) not in all_histlist.keys():
@@ -153,23 +158,22 @@ if __name__ == "__main__":
                     all_samples_types[sample_cfg_dict[sample_name]['sampleType']] = []
                 all_samples_types[sample_cfg_dict[sample_name]['sampleType']].append(sample_name)
 
-
-
+    #print(all_samples_types.keys())
     plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg_dict, inputs_cfg=inputs_cfg_dict)
+
 
     histNamesDict = {}
     signals = list(global_cfg_dict['signal_types'])
     scales = list(global_cfg_dict['scales'])
 
     CreateNamesDict(histNamesDict, all_samples_types, args.uncSource, sample_cfg_dict,global_cfg_dict)
-
+    #print(histNamesDict.keys())
     GetHistograms(args.inFile, args.channel, args.category, args.uncSource, histNamesDict,all_histlist, args.wantData)
     #GetSignalHistogram(args.inFileRadion, args.channel, args.category, args.uncSource, histNamesDict,all_histlist, args.mass)
     #GetSignalHistogram(args.inFileGraviton, args.channel, args.category, args.uncSource, histNamesDict,all_histlist, args.mass)
 
     #print(os.path.join(args.histDir, inFileName))
-
-    print(all_histlist.items(), all_histlist.keys())
+    #print(all_histlist.items(), all_histlist.keys())
 
     hists_to_plot = {}
 
@@ -179,56 +183,29 @@ if __name__ == "__main__":
         key = ( args.uncSource, uncScale )
         if key not in all_histlist.keys(): continue
         samples_dict = all_histlist[key]
+        #print(samples_dict.keys())
         obj_list = ROOT.TList()
         for sample,hist in samples_dict.items():
-            print(sample)
+            #print(f"considering {sample}")
             #print(sample, hist.Integral(0, hist.GetNbinsX()+1))
             other_inputs = []
             if sample not in samples_to_plot+signals:
-                print(sample)
+                #print(f"including {sample} in other_samples")
                 if sample in other_inputs: continue
                 if not other_inputs:
                     other_obj = hist
                 other_inputs.append(sample)
-                #sample = 'Other'
-                #print(f'{sample} in other has {hist.Integral(0, hist.GetNbinsX()+1)} entries')
                 obj_list.Add(hist)
-                #obj_list=ROOT.TList()
             else:
-                #print(f'{sample} has {hist.Integral(0, hist.GetNbinsX()+1)} entries')
                 hists_to_plot[sample] = hist
         other_obj.Merge(obj_list)
-        #print(f'other have {other_obj.GetEntries()} entries')
         hists_to_plot['Other'] = other_obj
-        #print()
-        #for sample,hist in hists_to_plot.items():
-        #    print(sample, hist.Integral(0, hist.GetNbinsX()+1))
-        #print()
-        #print()
-        #if args.wantData == True and 'data' not in hists_to_plot.keys():
-        #    hists_to_plot['data'] = all_histlist[ ('Central','Central' )]['data']
         cat_txt = args.category if args.category !='inclusive' else 'incl'
         custom1= {'cat_text':f"{cat_txt} m_{{X}}={args.mass} GeV/c^{{2}}", 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS data/simulation','scope_text':''}
-
+        #print(hists_to_plot)
         if args.wantData==False:
             custom1= {'cat_text':f"{cat_txt} m_{{X}}={args.mass} GeV/c^{{2}}", 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS simulation', 'scope_text':''}
-
-        plotter.plot(args.var, hists_to_plot, args.outFile, want_data = args.wantData, custom=custom1)
         print(args.outFile)
-
-        outFile_prefix = f'{args.var}_{args.channel}_{args.category}'
-
-        if(args.uncSource != 'Central'):
-            outFile_prefix += f'_{args.uncSource}{uncScale}'
-        tmpdir = 'from2D' if args.want2D else 'from1D'
-        outDir = os.path.join(args.outDir,args.var,btag_dir,tmpdir)
-        #print(outDir)
-        #print(hists_to_plot)
-        if not os.path.isdir(outDir):
-            os.makedirs(outDir)
-        outFileName = f"{outFile_prefix}_XMass{args.mass}.pdf"
-
-        outFileFullPath = os.path.join(outDir,outFileName)
-        plotter.plot(args.var, hists_to_plot, outFileFullPath, want_data = args.wantData, custom=custom1)
-        print(outFileFullPath)
+        plotter.plot(args.var, hists_to_plot, args.outFile, want_data = args.wantData, custom=custom1)
+        #print(args.outFile)
 

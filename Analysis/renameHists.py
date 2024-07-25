@@ -28,10 +28,10 @@ uncReNames = {
     "bTagShape_cferr2":"CMS_btag_cferr2",
     "EleID":"CMS_eff_e_{}",
     "PUJetID":"CMS_eff_j_PUJET_id_{}",
-    "HighPtMuon_HighPtID":"CMS_eff_m_highpt_id_HighPtID_{}",
-    "HighPtMuon_HighPtIDIso":"CMS_eff_m_highpt_id_HighPtIDIso_{}",
-    "HighPtMuon_Reco":"CMS_eff_m_highpt_id_Reco_{}",
-    "HighPtMuon_TightID":"CMS_eff_m_highpt_id_TightID_{}",
+    #"HighPtMuon_HighPtID":"CMS_eff_m_highpt_id_HighPtID_{}",
+    #"HighPtMuon_HighPtIDIso":"CMS_eff_m_highpt_id_HighPtIDIso_{}",
+    #"HighPtMuon_Reco":"CMS_eff_m_highpt_id_Reco_{}",
+    #"HighPtMuon_TightID":"CMS_eff_m_highpt_id_TightID_{}",
     "Muon_HighPtID":"CMS_eff_m_id_highptid{}",
     "MuonID_HighPtIso":"CMS_eff_m_id_HighPtIso_{}",
     "MuonID_Reco":"CMS_eff_m_id_Reco_{}",
@@ -59,6 +59,12 @@ uncReNames = {
     "TauID_genuineMuon_eta1p2to1p7":"CMS_eff_t_id_mutauFR_eta1p2to1p7_{}",
     "TauID_genuineMuon_etaGt1p7":"CMS_eff_t_id_mutauFR_etaGt1p7_{}",
     "TauID_genuineMuon_etaLt0p4":"CMS_eff_t_id_mutauFR_etaLt0p4_{}",
+    "TauID_SF_stat_highpT_bin1":"CMS_eff_t_id_stat_highpT_bin1_{}",
+    "TauID_SF_stat_highpT_bin2":"CMS_eff_t_id_stat_highpT_bin2_{}",
+    "TauID_SF_syst_highpT_bin1":"CMS_eff_t_id_syst_highpT_bin1",
+    "TauID_SF_syst_highpT_bin2":"CMS_eff_t_id_syst_highpT_bin2",
+    "TauID_SF_syst_highpT_extrap":"CMS_eff_t_id_syst_highpT_extrap",
+
     "TauID_stat_highpT_bin1":"CMS_eff_t_id_stat_highpT_bin1_{}",
     "TauID_stat_highpT_bin2":"CMS_eff_t_id_stat_highpT_bin2_{}",
     "TauID_syst_highpT_bin1":"CMS_eff_t_id_syst_highpT_bin1",
@@ -124,6 +130,8 @@ uncReNames = {
     "TrgSF_mutau_mu":"CMS_bbtt_trgmutau_mu_{}",
     "TrgSF_singleEle":"CMS_bbtt_trgsingleEle_{}",
     "TrgSF_singleMu24":"CMS_bbtt_trgsingleMu24_{}",
+    "TrgSF_MET":"CMS_bbtt_trgMET{}",
+    "TrigSF_MET":"CMS_bbtt_trgMET{}",
 }
 
 

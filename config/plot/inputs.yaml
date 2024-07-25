@@ -10,10 +10,10 @@
   color: kYellow-7
 - name: QCD
   title: QCD
-  color: kOrange
-- name: HHnonRes
-  title: "HH SM"
-  color: kRed-4
+  color: kPink+1
+#- name: HHnonRes
+  #title: "HH SM"
+  #color: kPink+1
 - name: GluGluToBulkGraviton
   title: "GluGluBulkGraviton"
   type: signal
@@ -36,7 +36,7 @@
 #  scale: 5
 - name: Other
   title: "other backgrounds"
-  color: kPink+1
+  color: kRed-4
 - name: data
-  title: "data"
+  title: "data obs"
   type: data

@@ -472,14 +472,6 @@ TT:
   crossSec: '923.6'
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO#Updated_reference_cross_sections
   unc: +22.6 -33.4 (scale) +/-  22.8 (PDF alphas) -24.6 +25.4 (mass) (to be multiplied by the BR)
-ttHTobb_M125:
-  crossSec: 0.57 * (0.5824)
-  reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap
-  unc: +6% -9.3% (QCD Scale) +-3.5% (PDF alpha s) +-3% (PDF) +-2 (alpha s)
-ttHToNonbb_M125:
-  crossSec: 0.57 * (1 - 0.5824)
-  reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap
-  unc: +6% -9.3% (QCD Scale) +-3.5% (PDF alpha s) +-3% (PDF) +-2 (alpha s)
 
 TTto2L2Nu:
   crossSec: 923.6 * (1 - 0.6741) * (1 - 0.6741)
@@ -493,26 +485,40 @@ TTtoLNu2Q:
   crossSec: 923.6 * 0.6741 * (1 - 0.6741) * 2
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO#Updated_reference_cross_sections
   unc: +22.6 -33.4 (scale) +/-  22.8 (PDF alphas) -24.6 +25.4 (mass) (to be multiplied by the BR)
-TTWH:
-  crossSec: 0.001252
-  reference: XSDB TTWH_TuneCP5_13p6TeV_madgraph-pythia8 modifiedOn 2024-04-03 19:49:28
-  unc: 4.375e-07
-TTWW:
-  crossSec: 0.008203
-  reference: XSDB TTWW_TuneCP5_13p6TeV_madgraph-madspin-pythia8 modifiedOn 2023-05-26 21:19:17
-  unc: 1.404e-05
-TTZH:
-  crossSec: 0.001288
-  reference: XSDB TTZH_TuneCP5_13p6TeV_madgraph-pythia8 modifiedOn 2024-04-03 19:49:34
-  unc: 4.101e-07
+
 TTZToQQ:
   crossSec: 0.6603
   reference: XSDB TTZ-ZtoQQ-1Jets_TuneCP5_13p6TeV_amcatnloFXFX-pythia8 modifiedOn 2024-04-03 19:49:29
   unc: 0.003767
+
+TTWH:
+  crossSec: 0.001252
+  reference: XSDB TTWH_TuneCP5_13p6TeV_madgraph-pythia8 modifiedOn 2024-04-03 19:49:28
+  unc: 4.375e-07
+
+TTWW:
+  crossSec: 0.008203
+  reference: XSDB TTWW_TuneCP5_13p6TeV_madgraph-madspin-pythia8 modifiedOn 2023-05-26 21:19:17
+  unc: 1.404e-05
+
+TTZH:
+  crossSec: 0.001288
+  reference: XSDB TTZH_TuneCP5_13p6TeV_madgraph-pythia8 modifiedOn 2024-04-03 19:49:34
+  unc: 4.101e-07
+
 TTZZ:
   crossSec: 0.001579
   reference: XSDB TTZZ_TuneCP5_13p6TeV_madgraph-madspin-pythia8 modifiedOn 2023-05-26 21:19:17
   unc: 3.248e-06
+
+ttHTobb_M125:
+  crossSec: 0.57 * (0.5824)
+  reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap
+  unc: +6% -9.3% (QCD Scale) +-3.5% (PDF alpha s) +-3% (PDF) +-2 (alpha s)
+ttHToNonbb_M125:
+  crossSec: 0.57 * (1 - 0.5824)
+  reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap
+  unc: +6% -9.3% (QCD Scale) +-3.5% (PDF alpha s) +-3% (PDF) +-2 (alpha s)
 
 VBFHToTauTau_M125:
   crossSec: 4.078 * (0.06272)

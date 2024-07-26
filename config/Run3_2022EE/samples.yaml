@@ -755,12 +755,12 @@ WtoLNu_4J_madgraphMLM:
   miniAOD: /WtoLNu-4Jets_4J_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6-v2/MINIAODSIM
 WtoLNu_amcatnloFXFX:
   sampleType: W
-  crossSection: WtoLNu_amcatnloFXFX
+  crossSection: WtoLNu
   generator: amcatnloFXFX
   miniAOD: /WtoLNu-2Jets_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6-v2/MINIAODSIM
 WtoLNu_madgraphMLM:
   sampleType: W
-  crossSection: WtoLNu_madgraphMLM
+  crossSection: WtoLNu
   generator: madgraphMLM
   miniAOD: /WtoLNu-4Jets_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6-v2/MINIAODSIM
 WtoLNu_madgraphMLM_ext1:

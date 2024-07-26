@@ -271,10 +271,6 @@ QCD_HT1000to1200_MLM:
   crossSec: 883.7
   reference: XSDB QCD-4Jets_HT-1000to1200_TuneCP5_13p6TeV_madgraphMLM-pythia8 modifiedOn 2024-04-03 19:46:40
   unc: 2.69
-QCD_HT1000To1200_MLM:
-  crossSec: 883.7
-  reference: XSDB QCD-4Jets_HT-1000to1200_TuneCP5_13p6TeV_madgraphMLM-pythia8 modifiedOn 2024-04-03 19:46:40
-  unc: 2.69
 QCD_HT1200to1500_MLM:
   crossSec: 383.5
   reference: XSDB QCD-4Jets_HT-1200to1500_TuneCP5_13p6TeV_madgraphMLM-pythia8 modifiedOn 2024-04-03 19:46:42
@@ -292,6 +288,35 @@ QCD_PT-10to30_EMEnriched:
   crossSec: 6854000.0
   reference: XSDB QCD_PT-10to30_EMEnriched_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-03-26 13:58:28
   unc: 68270.0
+QCD_PT-30to50_EMEnriched:
+  crossSec: 6698000.0
+  reference: XSDB QCD_PT-30to50_EMEnriched_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-05-26 21:19:12
+  unc: 62870.0
+QCD_PT-50to80_EMEnriched:
+  crossSec: 2113000.0
+  reference: XSDB QCD_PT-50to80_EMEnriched_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-05-26 21:19:12
+  unc: 19470.0
+QCD_PT-80to120_EMEnriched:
+  crossSec: 394100.0
+  reference: XSDB QCD_PT-80to120_EMEnriched_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-03-26 13:58:48
+  unc: 3654.0
+QCD_PT-120to170_EMEnriched:
+  crossSec: '0.0'
+  reference: fill me!
+  unc: ''
+QCD_PT-170to300_EMEnriched:
+  crossSec: 17920.0
+  reference: XSDB QCD_PT-170to300_EMEnriched_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-03-26 13:58:33
+  unc: 164.5
+QCD_PT-300_EMEnriched:
+  crossSec: 1231.0
+  reference: XSDB QCD_PT-300_EMEnriched_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-03-26 13:58:37
+  unc: 11.28
+QCD_PT-300toInf_EMEnriched:
+  crossSec: 1224.0
+  reference: XSDB QCD_PT-300toInf_EMEnriched_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-03-26 13:58:39
+  unc: 11.46
+
 QCD_PT-15to20_MuEnrichedPt5:
   crossSec: 2960000.0
   reference: XSDB QCD_PT-15to20_MuEnrichedPt5_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-05-26 21:19:11
@@ -300,58 +325,30 @@ QCD_PT-20to30_MuEnrichedPt5:
   crossSec: 2679000.0
   reference: XSDB QCD_PT-20to30_MuEnrichedPt5_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-03-26 13:58:54
   unc: 26580.0
-QCD_PT-30to50_EMEnriched:
-  crossSec: 6698000.0
-  reference: XSDB QCD_PT-30to50_EMEnriched_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-05-26 21:19:12
-  unc: 62870.0
 QCD_PT-30to50_MuEnrichedPt5:
   crossSec: 1465000.0
   reference: XSDB QCD_PT-30to50_MuEnrichedPt5_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-03-26 13:58:41
   unc: 14360.0
-QCD_PT-50to80_EMEnriched:
-  crossSec: 2113000.0
-  reference: XSDB QCD_PT-50to80_EMEnriched_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-05-26 21:19:12
-  unc: 19470.0
 QCD_PT-50to80_MuEnrichedPt5:
   crossSec: 409500.0
   reference: XSDB QCD_PT-50to80_MuEnrichedPt5_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-05-26 21:19:13
   unc: 4049.0
-QCD_PT-80to120_EMEnriched:
-  crossSec: 394100.0
-  reference: XSDB QCD_PT-80to120_EMEnriched_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-03-26 13:58:48
-  unc: 3654.0
 QCD_PT-80to120_MuEnrichedPt5:
   crossSec: 96200.0
   reference: XSDB QCD_PT-80to120_MuEnrichedPt5_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-03-26 13:58:49
   unc: 916.9
-QCD_PT-120to170_EMEnriched:
-  crossSec: '0.0'
-  reference: fill me!
-  unc: ''
 QCD_PT-120to170_MuEnrichedPt5:
   crossSec: 22980.0
   reference: XSDB QCD_PT-120to170_MuEnrichedPt5_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-03-26 13:58:51
   unc: 215.1
-QCD_PT-170to300_EMEnriched:
-  crossSec: 17920.0
-  reference: XSDB QCD_PT-170to300_EMEnriched_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-03-26 13:58:33
-  unc: 164.5
 QCD_PT-170to300_MuEnrichedPt5:
   crossSec: 7763.0
   reference: XSDB QCD_PT-170to300_MuEnrichedPt5_TuneCP5_13p6TeV_pythia8 modifiedOn 2024-04-03 19:47:43
   unc: 23.67
-QCD_PT-300_EMEnriched:
-  crossSec: 1231.0
-  reference: XSDB QCD_PT-300_EMEnriched_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-03-26 13:58:37
-  unc: 11.28
 QCD_PT-300to470_MuEnrichedPt5:
   crossSec: 699.1
   reference: XSDB QCD_PT-300to470_MuEnrichedPt5_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-03-26 13:58:38
   unc: 6.639
-QCD_PT-300toInf_EMEnriched:
-  crossSec: 1224.0
-  reference: XSDB QCD_PT-300toInf_EMEnriched_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-03-26 13:58:39
-  unc: 11.46
 QCD_PT-470to600_MuEnrichedPt5:
   crossSec: 68.24
   reference: XSDB QCD_PT-470to600_MuEnrichedPt5_TuneCP5_13p6TeV_pythia8 modifiedOn 2024-04-03 19:47:45

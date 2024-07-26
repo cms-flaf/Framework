@@ -428,13 +428,13 @@ QCD_PT_3200:
   unc: 1.208e-06
 
 ST_s-channel_antitop:
-  crossSec: '0.0'
-  reference: Take this from XSDB for now
-  unc: ''
+  crossSec: 1.43
+  reference: XSDB TbarBtoLminusNuB-s-channel-4FS_TuneCP5_13p6TeV modifiedOn 2024-04-03 19:51:58
+  unc: 0.0001633
 ST_s-channel_top:
-  crossSec: '0.0'
-  reference: Take this from XSDB for now
-  unc: ''
+  crossSec: 2.278
+  reference: XSDB TBbartoLplusNuBbar-s-channel-4FS_TuneCP5_13p6TeV modifiedOn 2024-04-03 19:48:33
+  unc: 0.0003008
 ST_t-channel_antitop:
   crossSec: '87.2'
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef

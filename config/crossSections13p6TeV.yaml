@@ -626,6 +626,22 @@ WZtoLNu2Q_powheg:
   crossSec: 15.87
   reference: XSDB WZtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8 modifiedOn 2024-04-03 20:06:26
   unc: 0.007874
+WWtoLNu2Q:
+  crossSec: 48.94
+  reference: XSDB WWtoLNu2Q_TuneCP5_13p6TeV modifiedOn 2024-04-03 20:06:13
+  unc: 0.0175
+WWto4Q-1Jets:
+  crossSec: 54.82
+  reference: XSDB WWto4Q-1Jets-4FS_TuneCP5_13p6TeV modifiedOn 2024-04-03 20:06:06
+  unc: 0.1846
+WWto4Q:
+  crossSec: 50.79
+  reference: XSDB WWto4Q_TuneCP5_13p6TeV modifiedOn 2024-04-03 20:06:10
+  unc: 0.01816
+WWtoLNu2Q-1Jets:
+  crossSec: 52.98
+  reference: XSDB WWtoLNu2Q-1Jets-4FS_TuneCP5_13p6TeV modifiedOn 2024-04-03 20:06:12
+  unc: 0.1795
 
 WZZ:
   crossSec: 0.06206

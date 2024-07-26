@@ -875,35 +875,35 @@ WWto2L2Nu_powheg_ext1:
   sampleType: VV
 
 WWtoLNu2Q_powheg:
-  crossSection: WW
+  crossSection: WWtoLNu2Q
   generator: powheg
   miniAOD: /WWtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
   sampleType: VV
 WWtoLNu2Q_powheg_ext1:
-  crossSection: WW
+  crossSection: WWtoLNu2Q
   generator: powheg
   miniAOD: /WWtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5_ext1-v2/MINIAODSIM
   sampleType: VV
 
 WWto4Q_powheg:
-  crossSection: WW
+  crossSection: WWto4Q
   generator: powheg
   miniAOD: /WWto4Q_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
   sampleType: VV
 WWto4Q_powheg_ext1:
-  crossSection: WW
+  crossSection: WWto4Q
   generator: powheg
   miniAOD: /WWto4Q_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5_ext1-v2/MINIAODSIM
   sampleType: VV
 
 WWtoLNu2Q_amcatnloFXFX:
-  crossSection: WW
+  crossSection: WWtoLNu2Q-1Jets
   generator: amcatnloFXFX
   miniAOD: /WWtoLNu2Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
   sampleType: VV
 
 WWto4Q_amcatnloFXFX:
-  crossSection: WW
+  crossSection: WWto4Q-1Jets
   generator: amcatnloFXFX
   miniAOD: /WWto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
   sampleType: VV

@@ -108,7 +108,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
                 dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystUp_rel", "L1PreFiringWeight_Muon_SystUp/L1PreFiringWeight_Muon_Nom")
         if not isData:
             weight_branches = dfw.Apply(corrections.getNormalisationCorrections, setup.global_params,
-                                        setup.samples, sample_name, lepton_legs,trigger_class.trigger_dict.keys(),
+                                        setup.samples, sample_name, lepton_legs,trigger_class.trigger_dict.keys() if trigger_class else [],
                                         return_variations=is_central and compute_unc_variations, isCentral=is_central,
                                         ana_cache=anaCache)
             puIDbranches = ["weight_Jet_PUJetID_Central_tmp", "weight_Jet_PUJetID_effUp_rel_tmp", "weight_Jet_PUJetID_effDown_rel_tmp"]

@@ -446,27 +446,27 @@ ST_t-channel_top:
 ST_tW_antitop_2L2Nu:
   crossSec: 87.9 * (0.5005) * (3 * 0.1086) * (0.3320)
   reference: Value taken from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef, top/antitop % taken from XSDB, BRs taken from pdg
-  unc: 0.01296
+  unc: +2.0 -1.9 (scale) +-2.4 (PDF AlphaS) +3.1 -3.1 (Total) +1.3 -1.3 (mass) +0.2 -0.2 (Ebeam)
 ST_tW_antitop_4Q:
   crossSec: 87.9 * (0.5005) * (0.6741) * (0.665)
   reference: Value taken from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef, top/antitop % taken from XSDB, BRs taken from pdg
-  unc: 0.01296
+  unc: +2.0 -1.9 (scale) +-2.4 (PDF AlphaS) +3.1 -3.1 (Total) +1.3 -1.3 (mass) +0.2 -0.2 (Ebeam)
 ST_tW_antitop_LNu2Q:
   crossSec: 87.9 * (0.5005) * ( ((3 * 0.1086) * (0.665)) + ((0.6741) * (0.3320)) )
   reference: Value taken from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef, top/antitop % taken from XSDB, BRs taken from pdg
-  unc: 0.01296
+  unc: +2.0 -1.9 (scale) +-2.4 (PDF AlphaS) +3.1 -3.1 (Total) +1.3 -1.3 (mass) +0.2 -0.2 (Ebeam)
 ST_tW_top_2L2Nu:
   crossSec: 87.9 * (0.4995) * (3 * 0.1086) * (0.3320)
   reference: Value taken from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef, top/antitop % taken from XSDB, BRs taken from pdg
-  unc: 0.01292
+  unc: +2.0 -1.9 (scale) +-2.4 (PDF AlphaS) +3.1 -3.1 (Total) +1.3 -1.3 (mass) +0.2 -0.2 (Ebeam)
 ST_tW_top_4Q:
   crossSec: 87.9 * (0.4995) * (0.6741) * (0.665)
   reference: Value taken from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef, top/antitop % taken from XSDB, BRs taken from pdg
-  unc: 0.01292
+  unc: +2.0 -1.9 (scale) +-2.4 (PDF AlphaS) +3.1 -3.1 (Total) +1.3 -1.3 (mass) +0.2 -0.2 (Ebeam)
 ST_tW_top_LNu2Q:
   crossSec: 87.9 * (0.4995) * ( ((3 * 0.1086) * (0.665)) + ((0.6741) * (0.3320)) )
   reference: Value taken from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef, top/antitop % taken from XSDB, BRs taken from pdg
-  unc: 0.01292
+  unc: +2.0 -1.9 (scale) +-2.4 (PDF AlphaS) +3.1 -3.1 (Total) +1.3 -1.3 (mass) +0.2 -0.2 (Ebeam)
 
 TT:
   crossSec: '923.6'

@@ -423,7 +423,8 @@ QCD_PT-50to80_EMEnriched:
 QCD_PT-80to120_EMEnriched:
   crossSection: QCD_PT-80to120_EMEnriched
   generator: pythia8
-  miniAOD: /QCD_PT-80t
+  miniAOD: /QCD_PT-80to120_EMEnriched_TuneCP5_13p6TeV_pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
+  sampleType: QCD
 QCD_PT-120to170_EMEnriched:
   crossSection: QCD_PT-120to170_EMEnriched
   generator: pythia8

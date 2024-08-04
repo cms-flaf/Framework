@@ -32,8 +32,6 @@ struct HBBCand
   std::array<LorentzVectorM, n_legs> leg_vis_p4; // p4 of jet matched to quark; if no match = 0
   LorentzVectorM cand_p4;
 };
-
-
 template<size_t N>
 struct HTTCand {
   static constexpr size_t n_legs = N;
@@ -64,7 +62,36 @@ struct HTTCand {
     }
     return false;
   }
+};
+template<size_t N>
+struct HWWCand {
+  static constexpr size_t n_legs = N;
+  std::array<Leg, n_legs> leg_type;
+  std::array<int, n_legs> leg_index;
+  std::array<LorentzVectorM, n_legs> leg_p4;
+  std::array<int, n_legs> leg_charge;
+  std::array<float, n_legs> leg_rawIso;
+  std::array<int, n_legs> leg_genMatchIdx;
 
+  HWWCand() { leg_type.fill(Leg::none); }
+
+  Channel channel() const { return _channel(std::make_index_sequence<n_legs>{}); }
+  bool operator==(const HWWCand& other) const
+  {
+    for(size_t idx = 0; idx < n_legs; ++idx) {
+      if(leg_type[idx] != other.leg_type[idx] || leg_index[idx] != other.leg_index[idx])
+        return false;
+    }
+    return true;
+  }
+  bool isLeg(int obj_index, Leg leg) const {
+    for(size_t idx = 0; idx < n_legs; idx++){
+      if(leg_type[idx] == leg && leg_index[idx]==obj_index){
+        return true;
+      }
+    }
+    return false;
+  }
   RVecB isLeg(const RVecI &obj_vec, Leg leg) const {
     RVecB isLeg_vector(obj_vec.size(), false);
     for(size_t obj_idx=0; obj_idx<obj_vec.size(); obj_idx++){
@@ -106,7 +133,6 @@ struct HbbCand {
   std::array<int, n_legs> leg_index;
   std::array<LorentzVectorM, n_legs> leg_p4;
 };
-
 template<size_t N>
 std::ostream& operator<<(std::ostream& os, const HTTCand<N>& cand)
 {

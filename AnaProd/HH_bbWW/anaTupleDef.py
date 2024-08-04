@@ -7,7 +7,7 @@ loadHHBtag = False
 lepton_legs = [ "tau1", "tau2" ]
 
 
-Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all"]
+Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all","Muon_tightId","Muon_highPtId"]
 
 Electron_observables = ["Electron_mvaNoIso_WP90", "Electron_mvaIso_WP90", "Electron_pfRelIso03_all"]
 
@@ -26,7 +26,7 @@ FatJetObservables = ["area", "btagCSVV2", "btagDDBvLV2", "btagDeepB", "btagHbb",
                      "particleNet_QCD","particleNet_XbbVsQCD", # 2016
                      "particleNetLegacy_QCD", "particleNetLegacy_Xbb", "particleNetLegacy_mass", # 2016
                      "particleNetWithMass_QCD", "particleNetWithMass_HbbvsQCD", "particleNet_massCorr" # 2016
-                     ]
+                     ,"tau1","tau2","tau3","tau4"]
 
 # in this PR https://github.com/cms-sw/cmssw/commit/17457a557bd75ab479dfb78013edf9e551ecd6b7, particleNet MD have been removed therefore we will switch to take
 
@@ -86,15 +86,68 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
     dfw.Apply(CommonBaseline.SelectRecoP4, syst_name, global_params["nano_version"])
     dfw.Apply(AnaBaseline.RecoHWWCandidateSelection)
     dfw.Apply(AnaBaseline.RecoHWWJetSelection)
-
     PtEtaPhiM = ["pt", "eta", "phi", "mass"]
 
-    # save reco lepton from W decays
-    for lep in [1, 2]:
+    # save reco lepton from HWWcandidate
+    n_legs = 2
+    for leg_idx in range(n_legs):
         for var in PtEtaPhiM:
-            name = f"lep{lep}_{var}"
-            dfw.DefineAndAppend(name, f"lep{lep}_p4.{var}()")
-    dfw.colToSave.extend(["lep1_type", "lep2_type"])
+            name = f"lep{leg_idx}_{var}"
+            dfw.DefineAndAppend(name, f"HwwCandidate.leg_p4[{leg_idx}].{var}()")
+        def LegVar(var_name, var_expr, var_type=None, var_cond=None, check_leg_type=True, default=0):
+            cond = var_cond
+            if check_leg_type:
+                type_cond = f"HwwCandidate.leg_type[{leg_idx}] != Leg::none"
+                cond = f"{type_cond} && ({cond})" if cond else type_cond
+            define_expr = f'static_cast<{var_type}>({var_expr})' if var_type else var_expr
+            if cond:
+                define_expr = f'{cond} ? ({define_expr}) : {default}'
+            dfw.DefineAndAppend( f"lep{leg_idx}_{var_name}", define_expr)
+        LegVar('Type', f"HwwCandidate.leg_type[{leg_idx}]", var_type='int', check_leg_type=False)
+        LegVar('Charge', f"HwwCandidate.leg_charge[{leg_idx}]", var_type='int', check_leg_type=False)
+        LegVar('Iso', f"HwwCandidate.leg_rawIso.at({leg_idx})")
+        for muon_obs in Muon_observables:
+            LegVar(muon_obs, f"{muon_obs}.at(HwwCandidate.leg_index[{leg_idx}])",
+                   var_cond=f"HwwCandidate.leg_type[{leg_idx}] == Leg::mu", default='-1')
+        for ele_obs in Electron_observables:
+            LegVar(ele_obs, f"{ele_obs}.at(HwwCandidate.leg_index[{leg_idx}])",
+                   var_cond=f"HwwCandidate.leg_type[{leg_idx}] == Leg::e", default='-1')
+    #save information for fatjets
+    fatjet_obs = []
+    fatjet_obs.extend(FatJetObservables)
+    if not isData:
+        dfw.Define(f"FatJet_genJet_idx", f" FindMatching(FatJet_p4[FatJet_sel],GenJetAK8_p4,0.3)")
+        fatjet_obs.extend(JetObservablesMC)
+        #if isSignal:
+        #    dfw.DefineAndAppend("genchannelId","static_cast<int>(genHttCandidate->channel())")
+    dfw.DefineAndAppend(f"SelectedFatJet_pt", f"v_ops::pt(FatJet_p4[FatJet_sel])")
+    dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[FatJet_sel])")
+    dfw.DefineAndAppend(f"SelectedFatJet_phi", f"v_ops::phi(FatJet_p4[FatJet_sel])")
+    dfw.DefineAndAppend(f"SelectedFatJet_mass", f"v_ops::mass(FatJet_p4[FatJet_sel])")
+    for fatjetVar in fatjet_obs:
+        if(f"FatJet_{fatjetVar}" not in dfw.df.GetColumnNames()): continue
+        dfw.DefineAndAppend(f"SelectedFatJet_{fatjetVar}", f"FatJet_{fatjetVar}[FatJet_sel]")
+    subjet_obs = []
+    subjet_obs.extend(SubJetObservables)
+    if not isData:
+        dfw.Define(f"SubJet1_genJet_idx", f" FindMatching(SubJet_p4[FatJet_subJetIdx1],SubGenJetAK8_p4,0.3)")
+        dfw.Define(f"SubJet2_genJet_idx", f" FindMatching(SubJet_p4[FatJet_subJetIdx2],SubGenJetAK8_p4,0.3)")
+        fatjet_obs.extend(SubJetObservablesMC)
+    for subJetIdx in [1,2]:
+        dfw.Define(f"SelectedFatJet_subJetIdx{subJetIdx}", f"FatJet_subJetIdx{subJetIdx}[FatJet_sel]")
+        dfw.Define(f"FatJet_SubJet{subJetIdx}_isValid", f" FatJet_subJetIdx{subJetIdx} >=0 && FatJet_subJetIdx{subJetIdx} < nSubJet")
+        dfw.DefineAndAppend(f"SelectedFatJet_SubJet{subJetIdx}_isValid", f"FatJet_SubJet{subJetIdx}_isValid[FatJet_sel]")
+        for subJetVar in subjet_obs:
+            dfw.DefineAndAppend(f"SelectedFatJet_SubJet{subJetIdx}_{subJetVar}", f"""
+                                RVecF subjet_var(SelectedFatJet_pt.size(), 0.f);
+                                for(size_t fj_idx = 0; fj_idx<SelectedFatJet_pt.size(); fj_idx++) {{
+                                    auto sj_idx = SelectedFatJet_subJetIdx{subJetIdx}.at(fj_idx);
+                                    if(sj_idx >= 0 && sj_idx < SubJet_{subJetVar}.size()){{
+                                        subjet_var[fj_idx] = SubJet_{subJetVar}.at(sj_idx);
+                                    }}
+                                }}
+                                return subjet_var;
+                                """)
 
     # save all selected reco jets
     dfw.Define("centralJet_idx", "CreateIndexes(Jet_p4[Jet_sel].size())")

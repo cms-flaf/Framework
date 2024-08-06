@@ -52,7 +52,6 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
         df = df.Range(range)
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
-
     if isData and 'lumiFile' in setup.global_params:
         lumiFilter = LumiFilter(setup.global_params['lumiFile'])
         df = lumiFilter.filter(df)

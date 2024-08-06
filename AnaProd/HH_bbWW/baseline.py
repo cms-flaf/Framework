@@ -174,10 +174,12 @@ def RecoJetSelection(df):
 
 def ExtraRecoJetSelection(df):
     df = df.Define("ExtraJet_B0", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 5 && ( Jet_jetId & 2 )")
-    df = df.Define(f"ObjectsToRemoveOverlap", "if(Hbb_isValid){return std::vector<RVecLV>({{HttCandidate.leg_p4[0], HttCandidate.leg_p4[1],HbbCandidate->leg_p4[0],HbbCandidate->leg_p4[1]}}); } return std::vector<RVecLV>({{HttCandidate.leg_p4[0], HttCandidate.leg_p4[1]}})")
-    df = df.Define(f"ExtraJet_B1", """ RemoveOverlaps(Jet_p4, ExtraJet_B0,ObjectsToRemoveOverlap, 2, 0.5)""")
+    df = df.Define(f"ObjectsToRemoveOverlap_DL", "if(Hbb_isValid){return std::vector<RVecLV>({{HwwCandidate.leg_p4[0], HwwCandidate.leg_p4[1],HbbCandidate->leg_p4[0],HbbCandidate->leg_p4[1]}}); } return std::vector<RVecLV>({{HwwCandidate.leg_p4[0], HwwCandidate.leg_p4[1]}})")
+    df = df.Define(f"ObjectsToRemoveOverlap_SL", "if(Hbb_isValid){return std::vector<RVecLV>({{lep1_p4,HbbCandidate->leg_p4[0],HbbCandidate->leg_p4[1]}}); } return std::vector<RVecLV>({{lep1_p4}})")
+    df = df.Define("ExtraJet_B1", """if (is_SL)
+                                    return RemoveOverlaps(Jet_p4, ExtraJet_B0,ObjectsToRemoveOverlap_SL, 2, 0.5);
+                                 return RemoveOverlaps(Jet_p4, ExtraJet_B0,ObjectsToRemoveOverlap_DL, 2, 0.5); """)
     return df
-
 
 def ApplyJetSelection(df):
     return df.Filter("Jet_idx[Jet_bCand].size()>=2 || FatJet_idx[FatJet_bbCand].size()>=1", "Reco bjet candidates")

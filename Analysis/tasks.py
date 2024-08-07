@@ -141,10 +141,8 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                                     '--dataset', sample_name, '--uncConfig', unc_config,
                                     '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type,
                                     '--globalConfig', global_config, '--var', var ]
-            if self.global_params['store_noncentral']:
-                HistProducerFile_cmd.extend(['--compute_unc_variations', 'True'])
-            if self.global_params['compute_unc_variations']:
-                HistProducerFile_cmd.extend(['--compute_rel_weights', 'True'])
+            if self.global_params['compute_unc_histograms']:
+                HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
             if 'deepTau2p5' in self.version.split('_'):
                 print("deepTau2p5 in use")
                 HistProducerFile_cmd.extend([ '--deepTauVersion', 'v2p5'])

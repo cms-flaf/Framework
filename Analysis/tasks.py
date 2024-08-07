@@ -263,9 +263,10 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 
         print(uncs_to_exclude)
-        for uncName in list(unc_cfg_dict['norm'].keys())+unc_cfg_dict['shape']:
-            if uncName in uncs_to_exclude: continue
-            uncNames.append(uncName)
+        if self.global_params['compute_unc_histograms']:
+            for uncName in list(unc_cfg_dict['norm'].keys())+unc_cfg_dict['shape']:
+                if uncName in uncs_to_exclude: continue
+                uncNames.append(uncName)
         MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger.py')
         HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
         RenameHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'renameHists.py')

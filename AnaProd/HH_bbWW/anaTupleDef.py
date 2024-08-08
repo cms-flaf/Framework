@@ -153,7 +153,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
             for var in PtEtaPhiM:
                 dfw.DefineAndAppend(f"{name}_{var}", f"H_to_bb.leg_p4[{b_quark - 1}].{var}()")
                 dfw.DefineAndAppend(f"{name}_vis_{var}", f"H_to_bb.leg_vis_p4[{b_quark - 1}].{var}()")
-    elif not isData:
+
+    if not isData:
         # save gen leptons matched to reco leptons
         for lep in [1, 2]:
             name = f"lep{lep}_genLep"

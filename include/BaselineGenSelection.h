@@ -12,6 +12,9 @@ void AssignHadronicVCand(VCand& cand, int cand_idx, const RVecI& GenPart_pdgId, 
   RVecI daughters = GenPart_daughters.at(cand_idx);
   std::sort(daughters.begin(), daughters.end(), [&GenPart_pt](int x, int y){ return GenPart_pt[x] > GenPart_pt[y]; });
 
+  const double cand_mass = ParticleDB::GetMass(GenPart_pdgId[cand_idx], GenPart_mass[cand_idx]);
+  cand.cand_p4 = GetP4(GenPart_pt, GenPart_eta, GenPart_phi, cand_mass, cand_idx);
+
   for(size_t leg_id = 0; leg_id < cand.leg_p4.size(); ++leg_id) {
     cand.leg_kind[leg_id] = Vleg::Jet;
     cand.leg_index[leg_id] = daughters[leg_id];

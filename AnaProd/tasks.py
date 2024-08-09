@@ -104,7 +104,8 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         print(f'anaCache for sample {sample_name} is created in {self.output().uri()}')
 
 class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 40.0)
+    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 4)
 
     def create_branch_map(self):
         input_file_task_complete = InputFileTask.req(self, branches=()).complete()

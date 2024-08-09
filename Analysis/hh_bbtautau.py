@@ -41,12 +41,12 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
     n_data_B = hist_data_B.Integral(0, hist_data_B.GetNbinsX()+1)
     n_data_C = hist_data_C.Integral(0, hist_data_C.GetNbinsX()+1)
     n_data_D = hist_data_D.Integral(0, hist_data_D.GetNbinsX()+1)
-    print(f"Initially Yield for data in OS AntiIso region is {key_B} is {n_data_B}")
-    print(f"Initially Yield for data in SS Iso region is{key_C} is {n_data_C}")
-    print(f"Initially Yield for data in SS AntiIso region is{key_D} is {n_data_D}")
+    #print(f"Initially Yield for data in OS AntiIso region is {key_B} is {n_data_B}")
+    #print(f"Initially Yield for data in SS Iso region is{key_C} is {n_data_C}")
+    #print(f"Initially Yield for data in SS AntiIso region is{key_D} is {n_data_D}")
     for sample in all_samples_list:
         if sample=='data' or 'GluGluToBulkGraviton' in sample or 'GluGluToRadion' in sample or 'VBFToBulkGraviton' in sample or 'VBFToRadion' in sample or sample=='QCD':
-            #print(f"sample {sample} is not considered")
+            ##print(f"sample {sample} is not considered")
             continue
         hist_sample = histograms[sample]
         hist_sample_B = hist_sample[key_B].Clone()
@@ -58,30 +58,48 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
         n_data_C-=n_sample_C
         n_sample_D = hist_sample_D.Integral(0, hist_sample_D.GetNbinsX()+1)
         n_data_D-=n_sample_D
-        print(f"Yield for data in OS AntiIso region {key_B} after removing {sample} with yield {n_sample_B} is {n_data_B}")
-        print(f"Yield for data in SS Iso region {key_C} after removing {sample} with yield {n_sample_C} is {n_data_C}")
-        print(f"Yield for data in SS AntiIso region {key_D} after removing {sample} with yield {n_sample_D} is {n_data_D}")
+        if n_data_B < 0:
+            print(f"Yield for data in OS AntiIso region {key_B} after removing {sample} with yield {n_sample_B} is {n_data_B}")
+        if n_data_C < 0:
+            print(f"Yield for data in SS Iso region {key_C} after removing {sample} with yield {n_sample_C} is {n_data_C}")
+        if n_data_D < 0:
+            print(f"Yield for data in SS AntiIso region {key_D} after removing {sample} with yield {n_sample_D} is {n_data_D}")
         hist_data_B.Add(hist_sample_B, -1)
+        hist_data_C.Add(hist_sample_C, -1)
     #if n_data_C <= 0 or n_data_D <= 0:
         #print(f"n_data_C = {n_data_C}")
         #print(f"n_data_D = {n_data_D}")
-    kappa = n_data_C/n_data_D if n_data_D != 0 else 0
-    if kappa<0:
+
+    qcd_norm = n_data_B * n_data_C / n_data_D if n_data_D != 0 else 0
+    if qcd_norm<0:
         print(f"transfer factor <0, {category}, {channel}, {uncName}, {scale}")
-        return ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX()))
-        #raise  RuntimeError(f"transfer factor <=0 ! {kappa}")
-    hist_data_B.Scale(kappa)
+        return ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX())),ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX())),ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX()))
+        #raise  RuntimeError(f"transfer factor <=0 ! {qcd_norm}")
+    #hist_data_B.Scale(kappa)
+    hist_data_B.Scale(1/n_data_B)
+    hist_data_C.Scale(1/n_data_C)
+
+    hist_qcd_Up = hist_data_B.Clone()
+    hist_qcd_Up.Scale(qcd_norm)
+    hist_qcd_Down = hist_data_C.Clone()
+    hist_qcd_Down.Scale(qcd_norm)
+    hist_qcd_Central = hist_data_B.Clone()
+    hist_qcd_Central.Add(hist_data_C)
+    hist_qcd_Central.Scale(1./2.)
+    hist_qcd_Central.Scale(qcd_norm)
     if wantNegativeContributions:
-        fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(hist_data_B)
+        fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(hist_qcd_Central)
         if not fix_negative_contributions:
             #return hist_data_B
             print(debug_info)
             print(negative_bins_info)
             print("Unable to estimate QCD")
-            return ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX()))
-
+            final_hist = ROOT.TH1D("","",hist_qcd_Central.GetNbinsX(), hist_qcd_Central.GetXaxis().GetBinLowEdge(1), hist_qcd_Central.GetXaxis().GetBinUpEdge(hist_qcd_Central.GetNbinsX())),ROOT.TH1D("","",hist_qcd_Central.GetNbinsX(), hist_qcd_Central.GetXaxis().GetBinLowEdge(1), hist_qcd_Central.GetXaxis().GetBinUpEdge(hist_qcd_Central.GetNbinsX()))
+            return final_hist,final_hist,final_hist
             #raise RuntimeError("Unable to estimate QCD")
-    return hist_data_B
+    #if uncName == 'Central':
+    #    return hist_qcd_Central,hist_qcd_Up,hist_qcd_Down
+    return hist_qcd_Central,hist_qcd_Up,hist_qcd_Down
 
 
 def CompareYields(histograms, all_samples_list, channel, category, uncName, scale):
@@ -141,7 +159,13 @@ def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_sam
                 if cat != 'boosted' and var.startswith('SelectedFatJet'): continue
                 if cat == 'boosted' and uncName in unc_to_not_consider_boosted: continue
                 key =( (channel, 'OS_Iso', cat), (uncName, scale))
-                all_histograms['QCD'][key] = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale,wantNegativeContributions)
+                hist_qcd_Central,hist_qcd_Up,hist_qcd_Down = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale,wantNegativeContributions)
+                all_histograms['QCD'][key] = hist_qcd_Central
+            if uncName=='QCDScale':
+                keyQCD_up =( (channel, 'OS_Iso', cat), ('QCDScale', 'Up'))
+                keyQCD_down =( (channel, 'OS_Iso', cat), ('QCDScale', 'Down'))
+                all_histograms['QCD'][keyQCD_up] = hist_qcd_Up
+                all_histograms['QCD'][keyQCD_down] = hist_qcd_Down
 
 def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = 'final_weight_0'):
     btag_weight = "1"

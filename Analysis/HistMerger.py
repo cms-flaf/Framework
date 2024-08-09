@@ -83,6 +83,13 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, categories
                         if key_total not in all_histograms[name_to_use].keys():
                             all_histograms[name_to_use][key_total] = []
                         all_histograms[name_to_use][key_total].append(obj)
+                    elif uncSource == 'QCDScale':
+                        for scale in ['Up','Down']:
+                            key_total = ((channel, qcdRegion, cat), ('QCDScale', scale))
+                            if len(key_name_split)>1:continue
+                            if key_total not in all_histograms[name_to_use].keys():
+                                all_histograms[name_to_use][key_total] = []
+                            all_histograms[name_to_use][key_total].append(obj)
                     else:
                         uncName_scale ='' if name_to_use == 'data' else '_'.join(n for n in key_name_split[1:])
                         for scale in ['Up','Down']:

@@ -459,13 +459,20 @@ met_pt:
   divide_by_bin_width: False
 
 met_phi:
-  x_bins: "40|-3.2:3.2"
+  x_bins: "100|-3.2:3.2"
   x_title: \phi_{E_{T}^{miss}}
   y_title: Events
   max_y_sf: 1.5
   use_log_y: False
   divide_by_bin_width: False
 
+met_phi_nano:
+  x_bins: "40|-3.2:3.2"
+  x_title: \phi_{E_{T}^{miss}}
+  y_title: Events
+  max_y_sf: 1.5
+  use_log_y: False
+  divide_by_bin_width: True
 
 metnomu_pt:
   x_bins : [0,20,40,60,80,100,125,150,175,200,250,300]

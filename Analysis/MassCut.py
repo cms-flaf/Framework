@@ -94,25 +94,25 @@ for cat in ['boosted','inclusive', 'res2b', 'res1b']:
     np_array_mass_bb_cat = np_dict_cat['bb_m_vis']
     np_array_mass_tt_cat = np_dict_cat['tautau_m_vis']
 
-    max_bb_mass =np.quantile(np_array_mass_bb_cat, 1-0.005)
-    min_bb_mass =np.quantile(np_array_mass_bb_cat, 0.005)
+    max_bb_mass =np.quantile(np_array_mass_bb_cat, 1)
+    min_bb_mass =np.quantile(np_array_mass_bb_cat, 0.001)
 
     max_bb_mass_int = math.ceil(max_bb_mass / 10) * 10
     min_bb_mass_int = math.floor(min_bb_mass / 10) * 10
 
-    df_cat_bb = df_cat.Filter(f"bb_m_vis > {min_bb_mass_int} && bb_m_vis < {max_bb_mass_int}")
+    df_cat_bb = df_cat#.Filter(f"bb_m_vis > {min_bb_mass_int} && bb_m_vis < {max_bb_mass_int}")
 
     np_dict_cat_bb = df_cat_bb.AsNumpy(["tautau_m_vis"])
     np_array_mass_tt_cat_bb = np_dict_cat_bb["tautau_m_vis"]
-    max_tt_mass =np.quantile(np_array_mass_tt_cat_bb, 1-0.005)
-    min_tt_mass =np.quantile(np_array_mass_tt_cat_bb, 0.005)
+    max_tt_mass =np.quantile(np_array_mass_tt_cat_bb, 1)
+    min_tt_mass =np.quantile(np_array_mass_tt_cat_bb, 0.001)
 
     max_tt_mass_int = math.ceil(max_tt_mass / 10) * 10
     min_tt_mass_int = math.floor(min_tt_mass / 10) * 10
 
-    print(f"quantile max (99.5%) for bb mass {cat} =  {max_bb_mass}, {max_bb_mass_int}")
-    print(f"quantile min (99.5%) for bb mass {cat} =  {min_bb_mass}, {min_bb_mass_int}")
-    print(f"quantile max (99.5%) for tt mass {cat} =  {max_tt_mass}, {max_tt_mass_int}")
-    print(f"quantile min (99.5%) for tt mass {cat} =  {min_tt_mass}, {min_tt_mass_int}")
+    print(f"quantile max (99.9%) for bb mass {cat} =  {max_bb_mass}, {max_bb_mass_int}")
+    print(f"quantile min (99.9%) for bb mass {cat} =  {min_bb_mass}, {min_bb_mass_int}")
+    print(f"quantile max (99.9%) for tt mass {cat} =  {max_tt_mass}, {max_tt_mass_int}")
+    print(f"quantile min (99.9%) for tt mass {cat} =  {min_tt_mass}, {min_tt_mass_int}")
 
 

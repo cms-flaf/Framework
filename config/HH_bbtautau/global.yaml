@@ -92,7 +92,7 @@ btag_wps:
 
 mass_cut_limits:
   bb_m_vis:
-    - 50
+    - 40
     - 270
   tautau_m_vis:
     - 20

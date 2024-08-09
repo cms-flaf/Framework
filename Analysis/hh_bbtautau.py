@@ -20,12 +20,14 @@ def createKeyFilterDict(global_cfg_dict):
                 filter_base = f"{ch} && {triggers[ch]} && {reg} && {cat}"
                 if cat =='boosted' :
                     filter_str =  filter_base
+                    for mass_name,mass_limits in mass_cut_limits.items():
+                        filter_str+=f" && {mass_name} >= {mass_limits[0]} "#
                 elif cat == 'baseline':
                     filter_str = f"{filter_base}"
                 else:
                     filter_str = f"b1_pt>0 && b2_pt>0 && {filter_base}"
                     for mass_name,mass_limits in mass_cut_limits.items():
-                        filter_str+=f" && {mass_name} >= {mass_limits[0]} && {mass_name} <= {mass_limits[1]}"
+                        filter_str+=f" && {mass_name} >= {mass_limits[0]} "#&& {mass_name} <= {mass_limits[1]}"
                 key = (ch, reg, cat)
                 reg_dict[key] = filter_str
     return reg_dict

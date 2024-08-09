@@ -34,8 +34,12 @@ with open(global_cfg_file, 'r') as f:
 
 dfWrapped = PrepareDfForHistograms(DataFrameBuilderForHistograms(df_initial,global_cfg_dict))
 
-for cat in ['inclusive', 'res2b', 'res1b']:
-    df_cat = dfWrapped.df.Filter(f"OS_Iso && {cat}").Filter("b1_hadronFlavour==5 && b2_hadronFlavour==5 ")
+for cat in ['boosted','inclusive', 'res2b', 'res1b']:
+    df_cat = dfWrapped.df.Filter(f"OS_Iso && {cat}")
+    if cat == 'boosted':
+        df_cat = df_cat.Define("FatJet_atLeast1BHadron","SelectedFatJet_nBHadrons>0").Filter("SelectedFatJet_p4[FatJet_atLeast1BHadron].size()>0")
+    else:
+        df_cat = df_cat.Filter("b1_hadronFlavour==5 && b2_hadronFlavour==5 ")
     np_dict_cat = df_cat.AsNumpy(["bb_m_vis","tautau_m_vis"])
 
     np_array_mass_bb_cat = np_dict_cat['bb_m_vis']
@@ -61,3 +65,5 @@ for cat in ['inclusive', 'res2b', 'res1b']:
     print(f"quantile min (99.5%) for bb mass {cat} =  {min_bb_mass}, {min_bb_mass_int}")
     print(f"quantile max (99.5%) for tt mass {cat} =  {max_tt_mass}, {max_tt_mass_int}")
     print(f"quantile min (99.5%) for tt mass {cat} =  {min_tt_mass}, {min_tt_mass_int}")
+
+

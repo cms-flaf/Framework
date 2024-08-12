@@ -102,24 +102,25 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         dfw.DefineAndAppend(name, f"Take(v_ops::{var}(Jet_p4[Jet_sel]), centralJet_idxSorted)")
 
     # save gen jets matched to selected reco jets
-    dfw.Define("centralJet_matchedGenJetIdx", f"Take(Jet_genJetIdx[Jet_sel], centralJet_idxSorted)")
-    for var in PtEtaPhiM:
-        name = f"centralJet_matchedGenJet_{var}"
-        dfw.DefineAndAppend(name, f"""RVecF res;
-                                      for (auto idx: centralJet_matchedGenJetIdx)
-                                      {{
-                                        res.push_back(idx == -1 ? 0.0 : GenJet_p4[idx].{var}());
-                                      }}
-                                      return res;""")
+    if not isData:
+        dfw.Define("centralJet_matchedGenJetIdx", f"Take(Jet_genJetIdx[Jet_sel], centralJet_idxSorted)")
+        for var in PtEtaPhiM:
+            name = f"centralJet_matchedGenJet_{var}"
+            dfw.DefineAndAppend(name, f"""RVecF res;
+                                        for (auto idx: centralJet_matchedGenJetIdx)
+                                        {{
+                                            res.push_back(idx == -1 ? 0.0 : GenJet_p4[idx].{var}());
+                                        }}
+                                        return res;""")
 
-    for var in JetObservablesMC:
-        name = f"centralJet_matchedGenJet_{var}"
-        dfw.DefineAndAppend(name, f"""RVecF res;
-                                      for (auto idx: centralJet_matchedGenJetIdx)
-                                      {{
-                                        res.push_back(idx == -1 ? 0.0 : GenJet_{var}[idx]);
-                                      }}
-                                      return res;""")
+        for var in JetObservablesMC:
+            name = f"centralJet_matchedGenJet_{var}"
+            dfw.DefineAndAppend(name, f"""RVecF res;
+                                        for (auto idx: centralJet_matchedGenJetIdx)
+                                        {{
+                                            res.push_back(idx == -1 ? 0.0 : GenJet_{var}[idx]);
+                                        }}
+                                        return res;""")
 
     reco_jet_obs = []
     reco_jet_obs.extend(JetObservables)

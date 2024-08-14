@@ -83,7 +83,7 @@ triggers:
 hist_triggers:
   eTau:  HLT_singleEle || HLT_etau || HLT_singleTau || HLT_MET
   muTau: HLT_singleMu || HLT_mutau || HLT_singleTau || HLT_MET
-  tauTau: HLT_ditau || HLT_singleTau
+  tauTau: HLT_ditau || HLT_singleTau || HLT_MET
 
 btag_wps:
   res2b: Medium

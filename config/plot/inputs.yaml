@@ -18,12 +18,12 @@
   title: "GluGluBulkGraviton"
   type: signal
   color: kBlue
-  #scale: 5
+  #scale: 0.05
 - name: GluGluToRadion
   title: "GluGluRadion"
   type: signal
   color: kCyan
-  #scale: 5
+  #scale: 0.05
 #- name: VBFToBulkGraviton
 #  title: "qqHH #rightarrow bb#tau#tau BulkGraviton"
 #  type: signal

@@ -107,13 +107,13 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, inF
                 continue
             file_keys.append(keyFile.GetName())
         fileToOpen.Close()
-        #print(file_keys)
+        print(file_keys)
         treeName = f"Events_{uncName}{scale}"
         #treeName = f"Events_nanoHTT_{uncName}{scale}"
-        #print(treeName)
+        print(treeName)
         treeName_noDiff = f"{treeName}_noDiff"
         if treeName_noDiff in file_keys:
-            #print(treeName_noDiff)
+            print(treeName_noDiff)
             dfWrapped_noDiff = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_noDiff, inFile),global_cfg_dict, deepTauVersion)
             dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
             if hasCache:
@@ -124,7 +124,7 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, inF
 
         treeName_Valid = f"{treeName}_Valid"
         if treeName_Valid in file_keys:
-            #print(treeName_Valid)
+            print(treeName_Valid)
             dfWrapped_Valid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_Valid, inFile),global_cfg_dict, deepTauVersion)
             dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
             if hasCache:
@@ -135,7 +135,7 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, inF
 
         treeName_nonValid = f"{treeName}_nonValid"
         if treeName_nonValid in file_keys:
-            #print(treeName_nonValid)
+            print(treeName_nonValid)
             dfWrapped_nonValid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_nonValid, inFile),global_cfg_dict, deepTauVersion)
             if hasCache:
                 dfWrapped_cache_nonValid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_nonValid,inFileCache), global_cfg_dict, deepTauVersion)
@@ -234,7 +234,7 @@ if __name__ == "__main__":
         if args.compute_rel_weights and args.dataset!='data':
             for uncName in unc_cfg_dict['norm'].keys():
                 for scale in scales:
-                    #print(uncName, scale)
+                    print(uncName, scale)
                     key_2 = (args.sampleType, uncName, scale)
                     if key_2 not in all_dataframes.keys():
                         all_dataframes[key_2] = []
@@ -248,10 +248,10 @@ if __name__ == "__main__":
         # shape weight  histograms
         if args.compute_unc_variations and args.dataset!='data':
             for uncName in unc_cfg_dict['shape']:
-                #print(uncName)
+                print(uncName)
                 for scale in scales:
                     key_2 = (args.sampleType, uncName, scale)
-                    #print(key_2)
+                    print(key_2)
                     GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key_2, key_central, args.inFile, args.cacheFile, compute_variations, args.deepTauVersion, col_names_central, col_tpyes_central, hasCache)
                     if key_2 not in all_dataframes.keys(): continue
                     if not all_dataframes[key_2] : continue

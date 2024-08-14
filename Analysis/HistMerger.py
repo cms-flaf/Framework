@@ -38,6 +38,7 @@ def checkFile(inFileRoot, channels, qcdRegions, categories, var):
         for qcdRegion in QCDregions:
             dir_1 = dir_0.Get(qcdRegion)
             keys_categories = [str(key.GetName()) for key in dir_1.GetListOfKeys()]
+            if 'boosted' in categories and ( var.startswith('b1') or var.startswith('b2') ): categories.remove('boosted')
             if not checkLists(keys_categories, categories):
                     print("check list not worked for categories")
                     return False

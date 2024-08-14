@@ -141,7 +141,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                                     '--dataset', sample_name, '--uncConfig', unc_config,
                                     '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type,
                                     '--globalConfig', global_config, '--var', var ]
-            if self.global_params['compute_unc_histograms']:
+            if self.global_params['compute_unc_histograms'] or var == 'kinFit_m':
                 HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
             if 'deepTau2p5' in self.version.split('_'):
                 print("deepTau2p5 in use")
@@ -155,7 +155,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 ps_call(HistProducerFile_cmd, verbose=1)
 
 class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
     def workflow_requires(self):

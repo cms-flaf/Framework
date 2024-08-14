@@ -122,6 +122,16 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
                                         }}
                                         return res;""")
 
+        dfw.Define("GenJet_b_truth", "GenJet_hadronFlavour == 5")
+        dfw.Define("GenJet_TrueBjetTag", "FindTwoJetsClosestToMPV(125.0, GenJet_p4, GenJet_b_truth)")
+        dfw.DefineAndAppend("centralJet_TrueBjetTag",
+                                        """RVecB res;
+                                        for (auto idx: centralJet_matchedGenJetIdx)
+                                        {
+                                            res.push_back(idx == -1 ? false : GenJet_TrueBjetTag[idx]);
+                                        }
+                                        return res;""")
+
     reco_jet_obs = []
     reco_jet_obs.extend(JetObservables)
     if not isData:

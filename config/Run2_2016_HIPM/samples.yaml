@@ -1,4 +1,4 @@
-GLOBAL:
+GLOBAL: # preVFP == APV == HIPM
   era: 'Run2_2016_HIPM' # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVDatasetsUL2016
   luminosity: 19500 #36310.
   fs_nanoAOD:

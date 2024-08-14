@@ -231,11 +231,11 @@ if __name__ == "__main__":
                 obj_list.Add(hist)
             else:
                 print(sample)
-                hists_to_plot[sample] = RebinHisto(hist, new_bins, False)
+                hists_to_plot[sample] = RebinHisto(hist, new_bins, False) if args.rebin else hist
                 print()
         other_obj.Merge(obj_list)
         print('other')
-        hists_to_plot['Other'] = RebinHisto(other_obj, new_bins, False)
+        hists_to_plot['Other'] = RebinHisto(other_obj, new_bins, False) if args.rebin else other_obj
         print()
         cat_txt = args.category if args.category !='inclusive' else 'incl'
         custom1= {'cat_text':f"{cat_txt} m_{{X}}={args.mass} GeV/c^{{2}}", 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS data/simulation','scope_text':''}

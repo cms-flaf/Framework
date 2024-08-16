@@ -104,29 +104,28 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         dfw.DefineAndAppend(f"nExtraJets", f"Jet_p4[ExtraJet_B1].size()")
 
     # save reco lepton from HWWcandidate
+    dfw.DefineAndAppend(f"N_presel_Mu", f"Muon_pt[Muon_presel].size()")
+    dfw.DefineAndAppend(f"N_presel_Ele", f"Electron_pt[Electron_presel].size()")
     n_legs = 2
     for leg_idx in range(n_legs):
-        for var in PtEtaPhiM:
-            name = f"lep{leg_idx}_{var}"
-            dfw.DefineAndAppend(name, f"HwwCandidate.leg_p4[{leg_idx}].{var}()")
-        def LegVar(var_name, var_expr, var_type=None, var_cond=None, check_leg_type=True, default=0):
-            cond = var_cond
-            if check_leg_type:
-                type_cond = f"HwwCandidate.leg_type[{leg_idx}] != Leg::none"
-                cond = f"{type_cond} && ({cond})" if cond else type_cond
+        def LegVar(var_name, var_expr, var_type=None, var_cond=None, default=0):
+            cond = f"HwwCandidate.leg_type.size() > {leg_idx}"
+            if var_cond:
+                cond = f'{cond} && ({var_cond})'
             define_expr = f'static_cast<{var_type}>({var_expr})' if var_type else var_expr
-            if cond:
-                define_expr = f'{cond} ? ({define_expr}) : {default}'
-            dfw.DefineAndAppend( f"lep{leg_idx}_{var_name}", define_expr)
-        LegVar('Type', f"HwwCandidate.leg_type[{leg_idx}]", var_type='int', check_leg_type=False)
-        LegVar('Charge', f"HwwCandidate.leg_charge[{leg_idx}]", var_type='int', check_leg_type=False)
-        LegVar('Iso', f"HwwCandidate.leg_rawIso.at({leg_idx})")
+            full_define_expr = f'{cond} ? ({define_expr}) : {default}'
+            dfw.DefineAndAppend( f"lep{leg_idx+1}_{var_name}", full_define_expr)
+        for var in PtEtaPhiM:
+            LegVar(var, f"HwwCandidate.leg_p4.at({leg_idx}).{var}()", var_type='float', default='0.f')
+        LegVar('type', f"HwwCandidate.leg_type.at({leg_idx})", var_type='int', default='static_cast<int>(Leg::none)')
+        LegVar('charge', f"HwwCandidate.leg_charge.at({leg_idx})", var_type='int', default='0')
+        LegVar('iso', f"HwwCandidate.leg_rawIso.at({leg_idx})", var_type='float', default='0')
         for muon_obs in Muon_observables:
-            LegVar(muon_obs, f"{muon_obs}.at(HwwCandidate.leg_index[{leg_idx}])",
-                   var_cond=f"HwwCandidate.leg_type[{leg_idx}] == Leg::mu", default='-1')
+            LegVar(muon_obs, f"{muon_obs}.at(HwwCandidate.leg_index.at({leg_idx}))",
+                   var_cond=f"HwwCandidate.leg_type.at({leg_idx}) == Leg::mu", default='-1')
         for ele_obs in Electron_observables:
-            LegVar(ele_obs, f"{ele_obs}.at(HwwCandidate.leg_index[{leg_idx}])",
-                   var_cond=f"HwwCandidate.leg_type[{leg_idx}] == Leg::e", default='-1')
+            LegVar(ele_obs, f"{ele_obs}.at(HwwCandidate.leg_index.at({leg_idx}))",
+                   var_cond=f"HwwCandidate.leg_type.at({leg_idx}) == Leg::e", default='-1')
         dfw.Define(f"b{leg_idx+1}_idx", f"Hbb_isValid ? HbbCandidate->leg_index[{leg_idx}] : -100")
         dfw.DefineAndAppend(f"b{leg_idx+1}_pt", f"Hbb_isValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].Pt()) : -100.f")
         dfw.DefineAndAppend(f"b{leg_idx+1}_eta", f"Hbb_isValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].Eta()) : -100.f")

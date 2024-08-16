@@ -43,9 +43,9 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
     n_data_B = hist_data_B.Integral(0, hist_data_B.GetNbinsX()+1)
     n_data_C = hist_data_C.Integral(0, hist_data_C.GetNbinsX()+1)
     n_data_D = hist_data_D.Integral(0, hist_data_D.GetNbinsX()+1)
-    #print(f"Initially Yield for data in OS AntiIso region is {key_B} is {n_data_B}")
-    #print(f"Initially Yield for data in SS Iso region is{key_C} is {n_data_C}")
-    #print(f"Initially Yield for data in SS AntiIso region is{key_D} is {n_data_D}")
+    print(f"Initially Yield for data in OS AntiIso region is {key_B} is {n_data_B}")
+    print(f"Initially Yield for data in SS Iso region is{key_C} is {n_data_C}")
+    print(f"Initially Yield for data in SS AntiIso region is{key_D} is {n_data_D}")
     for sample in all_samples_list:
         if sample=='data' or 'GluGluToBulkGraviton' in sample or 'GluGluToRadion' in sample or 'VBFToBulkGraviton' in sample or 'VBFToRadion' in sample or sample=='QCD':
             ##print(f"sample {sample} is not considered")
@@ -68,9 +68,9 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
             print(f"Yield for data in SS AntiIso region {key_D} after removing {sample} with yield {n_sample_D} is {n_data_D}")
         hist_data_B.Add(hist_sample_B, -1)
         hist_data_C.Add(hist_sample_C, -1)
-    #if n_data_C <= 0 or n_data_D <= 0:
-        #print(f"n_data_C = {n_data_C}")
-        #print(f"n_data_D = {n_data_D}")
+    if n_data_C <= 0 or n_data_D <= 0:
+        print(f"n_data_C = {n_data_C}")
+        print(f"n_data_D = {n_data_D}")
 
     qcd_norm = n_data_B * n_data_C / n_data_D if n_data_D != 0 else 0
     if qcd_norm<0:
@@ -184,7 +184,7 @@ def GetWeight(channel, cat):
     trg_weights_dict = {
         'eTau':["weight_tau1_TrgSF_singleEle_Central","weight_tau2_TrgSF_singleEle_Central", "weight_tau1_TrgSF_etau_Central", "weight_tau2_TrgSF_etau_Central"],
         'muTau':["weight_tau1_TrgSF_singleMu_Central","weight_tau2_TrgSF_singleMu_Central", "weight_tau1_TrgSF_mutau_Central", "weight_tau2_TrgSF_mutau_Central"],
-        'tauTau':["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central","weight_tau1_TrgSF_singleTau_Central","weight_tau2_TrgSF_singleTau_Central", "weight_TrgSF_MET_Central"]
+        'tauTau':["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central","weight_tau1_TrgSF_singleTau_Central","weight_tau2_TrgSF_singleTau_Central"]#, "weight_TrgSF_MET_Central"]
         }
     tau_weights =["EleSF_EleIDCentral", "HighPt_MuonID_SF_HighPtIDCentral", "HighPt_MuonID_SF_HighPtIdRelTkIsoCentral", "HighPt_MuonID_SF_RecoCentral", "HighPt_MuonID_SF_TightIDCentral", "MuonID_SF_HighPtID_TrkCentral", "MuonID_SF_HighPtIdRelTkIsoCentral", "MuonID_SF_RecoCentral", "MuonID_SF_TightID_TrkCentral", "MuonID_SF_TightRelIsoCentral", "TauID_SF_Medium_Central"]
     for tau_suffix in tau_weights:
@@ -225,6 +225,13 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                 if trg not in self.df.GetColumnNames():
                     print(f"{trg} not present in colNames")
                     self.df = self.df.Define(trg, "1")
+        singleTau_th_dict = self.config['singleTau_th']
+        for trg_name,trg_dict in self.config['application_regions'].items():
+            for key in trg_dict.keys():
+                region_name = trg_dict['region_name']
+                region_cut = trg_dict['region_cut'].format(tau_th=singleTau_th_dict[self.period])
+                if region_name not in self.df.GetColumnNames():
+                    self.df = self.df.Define(region_name, region_cut)
 
     def defineCategories(self):
         self.df = self.df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {self.bTagWP}) + int(b2_idbtagDeepFlavB >= {self.bTagWP})")
@@ -279,13 +286,14 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         if cut!="":
             self.df = self.df.Filter(cut)
 
-    def __init__(self, df, config, deepTauVersion='v2p1', bTagWP = 2, pNetWP = 0.9172):
+    def __init__(self, df, config, period, deepTauVersion='v2p1', bTagWP = 2, pNetWP = 0.9172):
         super(DataFrameBuilderForHistograms, self).__init__(df)
         self.deepTauVersion = deepTauVersion
         #print(self.deepTauVersion)
         self.config = config
         self.bTagWP = bTagWP
         self.pNetWP = pNetWP
+        self.period = period
 
 def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.df = defineAllP4(dfForHistograms.df)

@@ -29,6 +29,17 @@ def CreateNamesDict(histNamesDict, all_sample_types, uncName, sample_cfg_dict,gl
 def RebinHisto(hist_initial, new_binning, verbose=False):
     new_binning_array = array.array('d', new_binning)
     new_hist = hist_initial.Rebin(len(new_binning)-1, "new_hist", new_binning_array)
+    n_finalbin = new_hist.GetBinContent(new_hist.GetNbinsX())
+    n_overflow = new_hist.GetBinContent(new_hist.GetNbinsX()+1)
+    new_hist.SetBinContent(new_hist.GetNbinsX(), n_finalbin+n_overflow)
+    err_finalbin = new_hist.GetBinContent(new_hist.GetNbinsX())
+    err_overflow = new_hist.GetBinContent(new_hist.GetNbinsX()+1)
+    if n_finalbin+n_overflow > 0:
+        new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(n_finalbin+n_overflow))
+    else:
+        new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(err_finalbin*err_finalbin+err_overflow*err_overflow))
+    #new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(err_finalbin*err_finalbin+err_overflow*err_overflow))
+
     if verbose:
         for nbin in range(0, len(new_binning)):
             print(nbin, new_hist.GetBinContent(nbin))
@@ -64,8 +75,11 @@ def GetHistograms(inFile, channel, category, uncSource, histNamesDict,all_histli
             sample, uncName, scale = histNamesDict[key_name]
             sample_type = sample if not sample in sample_cfg_dict.keys() else sample_cfg_dict[sample]['sampleType']
             #if sample_type == 'data' and not wantData: continue
+            #if sample_type in signals:
+            #    sample= sample_type
             if sample_type in signals:
-                sample= sample_type
+                sample_mass = sample.split("-")[-1]
+                sample= sample_type+"_"+sample_mass
             if (uncName, scale) not in all_histlist.keys():
                 all_histlist[(uncName, scale)] = {}
             all_histlist[(uncName, scale)][sample] = obj
@@ -111,7 +125,7 @@ if __name__ == "__main__":
     #parser.add_argument('--inFileRadion', required=True, type=str)
     #parser.add_argument('--inFileGraviton', required=True, type=str)
     parser.add_argument('--var', required=False, type=str, default = 'tau1_pt')
-    parser.add_argument('--mass', required=False, type=int, default=1250)
+    #parser.add_argument('--mass', required=False, type=int, default=1250)
     parser.add_argument('--sampleConfig', required=True, type=str)
     parser.add_argument('--globalConfig', required=True, type=str)
     parser.add_argument('--bckgConfig', required=True, type=str)
@@ -181,7 +195,7 @@ if __name__ == "__main__":
             all_samples_types[sample_cfg_dict[sample_name]['sampleType']].append(sample_name)
         if 'sampleType' in sample_cfg_dict[sample_name].keys() and sample_cfg_dict[sample_name]['sampleType'] in global_cfg_dict['signal_types']:
             all_samples_names.append(sample_name)
-            if 'mass' in sample_cfg_dict[sample_name].keys() and sample_cfg_dict[sample_name]['mass'] == args.mass:
+            if 'mass' in sample_cfg_dict[sample_name].keys(): #and sample_cfg_dict[sample_name]['mass'] == args.mass:
                 if sample_cfg_dict[sample_name]['sampleType'] not in all_samples_types.keys():
                     all_samples_types[sample_cfg_dict[sample_name]['sampleType']] = []
                 all_samples_types[sample_cfg_dict[sample_name]['sampleType']].append(sample_name)
@@ -222,7 +236,8 @@ if __name__ == "__main__":
             #print(f"considering {sample}")
             #print(sample, hist.Integral(0, hist.GetNbinsX()+1))
             other_inputs = []
-            if sample not in samples_to_plot+signals:
+            if sample not in samples_to_plot and sample.split('_')[0] not in signals:
+                print(sample)
                 #print(f"including {sample} in other_samples")
                 if sample in other_inputs: continue
                 if not other_inputs:
@@ -231,17 +246,17 @@ if __name__ == "__main__":
                 obj_list.Add(hist)
             else:
                 print(sample)
-                hists_to_plot[sample] = RebinHisto(hist, new_bins, False) if args.rebin else hist
+                hists_to_plot[sample] = RebinHisto(hist, new_bins, True) if args.rebin else hist
                 print()
         other_obj.Merge(obj_list)
         print('other')
-        hists_to_plot['Other'] = RebinHisto(other_obj, new_bins, False) if args.rebin else other_obj
+        hists_to_plot['Other'] = RebinHisto(other_obj, new_bins, True) if args.rebin else other_obj
         print()
         cat_txt = args.category if args.category !='inclusive' else 'incl'
-        custom1= {'cat_text':f"{cat_txt} m_{{X}}={args.mass} GeV/c^{{2}}", 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS data/simulation','scope_text':''}
+        custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS data/simulation','scope_text':''}
         #print(hists_to_plot)
         if args.wantData==False:
-            custom1= {'cat_text':f"{cat_txt} m_{{X}}={args.mass} GeV/c^{{2}}", 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS simulation', 'scope_text':''}
+            custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS simulation', 'scope_text':''}
         print(args.outFile)
         plotter.plot(args.var, hists_to_plot, args.outFile, want_data = args.wantData, custom=custom1)
         #print(args.outFile)

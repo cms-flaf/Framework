@@ -8,21 +8,27 @@
 - name: W
   title: "W #rightarrow l#nu + jets"
   color: kYellow-7
-- name: QCD
-  title: QCD
-  color: kPink+1
 #- name: HHnonRes
   #title: "HH SM"
   #color: kPink+1
-- name: GluGluToBulkGraviton
-  title: "GluGluBulkGraviton"
+- name: GluGluToBulkGraviton_1250
+  title: "GluGluBulkGraviton - 1250 GeV"
   type: signal
-  color: kBlue
+  color: kGreen
   #scale: 0.05
-- name: GluGluToRadion
-  title: "GluGluRadion"
+- name: GluGluToRadion_1250
+  title: "GluGluRadion - 1250"
   type: signal
   color: kCyan
+- name: GluGluToRadion_700
+  title: "GluGluRadion - 700 GeV"
+  type: signal
+  color: kBlue
+- name: GluGluToRadion_450
+  title: "GluGluRadion - 450 GeV"
+  type: signal
+  color: kViolet
+
   #scale: 0.05
 #- name: VBFToBulkGraviton
 #  title: "qqHH #rightarrow bb#tau#tau BulkGraviton"
@@ -37,6 +43,9 @@
 - name: Other
   title: "other backgrounds"
   color: kRed-4
+- name: QCD
+  title: QCD
+  color: kPink+1
 - name: data
   title: "data obs"
   type: data

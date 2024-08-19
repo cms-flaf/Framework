@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 run_cmd() {
+  echo "> $@"
   "$@"
   RESULT=$?
   if (( $RESULT != 0 )); then
@@ -31,6 +32,7 @@ do_install_cmssw() {
 
   export SCRAM_ARCH=$1
   local CMSSW_VER=$2
+  local cmb_version=$3
   if ! [ -f "$this_dir/soft/$CMSSW_VER/.installed" ]; then
     run_cmd mkdir -p "$this_dir/soft"
     run_cmd cd "$this_dir/soft"
@@ -42,7 +44,7 @@ do_install_cmssw() {
     echo "Creating $CMSSW_VER area for in $PWD ..."
     run_cmd scramv1 project CMSSW $CMSSW_VER
     run_cmd cd $CMSSW_VER/src
-    run_cmd eval `scramv1 runtime -sh`
+    eval `scramv1 runtime -sh`
     run_cmd mkdir -p HHTools
     run_cmd ln -s "$this_dir/HHbtag" HHTools/HHbtag
     run_cmd mkdir -p TauAnalysis
@@ -50,6 +52,13 @@ do_install_cmssw() {
     run_cmd ln -s "$this_dir/SVfitTF" TauAnalysis/SVfitTF
     run_cmd mkdir -p HHKinFit2
     run_cmd ln -s "$this_dir/HHKinFit2" HHKinFit2/HHKinFit2
+    if [ "$cmb_version" != "none" ]; then
+      run_cmd git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
+      run_cmd cd HiggsAnalysis/CombinedLimit
+      run_cmd git checkout $cmb_version
+      run_cmd cd ../..
+      run_cmd git clone https://github.com/cms-analysis/CombineHarvester.git CombineHarvester
+    fi
     run_cmd scram b -j8
     run_cmd touch "$this_dir/soft/$CMSSW_VER/.installed"
   fi
@@ -65,7 +74,7 @@ do_install_inference() {
   local cmssw_base=$4
 
   export ANALYSIS_PATH="$this_dir"
-  echo "Installing inference: combine $combine_version in $cmssw_version for $scram_arch"
+  # echo "Installing inference: combine $combine_version in $cmssw_version for $scram_arch"
 
   local setups_dir="$this_dir/inference/.setups"
   local setup_file="$setups_dir/flaf.sh"
@@ -93,15 +102,7 @@ export DHI_SCHEDULER_HOST="hh:cmshhcombr2@hh-scheduler1.cern.ch"
 export DHI_SCHEDULER_PORT="80"
 EOF
   fi
-  run_cmd source /cvmfs/cms.cern.ch/cmsset_default.sh
-  run_cmd cd inference
-  run_cmd source setup.sh flaf
-  run_cmd cd "$cmssw_base/src"
-  run_cmd eval `scramv1 runtime -sh`
-  if ! [ -d "CombineHarvester" ]; then
-    run_cmd git clone https://github.com/cms-analysis/CombineHarvester.git CombineHarvester
-    run_cmd scram b -j8
-  fi
+  ln -s "$this_dir/soft/$cmssw_version" "$cmssw_base"
   run_cmd mkdir -p "$this_dir/inference/data"
   run_cmd touch "$this_dir/inference/data/.installed"
 }
@@ -138,7 +139,8 @@ install_cmssw() {
   local target_os=$2
   local scram_arch=$3
   local cmssw_version=$4
-  run_cmd install $node_os $target_os install_cmssw "soft/$cmssw_version/.installed" "$scram_arch" "$cmssw_version"
+  local cmb_version=$5
+  install $node_os $target_os install_cmssw "soft/$cmssw_version/.installed" "$scram_arch" "$cmssw_version" "$cmb_version"
 }
 
 install_inference() {
@@ -148,7 +150,7 @@ install_inference() {
   local cmssw_version=$4
   local cmb_version=$5
   local cmssw_base=$6
-  run_cmd install $node_os $target_os install_inference "inference/data/.installed" $scram_arch $cmssw_version $cmb_version $cmssw_base
+  install $node_os $target_os install_inference "inference/data/.installed" $scram_arch $cmssw_version $cmb_version $cmssw_base
 }
 
 action() {
@@ -156,7 +158,7 @@ action() {
   local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
   local this_dir="$( cd "$( dirname "$this_file" )" && pwd )"
 
-  export PYTHONPATH="$this_dir:$PYTHONPATH"
+  export PYTHONPATH="$this_dir:$this_dir/inference:$PYTHONPATH"
   export LAW_HOME="$this_dir/.law"
   export LAW_CONFIG_FILE="$this_dir/config/law.cfg"
 
@@ -164,40 +166,42 @@ action() {
   export ANALYSIS_DATA_PATH="$ANALYSIS_PATH/data"
   export X509_USER_PROXY="$ANALYSIS_DATA_PATH/voms.proxy"
 
-  run_cmd mkdir -p "$ANALYSIS_DATA_PATH"
+  if ! [ -d "$ANALYSIS_DATA_PATH" ]; then
+    run_cmd mkdir -p "$ANALYSIS_DATA_PATH"
+  fi
 
   local os_version=$(cat /etc/os-release | grep VERSION_ID | sed -E 's/VERSION_ID="([0-9]+).*"/\1/')
   local os_prefix=$(get_os_prefix $os_version)
   local node_os=$os_prefix$os_version
 
-  local default_cmssw_ver=CMSSW_14_0_8
+  local flaf_cmssw_ver=CMSSW_14_1_0_pre6
   local target_os_version=9
   local target_os_prefix=$(get_os_prefix $target_os_version)
   local target_os_gt_prefix=$(get_os_prefix $target_os_version 1)
   local target_os=$target_os_prefix$target_os_version
-  export DEFAULT_CMSSW_BASE="$ANALYSIS_PATH/soft/$default_cmssw_ver"
-  export DEFAULT_CMSSW_ARCH="${target_os_gt_prefix}${target_os_version}_amd64_gcc12"
-  run_cmd install_cmssw $node_os $target_os $DEFAULT_CMSSW_ARCH $default_cmssw_ver
+  local cmb_ver="v10.0.2"
+  export FLAF_CMSSW_BASE="$ANALYSIS_PATH/soft/$flaf_cmssw_ver"
+  export FLAF_CMSSW_ARCH="${target_os_gt_prefix}${target_os_version}_amd64_gcc12"
+  install_cmssw $node_os $target_os $FLAF_CMSSW_ARCH $flaf_cmssw_ver
 
   local cmb_cmssw_ver=CMSSW_14_1_0_pre4
   local cmb_scram_arch="el9_amd64_gcc12"
-  local cmb_ver="v10.0.1"
+
   local cmb_os_version=9
   local cmb_os_prefix=$(get_os_prefix $cmb_os_version)
   local cmb_os=$cmb_os_prefix$cmb_os_version
   export CMB_CMSSW_BASE="$this_dir/inference/data/software/combine_${cmb_ver}_${cmb_scram_arch}/${cmb_cmssw_ver}"
-  run_cmd install_inference $node_os $cmb_os $cmb_scram_arch $cmb_cmssw_ver $cmb_ver $CMB_CMSSW_BASE
+  install_inference $node_os $cmb_os $cmb_scram_arch $cmb_cmssw_ver $cmb_ver $CMB_CMSSW_BASE
   if [ ! -z $ZSH_VERSION ]; then
     autoload bashcompinit
     bashcompinit
   fi
-  source /afs/cern.ch/work/k/kandroso/public/flaf_env/bin/activate
-  source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.30.06/x86_64-almalinux9.3-gcc114-opt/bin/thisroot.sh
-  run_cmd source /afs/cern.ch/user/m/mrieger/public/law_sw/setup.sh
+  source /afs/cern.ch/work/k/kandroso/public/flaf_env_2024_08/bin/activate
   source "$( law completion )"
   source /cvmfs/cms.cern.ch/rucio/setup-py3.sh &> /dev/null
-  alias cmsEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY CENTRAL_STORAGE=$CENTRAL_STORAGE ANALYSIS_BIG_DATA_PATH=$ANALYSIS_BIG_DATA_PATH DEFAULT_CMSSW_BASE=$DEFAULT_CMSSW_BASE DEFAULT_CMSSW_ARCH=$DEFAULT_CMSSW_ARCH $ANALYSIS_PATH/RunKit/cmsEnv.sh"
-  alias cmbEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY CENTRAL_STORAGE=$CENTRAL_STORAGE ANALYSIS_BIG_DATA_PATH=$ANALYSIS_BIG_DATA_PATH $ANALYSIS_PATH/cmb_env.sh"
+  source $ANALYSIS_PATH/inference/.setups/flaf.sh
+  alias cmsEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY CENTRAL_STORAGE=$CENTRAL_STORAGE ANALYSIS_BIG_DATA_PATH=$ANALYSIS_BIG_DATA_PATH FLAF_CMSSW_BASE=$FLAF_CMSSW_BASE FLAF_CMSSW_ARCH=$FLAF_CMSSW_ARCH $ANALYSIS_PATH/cmsEnv.sh"
+  alias cmbEnv="$ANALYSIS_PATH/cmsEnv.sh"
 }
 
 if [ "X$1" = "Xinstall_cmssw" ]; then

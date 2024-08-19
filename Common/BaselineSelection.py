@@ -32,7 +32,7 @@ def Initialize(loadTF=False, loadHHBtag=False):
             import RunKit.includeCMSSWlibs as IncludeLibs
             IncludeLibs.includeLibTool("tensorflow")
         if(loadHHBtag):
-            lib_path = os.path.join(os.environ["DEFAULT_CMSSW_BASE"], "lib", os.environ["DEFAULT_CMSSW_ARCH"],
+            lib_path = os.path.join(os.environ["FLAF_CMSSW_BASE"], "lib", os.environ["FLAF_CMSSW_ARCH"],
                                     "libHHToolsHHbtag.so")
             load_result = ROOT.gSystem.Load(lib_path)
             if load_result != 0:

@@ -118,15 +118,21 @@ def ThirdLeptonVeto(df):
     df = df.Filter("Muon_idx[Muon_vetoSel].size() == 0", "No extra muons")
     return df
 
-def RecoJetSelection(df):
-    df = df.Define("Jet_bIncl", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 2.5 && ( Jet_jetId & 2 ) && (Jet_puId>0 || v_ops::pt(Jet_p4)>50)")
+def RecoJetSelection(df, year):
+    jet_puID_cut = ""
+    if year[:4] == "Run2":
+        jet_puID_cut = "|| Jet_puId>0"
+    df = df.Define("Jet_bIncl", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 2.5 && ( Jet_jetId & 2 ) && (v_ops::pt(Jet_p4)>50 {jet_puID_cut})")
     df = df.Define("FatJet_bbIncl", "FatJet_msoftdrop > 30 && abs(v_ops::eta(FatJet_p4)) < 2.5")
     df = df.Define("Jet_bCand", "RemoveOverlaps(Jet_p4, Jet_bIncl,{{HttCandidate.leg_p4[0], HttCandidate.leg_p4[1]},}, 2, 0.5)")
     df = df.Define("FatJet_bbCand", "RemoveOverlaps(FatJet_p4, FatJet_bbIncl, {{HttCandidate.leg_p4[0], HttCandidate.leg_p4[1]},}, 2, 0.5)")
     return df
 
-def ExtraRecoJetSelection(df):
-    df = df.Define("ExtraJet_B0", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 5 && ( Jet_jetId & 2 ) && (Jet_puId>0 || v_ops::pt(Jet_p4)>50)")
+def ExtraRecoJetSelection(df, year):
+    jet_puID_cut = ""
+    if year[:4] == "Run2":
+        jet_puID_cut = "|| Jet_puId>0"
+    df = df.Define("ExtraJet_B0", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 5 && ( Jet_jetId & 2 ) && (v_ops::pt(Jet_p4)>50 {jet_puID_cut})")
     df = df.Define(f"ObjectsToRemoveOverlap", "if(Hbb_isValid){return std::vector<RVecLV>({{HttCandidate.leg_p4[0], HttCandidate.leg_p4[1],HbbCandidate->leg_p4[0],HbbCandidate->leg_p4[1]}}); } return std::vector<RVecLV>({{HttCandidate.leg_p4[0], HttCandidate.leg_p4[1]}})")
     df = df.Define(f"ExtraJet_B1", """ RemoveOverlaps(Jet_p4, ExtraJet_B0,ObjectsToRemoveOverlap, 2, 0.5)""")
     return df
@@ -140,8 +146,11 @@ def GenRecoJetMatching(df):
     df = df.Define("Jet_genMatched", "Jet_genJetIdx_matched>=0")
     return df.Filter("Jet_genJetIdx_matched[Jet_genMatched].size()>=2", "Two different gen-reco jet matches at least")
 
-def DefineHbbCand(df):
-    df = df.Define("Jet_HHBtagScore", "GetHHBtagScore(Jet_bCand, Jet_idx, Jet_p4,Jet_btagDeepFlavB, MET_pt,  MET_phi, HttCandidate, period, event)")
+def DefineHbbCand(df, year):
+    pf_str = ""
+    if year[:4] == "Run3":
+        pf_str = "PF"
+    df = df.Define("Jet_HHBtagScore", f"GetHHBtagScore(Jet_bCand, Jet_idx, Jet_p4,Jet_btagDeepFlavB, {pf_str}MET_pt,  {pf_str}MET_phi, HttCandidate, period, event)")
     df = df.Define("HbbCandidate", "GetHbbCandidate(Jet_HHBtagScore, Jet_bCand, Jet_p4, Jet_idx)")
     return df
 
@@ -202,8 +211,11 @@ def RecottHttCandidateSelection_ttHH(df):
     cand_list_str = ', '.join([ '&' + c for c in cand_columns])
     return df.Define('HttCandidate', f'GetBestHTTCandidate<4>({{ {cand_list_str} }}, event)')
 
-def RecoJetSelection_ttHH(df):
-    df = df.Define("Jet_ttHH_sel", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 5 && ( Jet_jetId & 2 ) && (Jet_puId>0 || v_ops::pt(Jet_p4)>50)")
+def RecoJetSelection_ttHH(df, year):
+    jet_puID_cut = ""
+    if year[:4] == "Run2":
+        jet_puID_cut = "|| Jet_puId>0"
+    df = df.Define("Jet_ttHH_sel", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 5 && ( Jet_jetId & 2 ) && (v_ops::pt(Jet_p4)>50 {jet_puID_cut})")
     df = df.Define("FatJet_ttHH_sel", "FatJet_msoftdrop > 30 && abs(v_ops::eta(FatJet_p4)) < 5")
     df = df.Define("Jet_ttHH", "RemoveOverlaps(Jet_p4, Jet_ttHH_sel, HttCandidate.getLegP4s(), 0.5)")
     df = df.Define("Jet_bCand", "Jet_ttHH && abs(v_ops::eta(Jet_p4)) < 2.5")

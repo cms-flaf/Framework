@@ -267,84 +267,126 @@ GluGlutoBulkGravitontoHHto2B2Tau_M-5000:
 GluGlutoHHto2B2Tau_kl-0p00_kt-1p00_c2-0p00:
   sampleType: HHnonRes
   generator: powheg
+  mass: 125
+  spin: 0
   crossSection: 1pb
 GluGlutoHHto2B2Tau_kl-0p00_kt-1p00_c2-1p00:
   sampleType: HHnonRes
   generator: powheg
+  mass: 125
+  spin: 0
   crossSection: 1pb
 GluGlutoHHto2B2Tau_kl-1p00_kt-1p00_c2-0p00:
   sampleType: HHnonRes
   generator: powheg
+  mass: 125
+  spin: 0
   crossSection: 1pb
 GluGlutoHHto2B2Tau_kl-1p00_kt-1p00_c2-0p10:
   sampleType: HHnonRes
   generator: powheg
+  mass: 125
+  spin: 0
   crossSection: 1pb
 GluGlutoHHto2B2Tau_kl-1p00_kt-1p00_c2-0p35:
   sampleType: HHnonRes
   generator: powheg
+  mass: 125
+  spin: 0
   crossSection: 1pb
 GluGlutoHHto2B2Tau_kl-1p00_kt-1p00_c2-3p00:
   sampleType: HHnonRes
   generator: powheg
+  mass: 125
+  spin: 0
   crossSection: 1pb
 GluGlutoHHto2B2Tau_kl-1p00_kt-1p00_c2-m2p00:
   sampleType: HHnonRes
   generator: powheg
+  mass: 125
+  spin: 0
   crossSection: 1pb
 GluGlutoHHto2B2Tau_kl-2p45_kt-1p00_c2-0p00:
   sampleType: HHnonRes
   generator: powheg
+  mass: 125
+  spin: 0
   crossSection: 1pb
 GluGlutoHHto2B2Tau_kl-5p00_kt-1p00_c2-0p00:
   sampleType: HHnonRes
   generator: powheg
+  mass: 125
+  spin: 0
   crossSection: 1pb
 VBFHHto2B2Tau_CV-1_C2V-1_C3-1:
   sampleType: HHnonRes
   generator: madgraph
+  mass: 125
+  spin: 0
   crossSection: 1pb
 VBFHHto2B2Tau_CV-1_C2V-1_C3-2:
   sampleType: HHnonRes
   generator: madgraph
+  mass: 125
+  spin: 0
   crossSection: 1pb
 VBFHHto2B2Tau_CV-1_C2V-2_C3-1:
   sampleType: HHnonRes
   generator: madgraph
+  mass: 125
+  spin: 0
   crossSection: 1pb
 VBFHHto2B2Tau_CV-1p74_C2V-1p37_C3-14p4:
   sampleType: HHnonRes
   generator: madgraph
+  mass: 125
+  spin: 0
   crossSection: 1pb
 VBFHHto2B2Tau_CV-m0p012_C2V-0p030_C3-10p2:
   sampleType: HHnonRes
   generator: madgraph
+  mass: 125
+  spin: 0
   crossSection: 1pb
 VBFHHto2B2Tau_CV-m0p758_C2V-1p44_C3-m19p3:
   sampleType: HHnonRes
   generator: madgraph
+  mass: 125
+  spin: 0
   crossSection: 1pb
 VBFHHto2B2Tau_CV-m0p962_C2V-0p959_C3-m1p43:
   sampleType: HHnonRes
   generator: madgraph
+  mass: 125
+  spin: 0
   crossSection: 1pb
 VBFHHto2B2Tau_CV-m1p21_C2V-1p94_C3-m0p94:
   sampleType: HHnonRes
   generator: madgraph
+  mass: 125
+  spin: 0
   crossSection: 1pb
 VBFHHto2B2Tau_CV-m1p60_C2V-2p72_C3-m1p36:
   sampleType: HHnonRes
   generator: madgraph
+  mass: 125
+  spin: 0
   crossSection: 1pb
 VBFHHto2B2Tau_CV-m2p12_C2V-3p87_C3-m5p96:
   sampleType: HHnonRes
   generator: madgraph
+  mass: 125
+  spin: 0
   crossSection: 1pb
 VBFHHto2B2Tau_CV_1_C2V_0_C3_1:
   sampleType: HHnonRes
   generator: madgraph
+  mass: 125
+  spin: 0
   crossSection: 1pb
 VBFHHto2B2Tau_CV_1_C2V_1_C3_1:
   sampleType: HHnonRes
   generator: madgraph
+  mass: 125
+  spin: 0
   crossSection: 1pb

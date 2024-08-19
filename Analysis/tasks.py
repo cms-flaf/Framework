@@ -33,6 +33,7 @@ def getYear(period):
         'Run2_2016':'2016',
         'Run2_2017':'2017',
         'Run2_2018':'2018',
+        'Run3_2022':'2022',
     }
     return year_dict[period]
 

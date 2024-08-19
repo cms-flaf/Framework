@@ -87,25 +87,24 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
     dfw.Apply(AnaBaseline.RecoHWWCandidateSelection)
     dfw.Apply(AnaBaseline.RecoHWWJetSelection)
     dfw.Apply(AnaBaseline.DefineHbbCand)
-    dfw.DefineAndAppend("Hbb_isValid" , "HbbCandidate.has_value()")
+    dfw.DefineAndAppend("HbbIsValid" , "HbbCandidate.has_value()")
     dfw.Apply(AnaBaseline.ExtraRecoJetSelection)
 
     PtEtaPhiM = ["pt", "eta", "phi", "mass"]
     if global_params["storeExtraJets"]:
-        dfw.DefineAndAppend(f"ExtraJet_pt", f"v_ops::pt(Jet_p4[ExtraJet_B1])")
-        dfw.DefineAndAppend(f"ExtraJet_eta", f"v_ops::eta(Jet_p4[ExtraJet_B1])")
-        dfw.DefineAndAppend(f"ExtraJet_phi", f"v_ops::phi(Jet_p4[ExtraJet_B1])")
-        dfw.DefineAndAppend(f"ExtraJet_mass", f"v_ops::mass(Jet_p4[ExtraJet_B1])")
+        dfw.DefineAndAppend(f"ExtraJet_pt", f"v_ops::pt(Jet_p4[ExtraJet_sel])")
+        dfw.DefineAndAppend(f"ExtraJet_eta", f"v_ops::eta(Jet_p4[ExtraJet_sel])")
+        dfw.DefineAndAppend(f"ExtraJet_phi", f"v_ops::phi(Jet_p4[ExtraJet_sel])")
+        dfw.DefineAndAppend(f"ExtraJet_mass", f"v_ops::mass(Jet_p4[ExtraJet_sel])")
         for jetVar in jet_obs:
             if(f"Jet_{jetVar}" not in dfw.df.GetColumnNames()): continue
-            dfw.DefineAndAppend(f"ExtraJet_{jetVar}", f"Jet_{jetVar}[ExtraJet_B1]")
-        dfw.DefineAndAppend(f"ExtraJet_HHbtag", f"Jet_HHBtagScore[ExtraJet_B1]")
+            dfw.DefineAndAppend(f"ExtraJet_{jetVar}", f"Jet_{jetVar}[ExtraJet_sel]")
     else:
-        dfw.DefineAndAppend(f"nExtraJets", f"Jet_p4[ExtraJet_B1].size()")
+        dfw.DefineAndAppend(f"nExtraJets", f"Jet_p4[ExtraJet_sel].size()")
 
     # save reco lepton from HWWcandidate
-    dfw.DefineAndAppend(f"N_presel_Mu", f"Muon_pt[Muon_presel].size()")
-    dfw.DefineAndAppend(f"N_presel_Ele", f"Electron_pt[Electron_presel].size()")
+    dfw.DefineAndAppend(f"nPreselMu", f"Muon_pt[Muon_presel].size()")
+    dfw.DefineAndAppend(f"nPreselEle", f"Electron_pt[Electron_presel].size()")
     n_legs = 2
     for leg_idx in range(n_legs):
         def LegVar(var_name, var_expr, var_type=None, var_cond=None, default=0):
@@ -126,11 +125,11 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         for ele_obs in Electron_observables:
             LegVar(ele_obs, f"{ele_obs}.at(HwwCandidate.leg_index.at({leg_idx}))",
                    var_cond=f"HwwCandidate.leg_type.at({leg_idx}) == Leg::e", default='-1')
-        dfw.Define(f"b{leg_idx+1}_idx", f"Hbb_isValid ? HbbCandidate->leg_index[{leg_idx}] : -100")
-        dfw.DefineAndAppend(f"b{leg_idx+1}_pt", f"Hbb_isValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].Pt()) : -100.f")
-        dfw.DefineAndAppend(f"b{leg_idx+1}_eta", f"Hbb_isValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].Eta()) : -100.f")
-        dfw.DefineAndAppend(f"b{leg_idx+1}_phi", f"Hbb_isValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].Phi()) : -100.f")
-        dfw.DefineAndAppend(f"b{leg_idx+1}_mass", f"Hbb_isValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].M()) : -100.f")
+        dfw.Define(f"b{leg_idx+1}_idx", f"HbbIsValid ? HbbCandidate->leg_index[{leg_idx}] : -100")
+        dfw.DefineAndAppend(f"b{leg_idx+1}_pt", f"HbbIsValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].Pt()) : -100.f")
+        dfw.DefineAndAppend(f"b{leg_idx+1}_eta", f"HbbIsValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].Eta()) : -100.f")
+        dfw.DefineAndAppend(f"b{leg_idx+1}_phi", f"HbbIsValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].Phi()) : -100.f")
+        dfw.DefineAndAppend(f"b{leg_idx+1}_mass", f"HbbIsValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].M()) : -100.f")
     #save information for fatjets
     fatjet_obs = []
     fatjet_obs.extend(FatJetObservables)

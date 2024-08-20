@@ -83,7 +83,10 @@ triggers:
 hist_triggers:
   eTau:  HLT_singleEle || HLT_etau || (HLT_singleTau && SingleTau_region)  || (HLT_MET && MET_region )
   muTau: HLT_singleMu || HLT_mutau || (HLT_singleTau && SingleTau_region)  || (HLT_MET && MET_region )
-  tauTau: (HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region)  || (HLT_MET && MET_region )
+  tauTau: ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region)  || (HLT_MET && MET_region ) )
+  #tauTau: ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region))  || (HLT_MET && MET_region )
+  #tauTau: (HLT_MET && MET_region)
+  #tauTau: HLT_MET
 
 application_regions:
   HLT_ditau:

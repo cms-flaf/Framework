@@ -214,6 +214,8 @@ if __name__ == "__main__":
         inFileRoot.Close()
     MergeHistogramsPerType(all_histograms)
     all_histograms_1D=GetBTagWeightDict(args.var,all_histograms)
+    print(all_histograms_1D)
+
     fixNegativeContributions = False
     if args.var != 'kinFit_m':
         fixNegativeContributions=True
@@ -229,8 +231,8 @@ if __name__ == "__main__":
 
         for key in all_histograms_1D[sample_type]:
             (channel, qcdRegion, cat), (uncNameType, uncScale) = key
-            if qcdRegion != 'OS_Iso': continue
-            dirStruct = (channel, cat)
+            #if qcdRegion != 'OS_Iso': continue
+            dirStruct = (channel,qcdRegion, cat)
             dir_name = '/'.join(dirStruct)
             dir_ptr = mkdir(outFile,dir_name)
             hist = all_histograms_1D[sample_type][key]
@@ -248,4 +250,5 @@ if __name__ == "__main__":
             dir_ptr.WriteTObject(hist, hist_name, "Overwrite")
     outFile.Close()
     executionTime = (time.time() - startTime)
+
     print('Execution time in seconds: ' + str(executionTime))

@@ -894,7 +894,7 @@ ZH_Hbb_Zqq:
   sampleType: VH
   generator: powheg
   crossSection: ZH_Hbb_Zqq
-  HWplusJ_HToWW_M125:
+HWplusJ_HToWW_M125:
   sampleType: VH
   generator: powheg
   crossSection: HWplusJ_HToWW

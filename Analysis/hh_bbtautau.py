@@ -184,7 +184,8 @@ def GetWeight(channel, cat):
     trg_weights_dict = {
         'eTau':["weight_tau1_TrgSF_singleEle_Central","weight_tau2_TrgSF_singleEle_Central", "weight_tau1_TrgSF_etau_Central", "weight_tau2_TrgSF_etau_Central"],
         'muTau':["weight_tau1_TrgSF_singleMu_Central","weight_tau2_TrgSF_singleMu_Central", "weight_tau1_TrgSF_mutau_Central", "weight_tau2_TrgSF_mutau_Central"],
-        'tauTau':["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central","weight_tau1_TrgSF_singleTau_Central","weight_tau2_TrgSF_singleTau_Central"]#, "weight_TrgSF_MET_Central"]
+        'tauTau':["weight_tau1_TrgSF_ditau_Central_application","weight_tau2_TrgSF_ditau_Central_application","weight_tau1_TrgSF_singleTau_Central_application","weight_tau2_TrgSF_singleTau_Central_application", "weight_TrgSF_MET_Central_application"]
+        #'tauTau':["weight_TrgSF_MET_Central"]
         }
     tau_weights =["EleSF_EleIDCentral", "HighPt_MuonID_SF_HighPtIDCentral", "HighPt_MuonID_SF_HighPtIdRelTkIsoCentral", "HighPt_MuonID_SF_RecoCentral", "HighPt_MuonID_SF_TightIDCentral", "MuonID_SF_HighPtID_TrkCentral", "MuonID_SF_HighPtIdRelTkIsoCentral", "MuonID_SF_RecoCentral", "MuonID_SF_TightID_TrkCentral", "MuonID_SF_TightRelIsoCentral", "TauID_SF_Medium_Central"]
     for tau_suffix in tau_weights:
@@ -233,6 +234,21 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                 if region_name not in self.df.GetColumnNames():
                     self.df = self.df.Define(region_name, region_cut)
 
+
+    def redefineWeights(self):
+        weights_to_redefine = ["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central","weight_tau1_TrgSF_singleTau_Central","weight_tau2_TrgSF_singleTau_Central","weight_TrgSF_MET_Central"]
+        regions= ["Legacy_region","Legacy_region","SingleTau_region","SingleTau_region","MET_region"]
+        for weight,region in zip(weights_to_redefine, regions):
+            if weight in self.df.GetColumnNames():
+                self.df = self.df.Define(f"{weight}_application", f"""
+                                         if({region})
+                                            return static_cast<float>({weight}) ;
+                                         return 1.f;""")
+        #self.df = self.df.Define(f"weight_tau2_TrgSF_ditau_Central_application", "if (Legacy_region) {return static_cast<float>(weight_tau2_TrgSF_ditau_Central) ; } return 1.f;")
+        #self.df = self.df.Define(f"weight_tau1_TrgSF_singleTau_Central_application", "if (SingleTau_region) {return static_cast<float>(weight_tau1_TrgSF_singleTau_Central) ; } return 1.f;")
+        #self.df = self.df.Define(f"weight_tau2_TrgSF_singleTau_Central_application", "if (SingleTau_region) {return static_cast<float>(weight_tau2_TrgSF_singleTau_Central) ; } return 1.f;")
+        #self.df = self.df.Define(f"weight_TrgSF_MET_Central_application", "if (MET_region) {return static_cast<float>(weight_TrgSF_MET_Central) ; } return 1.f;")
+
     def defineCategories(self):
         self.df = self.df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {self.bTagWP}) + int(b2_idbtagDeepFlavB >= {self.bTagWP})")
         self.df = self.df.Define("boosted", "SelectedFatJet_p4[fatJet_sel].size()>0")
@@ -268,6 +284,14 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         tau2_iso_var = f"tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet"
         tau1_iso_var = f"tau1_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet"
         self.df = self.df.Define("tau1_iso_medium", f"{tau1_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
+        #print('isData' in self.df.GetColumnNames())
+        if f"tau1_gen_kind" not in self.df.GetColumnNames():
+            self.df=self.df.Define("tau1_gen_kind", "if(isData) return 5; return 0;")
+        if f"tau2_gen_kind" not in self.df.GetColumnNames():
+            self.df=self.df.Define("tau2_gen_kind", "if(isData) return 5; return 0;")
+        #self.df.Display({"tau1_gen_kind"}).Print()
+        self.df = self.df.Define("tau_true", f"""(tau1_gen_kind==5 && tau2_gen_kind==5)""")
+
         self.df = self.df.Define("OS", "tau1_charge*tau2_charge < 0")
         self.df = self.df.Define("Iso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
         self.df = self.df.Define("AntiIso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value} && !Iso")
@@ -302,5 +326,6 @@ def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.defineBoostedVariables()
     dfForHistograms.defineCategories()
     dfForHistograms.defineTriggers()
+    dfForHistograms.redefineWeights()
     dfForHistograms.df = createInvMass(dfForHistograms.df)
     return dfForHistograms

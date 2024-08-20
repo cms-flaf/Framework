@@ -60,10 +60,11 @@ def getNewBins(bins):
     return final_bins
 
 
-def GetHistograms(inFile, channel, category, uncSource, histNamesDict,all_histlist, wantData):
+def GetHistograms(inFile, channel, qcdregion, category, uncSource, histNamesDict,all_histlist, wantData):
     inFile = ROOT.TFile(inFile,"READ")
     dir_0 = inFile.Get(channel)
-    dir_1 = dir_0.Get(category)
+    dir_0p1 = dir_0.Get(qcdregion)
+    dir_1 = dir_0p1.Get(category)
     for key in dir_1.GetListOfKeys():
         obj = key.ReadObj()
         if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
@@ -130,11 +131,14 @@ if __name__ == "__main__":
     parser.add_argument('--globalConfig', required=True, type=str)
     parser.add_argument('--bckgConfig', required=True, type=str)
     parser.add_argument('--channel',required=False, type=str, default = 'tauTau')
+    parser.add_argument('--qcdregion',required=False, type=str, default = 'OS_Iso')
     parser.add_argument('--category',required=False, type=str, default = 'inclusive')
     parser.add_argument('--wantData', required=False, type=bool, default=False)
+    parser.add_argument('--wantQCD', required=False, type=bool, default=False)
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
     parser.add_argument('--year', required=False, type=str,default='2018')
     parser.add_argument('--rebin', required=False, type=bool,default=False)
+
     args = parser.parse_args()
 
     page_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/cms_stacked.yaml")
@@ -187,6 +191,16 @@ if __name__ == "__main__":
         'QCD':['QCD'],
         'data':['data']
     }
+    if args.qcdregion != 'OS_Iso' or args.wantQCD==False:
+        all_samples_names = ['data']
+        all_samples_types = {
+            'data':['data']
+        }
+        for input_dict_idx in range(0, len(inputs_cfg_dict)-1):
+            input_dict = inputs_cfg_dict[input_dict_idx]
+            if input_dict['name'] == 'QCD':
+                del inputs_cfg_dict[input_dict_idx]
+
     for sample_name in sample_cfg_dict.keys():
         if sample_name in bckg_cfg_dict.keys():
             all_samples_names.append(sample_name)
@@ -215,7 +229,7 @@ if __name__ == "__main__":
     if args.rebin and 'x_rebin' in hist_cfg_dict[args.var].keys() :
         bins_to_compute = hist_cfg_dict[args.var]['x_rebin'][args.channel][args.category]
     new_bins = getNewBins(bins_to_compute)
-    GetHistograms(args.inFile, args.channel, args.category, args.uncSource, histNamesDict,all_histlist, args.wantData)
+    GetHistograms(args.inFile, args.channel, args.qcdregion, args.category, args.uncSource, histNamesDict,all_histlist, args.wantData)
     #GetSignalHistogram(args.inFileRadion, args.channel, args.category, args.uncSource, histNamesDict,all_histlist, args.mass)
     #GetSignalHistogram(args.inFileGraviton, args.channel, args.category, args.uncSource, histNamesDict,all_histlist, args.mass)
 

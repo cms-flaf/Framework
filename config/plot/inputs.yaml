@@ -1,4 +1,7 @@
 
+- name: QCD
+  title: QCD
+  color: kPink+1
 - name: DY
   title: "DY #rightarrow ll + jets"
   color: kAzure+10
@@ -11,6 +14,7 @@
 #- name: HHnonRes
   #title: "HH SM"
   #color: kPink+1
+
 - name: GluGluToBulkGraviton_1250
   title: "GluGluBulkGraviton - 1250 GeV"
   type: signal
@@ -43,9 +47,6 @@
 - name: Other
   title: "other backgrounds"
   color: kRed-4
-- name: QCD
-  title: QCD
-  color: kPink+1
 - name: data
   title: "data obs"
   type: data

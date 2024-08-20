@@ -100,7 +100,7 @@ etau:
     - eTau
   path_data:
     - HLT_Ele24_eta2p1_WPLoose_Gsf_LooseIsoPFTau20_SingleL1 && run < 276215
-    - HLT_Ele24_eta2p1_WPLoose_Gsf_LooseIsoPFTau20 && run < 276215 <= run && run < 278270
+    - HLT_Ele24_eta2p1_WPLoose_Gsf_LooseIsoPFTau20 && 276215 <= run && run < 278270
     - HLT_Ele24_eta2p1_WPLoose_Gsf_LooseIsoPFTau30 && run >= 278270
   path_MC:
     - HLT_Ele24_eta2p1_WPLoose_Gsf_LooseIsoPFTau20_SingleL1

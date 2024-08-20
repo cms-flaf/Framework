@@ -264,10 +264,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branches = {}
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).branch_map
         for br_idx, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-            #if sample_type == 'QCD':continue
-            #if br_idx == 600: continue
             branches[br_idx] = (sample_name, sample_type)
-            #print(branches)
         return branches
 
     def output(self):

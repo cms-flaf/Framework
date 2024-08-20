@@ -82,7 +82,7 @@ def RecoHttCandidateSelection(df, config):
         Muon_B0 && ( (Muon_tightId && Muon_pfRelIso04_all < 0.3) )
     """)
 
-    df = df.Define("Electron_B2_eMu_1",f"Electron_B0 && Electron_mvaIso_WP80 ")
+    df = df.Define("Electron_B2_eMu_1",f"Electron_B0 && (Electron_mvaIso_WP80 ||  Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3) ")
     #  Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3
     df = df.Define("Muon_B2_eMu_2", f"""
         Muon_B0 && ( (Muon_tightId && Muon_pfRelIso04_all < 0.3) )
@@ -142,7 +142,7 @@ def GenRecoJetMatching(df):
     return df.Filter("Jet_genJetIdx_matched[Jet_genMatched].size()>=2", "Two different gen-reco jet matches at least")
 
 def DefineHbbCand(df):
-    df = df.Define("Jet_HHBtagScore", "GetHHBtagScore(Jet_bCand, Jet_idx, Jet_p4,Jet_btagDeepFlavB, MET_pt,  MET_phi, HttCandidate, period, event)")
+    df = df.Define("Jet_HHBtagScore", "if(HttCandidate.channel()==Channel::eTau || HttCandidate.channel()==Channel::muTau || HttCandidate.channel()==Channel::tauTau) return GetHHBtagScore(Jet_bCand, Jet_idx, Jet_p4,Jet_btagDeepFlavB, MET_pt,  MET_phi, HttCandidate, period, event); return Jet_btagDeepFlavB;")
     df = df.Define("HbbCandidate", "GetHbbCandidate(Jet_HHBtagScore, Jet_bCand, Jet_p4, Jet_idx)")
     return df
 

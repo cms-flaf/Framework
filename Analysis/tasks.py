@@ -134,15 +134,15 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
         print(f'output file is {self.output().path}')
         with input_file.localize("r") as local_input, self.output().localize("w") as local_output:
+            print(local_output.path)
+
             HistProducerFile_cmd = [ 'python3', HistProducerFile,
                                     '--inFile', local_input.path, '--outFileName',local_output.path,
                                     '--dataset', sample_name, '--uncConfig', unc_config,
                                     '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type,
                                     '--globalConfig', global_config, '--var', var ]
-            if self.global_params['store_noncentral']:
-                HistProducerFile_cmd.extend(['--compute_unc_variations', 'True'])
-            if self.global_params['compute_unc_variations']:
-                HistProducerFile_cmd.extend(['--compute_rel_weights', 'True'])
+            if self.global_params['compute_unc_histograms']:
+                HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
             if 'deepTau2p5' in self.version.split('_'):
                 print("deepTau2p5 in use")
                 HistProducerFile_cmd.extend([ '--deepTauVersion', 'v2p5'])
@@ -260,12 +260,11 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         uncNames = ['Central']
         unc_cfg_dict = load_unc_config(unc_config)
         uncs_to_exclude = self.global_params['uncs_to_exclude'][self.period]
-
-
         print(uncs_to_exclude)
-        for uncName in list(unc_cfg_dict['norm'].keys())+unc_cfg_dict['shape']:
-            if uncName in uncs_to_exclude: continue
-            uncNames.append(uncName)
+        if self.global_params['compute_unc_histograms']:
+            for uncName in list(unc_cfg_dict['norm'].keys())+unc_cfg_dict['shape']:
+                if uncName in uncs_to_exclude: continue
+                uncNames.append(uncName)
         MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger.py')
         HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
         RenameHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'renameHists.py')

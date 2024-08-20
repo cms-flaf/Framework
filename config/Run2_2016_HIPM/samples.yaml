@@ -795,11 +795,34 @@ WJetsToLNu_HT-800To1200_ext1:
 
 
 ############## DY ##############
+# DYJetsToLL_M-50-madgraphMLM:
+#   sampleType: DY
+#   generator: madgraph
+#   isReference: True
+#   crossSection: DY_NNLO
+#   crossSectionStitch: DY_LO
+# DY1JetsToLL_M-50-madgraphMLM:
+#   generator: madgraph
+#   sampleType: DY
+#   crossSectionStitch: DY_LO_1J
+# DY2JetsToLL_M-50-madgraphMLM:
+#   generator: madgraph
+#   sampleType: DY
+#   crossSectionStitch: DY_LO_2J
+# DY3JetsToLL_M-50-madgraphMLM:
+#   generator: madgraph
+#   sampleType: DY
+#   crossSectionStitch: DY_LO_3J
+# DY4JetsToLL_M-50-madgraphMLM:
+#   generator: madgraph
+#   sampleType: DY
+#   crossSectionStitch: DY_LO_4J
+
 DYJetsToLL_M-50-amcatnloFXFX:
   sampleType: DY
   generator: amcatnlo
   isReference: True
-  crossSection: DY_LO
+  crossSection: DY_NNLO
   crossSectionStitch: DY_NLO
 DYJetsToLL_0J-amcatnloFXFX:
   sampleType: DY

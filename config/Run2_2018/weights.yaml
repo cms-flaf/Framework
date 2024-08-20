@@ -229,3 +229,4 @@ shape:
   - JES_EC2_2016postVFP
   - JES_HF_2016postVFP
   - JES_RelativeSample_2016postVFP
+  - QCDScale

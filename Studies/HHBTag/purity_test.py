@@ -81,7 +81,7 @@ def b_purity(df, purity):
 
 if __name__ == "__main__":
     import argparse
-    import os
+    import os, sys
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--inFile', type=str)
@@ -97,6 +97,10 @@ if __name__ == "__main__":
     if len(outDir) > 0 and not os.path.exists(outDir):
         os.makedirs(outDir)
 
+    orig_stdout = sys.stdout
+    f = open(args.outFile, 'w')
+    sys.stdout = f
+
     df = ROOT.RDataFrame("Events", args.inFile)
 
     print("======tau purity")
@@ -108,3 +112,6 @@ if __name__ == "__main__":
     print("======b purity")
     b_purity_value = b_purity(df, purity=0)
     print("======(b purity, [confidence interval (68%)])", b_purity_value)
+
+    sys.stdout = orig_stdout
+    f.close()

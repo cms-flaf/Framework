@@ -68,20 +68,15 @@ do_install_inference() {
   local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
   local this_dir="$( cd "$( dirname "$this_file" )" && pwd )"
 
-  local scram_arch=$1
-  local cmssw_version=$2
-  local combine_version=$3
-  local cmssw_base=$4
-
+  local cmb_version=$1
   export ANALYSIS_PATH="$this_dir"
-  # echo "Installing inference: combine $combine_version in $cmssw_version for $scram_arch"
 
   local setups_dir="$this_dir/inference/.setups"
   local setup_file="$setups_dir/flaf.sh"
 
   if ! [ -f "$setup_file" ]; then
     run_cmd mkdir -p "$setups_dir"
-    run_cmd cat > "$setup_file" <<EOF
+    cat > "$setup_file" <<EOF
 export DHI_USER="$(whoami)"
 export DHI_USER_FIRSTCHAR="\${DHI_USER:0:1}"
 export DHI_DATA="\$ANALYSIS_PATH/inference/data"
@@ -90,19 +85,22 @@ export DHI_STORE_JOBS="\$DHI_STORE"
 export DHI_STORE_BUNDLES="\$DHI_STORE"
 export DHI_STORE_EOSUSER="/eos/user/\$DHI_USER_FIRSTCHAR/\$DHI_USER/dhi/store"
 export DHI_SOFTWARE="\$DHI_DATA/software"
-export DHI_CMSSW_VERSION="$cmssw_version"
-export DHI_SCRAM_ARCH="$scram_arch"
-export DHI_COMBINE_VERSION="$combine_version"
-export DHI_DATACARDS_RUN2=""
-export DHI_WLCG_CACHE_ROOT=""
 export DHI_WLCG_USE_CACHE="false"
-export DHI_HOOK_FILE=""
 export DHI_LOCAL_SCHEDULER="True"
 export DHI_SCHEDULER_HOST="hh:cmshhcombr2@hh-scheduler1.cern.ch"
 export DHI_SCHEDULER_PORT="80"
+export DHI_COMBINE_VERSION="$cmb_version"
 EOF
   fi
-  ln -s "$this_dir/soft/$cmssw_version" "$cmssw_base"
+
+  run_cmd mkdir -p "$this_dir/soft/bin"
+  if ! [ -f "$this_dir/soft/bin/combine" ]; then
+    run_cmd ln -s "$this_dir/run_tools/cmsExe.sh" "$this_dir/soft/bin/combine"
+  fi
+  if ! [ -f "$this_dir/soft/bin/text2workspace.py" ]; then
+    run_cmd ln -s "$this_dir/run_tools/cmsExe.sh" "$this_dir/soft/bin/text2workspace.py"
+  fi
+
   run_cmd mkdir -p "$this_dir/inference/data"
   run_cmd touch "$this_dir/inference/data/.installed"
 }
@@ -139,18 +137,15 @@ install_cmssw() {
   local target_os=$2
   local scram_arch=$3
   local cmssw_version=$4
-  local cmb_version=$5
-  install $node_os $target_os install_cmssw "soft/$cmssw_version/.installed" "$scram_arch" "$cmssw_version" "$cmb_version"
+  local cmb_ver=$5
+  install $node_os $target_os install_cmssw "soft/$cmssw_version/.installed" "$scram_arch" "$cmssw_version" "$cmb_ver"
 }
 
 install_inference() {
   local node_os=$1
   local target_os=$2
-  local scram_arch=$3
-  local cmssw_version=$4
-  local cmb_version=$5
-  local cmssw_base=$6
-  install $node_os $target_os install_inference "inference/data/.installed" $scram_arch $cmssw_version $cmb_version $cmssw_base
+  local cmb_ver=$3
+  install $node_os $target_os install_inference "inference/data/.installed" $cmb_ver
 }
 
 action() {
@@ -182,16 +177,15 @@ action() {
   local cmb_ver="v10.0.2"
   export FLAF_CMSSW_BASE="$ANALYSIS_PATH/soft/$flaf_cmssw_ver"
   export FLAF_CMSSW_ARCH="${target_os_gt_prefix}${target_os_version}_amd64_gcc12"
-  install_cmssw $node_os $target_os $FLAF_CMSSW_ARCH $flaf_cmssw_ver
+  install_cmssw $node_os $target_os $FLAF_CMSSW_ARCH $flaf_cmssw_ver $cmb_ver
 
-  local cmb_cmssw_ver=CMSSW_14_1_0_pre4
-  local cmb_scram_arch="el9_amd64_gcc12"
+  local cmb_cmssw_ver=$flaf_cmssw_ver
+  local cmb_scram_arch=$FLAF_CMSSW_ARCH
 
   local cmb_os_version=9
   local cmb_os_prefix=$(get_os_prefix $cmb_os_version)
   local cmb_os=$cmb_os_prefix$cmb_os_version
-  export CMB_CMSSW_BASE="$this_dir/inference/data/software/combine_${cmb_ver}_${cmb_scram_arch}/${cmb_cmssw_ver}"
-  install_inference $node_os $cmb_os $cmb_scram_arch $cmb_cmssw_ver $cmb_ver $CMB_CMSSW_BASE
+  install_inference $node_os $cmb_os $cmb_ver
   if [ ! -z $ZSH_VERSION ]; then
     autoload bashcompinit
     bashcompinit
@@ -200,8 +194,8 @@ action() {
   source "$( law completion )"
   source /cvmfs/cms.cern.ch/rucio/setup-py3.sh &> /dev/null
   source $ANALYSIS_PATH/inference/.setups/flaf.sh
+  export PATH=$ANALYSIS_PATH/soft/bin:$PATH
   alias cmsEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY CENTRAL_STORAGE=$CENTRAL_STORAGE ANALYSIS_BIG_DATA_PATH=$ANALYSIS_BIG_DATA_PATH FLAF_CMSSW_BASE=$FLAF_CMSSW_BASE FLAF_CMSSW_ARCH=$FLAF_CMSSW_ARCH $ANALYSIS_PATH/cmsEnv.sh"
-  alias cmbEnv="$ANALYSIS_PATH/cmsEnv.sh"
 }
 
 if [ "X$1" = "Xinstall_cmssw" ]; then

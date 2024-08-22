@@ -29,6 +29,7 @@ install() {
     run_cmd source $env_base/bin/activate
     run_cmd pip install --upgrade pip
     run_cmd pip install law scinum
+    run_cmd pip install https://github.com/riga/plotlib/archive/refs/heads/master.zip
 }
 
 create() {
@@ -48,6 +49,7 @@ create() {
 
 export ROOTSYS=${root_dir}
 export ROOT_INCLUDE_PATH=${env_base}/include
+export LD_LIBRARY_PATH=${env_base}/lib/python3.11/site-packages
 
 EOF
     link_all $lcg_base/bin $env_base/bin pip pip3 pip3.11 python python3 python3.11 gosam2herwig gosam-config.py gosam.py

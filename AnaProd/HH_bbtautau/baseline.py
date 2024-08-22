@@ -121,8 +121,8 @@ def ThirdLeptonVeto(df):
 def RecoJetSelection(df, year):
     jet_puID_cut = ""
     if year[:4] == "Run2":
-        jet_puID_cut = "|| Jet_puId>0"
-    df = df.Define("Jet_bIncl", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 2.5 && ( Jet_jetId & 2 ) && (v_ops::pt(Jet_p4)>50 {jet_puID_cut})")
+        jet_puID_cut = "&& (Jet_puId>0 || v_ops::pt(Jet_p4)>50)"
+    df = df.Define("Jet_bIncl", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 2.5 && ( Jet_jetId & 2 ) {jet_puID_cut}")
     df = df.Define("FatJet_bbIncl", "FatJet_msoftdrop > 30 && abs(v_ops::eta(FatJet_p4)) < 2.5")
     df = df.Define("Jet_bCand", "RemoveOverlaps(Jet_p4, Jet_bIncl,{{HttCandidate.leg_p4[0], HttCandidate.leg_p4[1]},}, 2, 0.5)")
     df = df.Define("FatJet_bbCand", "RemoveOverlaps(FatJet_p4, FatJet_bbIncl, {{HttCandidate.leg_p4[0], HttCandidate.leg_p4[1]},}, 2, 0.5)")
@@ -131,8 +131,8 @@ def RecoJetSelection(df, year):
 def ExtraRecoJetSelection(df, year):
     jet_puID_cut = ""
     if year[:4] == "Run2":
-        jet_puID_cut = "|| Jet_puId>0"
-    df = df.Define("ExtraJet_B0", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 5 && ( Jet_jetId & 2 ) && (v_ops::pt(Jet_p4)>50 {jet_puID_cut})")
+        jet_puID_cut = "&& (Jet_puId>0 || v_ops::pt(Jet_p4)>50)"
+    df = df.Define("ExtraJet_B0", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 5 && ( Jet_jetId & 2 ) {jet_puID_cut}")
     df = df.Define(f"ObjectsToRemoveOverlap", "if(Hbb_isValid){return std::vector<RVecLV>({{HttCandidate.leg_p4[0], HttCandidate.leg_p4[1],HbbCandidate->leg_p4[0],HbbCandidate->leg_p4[1]}}); } return std::vector<RVecLV>({{HttCandidate.leg_p4[0], HttCandidate.leg_p4[1]}})")
     df = df.Define(f"ExtraJet_B1", """ RemoveOverlaps(Jet_p4, ExtraJet_B0,ObjectsToRemoveOverlap, 2, 0.5)""")
     return df

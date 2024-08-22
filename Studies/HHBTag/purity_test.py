@@ -1,30 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
-import ROOT
-
-
-# In[ ]:
-
-
-#df_gg = ROOT.RDataFrame("Events", "/eos/user/t/toakhter/HH_bbtautau_Run3/anaTuples/dev/Run3_2022/GluGlutoHHto2B2Tau_kl-1p00_kt-1p00_c2-0p00/nano_0.root")
-df_gg = ROOT.RDataFrame("Events", "/eos/user/t/toakhter/HH_bbtautau_Run3/anaTuples/dev/Run2_2016/GluGluToRadionToHHTo2B2Tau_M-300/nanoHTT_0.root")
-df_VBF = ROOT.RDataFrame("Events", "/eos/user/t/toakhter/HH_bbtautau_Run3/anaTuples/dev/Run3_2022/VBFHHto2B2Tau_CV_1_C2V_1_C3_1/nano_0.root")
-
-
-# In[ ]:
-
-
-print("number of events: gg: ", df_gg.Count().GetValue())
-print("number of events: VBF: ", df_VBF.Count().GetValue())
-
-
-# In[ ]:
-
-
 def denominator_tau_func(df):
     
     df = df.Define(f"denominator_tau", f"""
@@ -65,9 +38,11 @@ def tau_purity(df, purity):
     print("denominator", denom)
     print("numerator", num)
     purity = num / denom
-    print("purity", purity)
-    
-    return purity
+    conf_interval = [round(x-purity, 4) for x in proportion_confint(num, denom, 1-0.68, 'beta')]
+
+    print("purity", purity, "confidence interval (68%): ", conf_interval)
+        
+    return round(purity, 4), conf_interval
 
 def denominator_b_func(df):
     
@@ -97,44 +72,39 @@ def b_purity(df, purity):
     print("denominator", denom)
     print("numerator", num)
     purity = num / denom
-    print("purity", purity)
-    
-    return purity
+    conf_interval = [round(x-purity, 4) for x in proportion_confint(num, denom, 1-0.68, 'beta')]
+
+    print("purity", purity, "confidence interval (68%): ", conf_interval)
+        
+    return round(purity, 4), conf_interval
 
 
-# In[ ]:
+if __name__ == "__main__":
+    import argparse
+    import os
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--inFile', type=str)
+    parser.add_argument('--outFile', type=str)
+    args = parser.parse_args()
 
-#file_gg = "/eos/user/t/toakhter/HH_bbtautau_Run3/anaTuples/dev/Run3_2022/GluGlutoHHto2B2Tau_kl-1p00_kt-1p00_c2-0p00/nano_0.root"
-file_gg = "/eos/user/t/toakhter/HH_bbtautau_Run3/anaTuples/dev/Run2_2016/GluGluToRadionToHHTo2B2Tau_M-300/nanoHTT_0.root"
-df_gg = ROOT.RDataFrame("Events", file_gg)
+    import ROOT
+    from statsmodels.stats.proportion import proportion_confint
 
-tau_purity_value = tau_purity(df_gg, purity=0)
-print("tau purity", tau_purity_value)
+    if os.path.exists(args.outFile):
+        os.remove(args.outFile)
+    outDir = os.path.dirname(args.outFile)
+    if len(outDir) > 0 and not os.path.exists(outDir):
+        os.makedirs(outDir)
 
-print("\n\n\n")
+    df = ROOT.RDataFrame("Events", args.inFile)
 
-b_purity_value = b_purity(df_gg, purity=0)
-print("b purity", b_purity_value)
+    print("======tau purity")
+    tau_purity_value = tau_purity(df, purity=0)
+    print("======(tau purity, [confidence interval (68%)])", tau_purity_value)
 
+    print("\n=========================\n")
 
-# In[ ]:
-
-
-file_VBF = "/eos/user/t/toakhter/HH_bbtautau_Run3/anaTuples/dev/Run3_2022/VBFHHto2B2Tau_CV_1_C2V_1_C3_1/nano_0.root"
-df_VBF = ROOT.RDataFrame("Events", file_VBF)
-
-tau_purity_value_VBF = tau_purity(df_VBF, purity=0)
-print("tau purity", tau_purity_value_VBF)
-
-print("\n\n\n")
-
-b_purity_value_VBF = b_purity(df_VBF, purity=0)
-print("b purity", b_purity_value_VBF)
-
-
-# In[ ]:
-
-
-
-
+    print("======b purity")
+    b_purity_value = b_purity(df, purity=0)
+    print("======(b purity, [confidence interval (68%)])", b_purity_value)

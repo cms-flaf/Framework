@@ -112,10 +112,9 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
             dfw.DefineAndAppend("nJetFromGenHbb", "Jet_p4[Jet_fromGenHbb && Jet_bCand].size()")
 
             for gen_idx in range(2):
-                dfw.DefineAndAppend(f"genLepton{gen_idx+1}_kind", f"genLeptons.size()==2 ? static_cast<int>(genLeptons[{gen_idx}].kind()) : static_cast<int>(GenLeptonMatch::NoMatch)")
+                dfw.DefineAndAppend(f"genLepton{gen_idx+1}_legType", f"static_cast<int>(genHttCandidate->leg_type[{gen_idx}])")
                 for var in [ 'pt', 'eta', 'phi', 'mass' ]:
-                    dfw.DefineAndAppend(f"genLepton{gen_idx+1}_{var}", f"genLeptons.size()==2 ? static_cast<float>(genLeptons[{gen_idx}].visibleP4().{var}()) : -100.f")
-
+                    dfw.DefineAndAppend(f"genLepton{gen_idx+1}_{var}", f"static_cast<float>(genHttCandidate->leg_p4[{gen_idx}].{var}())")
 
     dfw.DefineAndAppend(f"nBJets", f"Jet_p4[Jet_bCand].size()")
     if global_params["storeExtraJets"]:
@@ -130,7 +129,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         dfw.DefineAndAppend(f"ExtraJet_HHbtag", f"Jet_HHBtagScore[ExtraJet_B1]")
     else:
         dfw.DefineAndAppend(f"nExtraJets", f"Jet_p4[ExtraJet_B1].size()")
-
+    pf_str = ""
     if global_params["era"][:4] == "Run3":
         pf_str = "PF"
     dfw.DefineAndAppend(f"met_pt_nano", f"static_cast<float>({pf_str}MET_p4_nano.pt())")

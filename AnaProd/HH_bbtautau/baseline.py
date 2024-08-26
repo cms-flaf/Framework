@@ -59,9 +59,9 @@ def RecoHttCandidateSelection(df, config):
 
 
     df = df.Define("Muon_B2_muTau_1", f"""
-        Muon_B0 &&  (Muon_tightId && Muon_pfRelIso04_all < 0.15)
+        Muon_B0 &&  ( (Muon_tightId && Muon_pfRelIso04_all < 0.15) || (Muon_highPtId && Muon_tkRelIso < 0.15) )
     """)
-    #Muon_B0 &&  ( (Muon_tightId && Muon_pfRelIso04_all < 0.15) || (Muon_highPtId && Muon_tkRelIso < 0.15) )
+    #Muon_B0 &&  (Muon_tightId && Muon_pfRelIso04_all < 0.15)
         #
 
 
@@ -76,13 +76,17 @@ def RecoHttCandidateSelection(df, config):
 
 
     df = df.Define("Muon_B2_muMu_1", f"""
-        Muon_B0 && ( (Muon_tightId && Muon_pfRelIso04_all < 0.15) )
+        Muon_B0 &&  ( (Muon_tightId && Muon_pfRelIso04_all < 0.15) || (Muon_highPtId && Muon_tkRelIso < 0.15) )
     """)
+    #Muon_B0 &&  (Muon_tightId && Muon_pfRelIso04_all < 0.15)
+        #
     df = df.Define("Muon_B2_muMu_2", f"""
-        Muon_B0 && ( (Muon_tightId && Muon_pfRelIso04_all < 0.3) )
+        Muon_B0 &&  ( (Muon_tightId && Muon_pfRelIso04_all < 0.3) || (Muon_highPtId && Muon_tkRelIso < 0.3) )
     """)
+    #Muon_B0 &&  (Muon_tightId && Muon_pfRelIso04_all < 0.3)
+        #
 
-    df = df.Define("Electron_B2_eMu_1",f"Electron_B0 && (Electron_mvaIso_WP80 ||  Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3) ")
+    df = df.Define("Electron_B2_eMu_1",f"Electron_B0 && (Electron_mvaIso_WP80 || (Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3)) ")
     #  Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3
     df = df.Define("Muon_B2_eMu_2", f"""
         Muon_B0 && ( (Muon_tightId && Muon_pfRelIso04_all < 0.3) )
@@ -90,7 +94,7 @@ def RecoHttCandidateSelection(df, config):
 
     df = df.Define("Electron_B2_eE_1",f"Electron_B0 && Electron_mvaIso_WP80 ")
     #  Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3
-    df = df.Define("Electron_B2_eE_2", f""" Electron_B0 && Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3 """)
+    df = df.Define("Electron_B2_eE_2", f""" Electron_B0 && (Electron_mvaNoIso_WP80 && Electron_pfRelIso03_all < 0.3) """)
 
     cand_columns = []
     for ch in channels:

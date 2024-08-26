@@ -57,6 +57,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
         lumiFilter = LumiFilter(setup.global_params['lumiFile'])
         df = lumiFilter.filter(df)
 
+    # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters#Analysis_Recommendations_for_any
     if "MET_flags" in setup.global_params:
         df = Baseline.applyMETFlags(df, setup.global_params["MET_flags"])
 

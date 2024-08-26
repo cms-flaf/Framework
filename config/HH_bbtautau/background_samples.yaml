@@ -42,23 +42,23 @@ TTToSemiLeptonic:
 DYJetsToLL_M-50-amcatnloFXFX:
   sampleType: DY
 DYJetsToLL_0J-amcatnloFXFX:
-  sampleType: DY
+ sampleType: DY
 DYJetsToLL_1J-amcatnloFXFX:
-  sampleType: DY
+ sampleType: DY
 DYJetsToLL_2J-amcatnloFXFX:
-  sampleType: DY
+ sampleType: DY
 DYJetsToLL_LHEFilterPtZ-0To50-amcatnloFXFX:
-  sampleType: DY
+ sampleType: DY
 DYJetsToLL_LHEFilterPtZ-50To100-amcatnloFXFX:
-  sampleType: DY
+ sampleType: DY
 DYJetsToLL_LHEFilterPtZ-100To250-amcatnloFXFX:
-  sampleType: DY
+ sampleType: DY
 DYJetsToLL_LHEFilterPtZ-250To400-amcatnloFXFX:
-  sampleType: DY
+ sampleType: DY
 DYJetsToLL_LHEFilterPtZ-400To650-amcatnloFXFX:
-  sampleType: DY
+ sampleType: DY
 DYJetsToLL_LHEFilterPtZ-650ToInf-amcatnloFXFX:
-  sampleType: DY
+ sampleType: DY
 
 ############## EWK ##############
 EWK_ZTo2L:

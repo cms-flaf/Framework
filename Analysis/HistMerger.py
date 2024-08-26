@@ -173,7 +173,7 @@ if __name__ == "__main__":
 
     categories = list(global_cfg_dict['categories'])
     QCDregions = list(global_cfg_dict['QCDRegions'])
-    channels = list(global_cfg_dict['channelSelection'])
+    channels = list(global_cfg_dict['channels_to_consider'])
     signals = list(global_cfg_dict['signal_types'])
     unc_to_not_consider_boosted = list(global_cfg_dict['unc_to_not_consider_boosted'])
     sample_types_to_merge = list(global_cfg_dict['sample_types_to_merge'])

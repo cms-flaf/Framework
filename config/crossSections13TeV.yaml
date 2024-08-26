@@ -269,7 +269,7 @@ GluGluZH_HToWW_ZTo2L:
 ############## VV inclusive ##############
 WW:
   crossSec: 118.7 #75.95
-  ref: https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat13TeV?rev=27 # XSDB WW_TuneCP5_13TeV-pythia8 modifiedOn 2021-06-21 10:00:53
+  ref: https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat13TeV?rev=27 # arXiv:1408.5243 # XSDB WW_TuneCP5_13TeV-pythia8 modifiedOn 2021-06-21 10:00:53
   unc: +2.5%-2.2% #0.1124
 
 WZ:

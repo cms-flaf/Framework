@@ -63,6 +63,7 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
 
     for key_1,key_cut in key_filter_dict.items():
         ch, reg, cat = key_1
+        if ch not in global_cfg_dict['channels_to_consider'] : continue
         if (key_1, key_2) in histograms.keys(): continue
         if cat == 'boosted' and (var.startswith('b1') or var.startswith('b2')): continue
         if cat != 'boosted' and var.startswith('SelectedFatJet'): continue
@@ -79,7 +80,9 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
         for dataframe in dataframes:
             if furtherCut != '' : key_cut += f' && {furtherCut}'
             #print(key_cut)
+            #print(dataframe.Count().GetValue())
             dataframe_new = dataframe.Filter(key_cut)
+            #print(dataframe_new.Count().GetValue())
             dataframe_new = dataframe_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}")
             final_string_weight = ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = f"final_weight_0_{ch}_{cat}_{reg}") if sample_type!='data' else "1"
             dataframe_new = dataframe_new.Filter(f"{cat}")

@@ -1,18 +1,18 @@
 norm:
   EleID:
     expression: weight_tau1_EleSF_EleID{scale}_rel * weight_tau2_EleSF_EleID{scale}_rel * final_weight
-  HighPtMuon_HighPtID:
-    expression: weight_tau1_HighPt_MuonID_SF_HighPtID{scale}_rel * weight_tau2_HighPt_MuonID_SF_HighPtID{scale}_rel * final_weight
-  HighPtMuon_HighPtIDIso:
-    expression: weight_tau1_HighPt_MuonID_SF_HighPtIdRelTkIso{scale}_rel * weight_tau2_HighPt_MuonID_SF_HighPtIdRelTkIso{scale}_rel * final_weight
-  HighPtMuon_Reco:
-    expression: weight_tau1_HighPt_MuonID_SF_Reco{scale}_rel * weight_tau2_HighPt_MuonID_SF_Reco{scale}_rel * final_weight
-  HighPtMuon_TightID:
-    expression: weight_tau1_HighPt_MuonID_SF_TightID{scale}_rel * weight_tau2_HighPt_MuonID_SF_TightID{scale}_rel * final_weight
-  Muon_HighPtID:
-    expression: weight_tau1_MuonID_SF_HighPtID_Trk{scale}_rel * weight_tau2_MuonID_SF_HighPtID_Trk{scale}_rel * final_weight
-  MuonID_HighPtIso:
-    expression: weight_tau1_MuonID_SF_HighPtIdRelTkIso{scale}_rel * weight_tau2_MuonID_SF_HighPtIdRelTkIso{scale}_rel * final_weight
+  #HighPtMuon_HighPtID:
+  #  expression: weight_tau1_HighPt_MuonID_SF_HighPtID{scale}_rel * weight_tau2_HighPt_MuonID_SF_HighPtID{scale}_rel * final_weight
+  #HighPtMuon_HighPtIDIso:
+  #  expression: weight_tau1_HighPt_MuonID_SF_HighPtIdRelTkIso{scale}_rel * weight_tau2_HighPt_MuonID_SF_HighPtIdRelTkIso{scale}_rel * final_weight
+  #HighPtMuon_Reco:
+  #  expression: weight_tau1_HighPt_MuonID_SF_Reco{scale}_rel * weight_tau2_HighPt_MuonID_SF_Reco{scale}_rel * final_weight
+  #HighPtMuon_TightID:
+  #  expression: weight_tau1_HighPt_MuonID_SF_TightID{scale}_rel * weight_tau2_HighPt_MuonID_SF_TightID{scale}_rel * final_weight
+  #Muon_HighPtID:
+  #  expression: weight_tau1_MuonID_SF_HighPtID_Trk{scale}_rel * weight_tau2_MuonID_SF_HighPtID_Trk{scale}_rel * final_weight
+  #MuonID_HighPtIso:
+  #  expression: weight_tau1_MuonID_SF_HighPtIdRelTkIso{scale}_rel * weight_tau2_MuonID_SF_HighPtIdRelTkIso{scale}_rel * final_weight
   MuonID_Reco:
     expression: weight_tau1_MuonID_SF_Reco{scale}_rel * weight_tau2_MuonID_SF_Reco{scale}_rel * final_weight
   MuonID_TightID:

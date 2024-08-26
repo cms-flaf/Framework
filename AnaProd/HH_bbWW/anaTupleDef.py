@@ -12,10 +12,8 @@ Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all"]
 Electron_observables = ["Electron_mvaNoIso_WP90", "Electron_mvaIso_WP90", "Electron_pfRelIso03_all"]
 
 JetObservables = ["PNetRegPtRawCorr", "PNetRegPtRawCorrNeutrino", "PNetRegPtRawRes",
-                  "UParTAK4RegPtRawCorr", "UParTAK4RegPtRawCorrNeutrino", "UParTAK4RegPtRawRes",
                   "btagDeepFlavB", "btagDeepFlavCvB", "btagDeepFlavCvL", "btagDeepFlavQG",
-                  "btagPNetB", "btagPNetCvB", "btagPNetCvL", "btagPNetCvNotB", "btagPNetQvG",
-                  "btagUParTAK4B", "btagUParTAK4CvB", "btagUParTAK4CvL", "btagUParTAK4CvNotB", "btagUParTAK4QvG"] # 2024
+                  "btagPNetB", "btagPNetCvB", "btagPNetCvL", "btagPNetCvNotB", "btagPNetQvG"] # 2024
 
 JetObservablesMC = ["hadronFlavour", "partonFlavour"]
 
@@ -103,6 +101,37 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         name = f"centralJet_{var}"
         dfw.DefineAndAppend(name, f"Take(v_ops::{var}(Jet_p4[Jet_sel]), centralJet_idxSorted)")
 
+    # save gen jets matched to selected reco jets
+    if not isData:
+        dfw.Define("centralJet_matchedGenJetIdx", f"Take(Jet_genJetIdx[Jet_sel], centralJet_idxSorted)")
+        for var in PtEtaPhiM:
+            name = f"centralJet_matchedGenJet_{var}"
+            dfw.DefineAndAppend(name, f"""RVecF res;
+                                        for (auto idx: centralJet_matchedGenJetIdx)
+                                        {{
+                                            res.push_back(idx == -1 ? 0.0 : GenJet_p4[idx].{var}());
+                                        }}
+                                        return res;""")
+
+        for var in JetObservablesMC:
+            name = f"centralJet_matchedGenJet_{var}"
+            dfw.DefineAndAppend(name, f"""RVecF res;
+                                        for (auto idx: centralJet_matchedGenJetIdx)
+                                        {{
+                                            res.push_back(idx == -1 ? 0.0 : GenJet_{var}[idx]);
+                                        }}
+                                        return res;""")
+
+        dfw.Define("IsTrueBjet", "GenJet_hadronFlavour == 5")
+        dfw.Define("GenJet_TrueBjetTag", "FindTwoJetsClosestToMPV(125.0, GenJet_p4, IsTrueBjet)")
+        dfw.DefineAndAppend("centralJet_TrueBjetTag",
+                                        """RVecB res;
+                                        for (auto idx: centralJet_matchedGenJetIdx)
+                                        {
+                                            res.push_back(idx == -1 ? false : GenJet_TrueBjetTag[idx]);
+                                        }
+                                        return res;""")
+
     reco_jet_obs = []
     reco_jet_obs.extend(JetObservables)
     if not isData:
@@ -145,7 +174,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
             for var in PtEtaPhiM:
                 dfw.DefineAndAppend(f"{name}_{var}", f"H_to_bb.leg_p4[{b_quark - 1}].{var}()")
                 dfw.DefineAndAppend(f"{name}_vis_{var}", f"H_to_bb.leg_vis_p4[{b_quark - 1}].{var}()")
-    elif not isData:
+
+    if not isData:
         # save gen leptons matched to reco leptons
         for lep in [1, 2]:
             name = f"lep{lep}_genLep"

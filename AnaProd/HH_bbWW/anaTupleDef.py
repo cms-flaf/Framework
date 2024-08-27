@@ -91,6 +91,9 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
     dfw.DefineAndAppend(f"nPreselEle", f"Electron_pt[Electron_presel].size()")
     n_legs = 2
     for leg_idx in range(n_legs):
+        dfw.Define(f"lep{leg_idx + 1}_p4", f""" if (HwwCandidate.leg_type.size() < {leg_idx + 1})
+                                                    return LorentzVectorM();
+                                                return HwwCandidate.leg_p4.at({leg_idx});""")
         def LegVar(var_name, var_expr, var_type=None, var_cond=None, default=0):
             cond = f"HwwCandidate.leg_type.size() > {leg_idx}"
             if var_cond:
@@ -109,6 +112,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         for ele_obs in Electron_observables:
             LegVar(ele_obs, f"{ele_obs}.at(HwwCandidate.leg_index.at({leg_idx}))",
                    var_cond=f"HwwCandidate.leg_type.at({leg_idx}) == Leg::e", default='-1')
+
     #save information for fatjets
     fatjet_obs = []
     fatjet_obs.extend(FatJetObservables)
@@ -231,7 +235,9 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         for lep in [1, 2]:
             name = f"lep{lep}_genLep"
             # MatchGenLepton returns index of in genLetpons collection if match exists
-            dfw.Define(f"{name}_idx", f"MatchGenLepton(lep{lep}_p4, genLeptons, 0.4)")
+            dfw.Define(f"{name}_idx", f"""  if (lep{lep}_p4 == LorentzVectorM())
+                                                return -1;
+                                            return MatchGenLepton(lep{lep}_p4, genLeptons, 0.4); """)
             dfw.Define(f"{name}_p4", f"return {name}_idx == -1 ? LorentzVectorM() : LorentzVectorM(genLeptons.at({name}_idx).visibleP4());")
             dfw.Define(f"{name}_mother_p4", f"return {name}_idx == -1 ? LorentzVectorM() : (*genLeptons.at({name}_idx).mothers().begin())->p4;")
 

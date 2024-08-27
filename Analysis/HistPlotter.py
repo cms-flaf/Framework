@@ -59,7 +59,22 @@ def getNewBins(bins):
             bin_center = bin_center + bin_width
     return final_bins
 
-
+'''
+def GetSubsamplesList(sample, sampleType, signals, other_inputs):
+        if sample not in samples_to_plot and sample.split('_')[0] not in signals:
+            print(sample)
+            #print(f"including {sample} in other_samples")
+            if sample in other_inputs: continue
+            if not other_inputs:
+                other_obj = hist
+            other_inputs.append(sample)
+            obj_list.Add(hist)
+        else:
+            print(sample)
+            hists_to_plot[sample] = RebinHisto(hist, new_bins) if args.rebin else hist
+            print()
+    other_obj.Merge(obj_list)
+'''
 def GetHistograms(inFile, channel, qcdregion, category, uncSource, histNamesDict,all_histlist, wantData):
     inFile = ROOT.TFile(inFile,"READ")
     dir_0 = inFile.Get(channel)
@@ -83,7 +98,7 @@ def GetHistograms(inFile, channel, qcdregion, category, uncSource, histNamesDict
                 sample= sample_type+"_"+sample_mass
             if (uncName, scale) not in all_histlist.keys():
                 all_histlist[(uncName, scale)] = {}
-            all_histlist[(uncName, scale)][sample] = obj
+            all_histlist[(uncName, scale)][(sample, sample_type)] = obj
     inFile.Close()
 
 def GetSignalHistogram(inFileSig, channel, category, uncSource, histNamesDict,all_histlist, mass):
@@ -148,8 +163,8 @@ if __name__ == "__main__":
     #### config opening ####
     with open(hist_cfg, 'r') as f:
         hist_cfg_dict = yaml.safe_load(f)
-    if "x_rebin" in hist_cfg_dict[args.var].keys():
-        hist_cfg_dict["x_bins"] = hist_cfg_dict[args.var]["x_rebin"][args.channel][args.category]
+    #if "x_rebin" in hist_cfg_dict[args.var].keys():
+    #    hist_cfg_dict["x_bins"] = hist_cfg_dict[args.var]["x_rebin"][args.channel][args.category]
     with open(page_cfg_custom, 'r') as f:
         page_cfg_custom_dict = yaml.safe_load(f)
     inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/inputs.yaml")
@@ -246,12 +261,19 @@ if __name__ == "__main__":
         samples_dict = all_histlist[key]
         #print(samples_dict.keys())
         obj_list = ROOT.TList()
-        for sample,hist in samples_dict.items():
+        lists_of_histograms = {}
+        for (sample, sample_type),hist in samples_dict.items():
             #print(f"considering {sample}")
-            #print(sample, hist.Integral(0, hist.GetNbinsX()+1))
+            isSignal = sample_type in signals
+            isOther = sample_type not in signals and sample_type not in samples_to_plot
             other_inputs = []
-            if sample not in samples_to_plot and sample.split('_')[0] not in signals:
-                print(sample)
+            if not (isSignal or isOther):
+                notInKeys = sample_type not in lists_of_histograms.keys()
+                if notInKeys :
+                    lists_of_histograms[sample_type] = RebinHisto(hist, new_bins)
+                lists_of_histograms[sample_type].Add(lists_of_histograms[sample_type],RebinHisto(hist, new_bins))
+            elif isOther:
+                #print(sample)
                 #print(f"including {sample} in other_samples")
                 if sample in other_inputs: continue
                 if not other_inputs:
@@ -259,19 +281,21 @@ if __name__ == "__main__":
                 other_inputs.append(sample)
                 obj_list.Add(hist)
             else:
-                print(sample)
-                hists_to_plot[sample] = RebinHisto(hist, new_bins, True) if args.rebin else hist
-                print()
+                #print(sample)
+                hists_to_plot[sample] = RebinHisto(hist, new_bins) if args.rebin else hist
+                #print()
+        for sample_type in lists_of_histograms.keys():
+            hists_to_plot[sample_type] = lists_of_histograms[sample_type]
         other_obj.Merge(obj_list)
-        print('other')
-        hists_to_plot['Other'] = RebinHisto(other_obj, new_bins, True) if args.rebin else other_obj
-        print()
+        #print('other')
+        hists_to_plot['Other'] = RebinHisto(other_obj, new_bins) if args.rebin else other_obj
+        #print()
+        #print(hists_to_plot)
         cat_txt = args.category if args.category !='inclusive' else 'incl'
         custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS data/simulation','scope_text':''}
         #print(hists_to_plot)
         if args.wantData==False:
             custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS simulation', 'scope_text':''}
-        print(args.outFile)
         plotter.plot(args.var, hists_to_plot, args.outFile, want_data = args.wantData, custom=custom1)
+        print(args.outFile)
         #print(args.outFile)
-

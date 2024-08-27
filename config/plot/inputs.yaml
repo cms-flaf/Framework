@@ -14,38 +14,43 @@
 #- name: HHnonRes
   #title: "HH SM"
   #color: kPink+1
-
+- name: EWK
+  title: "EWK"
+  color: kViolet-4
+- name: ST
+  title: "ST"
+  color: kTeal
+#- name: ttH
+#  title: "ttH"
+#  color: kOrange+1
+#- name: TTX
+#  title: "TTX"
+#  color: kRed+3
+- name: VV
+  title: "VV"
+  color: kBlue+3
+#- name: VVV
+#  title: "VVV"
+#  color: kPink+6
 - name: GluGluToBulkGraviton_1250
-  title: "GluGluBulkGraviton - 1250 GeV"
+  title: "GGBG-1250"
   type: signal
   color: kGreen
   #scale: 0.05
 - name: GluGluToRadion_1250
-  title: "GluGluRadion - 1250"
+  title: "GGR-1250"
   type: signal
   color: kCyan
 - name: GluGluToRadion_700
-  title: "GluGluRadion - 700 GeV"
+  title: "GGR-700"
   type: signal
   color: kBlue
 - name: GluGluToRadion_450
-  title: "GluGluRadion - 450 GeV"
+  title: "GGR-450"
   type: signal
   color: kViolet
-
-  #scale: 0.05
-#- name: VBFToBulkGraviton
-#  title: "qqHH #rightarrow bb#tau#tau BulkGraviton"
-#  type: signal
-#  color: kMagenta
-#  scale: 5
-#- name: VBFToRadion
-#  title: "qqHH #rightarrow bb#tau#tau Radion"
-#  type: signal
-#  color: kViolet+4
-#  scale: 5
 - name: Other
-  title: "other backgrounds"
+  title: "Other"
   color: kRed-4
 - name: data
   title: "data obs"

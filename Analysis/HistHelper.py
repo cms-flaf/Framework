@@ -40,7 +40,8 @@ def defineAllP4(df):
     for met_var in ['met','metnomu']:
         df = df.Define(f"{met_var}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({met_var}_pt,0.,{met_var}_phi,0.)")
     df = df.Define(f"met_nano_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(met_pt_nano,0.,met_phi_nano,0.)")
-
+    df = df.Define(f"pt_ll", "(tau1_p4+tau2_p4).Pt()")
+    df = df.Define(f"pt_bb", "(b1_p4+b2_p4).Pt()")
     return df
 
 def createInvMass(df):

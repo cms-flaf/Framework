@@ -1,7 +1,7 @@
 lumi_text:
   text: "59.83 fb^{-1} (13 TeV)"
   pos_ref: inner_right_top
-  pos: [ 0, -0.03 ]
+  pos: [ 0, -0.05 ]
   text_size: 0.035
   font: 42
   align: right_bottom

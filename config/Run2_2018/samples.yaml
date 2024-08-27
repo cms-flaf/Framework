@@ -53,7 +53,6 @@ GLOBAL:
     - drop ^W0JetsToLNu-amcatnloFXFX$
     - drop ^W1JetsToLNu-amcatnloFXFX$
     - drop ^W2JetsToLNu-amcatnloFXFX$
-    #- drop ^W[0-2]Jets*amcatnlo*
 
 ############## Data ##############
 EGamma_Run2018A:

@@ -43,6 +43,9 @@ MET:
       - tauTau
       - muTau
       - eTau
+      - eMu
+      - muMu
+      - eE
     path:
       - HLT_PFMETNoMu120_PFMHTNoMu120_IDTight
     legs:

@@ -12,8 +12,8 @@ deepTauScores= ["rawDeepTau2017v2p1VSe","rawDeepTau2017v2p1VSmu",
             "idDeepTau2017v2p1VSe", "idDeepTau2017v2p1VSjet", "idDeepTau2017v2p1VSmu",
             "idDeepTau2018v2p5VSe","idDeepTau2018v2p5VSjet","idDeepTau2018v2p5VSmu",
             "decayMode"]
-Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all"]
-Electron_observables = ["Electron_mvaNoIso_WP90", "Electron_mvaIso_WP90", "Electron_pfRelIso03_all"]
+Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all", "Muon_highPtId", "Muon_tightId"]
+Electron_observables = ["Electron_mvaNoIso_WP80", "Electron_mvaIso_WP80","Electron_pfRelIso03_all"]
 JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",
                 "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL", "bRegCorr", "bRegRes", "idbtagDeepFlavB",

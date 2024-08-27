@@ -29,9 +29,14 @@ GLOBAL:
     - drop ^WWTo*
     - drop ^WZTo*
     - drop ^ZZTo*
+    - drop ^TTZTo*
+    - drop ^TTGamma*
+    - drop ^TTWJetsTo*
     - drop ^TTZToLLNuNu_M*
+    - drop ^GluGluToHHTo2B2Tau_node*
     - drop ^TTZZTo*
     - drop ^TTZHTo*
+    - drop ^QCD*
     - drop ^TTHHTo*
     - drop ^.*ext*
     - drop ^.*erdON
@@ -1099,94 +1104,94 @@ TT4b:
   sampleType: TTX
   generator: madgraph
   crossSection: TT4b
-# TTGamma_Dilept:
-#   sampleType: TTX
-#   generator: madgraph
-#   crossSection: TTGamma_Dilept
-# TTGamma_Hadronic:
-#   sampleType: TTX
-#   generator: madgraph
-#   crossSection: TTGamma_Hadronic
-# TTGamma_SingleLept:
-#   sampleType: TTX
-#   generator: madgraph
-#   crossSection: TTGamma_SingleLept
+TTGamma_Dilept:
+  sampleType: TTX
+  generator: madgraph
+  crossSection: TTGamma_Dilept
+TTGamma_Hadronic:
+  sampleType: TTX
+  generator: madgraph
+  crossSection: TTGamma_Hadronic
+TTGamma_SingleLept:
+  sampleType: TTX
+  generator: madgraph
+  crossSection: TTGamma_SingleLept
 
 
-# TTWJetsToLNu:
-#   sampleType: TTX
-#   generator: amcatnlo
-#   crossSection: TTWJetsToLNu
-# TTWJetsToQQ:
-#   sampleType: TTX
-#   generator: amcatnlo
-#   crossSection: TTWJetsToQQ
+TTWJetsToLNu:
+  sampleType: TTX
+  generator: amcatnlo
+  crossSection: TTWJetsToLNu
+TTWJetsToQQ:
+  sampleType: TTX
+  generator: amcatnlo
+  crossSection: TTWJetsToQQ
 
-# TTZToQQ_Dilept:
-#   sampleType: TTX
-#   generator: amcatnlo
-#   crossSection: TTZToQQ_Dilept
-# TTZToNuNu:
-#   sampleType: TTX
-#   generator: amcatnlo
-#   crossSection: TTZToNuNu
-# TTZToBB:
-#   sampleType: TTX
-#   generator: amcatnlo
-#   crossSection: TTZToBB
-# TTZToLL_M-1to10:
-#   sampleType: TTX
-#   generator: amcatnlo
-#   crossSection: TTZToLL_M-1to10
-# TTZToLLNuNu_M-10:
-#   sampleType: TTX
-#   generator: amcatnlo
-#   crossSection: TTZToLLNuNu_M-10
-# TTZToQQ:
-#   sampleType: TTX
-#   generator: amcatnlo
-#   crossSection: TTZToQQ
+TTZToQQ_Dilept:
+  sampleType: TTX
+  generator: amcatnlo
+  crossSection: TTZToQQ_Dilept
+TTZToNuNu:
+  sampleType: TTX
+  generator: amcatnlo
+  crossSection: TTZToNuNu
+TTZToBB:
+  sampleType: TTX
+  generator: amcatnlo
+  crossSection: TTZToBB
+TTZToLL_M-1to10:
+  sampleType: TTX
+  generator: amcatnlo
+  crossSection: TTZToLL_M-1to10
+TTZToLLNuNu_M-10:
+  sampleType: TTX
+  generator: amcatnlo
+  crossSection: TTZToLLNuNu_M-10
+TTZToQQ:
+  sampleType: TTX
+  generator: amcatnlo
+  crossSection: TTZToQQ
 
-# TTHHTo4b:
-#   sampleType: TTX
-#   generator: madgraph
-#   crossSection: TTHHTo4b
-# TTHHToNon4b:
-#   sampleType: TTX
-#   generator: madgraph
-#   crossSection: TTHHToNon4b
-# TTHHTo2B2Tau:
-#   sampleType: TTX
-#   generator: madgraph
-#   crossSection: 1pb
+TTHHTo4b:
+  sampleType: TTX
+  generator: madgraph
+  crossSection: TTHHTo4b
+TTHHToNon4b:
+  sampleType: TTX
+  generator: madgraph
+  crossSection: TTHHToNon4b
+TTHHTo2B2Tau:
+  sampleType: TTX
+  generator: madgraph
+  crossSection: 1pb
 
-# TTZHTo4b:
-#   sampleType: TTX
-#   generator: madgraph
-#   crossSection: TTZHTo4b
-#   ext: ['TTZHTo4b_ext1']
-# TTZHTo4b_ext1:
-#   sampleType: TTX
-#   generator: madgraph
-#   crossSection: TTZHTo4b
-# TTZHToNon4b:
-#   sampleType: TTX
-#   generator: madgraph
-#   crossSection: TTZHToNon4b
+TTZHTo4b:
+  sampleType: TTX
+  generator: madgraph
+  crossSection: TTZHTo4b
+  ext: ['TTZHTo4b_ext1']
+TTZHTo4b_ext1:
+  sampleType: TTX
+  generator: madgraph
+  crossSection: TTZHTo4b
+TTZHToNon4b:
+  sampleType: TTX
+  generator: madgraph
+  crossSection: TTZHToNon4b
 
-# TTZZTo4b:
-#   sampleType: TTX
-#   generator: madgraph
-#   crossSection: TTZZTo4b
-#   ext: ['TTZZTo4b_ext1']
-# TTZZTo4b_ext1:
-#   sampleType: TTX
-#   generator: madgraph
-#   crossSection: TTZZTo4b
-# TTZZToNon4b:
-#   sampleType: TTX
-#   generator: madgraph
-#   crossSection: TTZZToNon4b
+TTZZTo4b:
+  sampleType: TTX
+  generator: madgraph
+  crossSection: TTZZTo4b
+  ext: ['TTZZTo4b_ext1']
+TTZZTo4b_ext1:
+  sampleType: TTX
+  generator: madgraph
+  crossSection: TTZZTo4b
+TTZZToNon4b:
+  sampleType: TTX
+  generator: madgraph
+  crossSection: TTZZToNon4b
 
 ############## ttH ##############
 ttHToNonbb_M125:
@@ -1203,278 +1208,278 @@ ttHToTauTau_M125:
   crossSection: ttHToTauTau
 
 ############## HHbbTauTau NonRes ##############
-# GluGluToHHTo2B2Tau_node_SM:
-#   sampleType: HHnonRes
-#   generator: madgraph
-#   crossSection: ggHH_bbTauTau_SM
-# GluGluToHHTo2B2Tau_node_1:
-#   sampleType: HHnonRes
-#   generator: madgraph
-#   crossSection: 1pb
-# GluGluToHHTo2B2Tau_node_2:
-#   sampleType: HHnonRes
-#   generator: madgraph
-#   crossSection: 1pb
-# GluGluToHHTo2B2Tau_node_3:
-#   sampleType: HHnonRes
-#   generator: madgraph
-#   crossSection: 1pb
-# GluGluToHHTo2B2Tau_node_4:
-#   sampleType: HHnonRes
-#   generator: madgraph
-#   crossSection: 1pb
-# GluGluToHHTo2B2Tau_node_5:
-#   sampleType: HHnonRes
-#   generator: madgraph
-#   crossSection: 1pb
-# GluGluToHHTo2B2Tau_node_6:
-#   sampleType: HHnonRes
-#   generator: madgraph
-#   crossSection: 1pb
-# GluGluToHHTo2B2Tau_node_7:
-#   sampleType: HHnonRes
-#   generator: madgraph
-#   crossSection: 1pb
-# GluGluToHHTo2B2Tau_node_8:
-#   sampleType: HHnonRes
-#   generator: madgraph
-#   crossSection: 1pb
-# GluGluToHHTo2B2Tau_node_9:
-#   sampleType: HHnonRes
-#   generator: madgraph
-#   crossSection: 1pb
-# GluGluToHHTo2B2Tau_node_10:
-#   sampleType: HHnonRes
-#   generator: madgraph
-#   crossSection: 1pb
-# GluGluToHHTo2B2Tau_node_11:
-#   sampleType: HHnonRes
-#   generator: madgraph
-#   crossSection: 1pb
-# GluGluToHHTo2B2Tau_node_12:
-#   sampleType: HHnonRes
-#   generator: madgraph
-#   crossSection: 1pb
+GluGluToHHTo2B2Tau_node_SM:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: ggHH_bbTauTau_SM
+GluGluToHHTo2B2Tau_node_1:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: 1pb
+GluGluToHHTo2B2Tau_node_2:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: 1pb
+GluGluToHHTo2B2Tau_node_3:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: 1pb
+GluGluToHHTo2B2Tau_node_4:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: 1pb
+GluGluToHHTo2B2Tau_node_5:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: 1pb
+GluGluToHHTo2B2Tau_node_6:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: 1pb
+GluGluToHHTo2B2Tau_node_7:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: 1pb
+GluGluToHHTo2B2Tau_node_8:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: 1pb
+GluGluToHHTo2B2Tau_node_9:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: 1pb
+GluGluToHHTo2B2Tau_node_10:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: 1pb
+GluGluToHHTo2B2Tau_node_11:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: 1pb
+GluGluToHHTo2B2Tau_node_12:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: 1pb
 
 
 # ############## QCD ##############
-# QCD_HT50to100_MLM:
-#   sampleType: QCD
-#   generator: madgraph
-#   crossSection: QCD_HT50to100
-# QCD_HT50to100:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_HT50to100
-# QCD_HT100to200_MLM:
-#   sampleType: QCD
-#   generator: madgraph
-#   crossSection: QCD_HT100to200
-# QCD_HT100to200:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_HT100to200
-# QCD_HT200to300_MLM:
-#   sampleType: QCD
-#   generator: madgraph
-#   crossSection: QCD_HT200to300
-# QCD_HT200to300:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_HT200to300
-# QCD_HT300to500_MLM:
-#   sampleType: QCD
-#   generator: madgraph
-#   crossSection: QCD_HT300to500
-# QCD_HT300to500:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_HT300to500
-# QCD_HT500to700_MLM:
-#   sampleType: QCD
-#   generator: madgraph
-#   crossSection: QCD_HT500to700
-# QCD_HT500to700:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_HT500to700
-# QCD_HT700to1000_MLM:
-#   sampleType: QCD
-#   generator: madgraph
-#   crossSection: QCD_HT700to1000
-# QCD_HT700to1000:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_HT700to1000
-# QCD_HT1000to1500_MLM:
-#   sampleType: QCD
-#   generator: madgraph
-#   crossSection: QCD_HT1000to1500
-# QCD_HT1000to1500:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_HT1000to1500
-# QCD_HT1500to2000_MLM:
-#   sampleType: QCD
-#   generator: madgraph
-#   crossSection: QCD_HT1500to2000
-# QCD_HT1500to2000:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_HT1500to2000
-# QCD_HT2000toInf_MLM:
-#   sampleType: QCD
-#   generator: madgraph
-#   crossSection: QCD_HT2000toInf
-# QCD_HT2000toInf:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_HT2000toInf
+QCD_HT50to100_MLM:
+  sampleType: QCD
+  generator: madgraph
+  crossSection: QCD_HT50to100
+QCD_HT50to100:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_HT50to100
+QCD_HT100to200_MLM:
+  sampleType: QCD
+  generator: madgraph
+  crossSection: QCD_HT100to200
+QCD_HT100to200:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_HT100to200
+QCD_HT200to300_MLM:
+  sampleType: QCD
+  generator: madgraph
+  crossSection: QCD_HT200to300
+QCD_HT200to300:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_HT200to300
+QCD_HT300to500_MLM:
+  sampleType: QCD
+  generator: madgraph
+  crossSection: QCD_HT300to500
+QCD_HT300to500:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_HT300to500
+QCD_HT500to700_MLM:
+  sampleType: QCD
+  generator: madgraph
+  crossSection: QCD_HT500to700
+QCD_HT500to700:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_HT500to700
+QCD_HT700to1000_MLM:
+  sampleType: QCD
+  generator: madgraph
+  crossSection: QCD_HT700to1000
+QCD_HT700to1000:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_HT700to1000
+QCD_HT1000to1500_MLM:
+  sampleType: QCD
+  generator: madgraph
+  crossSection: QCD_HT1000to1500
+QCD_HT1000to1500:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_HT1000to1500
+QCD_HT1500to2000_MLM:
+  sampleType: QCD
+  generator: madgraph
+  crossSection: QCD_HT1500to2000
+QCD_HT1500to2000:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_HT1500to2000
+QCD_HT2000toInf_MLM:
+  sampleType: QCD
+  generator: madgraph
+  crossSection: QCD_HT2000toInf
+QCD_HT2000toInf:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_HT2000toInf
 
-# QCD_Pt_15to30:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt_15to30
-# QCD_Pt_30to50:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt_30to50
-# QCD_Pt_50to80:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt_50to80
-# QCD_Pt_80to120:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt_80to120
-# QCD_Pt_120to170:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt_120to170
-# QCD_Pt_170to300:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt_170to300
-# QCD_Pt_300to470:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt_300to470
-# QCD_Pt_470to600:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt_470to600
-# QCD_Pt_600to800:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt_600to800
-# QCD_Pt_800to1000:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt_800to1000
-# QCD_Pt_1000to1400:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt_1000to1400
-# QCD_Pt_1400to1800:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt_1400to1800
-# QCD_Pt_1800to2400:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt_1800to2400
-# QCD_Pt_2400to3200:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt_2400to3200
-# QCD_Pt_3200toInf:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt_3200toInf
+QCD_Pt_15to30:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt_15to30
+QCD_Pt_30to50:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt_30to50
+QCD_Pt_50to80:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt_50to80
+QCD_Pt_80to120:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt_80to120
+QCD_Pt_120to170:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt_120to170
+QCD_Pt_170to300:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt_170to300
+QCD_Pt_300to470:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt_300to470
+QCD_Pt_470to600:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt_470to600
+QCD_Pt_600to800:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt_600to800
+QCD_Pt_800to1000:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt_800to1000
+QCD_Pt_1000to1400:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt_1000to1400
+QCD_Pt_1400to1800:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt_1400to1800
+QCD_Pt_1800to2400:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt_1800to2400
+QCD_Pt_2400to3200:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt_2400to3200
+QCD_Pt_3200toInf:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt_3200toInf
 
-# QCD_Pt-20_MuEnrichedPt15:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-20_MuEnrichedPt15
+QCD_Pt-20_MuEnrichedPt15:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-20_MuEnrichedPt15
 
-# QCD_Pt-15To20_MuEnrichedPt5:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-15To20_MuEnrichedPt5
-# QCD_Pt-20To30_MuEnrichedPt5:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-20To30_MuEnrichedPt5
-# QCD_Pt-30To50_MuEnrichedPt5:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-30To50_MuEnrichedPt5
-# QCD_Pt-50To80_MuEnrichedPt5:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-50To80_MuEnrichedPt5
-# QCD_Pt-80To120_MuEnrichedPt5:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-80To120_MuEnrichedPt5
-# QCD_Pt-120To170_MuEnrichedPt5:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-120To170_MuEnrichedPt5
-# QCD_Pt-170To300_MuEnrichedPt5:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-170To300_MuEnrichedPt5
-# QCD_Pt-300To470_MuEnrichedPt5:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-300To470_MuEnrichedPt5
-# QCD_Pt-470To600_MuEnrichedPt5:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-470To600_MuEnrichedPt5
-# QCD_Pt-600To800_MuEnrichedPt5:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-600To800_MuEnrichedPt5
-# QCD_Pt-800To1000_MuEnrichedPt5:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-800To1000_MuEnrichedPt5
-# QCD_Pt-1000_MuEnrichedPt5:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-1000_MuEnrichedPt5
+QCD_Pt-15To20_MuEnrichedPt5:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-15To20_MuEnrichedPt5
+QCD_Pt-20To30_MuEnrichedPt5:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-20To30_MuEnrichedPt5
+QCD_Pt-30To50_MuEnrichedPt5:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-30To50_MuEnrichedPt5
+QCD_Pt-50To80_MuEnrichedPt5:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-50To80_MuEnrichedPt5
+QCD_Pt-80To120_MuEnrichedPt5:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-80To120_MuEnrichedPt5
+QCD_Pt-120To170_MuEnrichedPt5:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-120To170_MuEnrichedPt5
+QCD_Pt-170To300_MuEnrichedPt5:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-170To300_MuEnrichedPt5
+QCD_Pt-300To470_MuEnrichedPt5:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-300To470_MuEnrichedPt5
+QCD_Pt-470To600_MuEnrichedPt5:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-470To600_MuEnrichedPt5
+QCD_Pt-600To800_MuEnrichedPt5:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-600To800_MuEnrichedPt5
+QCD_Pt-800To1000_MuEnrichedPt5:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-800To1000_MuEnrichedPt5
+QCD_Pt-1000_MuEnrichedPt5:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-1000_MuEnrichedPt5
 
-# QCD_Pt-15to20_EMEnriched:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-15to20_EMEnriched
-# QCD_Pt-20to30_EMEnriched:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-20to30_EMEnriched
-# QCD_Pt-30to50_EMEnriched:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-30to50_EMEnriched
-# QCD_Pt-50to80_EMEnriched:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-50to80_EMEnriched
-# QCD_Pt-80to120_EMEnriched:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-80to120_EMEnriched
-# QCD_Pt-120to170_EMEnriched:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-120to170_EMEnriched
-# QCD_Pt-170to300_EMEnriched:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-170to300_EMEnriched
-# QCD_Pt-300toInf_EMEnriched:
-#   sampleType: QCD
-#   generator: pythia
-#   crossSection: QCD_Pt-300toInf_EMEnriched
+QCD_Pt-15to20_EMEnriched:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-15to20_EMEnriched
+QCD_Pt-20to30_EMEnriched:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-20to30_EMEnriched
+QCD_Pt-30to50_EMEnriched:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-30to50_EMEnriched
+QCD_Pt-50to80_EMEnriched:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-50to80_EMEnriched
+QCD_Pt-80to120_EMEnriched:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-80to120_EMEnriched
+QCD_Pt-120to170_EMEnriched:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-120to170_EMEnriched
+QCD_Pt-170to300_EMEnriched:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-170to300_EMEnriched
+QCD_Pt-300toInf_EMEnriched:
+  sampleType: QCD
+  generator: pythia
+  crossSection: QCD_Pt-300toInf_EMEnriched

@@ -30,12 +30,19 @@ GLOBAL: # preVFP == APV == HIPM
     - drop ^WWTo*
     - drop ^WZTo*
     - drop ^ZZTo*
+    - drop ^TTZTo*
+    - drop ^TTGamma*
+    - drop ^TTWJetsTo*
     - drop ^TTZToLLNuNu_M*
+    - drop ^GluGluToHHTo2B2Tau_node*
+    - drop ^.*-madgraphMLM*
     - drop ^TTZZTo*
     - drop ^TTZHTo*
+    - drop ^QCD*
     - drop ^TTHHTo*
     - drop ^.*ext*
     - drop ^.*erdON
+
 
 ############## Data ##############
 SingleElectron_Run2016B:
@@ -696,6 +703,7 @@ VBFToBulkGravitonToHHTo2B2Tau_M-3000:
   spin: 2
   crossSection: 1pb
 
+
 ############## TT ##############
 TTTo2L2Nu:
   sampleType: TT
@@ -743,11 +751,6 @@ WJetsToLNu_HT-1200To2500:
   sampleType: W
   generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-1200To2500_LO
-  ext: ['WJetsToLNu_HT-1200To2500_ext1']
-WJetsToLNu_HT-1200To2500_ext1:
-  sampleType: W
-  generator: madgraph
-  crossSectionStitch: WJetsToLNu_HT-1200To2500_LO
 WJetsToLNu_HT-200To400:
   sampleType: W
   generator: madgraph
@@ -756,26 +759,11 @@ WJetsToLNu_HT-2500ToInf:
   sampleType: W
   generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-2500ToInf_LO
-  ext: ['WJetsToLNu_HT-2500ToInf_ext1']
-WJetsToLNu_HT-2500ToInf_ext1:
-  sampleType: W
-  generator: madgraph
-  crossSectionStitch: WJetsToLNu_HT-2500ToInf_LO
 WJetsToLNu_HT-400To600:
   sampleType: W
   generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-400To600_LO
-  ext: ['WJetsToLNu_HT-400To600_ext1']
-WJetsToLNu_HT-400To600_ext1:
-  sampleType: W
-  generator: madgraph
-  crossSectionStitch: WJetsToLNu_HT-400To600_LO
 WJetsToLNu_HT-600To800:
-  sampleType: W
-  generator: madgraph
-  crossSectionStitch: WJetsToLNu_HT-600To800_LO
-  ext: ['WJetsToLNu_HT-600To800_ext1']
-WJetsToLNu_HT-600To800_ext1:
   sampleType: W
   generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-600To800_LO
@@ -787,36 +775,33 @@ WJetsToLNu_HT-800To1200:
   sampleType: W
   generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-800To1200_LO
-  ext: ['WJetsToLNu_HT-800To1200_ext1']
-WJetsToLNu_HT-800To1200_ext1:
-  sampleType: W
-  generator: madgraph
-  crossSectionStitch: WJetsToLNu_HT-800To1200_LO
 
 
 ############## DY ##############
-# DYJetsToLL_M-50-madgraphMLM:
-#   sampleType: DY
-#   generator: madgraph
-#   isReference: True
-#   crossSection: DY_NNLO
-#   crossSectionStitch: DY_LO
-# DY1JetsToLL_M-50-madgraphMLM:
-#   generator: madgraph
-#   sampleType: DY
-#   crossSectionStitch: DY_LO_1J
-# DY2JetsToLL_M-50-madgraphMLM:
-#   generator: madgraph
-#   sampleType: DY
-#   crossSectionStitch: DY_LO_2J
-# DY3JetsToLL_M-50-madgraphMLM:
-#   generator: madgraph
-#   sampleType: DY
-#   crossSectionStitch: DY_LO_3J
-# DY4JetsToLL_M-50-madgraphMLM:
-#   generator: madgraph
-#   sampleType: DY
-#   crossSectionStitch: DY_LO_4J
+
+DYJetsToLL_M-50-madgraphMLM:
+  sampleType: DY
+  generator: madgraph
+  isReference: True
+  crossSection: DY_NNLO
+  crossSectionStitch: DY_LO
+DY1JetsToLL_M-50-madgraphMLM:
+  generator: madgraph
+  sampleType: DY
+  crossSectionStitch: DY_LO_1J
+DY2JetsToLL_M-50-madgraphMLM:
+  generator: madgraph
+  sampleType: DY
+  crossSectionStitch: DY_LO_2J
+DY3JetsToLL_M-50-madgraphMLM:
+  generator: madgraph
+  sampleType: DY
+  crossSectionStitch: DY_LO_3J
+DY4JetsToLL_M-50-madgraphMLM:
+  generator: madgraph
+  sampleType: DY
+  crossSectionStitch: DY_LO_4J
+
 
 DYJetsToLL_M-50-amcatnloFXFX:
   sampleType: DY
@@ -1060,41 +1045,20 @@ ZZZ_ext1:
 ############## ST #############
 ST_t-channel_antitop_4f_InclusiveDecays:
   sampleType: ST
-  generator: powheg
+  generator: amcatnlo
   crossSection: ST_t-channel_antitop
 ST_t-channel_top_4f_InclusiveDecays:
   sampleType: ST
-  generator: powheg
+  generator: amcatnlo
   crossSection: ST_t-channel_top
 ST_tW_antitop_5f_InclusiveDecays:
   sampleType: ST
-  generator: powheg
+  generator: amcatnlo
   crossSection: ST_tW
 ST_tW_top_5f_InclusiveDecays:
   sampleType: ST
-  generator: powheg
+  generator: amcatnlo
   crossSection: ST_tW
-
-#ST_tW_antitop_5f_NoFullyHadronicDecays:
-#
-#  sampleType: ST
-#  generator: powheg
-#  crossSection: ST_tW_antitop
-#ST_tW_top_5f_NoFullyHadronicDecays:
-#
-#  sampleType: ST
-#  generator: powheg
-#  crossSection: ST_tW_top
-#ST_t-channel_antitop_4f_InclusiveDecays_erdON:
-#
-#  sampleType: ST
-#  generator: powheg
-#  crossSection: ST_t-channel_antitop
-#ST_t-channel_top_4f_InclusiveDecays_erdON:
-#
-#  sampleType: ST
-#  generator: powheg
-#  crossSection: ST_t-channel_top
 
 
 ############## TTX inclusive ##############
@@ -1118,10 +1082,6 @@ TTZH:
   sampleType: TTX
   generator: madgraph
   crossSection: TTZH
-TTZZ:
-  sampleType: TTX
-  generator: madgraph
-  crossSection: TTZZ
 TTWZ:
   sampleType: TTX
   generator: madgraph
@@ -1146,6 +1106,12 @@ TTGJets:
   sampleType: TTX
   generator: amcatnlo
   crossSection: TTGJets
+  ext: ['TTGJets_ext1']
+TTGJets_ext1:
+  sampleType: TTX
+  generator: amcatnlo
+  crossSection: TTGJets
+
 ############## TTX non-inclusive ##############
 TT4b:
   sampleType: TTX
@@ -1309,7 +1275,7 @@ GluGluToHHTo2B2Tau_node_12:
   crossSection: 1pb
 
 
-############## QCD ##############
+# ############## QCD ##############
 QCD_HT50to100_MLM:
   sampleType: QCD
   generator: madgraph
@@ -1530,4 +1496,3 @@ QCD_Pt-300toInf_EMEnriched:
   sampleType: QCD
   generator: pythia
   crossSection: QCD_Pt-300toInf_EMEnriched
-

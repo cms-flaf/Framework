@@ -145,9 +145,9 @@ class Setup:
     @property
     def cmssw_env(self):
         if self.cmssw_env_ is None:
-            self.cmssw_env_ = get_cmsenv(cmssw_path=os.getenv("DEFAULT_CMSSW_BASE"))
+            self.cmssw_env_ = get_cmsenv(cmssw_path=os.getenv("FLAF_CMSSW_BASE"))
             for var in [ 'HOME', 'ANALYSIS_PATH', 'ANALYSIS_DATA_PATH', 'X509_USER_PROXY', 'CENTRAL_STORAGE',
-                         'ANALYSIS_BIG_DATA_PATH', 'DEFAULT_CMSSW_BASE', 'DEFAULT_CMSSW_ARCH' ]:
+                         'ANALYSIS_BIG_DATA_PATH', 'FLAF_CMSSW_BASE', 'FLAF_CMSSW_ARCH' ]:
                 if var in os.environ:
                     self.cmssw_env_[var] = os.environ[var]
         return self.cmssw_env_

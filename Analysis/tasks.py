@@ -33,6 +33,10 @@ def getYear(period):
         'Run2_2016':'2016',
         'Run2_2017':'2017',
         'Run2_2018':'2018',
+        'Run3_2022':'2022',
+        'Run3_2022EE':'2022EE',
+        'Run3_2023':'2023',
+        'Run3_2023BPix':'2023BPix',
     }
     return year_dict[period]
 

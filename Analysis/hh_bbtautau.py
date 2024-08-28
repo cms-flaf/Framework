@@ -224,6 +224,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineBoostedVariables(self):
         FatJetObservables = self.config['FatJetObservables']
+        print(f"fatJetOBservables are {FatJetObservables}")
         particleNet_HbbvsQCD = 'particleNet_HbbvsQCD' if 'SelectedFatJet_particleNet_HbbvsQCD' in self.df.GetColumnNames() else 'particleNetWithMass_HbbvsQCD'
         particleNet_Xbb= 'particleNetMD_Xbb' if 'SelectedFatJet_particleNetMD_Xbb' in self.df.GetColumnNames() else 'particleNetLegacy_Xbb'
 
@@ -236,11 +237,13 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("SelectedFatJet_idxUnordered", "CreateIndexes(SelectedFatJet_p4[fatJet_sel].size())")
         self.df = self.df.Define("SelectedFatJet_idxOrdered", f"ReorderObjects(SelectedFatJet_{particleNet_Xbb}_boosted_vec, SelectedFatJet_idxUnordered)")
         for fatJetVar in FatJetObservables:
-            if f'SelectedFatJet_{fatJetVar}' in self.df.GetColumnNames() and f'SelectedFatJet_{fatJetVar}_boosted_vec' not in self.df.GetColumnNames():
-                self.df = self.df.Define(f'SelectedFatJet_{fatJetVar}_boosted_vec',f""" SelectedFatJet_{fatJetVar}[fatJet_sel];""")
+            if f'SelectedFatJet_{fatJetVar}' in self.df.GetColumnNames():
+                if f'SelectedFatJet_{fatJetVar}_boosted_vec' not in self.df.GetColumnNames():
+                    self.df = self.df.Define(f'SelectedFatJet_{fatJetVar}_boosted_vec',f""" SelectedFatJet_{fatJetVar}[fatJet_sel];""")
                 self.df = self.df.Define(f'SelectedFatJet_{fatJetVar}_boosted',f"""
                                     SelectedFatJet_{fatJetVar}_boosted_vec[SelectedFatJet_idxOrdered[0]];
                                    """)
+                #print(fatJetVar)
 
     def defineTriggers(self):
         for ch in self.config['channelSelection']:

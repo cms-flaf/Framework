@@ -271,6 +271,8 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                                          if({region})
                                             return static_cast<float>({weight}) ;
                                          return 1.f;""")
+            else:
+                self.df = self.df.Define(f"{weight}_application", f""" 1.f;""")
 
     def defineCategories(self):
         self.df = self.df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {self.bTagWP}) + int(b2_idbtagDeepFlavB >= {self.bTagWP})")

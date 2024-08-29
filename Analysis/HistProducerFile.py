@@ -64,6 +64,7 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
     for key_1,key_cut in key_filter_dict.items():
         ch, reg, cat = key_1
         if ch not in global_cfg_dict['channels_to_consider'] : continue
+        if ch != 'muMu' : continue
         if (key_1, key_2) in histograms.keys(): continue
         if cat == 'boosted' and (var.startswith('b1') or var.startswith('b2')): continue
         if cat != 'boosted' and var.startswith('SelectedFatJet'): continue
@@ -79,7 +80,7 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
             histograms[(key_1, key_2)] = []
         for dataframe in dataframes:
             if furtherCut != '' : key_cut += f' && {furtherCut}'
-            #print(key_cut)
+            print(key_cut)
             #print(dataframe.Count().GetValue())
             dataframe_new = dataframe.Filter(key_cut)
             #print(dataframe_new.Count().GetValue())

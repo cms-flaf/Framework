@@ -7,10 +7,10 @@ tau1_pt:
   x_title: p_{T}(\tau_1) (GeV)
   #y_title: dN/dm (1/GeV)
   y_title: Events
-  use_log_y: False
-  max_y_sf: 1.2
-  #use_log_y: True
-  #max_y_sf: 20.2
+  # use_log_y: False
+  # max_y_sf: 1.2
+  use_log_y: True
+  max_y_sf: 20.2
   divide_by_bin_width: False
 
 
@@ -86,7 +86,7 @@ tau2_pt:
   y_title: Events
   #use_log_y: False
   #max_y_sf: 1.2
-  use_log_y: False
+  use_log_y: True
   max_y_sf: 20.2
   divide_by_bin_width: False
 
@@ -160,8 +160,10 @@ b1_pt:
     other: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180,190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300]
   x_title: p_{T}(b_1) (GeV)
   y_title: Events
-  use_log_y: False
-  max_y_sf: 1.2
+  # use_log_y: False
+  # max_y_sf: 1.2
+  use_log_y: True
+  max_y_sf: 21.2
   divide_by_bin_width: False
 
 b1_eta:
@@ -255,8 +257,10 @@ b2_pt:
     other: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180,190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300]
   x_title: p_{T}(b_2) (GeV)
   y_title: Events
-  use_log_y: False
-  max_y_sf: 1.2
+  use_log_y: True
+  max_y_sf: 21.2
+  #use_log_y: False
+  #max_y_sf: 1.2
   divide_by_bin_width: False
 
 

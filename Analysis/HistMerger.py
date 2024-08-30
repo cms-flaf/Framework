@@ -122,6 +122,9 @@ def GetBTagWeightDict(var, all_histograms):
         all_histograms_1D[sample_type] = {}
         for key_name,histogram in all_histograms[sample_type].items():
             (key_1, key_2) = key_name
+            if var.startswith('SelectedFatJet'):
+                all_histograms_1D[sample_type][key_name] = histogram
+                continue
             ch, reg, cat = key_1
             uncName,scale = key_2
             key_tuple_num = ((ch, reg, 'btag_shape'), key_2)
@@ -173,9 +176,16 @@ if __name__ == "__main__":
 
     categories = list(global_cfg_dict['categories'])
     QCDregions = list(global_cfg_dict['QCDRegions'])
-    channels = list(global_cfg_dict['channels_to_consider'])
+    #channels = list(global_cfg_dict['channels_to_consider'])
+    channels = ['muMu']
+    #if args.var in ['tau1_pt', 'tau1_phi', 'tau2_pt', 'tau2_phi']:
+        #channels = list(global_cfg_dict['channels_to_consider'])
     signals = list(global_cfg_dict['signal_types'])
     unc_to_not_consider_boosted = list(global_cfg_dict['unc_to_not_consider_boosted'])
+
+    if args.var.startswith('SelectedFatJet'):
+        categories = ['boosted']
+
     sample_types_to_merge = list(global_cfg_dict['sample_types_to_merge'])
     scales = list(global_cfg_dict['scales'])
     files_separated = {}

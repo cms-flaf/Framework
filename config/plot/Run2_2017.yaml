@@ -10,3 +10,6 @@ channel_text:
   'eTau': 'bbe#tau_{h}'
   'muTau': 'bb#mu#tau_{h}'
   'tauTau': 'bb#tau_{h}#tau_{h}'
+  'muMu': 'bb#mu#mu'
+  'eMu': 'bbe#mu'
+  'eE': 'bbee'

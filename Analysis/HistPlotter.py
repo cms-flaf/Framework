@@ -174,13 +174,13 @@ if __name__ == "__main__":
     inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/inputs.yaml")
     with open(inputs_cfg, 'r') as f:
         inputs_cfg_dict = yaml.safe_load(f)
-    if args.category == 'boosted':
-        for input_dict in inputs_cfg_dict:
-            if input_dict['name'] == 'GluGluToBulkGraviton' or input_dict['name'] == 'GluGluToRadion':
-                input_dict['scale'] = 0.01
-    else:
-        for input_dict in inputs_cfg_dict:
-            input_dict['scale'] = 2
+    # if args.category == 'boosted':
+    #     for input_dict in inputs_cfg_dict:
+    #         if input_dict['name'] == 'GluGluToBulkGraviton' or input_dict['name'] == 'GluGluToRadion':
+    #             input_dict['scale'] = 0.
+    # else:
+    #     for input_dict in inputs_cfg_dict:
+    #         input_dict['scale'] = 1
 
     #if args.wantData == False:
     #    for dicti in inputs_cfg_dict:

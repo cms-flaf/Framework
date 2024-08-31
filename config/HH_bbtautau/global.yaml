@@ -64,6 +64,8 @@ channels_to_consider:
   - muTau
   - muMu
   - tauTau
+  - eE
+  - eMu
 gen_channels:
   eTau:
     - 3
@@ -105,13 +107,13 @@ hist_triggers:
 application_regions:
   HLT_singleMu:
     region_name: SingleMu_region
-    region_cut: ((tau1_pt > 26 && abs(tau1_eta) < 2.4) ||  (tau2_pt > 26 && abs(tau2_eta) < 2.4))
+    region_cut: ((tau1_pt > {mu_th}  && abs(tau1_eta) < 2.4) ||  (tau2_pt > {mu_th}  && abs(tau2_eta) < 2.4))
   HLT_mutau:
     region_name: CrossMuTau_region
     region_cut: (tau1_pt > 22 && abs(tau1_eta) < 2.1 && tau2_pt > 32 && abs(tau2_eta) < 2.1)
   HLT_singleEle:
     region_name: SingleEle_region
-    region_cut: ((tau1_pt > 33 && abs(tau1_eta) < 2.5) || (tau2_pt > 33 && abs(tau2_eta) < 2.5))
+    region_cut: ((tau1_pt > {ele_th}  && abs(tau1_eta) < 2.5) || (tau2_pt > {ele_th}  && abs(tau2_eta) < 2.5))
   HLT_etau:
     region_name: CrossEleTau_region
     region_cut: (tau1_pt > 25 && abs(tau1_eta) < 2.1 && tau2_pt > 35 && abs(tau2_eta) < 2.1)
@@ -125,11 +127,35 @@ application_regions:
     region_name: MET_region
     region_cut: (!(Legacy_region) && !(SingleTau_region))
 
+singleMu_th:
+  "Run2_2016": 26
+  "Run2_2016_HIPM": 26
+  "Run2_2017": 29
+  "Run2_2018": 26
+
+singleEle_th:
+  "Run2_2016": 26
+  "Run2_2016_HIPM": 26
+  "Run2_2017": 33
+  "Run2_2018": 33
+
 singleTau_th:
   "Run2_2016": 130
   "Run2_2016_HIPM": 130
   "Run2_2017": 190
   "Run2_2018": 190
+
+eTau_th:
+  "Run2_2016":
+  "Run2_2016_HIPM":
+  "Run2_2017":
+  "Run2_2018":
+
+muTau_th:
+  "Run2_2016":
+  "Run2_2016_HIPM":
+  "Run2_2017":
+  "Run2_2018":
 
 btag_wps:
   res2b: Medium

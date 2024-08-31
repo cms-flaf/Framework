@@ -200,21 +200,31 @@ def GetWeight(channel, cat):
 
         'eE':["weight_tau1_TrgSF_singleEle_Central_application","weight_tau2_TrgSF_singleEle_Central_application"],
 
-        'eMu':["weight_tau1_TrgSF_singleEle_Central_application","weight_tau2_TrgSF_singleEle_Central_application", "weight_tau1_TrgSF_singleMu_Central_application","weight_tau2_TrgSF_singleMu_Central_application"],
+        'eMu':["weight_tau1_TrgSF_singleEle_Central_application","weight_tau2_TrgSF_singleMu_Central_application"], # 1st leg ele, 2nd leg mu
+        #'eMu':["weight_tau2_TrgSF_singleEle_Central_application","weight_tau1_TrgSF_singleMu_Central_application"],  # 1st leg muon, 2nd leg ele
 
         'tauTau':["weight_tau1_TrgSF_ditau_Central_application","weight_tau2_TrgSF_ditau_Central_application","weight_tau1_TrgSF_singleTau_Central_application","weight_tau2_TrgSF_singleTau_Central_application", "weight_TrgSF_MET_Central_application"]
         }
-    tau_weights =["MuonID_SF_RecoCentral", "HighPt_MuonID_SF_RecoCentral","MuonID_SF_TightID_TrkCentral", "MuonID_SF_TightRelIsoCentral", "TauID_SF_Medium_Central"]
+    ID_weights_dict = {
+        'eTau': ["weight_tau1_EleSF_wp80iso_EleIDCentral", "weight_tau2_TauID_SF_Medium_Central"], # theorically
+        'muTau': ["weight_tau1_MuonID_SF_RecoCentral","weight_tau1_HighPt_MuonID_SF_RecoCentral","weight_tau1_MuonID_SF_TightID_TrkCentral","weight_tau1_MuonID_SF_TightRelIsoCentral","weight_tau2_TauID_SF_Medium_Central"],
+        'tauTau': ["weight_tau1_TauID_SF_Medium_Central", "weight_tau2_TauID_SF_Medium_Central"],
+        'muMu': ["weight_tau1_MuonID_SF_RecoCentral","weight_tau1_HighPt_MuonID_SF_RecoCentral","weight_tau1_MuonID_SF_TightID_TrkCentral","weight_tau1_MuonID_SF_TightRelIsoCentral", "weight_tau2_MuonID_SF_RecoCentral","weight_tau2_HighPt_MuonID_SF_RecoCentral","weight_tau2_MuonID_SF_TightID_TrkCentral","weight_tau2_MuonID_SF_TightRelIsoCentral"],
+        'eMu': ["weight_tau1_EleSF_wp80iso_EleIDCentral","weight_tau2_MuonID_SF_RecoCentral","weight_tau2_HighPt_MuonID_SF_RecoCentral","weight_tau2_MuonID_SF_TightID_TrkCentral","weight_tau2_MuonID_SF_TightRelIsoCentral"],
+        #'eMu': ["weight_tau1_MuonID_SF_RecoCentral","weight_tau1_HighPt_MuonID_SF_RecoCentral","weight_tau1_MuonID_SF_TightID_TrkCentral","weight_tau1_MuonID_SF_TightRelIsoCentral","weight_tau2_EleSF_wp80iso_EleIDCentral"]
+        'eE':["weight_tau1_EleSF_wp80iso_EleIDCentral","weight_tau2_EleSF_wp80noiso_EleIDCentral"]
+        }
     # weight_tau1_EleSF_wp80iso_EleIDCentral
     # weight_tau1_EleSF_wp80noiso_EleIDCentral
     #tau_weights =["TauID_SF_Medium_Central", "HighPt_MuonID_SF_HighPtIDCentral", "HighPt_MuonID_SF_HighPtIdRelTkIsoCentral","MuonID_SF_RecoCentral", "HighPt_MuonID_SF_RecoCentral"]
     #tau_weights =["EleSF_EleIDCentral", "TauID_SF_Medium_Central", "HighPt_MuonID_SF_HighPtIDCentral", "HighPt_MuonID_SF_HighPtIdRelTkIsoCentral","MuonID_SF_RecoCentral", "HighPt_MuonID_SF_RecoCentral"]
-    for tau_suffix in tau_weights:
-        for tau_idx in [1,2]:
-            weights_to_apply.append(f"weight_tau{tau_idx}_{tau_suffix}")
+    #for tau_suffix in tau_weights:
+    #    for tau_idx in [1,2]:
+    #        weights_to_apply.append(f"weight_tau{tau_idx}_{tau_suffix}")
+    weights_to_apply.extend(ID_weights_dict[channel])
+    weights_to_apply.extend(trg_weights_dict[channel])
     if cat != 'boosted':
          weights_to_apply.extend(["weight_Jet_PUJetID_Central_b1", "weight_Jet_PUJetID_Central_b2"])
-    weights_to_apply.extend(trg_weights_dict[channel])
     total_weight = '*'.join(weights_to_apply)
     return total_weight
 '''
@@ -252,12 +262,13 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                     print(f"{trg} not present in colNames")
                     self.df = self.df.Define(trg, "1")
         singleTau_th_dict = self.config['singleTau_th']
-        #singleMu_th_dict = self.config['singleMu_th']
-        #singleEle_th_dict = self.config['singleEle_th']
+        singleMu_th_dict = self.config['singleMu_th']
+        singleEle_th_dict = self.config['singleEle_th']
         for trg_name,trg_dict in self.config['application_regions'].items():
             for key in trg_dict.keys():
                 region_name = trg_dict['region_name']
-                region_cut = trg_dict['region_cut'].format(tau_th=singleTau_th_dict[self.period])
+                region_cut = trg_dict['region_cut'].format(tau_th=singleTau_th_dict[self.period], ele_th=singleEle_th_dict[self.period], mu_th=singleMu_th_dict[self.period])
+                print(region_name, region_cut)
                 if region_name not in self.df.GetColumnNames():
                     self.df = self.df.Define(region_name, region_cut)
 

@@ -412,7 +412,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         uncNames = ['Central']
         unc_cfg_dict = load_unc_config(unc_config)
         uncs_to_exclude = self.global_params['uncs_to_exclude'][self.period]
-        print(uncs_to_exclude)
+        #print(uncs_to_exclude)
         if self.global_params['compute_unc_histograms']:
             for uncName in list(unc_cfg_dict['norm'].keys())+unc_cfg_dict['shape']:
                 if uncName in uncs_to_exclude: continue
@@ -424,13 +424,13 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         output_path_hist_prod_sample_data = os.path.join(self.version, self.period, 'split', var, f'data.root')
         all_inputs = [(self.remote_target(output_path_hist_prod_sample_data, fs=self.fs_histograms),'data')]
         samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
-        print(samples_to_consider)
+        #print(samples_to_consider)
         for sample_name in self.samples.keys():
             if sample_name not in samples_to_consider: continue
-            print(sample_name)
+            #print(sample_name)
             output_path_hist_prod_sample = os.path.join(self.version, self.period, 'split', var, f'{sample_name}.root')
             all_inputs.append((self.remote_target(output_path_hist_prod_sample, fs=self.fs_histograms),sample_name))
-        print(all_inputs)
+        #print(all_inputs)
         all_datasets=[]
         all_outputs_merged = []
 
@@ -441,9 +441,10 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             for inp, smpl in all_inputs:
                 local_inputs.append(stack.enter_context(inp.localize('r')).path)
                 all_datasets.append(smpl)
+            dataset_names = ','.join(smpl for smpl in all_datasets)
             if len(uncNames)==1:
                 with self.output().localize("w") as outFile:
-                    MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config]#, '--remove-files', 'True']
+                    MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config]#, '--remove-files', 'True']
                     MergerProducer_cmd.extend(local_inputs)
                     ps_call(MergerProducer_cmd,verbose=1)
             else:
@@ -527,7 +528,7 @@ class MergeTTCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         uncNames = ['Central']
         unc_cfg_dict = load_unc_config(unc_config)
         uncs_to_exclude = self.global_params['uncs_to_exclude'][self.period]
-        print(uncs_to_exclude)
+        #print(uncs_to_exclude)
         if self.global_params['compute_unc_histograms']:
             for uncName in list(unc_cfg_dict['norm'].keys())+unc_cfg_dict['shape']:
                 if uncName in uncs_to_exclude: continue
@@ -539,13 +540,13 @@ class MergeTTCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         output_path_hist_prod_sample_data = os.path.join(self.version, self.period, 'splitTTCR', var, f'data.root')
         all_inputs = [(self.remote_target(output_path_hist_prod_sample_data, fs=self.fs_histograms),'data')]
         samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
-        print(samples_to_consider)
+        #print(samples_to_consider)
         for sample_name in self.samples.keys():
             if sample_name not in samples_to_consider: continue
-            print(sample_name)
+            #print(sample_name)
             output_path_hist_prod_sample = os.path.join(self.version, self.period, 'splitTTCR', var, f'{sample_name}.root')
             all_inputs.append((self.remote_target(output_path_hist_prod_sample, fs=self.fs_histograms),sample_name))
-        print(all_inputs)
+        #print(all_inputs)
         all_datasets=[]
         all_outputs_merged = []
 

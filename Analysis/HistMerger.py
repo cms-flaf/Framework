@@ -176,8 +176,7 @@ if __name__ == "__main__":
 
     categories = list(global_cfg_dict['categories'])
     QCDregions = list(global_cfg_dict['QCDRegions'])
-    #channels = list(global_cfg_dict['channels_to_consider'])
-    channels = ['muMu']
+    channels = list(global_cfg_dict['channels_to_consider'])
     #if args.var in ['tau1_pt', 'tau1_phi', 'tau2_pt', 'tau2_phi']:
         #channels = list(global_cfg_dict['channels_to_consider'])
     signals = list(global_cfg_dict['signal_types'])

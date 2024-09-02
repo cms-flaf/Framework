@@ -252,6 +252,105 @@ class HistProducerFileTTCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 ps_call(HistProducerFile_cmd, verbose=1)
 
 
+class HistProducerFileDYCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
+    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
+
+    def workflow_requires(self):
+        need_data = False
+        need_data_cache = False
+        branch_set = set()
+        branch_set_cache = set()
+        for idx, (sample, br, var, need_cache) in self.branch_map.items():
+            if sample == 'data':
+                need_data = True
+                if need_cache:
+                    need_data_cache = True
+            else:
+                branch_set.add(br)
+                if need_cache:
+                    branch_set_cache.add(br)
+        reqs = {}
+        if len(branch_set) > 0:
+            reqs['anaTuple'] = AnaTupleTask.req(self, branches=tuple(branch_set))
+        if len(branch_set_cache) > 0:
+            reqs['anaCacheTuple'] = AnaCacheTupleTask.req(self, branches=tuple(branch_set_cache))
+        if need_data:
+            reqs['dataMergeTuple'] = DataMergeTask.req(self, branches=())
+        if need_data_cache:
+            reqs['dataCacheMergeTuple'] = DataCacheMergeTask.req(self, branches=())
+        return reqs
+
+    def requires(self):
+        sample_name, prod_br, var, need_cache = self.branch_data
+        deps = []
+        if sample_name =='data':
+            deps.append(DataMergeTask.req(self, max_runtime=DataMergeTask.max_runtime._default, branch=prod_br,
+                                          branches=(prod_br,)))
+            if need_cache:
+                deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default,
+                                                   branch=prod_br, branches=(prod_br,)))
+        else:
+            deps.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br,
+                                         branches=(prod_br,)))
+            if need_cache:
+                deps.append(AnaCacheTupleTask.req(self, max_runtime=AnaCacheTupleTask.max_runtime._default,
+                                                  branch=prod_br, branches=(prod_br,)))
+        return deps
+
+    def create_branch_map(self):
+        n = 0
+        branches = {}
+        anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
+        samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
+        for var_entry in self.global_params['vars_to_plot']:
+            var_name, need_cache = parseVarEntry(var_entry)
+            for prod_br,(sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
+                isData = self.samples[sample_name]['sampleType'] == 'data'
+                if sample_name not in samples_to_consider or isData: continue
+                branches[n] = (sample_name, prod_br, var_name, need_cache)
+                n += 1
+            branches[n] = ('data', 0, var_name, need_cache)
+            n += 1
+        return branches
+
+    def output(self):
+        sample_name, prod_br, var, need_cache = self.branch_data
+        outFileName = os.path.basename(self.input()[0].path)
+        output_path = os.path.join(self.version, self.period, 'prod_DYCR', var, f'{sample_name}_{outFileName}')
+        return self.remote_target(output_path,  fs=self.fs_histograms)
+
+    def run(self):
+        sample_name, prod_br, var, need_cache = self.branch_data
+        input_file = self.input()[0]
+        print(f'input file is {input_file.path}')
+        global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
+        unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
+        sample_type = self.samples[sample_name]['sampleType'] if sample_name != 'data' else 'data'
+        HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
+        print(f'output file is {self.output().path}')
+        with input_file.localize("r") as local_input, self.output().localize("w") as local_output:
+            print(local_output.path)
+
+            HistProducerFile_cmd = [ 'python3', HistProducerFile,
+                                    '--inFile', local_input.path, '--outFileName',local_output.path,
+                                    '--dataset', sample_name, '--uncConfig', unc_config,
+                                    '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type,
+                                    '--globalConfig', global_config, '--var', var, '--period', self.period, '--furtherCut', "DYCR" ]
+            if self.global_params['compute_unc_histograms'] or var == 'kinFit_m':
+                HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
+            if 'deepTau2p5' in self.version.split('_'):
+                print("deepTau2p5 in use")
+                HistProducerFile_cmd.extend([ '--deepTauVersion', 'v2p5'])
+            if need_cache:
+                anaCache_file = self.input()[1]
+                with anaCache_file.localize("r") as local_anacache:
+                    HistProducerFile_cmd.extend(['--cacheFile', local_anacache.path])
+                    ps_call(HistProducerFile_cmd, verbose=1)
+            else:
+                ps_call(HistProducerFile_cmd, verbose=1)
+
+
 
 class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)

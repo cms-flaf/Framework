@@ -180,6 +180,7 @@ if __name__ == "__main__":
     #    os.makedirs(args.outDir)
     if args.furtherCut:
         print(f"further cut = {args.furtherCut}")
+
     hist_cfg_dict = {}
     with open(args.histConfig, 'r') as f:
         hist_cfg_dict = yaml.safe_load(f)
@@ -190,6 +191,8 @@ if __name__ == "__main__":
     with open(args.globalConfig, 'r') as f:
         global_cfg_dict = yaml.safe_load(f)
 
+    if args.furtherCut=='DYCR':
+        global_cfg_dict['channels_to_consider'] == 'muMu'
     # central hist definition
     create_new_hist = False
     key_not_exist = False

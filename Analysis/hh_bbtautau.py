@@ -227,14 +227,11 @@ def GetWeight(channel, cat):
          weights_to_apply.extend(["weight_Jet_PUJetID_Central_b1", "weight_Jet_PUJetID_Central_b2"])
     total_weight = '*'.join(weights_to_apply)
     return total_weight
-'''
-"HighPt_MuonID_SF_HighPtIDCentral", "HighPt_MuonID_SF_HighPtIdRelTkIsoCentral", "HighPt_MuonID_SF_RecoCentral", "HighPt_MuonID_SF_TightIDCentral", "MuonID_SF_RecoCentral", "MuonID_SF_TightID_TrkCentral", "MuonID_SF_TightRelIsoCentral",  '''
-
 class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineBoostedVariables(self):
         FatJetObservables = self.config['FatJetObservables']
-        print(f"fatJetOBservables are {FatJetObservables}")
+        #print(f"fatJetOBservables are {FatJetObservables}")
         particleNet_HbbvsQCD = 'particleNet_HbbvsQCD' if 'SelectedFatJet_particleNet_HbbvsQCD' in self.df.GetColumnNames() else 'particleNetWithMass_HbbvsQCD'
         particleNet_Xbb= 'particleNetMD_Xbb' if 'SelectedFatJet_particleNetMD_Xbb' in self.df.GetColumnNames() else 'particleNetLegacy_Xbb'
 
@@ -268,10 +265,13 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
             for key in trg_dict.keys():
                 region_name = trg_dict['region_name']
                 region_cut = trg_dict['region_cut'].format(tau_th=singleTau_th_dict[self.period], ele_th=singleEle_th_dict[self.period], mu_th=singleMu_th_dict[self.period])
-                print(region_name, region_cut)
+                #print(region_name, region_cut)
                 if region_name not in self.df.GetColumnNames():
                     self.df = self.df.Define(region_name, region_cut)
 
+    def defineCRs(self):
+        self.df = self.df.Define("DYCR", "if(muMu) {return (tautau_m_vis < 92 && tautau_m_vis > 89)}; return true;")
+        #self.df = self.df.Define("ttCR", "if(muMu) {return (tautau_m_vis < 92 && tautau_m_vis > 89)}; return true;")
 
     def redefineWeights(self):
         weights_to_redefine = ["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central","weight_tau1_TrgSF_singleTau_Central","weight_tau2_TrgSF_singleTau_Central","weight_TrgSF_MET_Central","weight_tau1_TrgSF_singleEle_Central", "weight_tau2_TrgSF_singleEle_Central", "weight_tau1_TrgSF_singleMu_Central", "weight_tau2_TrgSF_singleMu_Central"]

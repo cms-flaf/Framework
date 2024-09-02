@@ -274,9 +274,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("SR_tt", f" tautau_m_vis >= {SR_mass_limits_tt[0]}")
         self.df = self.df.Define("SR_bb", f" bb_m_vis >= {SR_mass_limits_bb[0]}")
         self.df = self.df.Define("SR", f" SR_tt && SR_bb ")
-
-        self.df = self.df.Define("DYCR", "if(muMu) {return (tautau_m_vis < 92 && tautau_m_vis > 89);} return true;")
-        # self.df = self.df.Define("DYCR", "if(muMu || eE) {return (tautau_m_vis < 92 && tautau_m_vis > 89);} return true;") # for next iteration
+        self.df = self.df.Define("DYCR", "if(muMu || eE) {return (tautau_m_vis < 92 && tautau_m_vis > 89);} return true;") # for next iteration
         TTCR_mass_limits_eTau = self.config['TTCR_mass_limits']['eTau']
         TTCR_mass_limits_muTau = self.config['TTCR_mass_limits']['muTau']
         TTCR_mass_limits_tauTau = self.config['TTCR_mass_limits']['tauTau']

@@ -277,15 +277,12 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
         self.df = self.df.Define("DYCR", "if(muMu) {return (tautau_m_vis < 92 && tautau_m_vis > 89);} return true;")
         # self.df = self.df.Define("DYCR", "if(muMu || eE) {return (tautau_m_vis < 92 && tautau_m_vis > 89);} return true;") # for next iteration
-        TTCR_mass_limits_muTau = self.config['TTCR_mass_limits']['eTau'] # for Next iteration
-
+        TTCR_mass_limits_eTau = self.config['TTCR_mass_limits']['eTau']
         TTCR_mass_limits_muTau = self.config['TTCR_mass_limits']['muTau']
         TTCR_mass_limits_tauTau = self.config['TTCR_mass_limits']['tauTau']
         TTCR_mass_limits_muMu = self.config['TTCR_mass_limits']['muMu']
         TTCR_mass_limits_eE = self.config['TTCR_mass_limits']['eE']
-        #
-        '''
-        '''
+
         self.df = self.df.Define("ttCR", f"""
                                 if(eTau) {{return (tautau_m_vis < {TTCR_mass_limits_eTau[0]} || tautau_m_vis > {TTCR_mass_limits_eTau[1]});
                                 }};

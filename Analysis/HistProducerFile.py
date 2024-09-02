@@ -165,7 +165,7 @@ if __name__ == "__main__":
     parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--var', required=True, type=str)
     parser.add_argument('--period', required=True, type=str)
-    parser.add_argument('--furtherCut', required=False, type=str, default = "")
+    parser.add_argument('--furtherCut', required=False, type=str, default = "SR")
     args = parser.parse_args()
 
 

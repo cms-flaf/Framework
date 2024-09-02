@@ -23,8 +23,6 @@ def createKeyFilterDict(global_cfg_dict):
                 filter_str = f"(" + filter_base
                 #print(ch, reg, cat, filter_str)
                 #print()
-                for mass_name,mass_limits in mass_cut_limits.items():
-                    filter_str+=f"&& ({mass_name} >= {mass_limits[0]})"
                 #print(filter_str)
                 if cat != 'boosted' and cat!= 'baseline':
                     filter_str += "&& (b1_pt>0 && b2_pt>0)"
@@ -270,8 +268,36 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                     self.df = self.df.Define(region_name, region_cut)
 
     def defineCRs(self):
+
+        SR_mass_limits_bb = self.config['mass_cut_limits']['bb_m_vis']
+        SR_mass_limits_tt = self.config['mass_cut_limits']['tautau_m_vis']
+        self.df = self.df.Define("SR_tt", f" tautau_m_vis >= {SR_mass_limits_tt[0]}")
+        self.df = self.df.Define("SR_bb", f" bb_m_vis >= {SR_mass_limits_bb[0]}")
+        self.df = self.df.Define("SR", f" SR_tt && SR_bb ")
+
         self.df = self.df.Define("DYCR", "if(muMu) {return (tautau_m_vis < 92 && tautau_m_vis > 89);} return true;")
-        #self.df = self.df.Define("ttCR", "if(muMu) {return (tautau_m_vis < 92 && tautau_m_vis > 89)}; return true;")
+        # self.df = self.df.Define("DYCR", "if(muMu || eE) {return (tautau_m_vis < 92 && tautau_m_vis > 89);} return true;") # for next iteration
+        TTCR_mass_limits_muTau = self.config['TTCR_mass_limits']['eTau'] # for Next iteration
+
+        TTCR_mass_limits_muTau = self.config['TTCR_mass_limits']['muTau']
+        TTCR_mass_limits_tauTau = self.config['TTCR_mass_limits']['tauTau']
+        TTCR_mass_limits_muMu = self.config['TTCR_mass_limits']['muMu']
+        TTCR_mass_limits_eE = self.config['TTCR_mass_limits']['eE']
+        #
+        '''
+        '''
+        self.df = self.df.Define("ttCR", f"""
+                                if(eTau) {{return (tautau_m_vis < {TTCR_mass_limits_eTau[0]} || tautau_m_vis > {TTCR_mass_limits_eTau[1]});
+                                }};
+                                 if(muTau) {{return (tautau_m_vis < {TTCR_mass_limits_muTau[0]} || tautau_m_vis > {TTCR_mass_limits_muTau[1]});
+                                 }};
+                                 if(tauTau) {{return (tautau_m_vis < {TTCR_mass_limits_tauTau[0]} || tautau_m_vis > {TTCR_mass_limits_tauTau[1]});
+                                 }};
+                                 if(muMu) {{return (tautau_m_vis < {TTCR_mass_limits_muMu[0]} || tautau_m_vis > {TTCR_mass_limits_muMu[1]});
+                                 }};
+                                 if(eE) {{return (tautau_m_vis < {TTCR_mass_limits_eE[0]} || tautau_m_vis > {TTCR_mass_limits_eE[1]});
+                                 }};
+                                 return true;""")
 
     def redefineWeights(self):
         weights_to_redefine = ["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central","weight_tau1_TrgSF_singleTau_Central","weight_tau2_TrgSF_singleTau_Central","weight_TrgSF_MET_Central","weight_tau1_TrgSF_singleEle_Central", "weight_tau2_TrgSF_singleEle_Central", "weight_tau1_TrgSF_singleMu_Central", "weight_tau2_TrgSF_singleMu_Central"]

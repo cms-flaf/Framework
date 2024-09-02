@@ -174,7 +174,22 @@ scales:
   - Up
   - Down
 
-
+TTCR_mass_limits:
+  eTau:
+    - 50
+    - 100
+  muTau:
+    - 40
+    - 100
+  muMu:
+    - 80
+    - 100
+  tauTau:
+    - 50
+    - 110
+  eE:
+    - 80
+    - 100
 # preVFP == APV == HIPM
 unc_2018:
   - JES_BBEC1_2018

@@ -270,7 +270,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                     self.df = self.df.Define(region_name, region_cut)
 
     def defineCRs(self):
-        self.df = self.df.Define("DYCR", "if(muMu) {return (tautau_m_vis < 92 && tautau_m_vis > 89)}; return true;")
+        self.df = self.df.Define("DYCR", "if(muMu) {return (tautau_m_vis < 92 && tautau_m_vis > 89);} return true;")
         #self.df = self.df.Define("ttCR", "if(muMu) {return (tautau_m_vis < 92 && tautau_m_vis > 89)}; return true;")
 
     def redefineWeights(self):
@@ -363,4 +363,5 @@ def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.defineTriggers()
     dfForHistograms.redefineWeights()
     dfForHistograms.df = createInvMass(dfForHistograms.df)
+    dfForHistograms.defineCRs()
     return dfForHistograms

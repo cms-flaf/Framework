@@ -192,7 +192,8 @@ if __name__ == "__main__":
         global_cfg_dict = yaml.safe_load(f)
 
     if args.furtherCut=='DYCR':
-        global_cfg_dict['channels_to_consider'] == 'muMu'
+        global_cfg_dict['channels_to_consider'] = ['muMu']
+        print(f"""considering {global_cfg_dict["channels_to_consider"]}""")
     # central hist definition
     create_new_hist = False
     key_not_exist = False

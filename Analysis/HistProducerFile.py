@@ -191,13 +191,9 @@ if __name__ == "__main__":
     with open(args.globalConfig, 'r') as f:
         global_cfg_dict = yaml.safe_load(f)
 
-    if args.period=='Run2_2016_HIPM' or args.furtherCut=='ttCR':
-        global_cfg_dict['channels_to_consider'] = global_cfg_dict['channelSelection']
 
     if args.furtherCut=='DYCR':
-        global_cfg_dict['channels_to_consider'] = ['muMu']
-        if args.period=='Run2_2016_HIPM':
-            global_cfg_dict['channels_to_consider'] = ['muMu', 'eE']
+        global_cfg_dict['channels_to_consider'] = ['muMu', 'eE']
         print(f"""considering {global_cfg_dict["channels_to_consider"]}""")
 
     # central hist definition

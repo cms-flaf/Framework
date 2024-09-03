@@ -458,6 +458,61 @@ class HistProducerSampleTTCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 HistProducerSample_cmd.extend(local_inputs)
                 ps_call(HistProducerSample_cmd,verbose=1)
 
+
+class HistProducerSampleDYCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
+    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
+
+    def workflow_requires(self):
+        branch_set = set()
+        for br_idx, (sample_name, dep_br_list, var) in self.branch_map.items():
+            branch_set.update(dep_br_list)
+        branches = tuple(branch_set)
+        return { "HistProducerFileDYCRTask": HistProducerFileDYCRTask.req(self, branches=branches) }
+
+    def requires(self):
+        sample_name, dep_br_list, var = self.branch_data
+        return [
+            HistProducerFileDYCRTask.req(self, max_runtime=HistProducerFileDYCRTask.max_runtime._default,
+                                                 branch=dep_br, branches=(dep_br,))
+            for dep_br in dep_br_list
+        ]
+
+    def create_branch_map(self):
+        branches = {}
+        histProducerFile_map = HistProducerFileDYCRTask.req(self,branch=-1, branches=()).create_branch_map()
+        all_samples = {}
+        samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
+        for n_branch, (sample_name, prod_br, var, need_cache)  in histProducerFile_map.items():
+            if sample_name not in samples_to_consider: continue
+            if sample_name not in all_samples:
+                all_samples[sample_name] = {}
+            if var not in all_samples[sample_name]:
+                all_samples[sample_name][var]=[]
+            all_samples[sample_name][var].append(n_branch)
+        k = 0
+        for sample_name, sample_entry in all_samples.items():
+            for var, branch_idx_list in sample_entry.items():
+                branches[k] = (sample_name, branch_idx_list, var)
+                k += 1
+        return branches
+
+    def output(self):
+        sample_name, idx_list, var  = self.branch_data
+        output_path = os.path.join(self.version, self.period, 'splitDYCR', var, f'{sample_name}.root')
+        return self.remote_target(output_path,  fs=self.fs_histograms)
+
+    def run(self):
+        sample_name, idx_list, var  = self.branch_data
+        HistProducerSample = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample.py')
+        with contextlib.ExitStack() as stack:
+            local_inputs = [stack.enter_context(inp.localize('r')).path for inp in self.input()]
+            with self.output().localize("w") as tmp_local_file:
+                HistProducerSample_cmd = ['python3', HistProducerSample,'--outFile', tmp_local_file.path]#, '--remove-files', 'True']
+                HistProducerSample_cmd.extend(local_inputs)
+                ps_call(HistProducerSample_cmd,verbose=1)
+
+
 class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
 

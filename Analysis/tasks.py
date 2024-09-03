@@ -711,9 +711,129 @@ class MergeTTCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             for inp, smpl in all_inputs:
                 local_inputs.append(stack.enter_context(inp.localize('r')).path)
                 all_datasets.append(smpl)
+            dataset_names = ','.join(smpl for smpl in all_datasets)
             if len(uncNames)==1:
                 with self.output().localize("w") as outFile:
-                    MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config]#, '--remove-files', 'True']
+                    MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config]#, '--remove-files', 'True']
+                    MergerProducer_cmd.extend(local_inputs)
+                    ps_call(MergerProducer_cmd,verbose=1)
+            else:
+                for uncName in uncNames:
+                    final_histname = f'all_histograms_{var}_{uncName}.root'
+                    tmp_outfile_merge = os.path.join(outdir_histograms,final_histname)
+                    tmp_outfile_merge_remote = self.remote_target(tmp_outfile_merge, fs=self.fs_histograms)
+                    all_outputs_merged.append(tmp_outfile_merge_remote)
+                    dataset_names = ','.join(smpl for smpl in all_datasets)
+                    with tmp_outfile_merge_remote.localize("w") as tmp_outfile_merge_unc:
+                        MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config]#, '--remove-files', 'True']
+                        MergerProducer_cmd.extend(local_inputs)
+                        ps_call(MergerProducer_cmd,verbose=1)
+        if len(uncNames) > 1:
+            all_uncertainties_string = ','.join(unc for unc in uncNames)
+            tmp_outFile = self.remote_target( os.path.join(outdir_histograms,f'all_histograms_{var}_hadded.root'), fs=self.fs_histograms)
+            print(all_outputs_merged)
+
+            with contextlib.ExitStack() as stack:
+                local_merged_files = []
+                for infile_merged in all_outputs_merged:
+                    local_merged_files.append(stack.enter_context(infile_merged.localize('r')).path)
+                with tmp_outFile.localize("w") as tmpFile:
+                    HaddMergedHistsProducer_cmd = ['python3', HaddMergedHistsProducer,'--outFile', tmpFile.path, '--var', var]
+                    HaddMergedHistsProducer_cmd.extend(local_merged_files)
+                    ps_call(HaddMergedHistsProducer_cmd,verbose=1)
+            with tmp_outFile.localize("r") as tmpFile, self.output().localize("w") as outFile:
+                RenameHistsProducer_cmd = ['python3', RenameHistsProducer,'--inFile', tmpFile.path, '--outFile', outFile.path, '--var', var, '--year', getYear(self.period)]
+                ps_call(RenameHistsProducer_cmd,verbose=1)
+
+
+
+
+class MergeDYCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
+
+    def workflow_requires(self):
+        histProducerSample_map = HistProducerSampleDYCRTask.req(self,branch=-1, branches=()).create_branch_map()
+        all_samples = {}
+        branches = {}
+        for br_idx, (smpl_name, idx_list, var) in histProducerSample_map.items():
+            if var not in all_samples:
+                all_samples[var] = []
+            all_samples[var].append(br_idx)
+        workflow_dict = {}
+        n=0
+        for var in all_samples.keys():
+            workflow_dict[var] = {
+                n: HistProducerSampleDYCRTask.req(self, branches=tuple((idx,) for idx in all_samples[var]))
+            }
+            n+=1
+        return workflow_dict
+
+    def requires(self):
+        var, branches_idx = self.branch_data
+        deps = [HistProducerSampleDYCRTask.req(self, max_runtime=HistProducerSampleDYCRTask.max_runtime._default, branch=prod_br) for prod_br in branches_idx ]
+        return deps
+
+    def create_branch_map(self):
+        histProducerSample_map = HistProducerSampleDYCRTask.req(self,branch=-1, branches=()).create_branch_map()
+        all_samples = {}
+        branches = {}
+        for br_idx, (smpl_name, idx_list, var) in histProducerSample_map.items():
+            if var not in all_samples:
+                all_samples[var] = []
+            all_samples[var].append(br_idx)
+        k=0
+        for n, key in enumerate(all_samples.items()):
+            var, branches_idx = key
+            branches[k] = (var, branches_idx)
+            k+=1
+        return branches
+
+    def output(self):
+        var, branches_idx = self.branch_data
+        output_path = os.path.join(self.version, self.period, 'mergedDYCR', var, f'{var}.root')
+        return self.remote_target(output_path,  fs=self.fs_histograms)
+
+    def run(self):
+        var, branches_idx = self.branch_data
+        sample_config = os.path.join(self.ana_path(), 'config',self.period, f'samples.yaml')
+        global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
+        unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
+        uncNames = ['Central']
+        unc_cfg_dict = load_unc_config(unc_config)
+        uncs_to_exclude = self.global_params['uncs_to_exclude'][self.period]
+        #print(uncs_to_exclude)
+        if self.global_params['compute_unc_histograms']:
+            for uncName in list(unc_cfg_dict['norm'].keys())+unc_cfg_dict['shape']:
+                if uncName in uncs_to_exclude: continue
+                uncNames.append(uncName)
+        MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger.py')
+        HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
+        RenameHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'renameHists.py')
+
+        output_path_hist_prod_sample_data = os.path.join(self.version, self.period, 'splitDYCR', var, f'data.root')
+        all_inputs = [(self.remote_target(output_path_hist_prod_sample_data, fs=self.fs_histograms),'data')]
+        samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
+        #print(samples_to_consider)
+        for sample_name in self.samples.keys():
+            if sample_name not in samples_to_consider: continue
+            #print(sample_name)
+            output_path_hist_prod_sample = os.path.join(self.version, self.period, 'splitDYCR', var, f'{sample_name}.root')
+            all_inputs.append((self.remote_target(output_path_hist_prod_sample, fs=self.fs_histograms),sample_name))
+        #print(all_inputs)
+        all_datasets=[]
+        all_outputs_merged = []
+
+        outdir_histograms = os.path.join(self.version, self.period, 'mergedDYCR', var, 'tmp')
+
+        with contextlib.ExitStack() as stack:
+            local_inputs = []
+            for inp, smpl in all_inputs:
+                local_inputs.append(stack.enter_context(inp.localize('r')).path)
+                all_datasets.append(smpl)
+            dataset_names = ','.join(smpl for smpl in all_datasets)
+            if len(uncNames)==1:
+                with self.output().localize("w") as outFile:
+                    MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config]#, '--remove-files', 'True']
                     MergerProducer_cmd.extend(local_inputs)
                     ps_call(MergerProducer_cmd,verbose=1)
             else:

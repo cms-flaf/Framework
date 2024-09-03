@@ -230,17 +230,20 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
     def defineBoostedVariables(self):
         FatJetObservables = self.config['FatJetObservables']
         #print(f"fatJetOBservables are {FatJetObservables}")
-        particleNet_HbbvsQCD = 'particleNet_HbbvsQCD' if 'SelectedFatJet_particleNet_HbbvsQCD' in self.df.GetColumnNames() else 'particleNetWithMass_HbbvsQCD'
-        particleNet_Xbb= 'particleNetMD_Xbb' if 'SelectedFatJet_particleNetMD_Xbb' in self.df.GetColumnNames() else 'particleNetLegacy_Xbb'
-
-        self.df = self.df.Define("fatJet_presel", f"SelectedFatJet_pt>250 && SelectedFatJet_{particleNet_HbbvsQCD}>={self.pNetWP}")
+        # for next iteration:
+        particleNet_MD_JetTagger = "SelectedFatJet_particleNetMD_Xbb/(SelectedFatJet_particleNetMD_QCD + SelectedFatJet_particleNetMD_Xbb)"
+        if "SelectedFatJet_particleNetMD_Xbb" not in self.df.GetColumnNames() and "SelectedFatJet_particleNetLegacy_Xbb" in self.df.GetColumnNames():
+            particleNet_MD_JetTagger = "SelectedFatJet_particleNetLegacy_Xbb/ (SelectedFatJet_particleNetLegacy_Xbb + SelectedFatJet_particleNetLegacy_QCD)"
+        particleNet_HbbvsQCD = 'SelectedFatJet_particleNet_HbbvsQCD' if 'SelectedFatJet_particleNet_HbbvsQCD' in self.df.GetColumnNames() else 'SelectedFatJet_particleNetWithMass_HbbvsQCD'
+        self.df = self.df.Define("SelectedFatJet_particleNet_MD_JetTagger", particleNet_MD_JetTagger)
+        self.df = self.df.Define("fatJet_presel", f"SelectedFatJet_pt>250 && SelectedFatJet_particleNet_MD_JetTagger>={self.pNetWP}")
         self.df = self.df.Define("fatJet_sel"," RemoveOverlaps(SelectedFatJet_p4, fatJet_presel, { {tau1_p4, tau2_p4},}, 2, 0.8)")
 
         self.df = self.df.Define("SelectedFatJet_size_boosted","SelectedFatJet_p4[fatJet_sel].size()")
         # def the correct discriminator
-        self.df = self.df.Define(f"SelectedFatJet_{particleNet_Xbb}_boosted_vec",f"SelectedFatJet_{particleNet_Xbb}[fatJet_sel]")
+        self.df = self.df.Define(f"SelectedFatJet_particleNet_MD_JetTagger_boosted_vec",f"SelectedFatJet_particleNet_MD_JetTagger[fatJet_sel]")
         self.df = self.df.Define("SelectedFatJet_idxUnordered", "CreateIndexes(SelectedFatJet_p4[fatJet_sel].size())")
-        self.df = self.df.Define("SelectedFatJet_idxOrdered", f"ReorderObjects(SelectedFatJet_{particleNet_Xbb}_boosted_vec, SelectedFatJet_idxUnordered)")
+        self.df = self.df.Define("SelectedFatJet_idxOrdered", f"ReorderObjects(SelectedFatJet_particleNet_MD_JetTagger_boosted_vec, SelectedFatJet_idxUnordered)")
         for fatJetVar in FatJetObservables:
             if f'SelectedFatJet_{fatJetVar}' in self.df.GetColumnNames():
                 if f'SelectedFatJet_{fatJetVar}_boosted_vec' not in self.df.GetColumnNames():
@@ -366,12 +369,12 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         if cut!="":
             self.df = self.df.Filter(cut)
 
-    def __init__(self, df, config, period, deepTauVersion='v2p1', bTagWP = 2, pNetWP = 0.9172):
+    def __init__(self, df, config, period, deepTauVersion='v2p1', bTagWP = 2, pNetWPstring="Loose"):
         super(DataFrameBuilderForHistograms, self).__init__(df)
         self.deepTauVersion = deepTauVersion
         self.config = config
         self.bTagWP = bTagWP
-        self.pNetWP = pNetWP
+        self.pNetWP = WorkingPointsParticleNet[period][pNetWPstring]
         self.period = period
 
 def PrepareDfForHistograms(dfForHistograms):

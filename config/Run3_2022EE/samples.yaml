@@ -6,6 +6,7 @@ GLOBAL:
   nano_version: v14
   crossSectionsFile : config/crossSections13TeV.yaml
   use_stitching: false
+  met_type: PFMET
 
 ############## Data ##############
 EGamma_Run2022E:

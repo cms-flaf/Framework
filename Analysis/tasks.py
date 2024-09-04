@@ -445,7 +445,7 @@ class HistProducerSampleTTCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         sample_name, idx_list, var  = self.branch_data
-        output_path = os.path.join(self.version, self.period, 'splitTTCR', var, f'{sample_name}.root')
+        output_path = os.path.join(self.version, self.period, 'split_TTCR', var, f'{sample_name}.root')
         return self.remote_target(output_path,  fs=self.fs_histograms)
 
     def run(self):
@@ -499,7 +499,7 @@ class HistProducerSampleDYCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         sample_name, idx_list, var  = self.branch_data
-        output_path = os.path.join(self.version, self.period, 'splitDYCR', var, f'{sample_name}.root')
+        output_path = os.path.join(self.version, self.period, 'split_DYCR', var, f'{sample_name}.root')
         return self.remote_target(output_path,  fs=self.fs_histograms)
 
     def run(self):
@@ -671,7 +671,7 @@ class MergeTTCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         var, branches_idx = self.branch_data
-        output_path = os.path.join(self.version, self.period, 'mergedTTCR', var, f'{var}.root')
+        output_path = os.path.join(self.version, self.period, 'merged_TTCR', var, f'{var}.root')
         return self.remote_target(output_path,  fs=self.fs_histograms)
 
     def run(self):
@@ -691,20 +691,20 @@ class MergeTTCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
         RenameHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'renameHists.py')
 
-        output_path_hist_prod_sample_data = os.path.join(self.version, self.period, 'splitTTCR', var, f'data.root')
+        output_path_hist_prod_sample_data = os.path.join(self.version, self.period, 'split_TTCR', var, f'data.root')
         all_inputs = [(self.remote_target(output_path_hist_prod_sample_data, fs=self.fs_histograms),'data')]
         samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
         #print(samples_to_consider)
         for sample_name in self.samples.keys():
             if sample_name not in samples_to_consider: continue
             #print(sample_name)
-            output_path_hist_prod_sample = os.path.join(self.version, self.period, 'splitTTCR', var, f'{sample_name}.root')
+            output_path_hist_prod_sample = os.path.join(self.version, self.period, 'split_TTCR', var, f'{sample_name}.root')
             all_inputs.append((self.remote_target(output_path_hist_prod_sample, fs=self.fs_histograms),sample_name))
         #print(all_inputs)
         all_datasets=[]
         all_outputs_merged = []
 
-        outdir_histograms = os.path.join(self.version, self.period, 'mergedTTCR', var, 'tmp')
+        outdir_histograms = os.path.join(self.version, self.period, 'merged_TTCR', var, 'tmp')
 
         with contextlib.ExitStack() as stack:
             local_inputs = []
@@ -790,7 +790,7 @@ class MergeDYCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         var, branches_idx = self.branch_data
-        output_path = os.path.join(self.version, self.period, 'mergedDYCR', var, f'{var}.root')
+        output_path = os.path.join(self.version, self.period, 'merged_DYCR', var, f'{var}.root')
         return self.remote_target(output_path,  fs=self.fs_histograms)
 
     def run(self):
@@ -810,20 +810,20 @@ class MergeDYCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
         RenameHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'renameHists.py')
 
-        output_path_hist_prod_sample_data = os.path.join(self.version, self.period, 'splitDYCR', var, f'data.root')
+        output_path_hist_prod_sample_data = os.path.join(self.version, self.period, 'split_DYCR', var, f'data.root')
         all_inputs = [(self.remote_target(output_path_hist_prod_sample_data, fs=self.fs_histograms),'data')]
         samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
         #print(samples_to_consider)
         for sample_name in self.samples.keys():
             if sample_name not in samples_to_consider: continue
             #print(sample_name)
-            output_path_hist_prod_sample = os.path.join(self.version, self.period, 'splitDYCR', var, f'{sample_name}.root')
+            output_path_hist_prod_sample = os.path.join(self.version, self.period, 'split_DYCR', var, f'{sample_name}.root')
             all_inputs.append((self.remote_target(output_path_hist_prod_sample, fs=self.fs_histograms),sample_name))
         #print(all_inputs)
         all_datasets=[]
         all_outputs_merged = []
 
-        outdir_histograms = os.path.join(self.version, self.period, 'mergedDYCR', var, 'tmp')
+        outdir_histograms = os.path.join(self.version, self.period, 'merged_DYCR', var, 'tmp')
 
         with contextlib.ExitStack() as stack:
             local_inputs = []

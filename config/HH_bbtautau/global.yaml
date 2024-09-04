@@ -47,6 +47,7 @@ QCDRegions:
   - OS_AntiIso
   - SS_AntiIso
 categories:
+  - res0b
   - res1b
   - res2b
   - inclusive

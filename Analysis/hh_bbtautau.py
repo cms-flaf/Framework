@@ -222,7 +222,7 @@ def GetWeight(channel, cat):
     weights_to_apply.extend(ID_weights_dict[channel])
     weights_to_apply.extend(trg_weights_dict[channel])
     if cat != 'boosted':
-         weights_to_apply.extend(["weight_Jet_PUJetID_Central_b1", "weight_Jet_PUJetID_Central_b2"])
+         weights_to_apply.extend(["weight_Jet_PUJetID_Central_b1_2", "weight_Jet_PUJetID_Central_b2_2"])
     total_weight = '*'.join(weights_to_apply)
     return total_weight
 class DataFrameBuilderForHistograms(DataFrameBuilderBase):
@@ -308,6 +308,12 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                                          return 1.f;""")
             else:
                 self.df = self.df.Define(f"{weight}_application", f""" 1.f;""")
+        for weight in ["weight_Jet_PUJetID_Central_b1","weight_Jet_PUJetID_Central_b2"]:
+            if weight not in self.df.GetColumnNames(): continue
+            self.df = self.df.Define(f"{weight}_2", f"""
+                                         if({weight}==-100)
+                                            return static_cast<float>({weight}) ;
+                                         return 1.f;""")
 
     def defineCategories(self):
         self.df = self.df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {self.bTagWP}) + int(b2_idbtagDeepFlavB >= {self.bTagWP})")

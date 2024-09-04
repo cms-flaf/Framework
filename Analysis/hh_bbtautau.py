@@ -311,7 +311,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         for weight in ["weight_Jet_PUJetID_Central_b1","weight_Jet_PUJetID_Central_b2"]:
             if weight not in self.df.GetColumnNames(): continue
             self.df = self.df.Define(f"{weight}_2", f"""
-                                         if({weight}==-100)
+                                         if({weight}!=-100)
                                             return static_cast<float>({weight}) ;
                                          return 1.f;""")
 

@@ -714,7 +714,7 @@ class MergeTTCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             dataset_names = ','.join(smpl for smpl in all_datasets)
             if len(uncNames)==1:
                 with self.output().localize("w") as outFile:
-                    MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config]#, '--remove-files', 'True']
+                    MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config,  '--region', 'TTCR']#, '--remove-files', 'True']
                     MergerProducer_cmd.extend(local_inputs)
                     ps_call(MergerProducer_cmd,verbose=1)
             else:
@@ -725,7 +725,7 @@ class MergeTTCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     all_outputs_merged.append(tmp_outfile_merge_remote)
                     dataset_names = ','.join(smpl for smpl in all_datasets)
                     with tmp_outfile_merge_remote.localize("w") as tmp_outfile_merge_unc:
-                        MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config]#, '--remove-files', 'True']
+                        MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config, '--region', 'TTCR']#, '--remove-files', 'True']
                         MergerProducer_cmd.extend(local_inputs)
                         ps_call(MergerProducer_cmd,verbose=1)
         if len(uncNames) > 1:
@@ -833,7 +833,7 @@ class MergeDYCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             dataset_names = ','.join(smpl for smpl in all_datasets)
             if len(uncNames)==1:
                 with self.output().localize("w") as outFile:
-                    MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config]#, '--remove-files', 'True']
+                    MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config, '--region', 'DYCR']#,
                     MergerProducer_cmd.extend(local_inputs)
                     ps_call(MergerProducer_cmd,verbose=1)
             else:
@@ -844,7 +844,7 @@ class MergeDYCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     all_outputs_merged.append(tmp_outfile_merge_remote)
                     dataset_names = ','.join(smpl for smpl in all_datasets)
                     with tmp_outfile_merge_remote.localize("w") as tmp_outfile_merge_unc:
-                        MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config]#, '--remove-files', 'True']
+                        MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config, '--region', 'DYCR']#, '--remove-files', 'True']
                         MergerProducer_cmd.extend(local_inputs)
                         ps_call(MergerProducer_cmd,verbose=1)
         if len(uncNames) > 1:

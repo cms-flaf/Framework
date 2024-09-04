@@ -138,7 +138,8 @@ def GetBTagWeightDict(var, all_histograms):
                 ratio = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)/ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
             #if ratio == 0 and hist1D.Integral(0, hist1D.GetNbinsX()+1) ==0 :
             #    continue
-            histogram.Scale(ratio)
+            if (cat != 'boosted' and cat!= 'baseline') : #or sample_type != 'data':
+                histogram.Scale(ratio)
             all_histograms_1D[sample_type][key_name] = histogram
     return all_histograms_1D
 
@@ -157,6 +158,7 @@ if __name__ == "__main__":
     parser.add_argument('--globalConfig', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
+    parser.add_argument('--region', required=False, type=str,default='SR')
 
     args = parser.parse_args()
     startTime = time.time()
@@ -177,6 +179,11 @@ if __name__ == "__main__":
     categories = list(global_cfg_dict['categories'])
     QCDregions = list(global_cfg_dict['QCDRegions'])
     channels = list(global_cfg_dict['channels_to_consider'])
+
+    if args.region=='DYCR':
+        channels = ['muMu', 'eE']
+        print(f"""considering {global_cfg_dict["channels_to_consider"]}""")
+
     #if args.var in ['tau1_pt', 'tau1_phi', 'tau2_pt', 'tau2_phi']:
         #channels = list(global_cfg_dict['channels_to_consider'])
     signals = list(global_cfg_dict['signal_types'])

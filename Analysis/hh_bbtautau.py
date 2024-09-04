@@ -236,8 +236,8 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
             particleNet_MD_JetTagger = "SelectedFatJet_particleNetLegacy_Xbb/ (SelectedFatJet_particleNetLegacy_Xbb + SelectedFatJet_particleNetLegacy_QCD)"
         particleNet_HbbvsQCD = 'SelectedFatJet_particleNet_HbbvsQCD' if 'SelectedFatJet_particleNet_HbbvsQCD' in self.df.GetColumnNames() else 'SelectedFatJet_particleNetWithMass_HbbvsQCD'
         self.df = self.df.Define("SelectedFatJet_particleNet_MD_JetTagger", particleNet_MD_JetTagger)
-        self.df = self.df.Define("fatJet_presel", f"SelectedFatJet_pt>250 && SelectedFatJet_particleNet_MD_JetTagger>={self.pNetWP}")
-        self.df = self.df.Define("fatJet_sel"," RemoveOverlaps(SelectedFatJet_p4, fatJet_presel, { {tau1_p4, tau2_p4},}, 2, 0.8)")
+        self.df = self.df.Define("fatJet_presel", f"SelectedFatJet_pt>250")
+        self.df = self.df.Define("fatJet_sel"," RemoveOverlaps(SelectedFatJet_p4, fatJet_presel, {tau1_p4, tau2_p4}, 0.8)")
 
         self.df = self.df.Define("SelectedFatJet_size_boosted","SelectedFatJet_p4[fatJet_sel].size()")
         # def the correct discriminator
@@ -311,11 +311,14 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineCategories(self):
         self.df = self.df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {self.bTagWP}) + int(b2_idbtagDeepFlavB >= {self.bTagWP})")
-        self.df = self.df.Define("boosted", "SelectedFatJet_p4[fatJet_sel].size()>0")
-        self.df = self.df.Define("res1b", f"!boosted && nSelBtag == 1")
-        self.df = self.df.Define("res2b", f"!boosted && nSelBtag == 2")
-        self.df = self.df.Define("inclusive", f"!boosted")
-        self.df = self.df.Define("btag_shape", f"!boosted")
+        self.df = self.df.Define("boosted_inclusive", "SelectedFatJet_p4[fatJet_sel].size()>0")
+        self.df = self.df.Define("boosted", f"SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={self.pNetWP}].size()>0")
+
+        self.df = self.df.Define("res0b", f"!boosted_inclusive && nSelBtag == 0")
+        self.df = self.df.Define("res1b", f"!boosted_inclusive && nSelBtag == 1")
+        self.df = self.df.Define("res2b", f"!boosted_inclusive && nSelBtag == 2")
+        self.df = self.df.Define("inclusive", f"!boosted_inclusive")
+        self.df = self.df.Define("btag_shape", f"!boosted_inclusive")
         self.df = self.df.Define("baseline",f"return true;")
 
     def defineChannels(self):

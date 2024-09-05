@@ -49,7 +49,9 @@ QCDRegions:
 categories:
   - res0b
   - res1b
+  - res1b_withBoosted
   - res2b
+  - res2b_withBoosted
   - inclusive
   - boosted
   - btag_shape

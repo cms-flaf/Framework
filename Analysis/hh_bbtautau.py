@@ -322,7 +322,9 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
         self.df = self.df.Define("res0b", f"!boosted_inclusive && nSelBtag == 0")
         self.df = self.df.Define("res1b", f"!boosted_inclusive && nSelBtag == 1")
+        self.df = self.df.Define("res1b_withBoosted", f"nSelBtag == 1")
         self.df = self.df.Define("res2b", f"!boosted_inclusive && nSelBtag == 2")
+        self.df = self.df.Define("res2b_withBoosted", f"nSelBtag == 2")
         self.df = self.df.Define("inclusive", f"!boosted_inclusive")
         self.df = self.df.Define("btag_shape", f"!boosted_inclusive")
         self.df = self.df.Define("baseline",f"return true;")

@@ -180,7 +180,7 @@ def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = 'fin
     if applyBtag:
         if global_cfg_dict['btag_wps'][cat]!='' : btag_weight = f"weight_bTagSF_{btag_wps[cat]}_Central"
     else:
-        if cat !='btag_shape' and cat !='boosted': btagshape_weight = "weight_bTagShape_Central"
+        if cat !='btag_shape' and cat !='boosted' and cat != 'baseline': btagshape_weight = "weight_bTagShape_Central"
     return f'{finalWeight_name}*{btag_weight}*{btagshape_weight}'
 
 

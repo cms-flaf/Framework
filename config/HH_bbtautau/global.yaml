@@ -47,15 +47,20 @@ QCDRegions:
   - OS_AntiIso
   - SS_AntiIso
 categories:
-  - res0b
-  - res1b
-  - res1b_withBoosted
-  - res2b
-  - res2b_withBoosted
-  - inclusive
+  - boosted_inclusive
   - boosted
+  - inclusive
   - btag_shape
   - baseline
+  - res0b_inclusive
+  - res1b_inclusive
+  - res2b_inclusive
+  - res0b_cat2
+  - res1b_cat2
+  - res2b_cat2
+  - res2b_cat3
+  - boosted_cat3
+  - res1b_cat3
 storeExtraJets: False
 deepTauYears:
   v2p1: 2017
@@ -168,7 +173,7 @@ btag_wps:
 
 mass_cut_limits:
   bb_m_vis:
-    - 40 # confirmed 2018 but for boosted it's 80... ok still more conservative :)
+    - 50 # confirmed 2018 but for boosted it's 80... ok still more conservative :)
     - 270 # new: 300
   tautau_m_vis:
     - 20 # confirmed for 2018

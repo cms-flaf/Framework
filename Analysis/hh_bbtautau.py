@@ -274,8 +274,8 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
         SR_mass_limits_bb = self.config['mass_cut_limits']['bb_m_vis']
         SR_mass_limits_tt = self.config['mass_cut_limits']['tautau_m_vis']
-        self.df = self.df.Define("SR_tt", f"return tautau_m_vis >= {SR_mass_limits_tt[0]}; return true;")
-        self.df = self.df.Define("SR_bb", f"return bb_m_vis >= {SR_mass_limits_bb[0]}; return true;")
+        self.df = self.df.Define("SR_tt", f"return tautau_m_vis > {SR_mass_limits_tt[0]} && tautau_m_vis  < {SR_mass_limits_tt[1]}; return true;")
+        self.df = self.df.Define("SR_bb", f"return bb_m_vis > {SR_mass_limits_bb[0]} && bb_m_vis < {SR_mass_limits_bb[1]}; return true;")
         self.df = self.df.Define("SR", f" SR_tt && SR_bb ")
         self.df = self.df.Define("DYCR", "if(muMu || eE) {return (tautau_m_vis < 92 && tautau_m_vis > 89);} return true;") # for next iteration
         TTCR_mass_limits_eTau = self.config['TTCR_mass_limits']['eTau']
@@ -319,10 +319,14 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {self.bTagWP}) + int(b2_idbtagDeepFlavB >= {self.bTagWP})")
         self.df = self.df.Define("boosted_inclusive", "SelectedFatJet_p4[fatJet_sel].size()>0")
         self.df = self.df.Define("boosted", f"SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={self.pNetWP}].size()>0")
+        self.df = self.df.Define("inclusive", f"!boosted_inclusive")
+        self.df = self.df.Define("btag_shape", f"!boosted_inclusive")
+        self.df = self.df.Define("baseline",f"return true;")
 
         self.df = self.df.Define("res0b_inclusive", f"nSelBtag == 0")
         self.df = self.df.Define("res1b_inclusive", f"nSelBtag == 1")
         self.df = self.df.Define("res2b_inclusive", f"nSelBtag == 2")
+
 
         self.df = self.df.Define("res0b_cat2", f"!boosted_inclusive && nSelBtag == 0")
         self.df = self.df.Define("res1b_cat2", f"!boosted_inclusive && nSelBtag == 1")
@@ -331,10 +335,6 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("res2b_cat3", f"nSelBtag == 2")
         self.df = self.df.Define("boosted_cat3", f"!(res2b_cat3) && SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={self.pNetWP}].size()>0")
         self.df = self.df.Define("res1b_cat3", f"!boosted_inclusive && nSelBtag == 1")
-
-        self.df = self.df.Define("inclusive", f"!boosted_inclusive")
-        self.df = self.df.Define("btag_shape", f"!boosted_inclusive")
-        self.df = self.df.Define("baseline",f"return true;")
 
 
     def defineChannels(self):

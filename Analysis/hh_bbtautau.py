@@ -271,12 +271,11 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                     self.df = self.df.Define(region_name, region_cut)
 
     def defineCRs(self):
-
         SR_mass_limits_bb = self.config['mass_cut_limits']['bb_m_vis']
         SR_mass_limits_tt = self.config['mass_cut_limits']['tautau_m_vis']
-        self.df = self.df.Define("SR_tt", f"return tautau_m_vis > {SR_mass_limits_tt[0]} && tautau_m_vis  < {SR_mass_limits_tt[1]}; return true;")
-        self.df = self.df.Define("SR_bb", f"return bb_m_vis > {SR_mass_limits_bb[0]} && bb_m_vis < {SR_mass_limits_bb[1]}; return true;")
-        self.df = self.df.Define("SR", f" SR_tt && SR_bb ")
+        self.df = self.df.Define("SR_tt", f"return (tautau_m_vis > {SR_mass_limits_tt[0]} && tautau_m_vis  < {SR_mass_limits_tt[1]});")
+        self.df = self.df.Define("SR_bb", f"if(!(boosted) || !(boosted_cat3) || !(boosted_inclusive)) return (bb_m_vis > {SR_mass_limits_bb[0]} && bb_m_vis < {SR_mass_limits_bb[1]}); return true;")
+        self.df = self.df.Define("SR", f" SR_tt &&  SR_bb")
         self.df = self.df.Define("DYCR", "if(muMu || eE) {return (tautau_m_vis < 92 && tautau_m_vis > 89);} return true;") # for next iteration
         TTCR_mass_limits_eTau = self.config['TTCR_mass_limits']['eTau']
         TTCR_mass_limits_muTau = self.config['TTCR_mass_limits']['muTau']

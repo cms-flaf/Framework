@@ -31,8 +31,6 @@ def RebinHisto(hist_initial, new_binning, sample, verbose=False):
         content=new_hist.GetBinContent(nbin)
         if content<0:
             print(f"for {sample}, bin {nbin} content is < 0:  {content}")
-        #if sample=='data' or sample=='DY':
-        #    print(f"for {sample}, bin {nbin} content is:  {content}")
     n_finalbin = new_hist.GetBinContent(new_hist.GetNbinsX())
     n_overflow = new_hist.GetBinContent(new_hist.GetNbinsX()+1)
     new_hist.SetBinContent(new_hist.GetNbinsX(), n_finalbin+n_overflow)
@@ -42,7 +40,6 @@ def RebinHisto(hist_initial, new_binning, sample, verbose=False):
         new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(n_finalbin+n_overflow))
     else:
         new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(err_finalbin*err_finalbin+err_overflow*err_overflow))
-    #new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(err_finalbin*err_finalbin+err_overflow*err_overflow))
 
     if verbose:
         for nbin in range(0, len(new_binning)):

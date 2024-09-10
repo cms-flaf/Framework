@@ -21,6 +21,7 @@ if __name__ == "__main__":
     import GetIntervalsSimultaneously
     parser = argparse.ArgumentParser()
     parser.add_argument('--year', required=False, type=str, default='2018')
+    parser.add_argument('--cat', required=False, type=str, default='res2b')
     args = parser.parse_args()
 
     headers_dir = os.path.dirname(os.path.abspath(__file__))
@@ -92,12 +93,39 @@ if __name__ == "__main__":
     global_cfg_dict = {}
     with open(global_cfg_file, 'r') as f:
         global_cfg_dict = yaml.safe_load(f)
-    dfWrapped = PrepareDfForHistograms(DataFrameBuilderForHistograms(df_initial,global_cfg_dict, f"Run2_{args.year}"))
-    print("*********************************************************************")
-    print(f"************************** SIMULTANEOUSLY **************************")
-    print("*********************************************************************")
 
-    GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "boosted", "inclusive", "res1b_cat2", "res2b_cat2", "res2b_cat3", "boosted_cat3", "res1b_cat3",],0.99, False)
+    dfWrapped = PrepareDfForHistograms(DataFrameBuilderForHistograms(df_initial,global_cfg_dict, f"Run2_{args.year}"))
+    particleNet_mass = 'particleNet_mass' if 'SelectedFatJet_particleNet_mass_boosted' in dfWrapped.df.GetColumnNames() else 'particleNetLegacy_mass'
+
+    dfWrapped.df = dfWrapped.df.Define("bb_m_vis_pnet", f"""
+                   if (!boosted || !boosted_cat3 || !boosted_inclusive){{
+                       return static_cast<float>((b1_p4+b2_p4).M());
+                       }}
+                    return static_cast<float>(SelectedFatJet_{particleNet_mass}_boosted);""")
+    dfWrapped.df = dfWrapped.df.Define("bb_m_vis_boosted_softdrop", f"""
+                   if (!boosted || !boosted_cat3 || !boosted_inclusive){{
+                       return static_cast<float>((b1_p4+b2_p4).M());
+                       }}
+                    return static_cast<float>(SelectedFatJet_msoftdrop_boosted);""")
+    dfWrapped.df = dfWrapped.df.Define("bb_m_vis_boosted_fjmass", f"""
+                   if (!boosted || !boosted_cat3 || !boosted_inclusive){{
+                       return static_cast<float>((b1_p4+b2_p4).M());
+                       }}
+                    return static_cast<float>(SelectedFatJet_mass_boosted);""")
+    #print("*********************************************************************")
+    #print(f"************************** SIMULTANEOUSLY **************************")
+    #print("*********************************************************************")
+    if args.cat == 'res2b':
+        GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "res2b_cat3", "res2b_cat2",],0.99)
+    if args.cat == 'res1b':
+        GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], ["res1b_cat3", "res1b_cat2"],0.99)
+    if args.cat == 'inclusive':
+        GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "inclusive", "baseline"],0.99)
+    if args.cat == 'boosted':
+        GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "boosted"],0.99)
+        #GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "boosted_cat3", "boosted"],0.99)
+
+    #GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "boosted", "inclusive", "res1b_cat2", "res2b_cat2", "res2b_cat3", "boosted_cat3", "res1b_cat3"],0.99)
     #GetIntervals.GetMassCut(dfWrapped,global_cfg_dict,global_cfg_dict['channels_to_consider'], global_cfg_dict['categories'],0.99, False)
     #print("********************************************************************************")
     #print(f"************************************* SEQUENTIAL *************************************")

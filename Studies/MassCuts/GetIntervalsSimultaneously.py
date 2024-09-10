@@ -1,39 +1,100 @@
 import numpy as np
 import math
-def GetMassCut(dfWrapped,global_cfg_dict,channels=['tauTau'], categories=['boosted','inclusive', 'res2b', 'res1b'],quantile_max=0.99, wantSequential=False):
+def GetMassCut(dfWrapped,global_cfg_dict,channels=[], categories=[],quantile_max=0.99):
     for cat in categories:
+        df_cat = dfWrapped.df.Filter(f"OS_Iso")
+        if cat != 'boosted':
+            df_cat = dfWrapped.df.Filter(f"OS_Iso && {cat}")
+            df_cat = df_cat.Filter("b1_hadronFlavour==5 && b2_hadronFlavour==5 ")
+        else:
+            df_cat = df_cat.Define("FatJet_atLeast1BHadron",
+            "SelectedFatJet_nBHadrons>0").Filter("SelectedFatJet_p4[FatJet_atLeast1BHadron].size()>0")
         for channel in channels:
-            df_cat = dfWrapped.df.Filter(f"OS_Iso && {cat} && {channel}")
-            if cat == 'boosted':
-                df_cat = df_cat.Define("FatJet_atLeast1BHadron",
-                "SelectedFatJet_nBHadrons>0").Filter("SelectedFatJet_p4[FatJet_atLeast1BHadron].size()>0")
+            lower_cut_tt = 20
+            lower_cut_bb = 40
+            lower_cut_bb_boosted = 30
+            lower_cut_tt_boosted = 15
+            df_ch = df_cat.Filter(channel)
+            gen_kind = 5
+            if channel=='eTau': gen_kind = 3
+            if channel=='muTau': gen_kind = 4
+            df_ch = df_ch.Filter(f"tau1_gen_kind == {gen_kind} && tau2_gen_kind==5")
+
+            if cat=='boosted':
+                ### boosted_cat_3 redefinition: to apply also mass cuts ####
+                df_ch = df_ch.Define("boosted_cat_3","boosted && !(res2b_cat3 && tautau_m_vis > 20 && tautau_m_vis < 130 && bb_m_vis < 270 && bb_m_vis>20)").Filter("boosted_cat_3")
+
+                masses_boosted = ['bb_m_vis_boosted_fjmass', 'bb_m_vis_boosted_softdrop', 'bb_m_vis_pnet']
+                for mass_boosted in masses_boosted:
+                    print(f"using {mass_boosted}")
+                    np_dict_ch = df_ch.AsNumpy(["tautau_m_vis",mass_boosted])
+                    np_array_mass_tt_ch = np_dict_ch["tautau_m_vis"]
+                    np_array_mass_bb_ch = np_dict_ch[mass_boosted]
+                    ### denumerator definition ####
+                    len_tt_init = len(np_array_mass_tt_ch)
+                    len_bb_init = len(np_array_mass_bb_ch)
+
+                    for bb_mass_step in [200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295,300, 310, 320, 330, 340, 350, 360, 380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490, 500, 600, 700, 800]:
+                        mask_tautau_up = np_dict_ch['tautau_m_vis'] < 140
+                        mask_tautau_low = np_dict_ch['tautau_m_vis'] > lower_cut_tt_boosted
+
+                        mask_bb_up = np_dict_ch[mass_boosted] < bb_mass_step
+                        mask_bb_low = np_dict_ch[mass_boosted] > lower_cut_bb_boosted
+
+                        combined_mask = mask_tautau_up & mask_tautau_low & mask_bb_up & mask_tautau_low
+                        combined_mask = mask_tautau_up & mask_tautau_low & mask_bb_up & mask_bb_low
+                        np_dict_ch_uppercut = {
+                            'tautau_m_vis': np_dict_ch['tautau_m_vis'][combined_mask],
+                            mass_boosted: np_dict_ch[mass_boosted][combined_mask]
+                        }
+
+                        np_array_mass_tt_ch_uppercut = np_dict_ch_uppercut["tautau_m_vis"]
+                        np_array_mass_bb_ch_uppercut = np_dict_ch_uppercut[mass_boosted]
+                        len_tt_upper = len(np_array_mass_tt_ch_uppercut)
+
+                        len_bb_upper = len(np_array_mass_bb_ch_uppercut)
+                        percentage = len_tt_upper/len_tt_init
+                        percentage = len_bb_upper/len_bb_init
+                        if percentage > quantile_max-0.1 and percentage < quantile_max+0.1:
+                            print(f"percentage = {percentage}")
+                            print(f"for category {cat} and channel {channel}")
+                            print(f"condition: {mass_boosted} < {bb_mass_step}")
+                            print(f"bb_mass_step = {bb_mass_step}")
+                            print(len_bb_upper)
             else:
-                df_cat = df_cat.Filter("b1_hadronFlavour==5 && b2_hadronFlavour==5 ")
-            np_dict_cat = df_cat.AsNumpy(["bb_m_vis",
-            "tautau_m_vis"])
+                np_dict_ch = df_ch.AsNumpy(["tautau_m_vis","bb_m_vis"])
+                np_array_mass_tt_ch = np_dict_ch["tautau_m_vis"]
+                np_array_mass_bb_ch = np_dict_ch["bb_m_vis"]
 
-            df_cat_low = df_cat.Filter(f"tautau_m_vis > 20 && bb_m_vis > 50")
+                ### denumerator definition ####
+                len_tt_init = len(np_array_mass_tt_ch)
+                len_bb_init = len(np_array_mass_bb_ch)
+                percentage = 0.
+                for tt_mass_step in [110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175]:
+                    for bb_mass_step in [180, 185, 190, 195, 200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300]:
+                        mask_tautau_up = np_dict_ch['tautau_m_vis'] < tt_mass_step
+                        mask_tautau_low =  np_dict_ch['tautau_m_vis'] > lower_cut_tt
 
-            np_dict_cat_up = df_cat_low.AsNumpy(["tautau_m_vis","bb_m_vis"])
-            np_array_mass_tt_cat_up = np_dict_cat_up["tautau_m_vis"]
-            np_array_mass_bb_cat_up = np_dict_cat_up["bb_m_vis"]
+                        mask_bb_up = np_dict_ch['bb_m_vis'] < bb_mass_step
+                        mask_bb_low =  np_dict_ch['bb_m_vis'] > lower_cut_bb
+                        combined_mask = mask_tautau_up & mask_tautau_low & mask_bb_up & mask_bb_low
+                        np_dict_ch_uppercut = {
+                            'tautau_m_vis': np_dict_ch['tautau_m_vis'][combined_mask],
+                            'bb_m_vis': np_dict_ch['bb_m_vis'][combined_mask]
+                        }
+                        np_array_mass_tt_ch_uppercut = np_dict_ch_uppercut["tautau_m_vis"]
+                        np_array_mass_bb_ch_uppercut = np_dict_ch_uppercut["bb_m_vis"]
+                        len_tt_upper = len(np_array_mass_tt_ch_uppercut)
+                        len_bb_upper = len(np_array_mass_bb_ch_uppercut)
+                        percentage = len_tt_upper/len_tt_init
+                        if (percentage > quantile_max-0.1 and percentage < quantile_max+0.1) or (bb_mass_step ==280 or bb_mass_step==290 or bb_mass_step==300 ):
+                            print()
+                            print(f"percentage = {percentage}")
+                            print(f"for category {cat} and channel {channel}")
+                            print(f"condition: tautau_m_vis < {tt_mass_step} && bb_m_vis < {bb_mass_step}")
+                            print(f"bb_mass_step = {bb_mass_step}, tt_mass_step= {tt_mass_step}")
+                            print(f"len_tt_upper = {len_tt_upper}, len_bb_upper= {len_bb_upper}")
+                print()
+        print()
+    print()
 
-            len_tt_init = len(np_array_mass_tt_cat_up)
-            len_bb_init = len(np_array_mass_bb_cat_up)
-            #print(f"len initial {len_tt_init}")
-            #print(f"{cat}, {channel}")
-            percentage = 0.
-            # [50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 15, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200, 205, 215, 220, 230, 240, 250]
-            for tt_mass_step in [110, 115, 120, 125, 130, 135, 140, 150]:
-                for bb_mass_step in [180, 185, 190, 200]: #205, 210,215, 220, 225, 230, 250, 270, 290, 310]:
-                    df_cat_up= df_cat_low.Filter(f"tautau_m_vis < {tt_mass_step} && bb_m_vis < {bb_mass_step}")
-                    np_dict_cat_low = df_cat_up.AsNumpy(["tautau_m_vis","bb_m_vis"])
-                    np_array_mass_tt_cat_low = np_dict_cat_low["tautau_m_vis"]
-                    np_array_mass_bb_cat_low = np_dict_cat_low["bb_m_vis"]
-                    len_tt_upper = len(np_array_mass_tt_cat_low)
-                    len_bb_upper = len(np_array_mass_bb_cat_low)
-                    percentage = len_tt_upper/len_tt_init
-                    #if percentage >0.98:
-                    print(f"percentage = {percentage}")
-                    print(f"bb_mass_step = {bb_mass_step}, tt_mass_step= {tt_mass_step}")
-                    print(f"len_tt_upper = {len_tt_upper}, len_bb_upper= {len_bb_upper}")

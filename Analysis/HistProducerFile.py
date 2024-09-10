@@ -115,10 +115,10 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, inF
         treeName_noDiff = f"{treeName}_noDiff"
         if treeName_noDiff in file_keys:
             print(treeName_noDiff)
-            dfWrapped_noDiff = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_noDiff, inFile),global_cfg_dict, period, deepTauVersion)
+            dfWrapped_noDiff = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_noDiff, inFile),global_cfg_dict, period, deepTauVersion, args.region)
             dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
             if hasCache:
-                dfWrapped_cache_noDiff = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_noDiff,inFileCache),global_cfg_dict, period, deepTauVersion)
+                dfWrapped_cache_noDiff = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_noDiff,inFileCache),global_cfg_dict, period, deepTauVersion, args.region)
                 AddCacheColumnsInDf(dfWrapped_noDiff, dfWrapped_cache_noDiff,f"cache_map_{uncName}{scale}_noDiff")
             all_dataframes[key].append(PrepareDfForHistograms(dfWrapped_noDiff).df)
 
@@ -126,10 +126,10 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, inF
         treeName_Valid = f"{treeName}_Valid"
         if treeName_Valid in file_keys:
             print(treeName_Valid)
-            dfWrapped_Valid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_Valid, inFile),global_cfg_dict, period, deepTauVersion)
+            dfWrapped_Valid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_Valid, inFile),global_cfg_dict, period, deepTauVersion, args.region)
             dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
             if hasCache:
-                dfWrapped_cache_Valid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_Valid,inFileCache), global_cfg_dict,period, deepTauVersion)
+                dfWrapped_cache_Valid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_Valid,inFileCache), global_cfg_dict,period, deepTauVersion, args.region)
                 AddCacheColumnsInDf(dfWrapped_Valid, dfWrapped_cache_Valid,f"cache_map_{uncName}{scale}_Valid")
             all_dataframes[key].append(PrepareDfForHistograms(dfWrapped_Valid).df)
 
@@ -137,9 +137,9 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, inF
         treeName_nonValid = f"{treeName}_nonValid"
         if treeName_nonValid in file_keys:
             print(treeName_nonValid)
-            dfWrapped_nonValid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_nonValid, inFile),global_cfg_dict, period, deepTauVersion)
+            dfWrapped_nonValid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_nonValid, inFile),global_cfg_dict, period, deepTauVersion, args.region)
             if hasCache:
-                dfWrapped_cache_nonValid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_nonValid,inFileCache), global_cfg_dict, period, deepTauVersion)
+                dfWrapped_cache_nonValid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_nonValid,inFileCache), global_cfg_dict, period, deepTauVersion, args.region)
                 AddCacheColumnsInDf(dfWrapped_nonValid, dfWrapped_cache_nonValid, f"cache_map_{uncName}{scale}_nonValid")
             all_dataframes[key].append(PrepareDfForHistograms(dfWrapped_nonValid).df)
 
@@ -165,7 +165,8 @@ if __name__ == "__main__":
     parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--var', required=True, type=str)
     parser.add_argument('--period', required=True, type=str)
-    parser.add_argument('--furtherCut', required=False, type=str, default = "SR")
+    parser.add_argument('--furtherCut', required=False, type=str, default = "")
+    parser.add_argument('--region', required=False, type=str, default = "SR")
     args = parser.parse_args()
 
 
@@ -192,7 +193,7 @@ if __name__ == "__main__":
         global_cfg_dict = yaml.safe_load(f)
 
 
-    if args.furtherCut=='DYCR':
+    if args.region=='DYCR':
         global_cfg_dict['channels_to_consider'] = ['muMu', 'eE']
         print(f"""considering {global_cfg_dict["channels_to_consider"]}""")
 

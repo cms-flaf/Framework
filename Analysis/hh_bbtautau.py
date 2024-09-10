@@ -319,10 +319,12 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineCategories(self):
         self.df = self.df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {self.bTagWP}) + int(b2_idbtagDeepFlavB >= {self.bTagWP})")
-        for category_to_def in self.config['categories']:
+        for category_to_def in self.config['category_definition'].keys():
+            category_name = category_to_def
             if self.region == 'TTCR' or self.region == 'DYCR':
-                category_to_def += f'_{self.region}'
-            self.df = self.df.Define(category_to_def, self.config['category_definition'][category_to_def].format(pNetWP=self.pNetWP))
+                category_name += f'{category_to_def}_{self.region}'
+            print(self.config['category_definition'][category_to_def].format(pNetWP=self.pNetWP, region=self.region))
+            self.df = self.df.Define(category_to_def, self.config['category_definition'][category_to_def].format(pNetWP=self.pNetWP, region=self.region))
 
     def defineChannels(self):
         for channel in self.config['channelSelection']:
@@ -388,11 +390,11 @@ def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.df = defineAllP4(dfForHistograms.df)
     dfForHistograms.defineChannels()
     dfForHistograms.defineLeptonPreselection()
-    dfForHistograms.defineQCDRegions()
     dfForHistograms.defineBoostedVariables()
+    dfForHistograms.df = createInvMass(dfForHistograms.df)
+    dfForHistograms.defineCRs()
+    dfForHistograms.defineCategories()
+    dfForHistograms.defineQCDRegions()
     dfForHistograms.defineTriggers()
     dfForHistograms.redefineWeights()
-    dfForHistograms.df = createInvMass(dfForHistograms.df)
-    dfForHistograms.defineCategories()
-    dfForHistograms.defineCRs()
     return dfForHistograms

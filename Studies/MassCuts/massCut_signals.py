@@ -112,9 +112,7 @@ if __name__ == "__main__":
                        return static_cast<float>((b1_p4+b2_p4).M());
                        }}
                     return static_cast<float>(SelectedFatJet_mass_boosted);""")
-    #print("*********************************************************************")
-    #print(f"************************** SIMULTANEOUSLY **************************")
-    #print("*********************************************************************")
+
     if args.cat == 'res2b':
         GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "res2b_cat3", "res2b_cat2",],0.99)
     if args.cat == 'res1b':
@@ -124,11 +122,3 @@ if __name__ == "__main__":
     if args.cat == 'boosted':
         GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "boosted"],0.99)
         #GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "boosted_cat3", "boosted"],0.99)
-
-    #GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "boosted", "inclusive", "res1b_cat2", "res2b_cat2", "res2b_cat3", "boosted_cat3", "res1b_cat3"],0.99)
-    #GetIntervals.GetMassCut(dfWrapped,global_cfg_dict,global_cfg_dict['channels_to_consider'], global_cfg_dict['categories'],0.99, False)
-    #print("********************************************************************************")
-    #print(f"************************************* SEQUENTIAL *************************************")
-    #print("********************************************************************************")
-    #GetIntervals.GetMassCut(dfWrapped,global_cfg_dict,global_cfg_dict['channels_to_consider'], global_cfg_dict['categories'],0.99, True)
-    #GetIntervals.GetMassCut(dfWrapped,global_cfg_dict,global_cfg_dict['channels_to_consider'], 0.99)

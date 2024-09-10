@@ -38,10 +38,11 @@ def createCentralQuantities(df_central, central_col_types, central_columns):
     #df_central = map_creator.getEventIdxFromShifted(ROOT.RDF.AsRNode(df_central))
     return df_central
 
-def SaveHists(histograms, out_file):
+def SaveHists(histograms, out_file, categories_to_save):
     for key_tuple,hist_list in histograms.items():
         (key_1, key_2) = key_tuple
         ch, reg, cat = key_1
+        if cat not in categories_to_save: continue
         sample_type,uncName,scale = key_2
         dir_name = '/'.join(key_1)
         dir_ptr = mkdir(out_file,dir_name)
@@ -86,7 +87,7 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
             dataframe_new = dataframe_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}")
             final_string_weight = ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = f"final_weight_0_{ch}_{cat}_{reg}") if sample_type!='data' else "1"
             dataframe_new = dataframe_new.Filter(f"{cat}")
-            if cat == 'btag_shape':
+            if cat == 'btag_shape' or cat =='btag_shape_masswindow':
                 final_string_weight = f"final_weight_0_{ch}_{cat}_{reg}"
             histograms[(key_1, key_2)].append(dataframe_new.Define("final_weight", final_string_weight).Define("weight_for_hists", f"{weight_name}").Histo1D(GetModel(hist_cfg_dict, var), var, "weight_for_hists"))
 
@@ -252,7 +253,7 @@ if __name__ == "__main__":
                     central_histograms.update(norm_histograms)
 
         # save histograms
-        SaveHists(central_histograms, outfile)
+        SaveHists(central_histograms, outfile, global_cfg_dict['categories'])
 
         # shape weight  histograms
         if args.compute_unc_variations and args.dataset!='data':
@@ -265,7 +266,7 @@ if __name__ == "__main__":
                     if key_2 not in all_dataframes.keys(): continue
                     if not all_dataframes[key_2] : continue
                     shape_histograms=  GetHistogramDictFromDataframes(args.var, all_dataframes, key_2 , key_filter_dict,unc_cfg_dict['shape'], hist_cfg_dict, global_cfg_dict, args.furtherCut)
-                    SaveHists(shape_histograms, outfile)
+                    SaveHists(shape_histograms, outfile,global_cfg_dict['categories'])
 
 
         outfile.Close()

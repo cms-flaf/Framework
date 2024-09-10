@@ -47,16 +47,26 @@ QCDRegions:
   - OS_AntiIso
   - SS_AntiIso
 categories:
+  - boosted_baseline
   - inclusive
   - btag_shape
   - baseline
+  - inclusive_masswindow
+  - btag_shape_masswindow
+  - baseline_masswindow
+  #- res0b_inclusive
+  #- res1b_inclusive
+  #- res2b_inclusive
+  #- boosted
   #- res0b_cat2
   #- res1b_cat2
-  #- res2b_cat2
-  #- boosted_cat2
+  - res2b_cat2
+  - boosted_cat2
   - res2b_cat3
+  #- boosted_baseline_cat3
   - boosted_cat3
   - res1b_cat3
+  #- res0b_cat3
 
 storeExtraJets: False
 deepTauYears:
@@ -136,8 +146,10 @@ application_regions:
 category_definition:
   boosted_baseline: "(SelectedFatJet_p4[fatJet_sel].size()>0) && {region}_boosted"
   inclusive:  "!(boosted_baseline)"
-  btag_shape:  "!(boosted_baseline)"
+  btag_shape: "!(boosted_baseline)"
   baseline: "return true;"
+  inclusive_masswindow:  "!(boosted_baseline)&& {region}"
+  btag_shape_masswindow:  "!(boosted_baseline) && {region}"
   baseline_masswindow: "return {region};"
 
   res0b_inclusive: "nSelBtag == 0"

@@ -323,7 +323,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
             category_name = category_to_def
             if self.region == 'TTCR' or self.region == 'DYCR':
                 category_name += f'{category_to_def}_{self.region}'
-            print(self.config['category_definition'][category_to_def].format(pNetWP=self.pNetWP, region=self.region))
+            #print(self.config['category_definition'][category_to_def].format(pNetWP=self.pNetWP, region=self.region))
             self.df = self.df.Define(category_to_def, self.config['category_definition'][category_to_def].format(pNetWP=self.pNetWP, region=self.region))
 
     def defineChannels(self):

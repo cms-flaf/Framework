@@ -47,8 +47,6 @@ QCDRegions:
   - OS_AntiIso
   - SS_AntiIso
 categories:
-  - boosted_inclusive
-  - boosted
   - inclusive
   - btag_shape
   - baseline
@@ -58,9 +56,17 @@ categories:
   - res0b_cat2
   - res1b_cat2
   - res2b_cat2
+  - boosted_cat2
   - res2b_cat3
+  #- res2b_cat3_TT
+  #- res2b_cat3_DY
   - boosted_cat3
+  #- boosted_cat3_TT
+  #- boosted_cat3_DY
   - res1b_cat3
+  #- res1b_cat3_DY
+  #- res1b_cat3_TT
+
 storeExtraJets: False
 deepTauYears:
   v2p1: 2017
@@ -136,6 +142,48 @@ application_regions:
     region_name: MET_region
     region_cut: (!(Legacy_region) && !(SingleTau_region))
 
+category_definition:
+  inclusive:  !(boosted_inclusive)
+  inclusive_TTCR:  !(boosted_inclusive)
+  inclusive_DYCR:  !(boosted_inclusive)
+  btag_shape:  !(boosted_inclusive)
+  btag_shape_DYCR:  !(boosted_inclusive)
+  btag_shape_TTCR:  !(boosted_inclusive)
+  baseline: return true;
+  baseline_DYCR: return true;
+  baseline_TTCR: return true;
+  res0b_inclusive: nSelBtag == 0
+  res0b_inclusive_TTCR: nSelBtag == 0
+  res0b_inclusive_DYCR: nSelBtag == 0
+  res1b_inclusive: nSelBtag == 1
+  res1b_inclusive_DYCR: nSelBtag == 1
+  res1b_inclusive_TTCR: nSelBtag == 1
+  res2b_inclusive: nSelBtag == 2
+  res2b_inclusive_DYCR: nSelBtag == 2
+  res2b_inclusive_TTCR: nSelBtag == 2
+  res0b_cat2:  !boosted_inclusive && nSelBtag == 0 && SR
+  res0b_cat2_DYCR:  !boosted_inclusive && nSelBtag == 0 && TTCR
+  res0b_cat2_TTCR:  !boosted_inclusive && nSelBtag == 0 && DYCR
+  res1b_cat2:  !boosted_inclusive && nSelBtag == 1 && SR
+  res1b_cat2_DYCR:  !boosted_inclusive && nSelBtag == 1 && TTCR
+  res1b_cat2_TTCR:  !boosted_inclusive && nSelBtag == 1 && DYCR
+  res2b_cat2:  !boosted_inclusive && nSelBtag == 2 && SR
+  res2b_cat2_DYCR:  !boosted_inclusive && nSelBtag == 2 && TTCR
+  res2b_cat2_TTCR:  !boosted_inclusive && nSelBtag == 2 && DYCR
+  boosted_cat2: SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={pNetWP}].size()>0 && SR_boosted
+  boosted_cat2_TTCR: SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={pNetWP}].size()>0 && TTCR_boosted
+  boosted_cat2_DYCR: SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={pNetWP}].size()>0 && DYCR_boosted
+  res2b_cat3:  nSelBtag == 2 && SR
+  res2b_cat3_TTCR:  nSelBtag == 2 && TTCR
+  res2b_cat3_DYCR:  nSelBtag == 2 && DYCR
+  boosted_cat3:  !(res2b_cat3) && SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={pNetWP}].size()>0) && SR_boosted
+  boosted_cat3_TTCR:  !(res2b_cat3) && SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={pNetWP}].size()>0) && TTCR_boosted
+  boosted_cat3_DYCR:  !(res2b_cat3) && SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={pNetWP}].size()>0) && DYCR_boosted
+  res1b_cat3:  !(res2b_cat3) && !(boosted_cat3) && SR
+  res1b_cat3_DYCR:  !(res2b_cat3) && !(boosted_cat3) && DYCR
+  res1b_cat3_TTCR:  !(res2b_cat3) && !(boosted_cat3) && TTCR
+
+
 singleMu_th:
   "Run2_2016": 26
   "Run2_2016_HIPM": 26
@@ -173,11 +221,15 @@ btag_wps:
 
 mass_cut_limits:
   bb_m_vis:
-    - 50 # confirmed 2018 but for boosted it's 80... ok still more conservative :)
-    - 270 # new: 300
+    boosted:
+      - 30
+      - 450
+    other:
+      - 40
+      - 270
   tautau_m_vis:
-    - 20 # confirmed for 2018
-    - 130 # confirmed for 2018
+      - 15
+      - 130
 
 scales:
   - Up

@@ -116,9 +116,10 @@ if __name__ == "__main__":
     if args.cat == 'res2b':
         GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "res2b_cat3", "res2b_cat2",],0.99)
     if args.cat == 'res1b':
-        GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], ["res1b_cat3", "res1b_cat2"],0.99)
+        GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], ['res1b'],0.99) #["res1b_cat3", "res1b_cat2"]
     if args.cat == 'inclusive':
         GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "inclusive", "baseline"],0.99)
     if args.cat == 'boosted':
         GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "boosted"],0.99)
+        #GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "boosted_cat3"],0.99)
         #GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "boosted_cat3", "boosted"],0.99)

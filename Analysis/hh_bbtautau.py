@@ -271,11 +271,14 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                     self.df = self.df.Define(region_name, region_cut)
 
     def defineCRs(self):
-        SR_mass_limits_bb = self.config['mass_cut_limits']['bb_m_vis']
+        SR_mass_limits_bb_boosted = self.config['mass_cut_limits']['bb_m_vis']['boosted']
+        SR_mass_limits_bb = self.config['mass_cut_limits']['bb_m_vis']['boosted']
         SR_mass_limits_tt = self.config['mass_cut_limits']['tautau_m_vis']
         self.df = self.df.Define("SR_tt", f"return (tautau_m_vis > {SR_mass_limits_tt[0]} && tautau_m_vis  < {SR_mass_limits_tt[1]});")
-        self.df = self.df.Define("SR_bb", f"if(!(boosted) || !(boosted_cat3) || !(boosted_inclusive)) return (bb_m_vis > {SR_mass_limits_bb[0]} && bb_m_vis < {SR_mass_limits_bb[1]}); return true;")
+        self.df = self.df.Define("SR_bb", f"(bb_m_vis > {SR_mass_limits_bb[0]} && bb_m_vis < {SR_mass_limits_bb[1]});")
+        self.df = self.df.Define("SR_bb_boosted", f"(bb_m_vis > {SR_mass_limits_bb_boosted[0]} && bb_m_vis < {SR_mass_limits_bb_boosted[1]});")
         self.df = self.df.Define("SR", f" SR_tt &&  SR_bb")
+        self.df = self.df.Define("SR_boosted", f" SR_tt &&  SR_bb_boosted")
         self.df = self.df.Define("DYCR", "if(muMu || eE) {return (tautau_m_vis < 92 && tautau_m_vis > 89);} return true;") # for next iteration
         TTCR_mass_limits_eTau = self.config['TTCR_mass_limits']['eTau']
         TTCR_mass_limits_muTau = self.config['TTCR_mass_limits']['muTau']
@@ -316,25 +319,10 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineCategories(self):
         self.df = self.df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {self.bTagWP}) + int(b2_idbtagDeepFlavB >= {self.bTagWP})")
-        self.df = self.df.Define("boosted_inclusive", "SelectedFatJet_p4[fatJet_sel].size()>0")
-        self.df = self.df.Define("boosted", f"SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={self.pNetWP}].size()>0")
-        self.df = self.df.Define("inclusive", f"!boosted_inclusive")
-        self.df = self.df.Define("btag_shape", f"!boosted_inclusive")
-        self.df = self.df.Define("baseline",f"return true;")
-
-        self.df = self.df.Define("res0b_inclusive", f"nSelBtag == 0")
-        self.df = self.df.Define("res1b_inclusive", f"nSelBtag == 1")
-        self.df = self.df.Define("res2b_inclusive", f"nSelBtag == 2")
-
-
-        self.df = self.df.Define("res0b_cat2", f"!boosted_inclusive && nSelBtag == 0")
-        self.df = self.df.Define("res1b_cat2", f"!boosted_inclusive && nSelBtag == 1")
-        self.df = self.df.Define("res2b_cat2", f"!boosted_inclusive && nSelBtag == 2")
-
-        self.df = self.df.Define("res2b_cat3", f"nSelBtag == 2")
-        self.df = self.df.Define("boosted_cat3", f"!(res2b_cat3) && SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={self.pNetWP}].size()>0")
-        self.df = self.df.Define("res1b_cat3", f"!boosted_inclusive && nSelBtag == 1")
-
+        for category_to_def in self.config['categories']:
+            if self.region == 'TTCR' or self.region == 'DYCR':
+                category_to_def += f'_{self.region}'
+            self.df = self.df.Define(category_to_def, self.config['category_definition'][category_to_def].format(pNetWP=self.pNetWP))
 
     def defineChannels(self):
         for channel in self.config['channelSelection']:
@@ -387,13 +375,14 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         if cut!="":
             self.df = self.df.Filter(cut)
 
-    def __init__(self, df, config, period, deepTauVersion='v2p1', bTagWP = 2, pNetWPstring="Loose"):
+    def __init__(self, df, config, period, deepTauVersion='v2p1', bTagWP = 2, pNetWPstring="Loose", region="SR"):
         super(DataFrameBuilderForHistograms, self).__init__(df)
         self.deepTauVersion = deepTauVersion
         self.config = config
         self.bTagWP = bTagWP
         self.pNetWP = WorkingPointsParticleNet[period][pNetWPstring]
         self.period = period
+        self.region = region
 
 def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.df = defineAllP4(dfForHistograms.df)
@@ -401,9 +390,9 @@ def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.defineLeptonPreselection()
     dfForHistograms.defineQCDRegions()
     dfForHistograms.defineBoostedVariables()
-    dfForHistograms.defineCategories()
     dfForHistograms.defineTriggers()
     dfForHistograms.redefineWeights()
     dfForHistograms.df = createInvMass(dfForHistograms.df)
+    dfForHistograms.defineCategories()
     dfForHistograms.defineCRs()
     return dfForHistograms

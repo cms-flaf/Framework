@@ -9,6 +9,10 @@ import matplotlib.pyplot as plt
 
 import matplotlib.patches as patches
 
+# https://matplotlib.org/stable/users/explain/colors/colormaps.html
+# https://mplhep.readthedocs.io/en/latest/api.html
+# https://www.desy.de/~tadej/tutorial/matplotlib_tutorial.html
+
 #plt.rcParams.update({
 #    "text.usetex": True,
     #"font.family": "sans-serif",
@@ -28,10 +32,11 @@ def plot_2D_histogram(histogram, title, xlabel, ylabel, bin_labels, filename, pe
     plt.figure(figsize=(25, 15))
     plt.xlabel(xlabel, fontsize=40)
     plt.ylabel(ylabel, fontsize=40)
-    hep.hist2dplot(histogram, cmap='cool', cmax=histogram.GetMaximum())
+    hep.hist2dplot(histogram, cmap='coolwarm', cmax=histogram.GetMaximum())
     #hep.cms.text("work in progress")
     #hep.cms.text("")
     #hep.cms.label("Preliminary")
+    # labels https://mplhep.readthedocs.io/en/latest/api.html#experiment-label-helpers
     hep.cms.label("Preliminary", lumi=period_dict[period], year=period.split('_')[1], fontsize=40)
     if bin_labels:
         textstr = '\n'.join([f"{i}. {label}" for i, label in enumerate(bin_labels)])
@@ -39,6 +44,7 @@ def plot_2D_histogram(histogram, title, xlabel, ylabel, bin_labels, filename, pe
 
 
     #plt.grid(True)
+    # rectangle: https://matplotlib.org/stable/api/_as_gen/matplotlib.patches.Rectangle.html
     fig = plt.gcf()
     ax = fig.gca()
     print(rectangle_coordinates)

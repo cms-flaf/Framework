@@ -270,7 +270,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineCRs(self):
         SR_mass_limits_bb_boosted = self.config['mass_cut_limits']['bb_m_vis']['boosted']
-        SR_mass_limits_bb = self.config['mass_cut_limits']['bb_m_vis']['boosted']
+        SR_mass_limits_bb = self.config['mass_cut_limits']['bb_m_vis']['other']
         SR_mass_limits_tt = self.config['mass_cut_limits']['tautau_m_vis']
         self.df = self.df.Define("SR_tt", f"return (tautau_m_vis > {SR_mass_limits_tt[0]} && tautau_m_vis  < {SR_mass_limits_tt[1]});")
         self.df = self.df.Define("SR_bb", f"(bb_m_vis > {SR_mass_limits_bb[0]} && bb_m_vis < {SR_mass_limits_bb[1]});")

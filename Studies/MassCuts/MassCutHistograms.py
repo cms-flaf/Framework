@@ -249,6 +249,9 @@ if __name__ == "__main__":
     pNetWP = dfWrapped.pNetWP
 
     for channel in ['eTau', 'muTau','tauTau']:
+        print(f"plotting res1b for {channel} and {args.year}")
         Plot2DMassRes1b(dfWrapped.df,hist_cfg_dict,global_cfg_dict, channel, args.year)
+        print(f"plotting res2b for {channel} and {args.year}")
         Plot2DMassRes2b(dfWrapped.df,hist_cfg_dict,global_cfg_dict, channel, args.year)
+        print(f"plotting boosted for {channel} and {args.year}")
         Plot2DMassboosted(dfWrapped.df,hist_cfg_dict,global_cfg_dict, channel, args.year, pNetWP)

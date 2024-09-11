@@ -96,23 +96,9 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
     dfw.Apply(AnaBaseline.ApplyJetSelection)
     if not isData:
         #dfw.Define(f"Jet_genJet_idx", " FindMatching(Jet_p4,GenJet_p4,0.3)")
-        dfw.Define(f"Jet_genJet_idx", "Jet_genJetIdx")
         jet_obs.extend(JetObservablesMC)
         if isSignal:
-            #dfw.Define(f"Jet_fromGenHbb", f"Take(GenJet_Hbb, Jet_genJet_idx, false)")
-            dfw.Define(f"Jet_fromGenHbb", f"Take(GenJet_Hbb, Jet_genJet_idx, false)")
-            dfw.Define("Jet_fromGenHbbloop", """
-                        RVecB fromGenHbb(Jet_genJet_idx.size(), false);
-                        
-                        for(size_t genJet_idx = 0; genJet_idx<Jet_genJet_idx.size(); genJet_idx++) {
-                            
-                            if (Jet_genJet_idx.at(genJet_idx) >= 0 and GenJet_Hbb.at(Jet_genJet_idx.at(genJet_idx))){
-                                fromGenHbb.at(genJet_idx) = true;
-                            }
-                        }
-                        return fromGenHbb;
-                        """)
-            dfw.DefineAndAppend("nJetFromGenHbbloop", "Jet_p4[Jet_fromGenHbbloop && Jet_bCand].size()")
+            dfw.Define(f"Jet_fromGenHbb", f"Take(GenJet_Hbb, Jet_genJetIdx, false)")
             dfw.DefineAndAppend("nJetFromGenHbb", "Jet_p4[Jet_fromGenHbb && Jet_bCand].size()")
 
             for gen_idx in range(2):
@@ -257,7 +243,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         dfw.DefineAndAppend(f"b{leg_idx+1}_phi", f"Hbb_isValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].Phi()) : 0.f")
         dfw.DefineAndAppend(f"b{leg_idx+1}_mass", f"Hbb_isValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].M()) : 0.f")
         if not isData:
-            dfw.Define(f"b{leg_idx+1}_genJet_idx", f"Hbb_isValid ?  Jet_genJet_idx.at(HbbCandidate->leg_index[{leg_idx}]) : -1")
+            dfw.Define(f"b{leg_idx+1}_genJet_idx", f"Hbb_isValid ?  Jet_genJetIdx.at(HbbCandidate->leg_index[{leg_idx}]) : -1")
             for var in [ 'pt', 'eta', 'phi', 'mass' ]:
                 dfw.DefineAndAppend(f"b{leg_idx+1}_genJet_{var}", f"Hbb_isValid && b{leg_idx+1}_genJet_idx>=0 ? static_cast<float>(GenJet_p4.at(b{leg_idx+1}_genJet_idx).{var}()) : -1.f")
             if isSignal:

@@ -129,8 +129,8 @@ def GetBTagWeightDict(var, all_histograms):
                 continue
             ch, reg, cat = key_1
             uncName,scale = key_2
-            key_tuple_num = ((ch, reg, 'btag_shape_masswindow'), key_2)
-            key_tuple_den = ((ch, reg, 'inclusive_masswindow'), key_2)
+            key_tuple_num = ((ch, reg, 'btag_shape'), key_2)
+            key_tuple_den = ((ch, reg, 'inclusive'), key_2)
             ratio_num_hist = all_histograms[sample_type][key_tuple_num] if key_tuple_num in all_histograms[sample_type].keys() else None
             ratio_den_hist = all_histograms[sample_type][key_tuple_den] if key_tuple_den in all_histograms[sample_type].keys() else None
             num = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)

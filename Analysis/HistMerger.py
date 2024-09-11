@@ -38,13 +38,15 @@ def checkFile(inFileRoot, channels, qcdRegions, categories, var):
         for qcdRegion in QCDregions:
             dir_1 = dir_0.Get(qcdRegion)
             keys_categories = [str(key.GetName()) for key in dir_1.GetListOfKeys()]
-            if 'boosted' in categories and ( var.startswith('b1') or var.startswith('b2') ): categories.remove('boosted')
+            if ( var.startswith('b1') or var.startswith('b2') ):
+                for bstdcat in ["boosted_baseline","boosted","boosted_cat2","boosted_cat3","boosted_baseline_cat3"]:
+                    categories.remove(bstdcat)
             if not checkLists(keys_categories, categories):
                     print("check list not worked for categories")
                     return False
             for cat in categories:
-                if cat == 'boosted' and (var.startswith('b1') or var.startswith('b2')): continue
-                if cat != 'boosted' and var.startswith('SelectedFatJet'): continue
+                if cat in ["boosted_baseline","boosted","boosted_cat2","boosted_cat3","boosted_baseline_cat3"] and (var.startswith('b1') or var.startswith('b2')): continue
+                if cat not in ["boosted_baseline","boosted","boosted_cat2","boosted_cat3","boosted_baseline_cat3"] and var.startswith('SelectedFatJet'): continue
                 dir_2 = dir_1.Get(cat)
                 keys_histograms = [str(key.GetName()) for key in dir_2.GetListOfKeys()]
                 if not keys_histograms: return False
@@ -59,9 +61,9 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, categories
             dir_1 = dir_0.Get(qcdRegion)
             #print(dir_1.GetListOfKeys())
             for cat in categories:
-                if cat == 'boosted' and (var.startswith('b1') or var.startswith('b2')): continue
-                if cat != 'boosted' and var.startswith('SelectedFatJet'): continue
-                if cat == 'boosted' and uncSource in global_cfg_dict['unc_to_not_consider_boosted']: continue
+                if cat in ["boosted_baseline","boosted","boosted_cat2","boosted_cat3","boosted_baseline_cat3"] and (var.startswith('b1') or var.startswith('b2')): continue
+                if cat not in ["boosted_baseline","boosted","boosted_cat2","boosted_cat3","boosted_baseline_cat3"] and var.startswith('SelectedFatJet'): continue
+                if cat in ["boosted_baseline","boosted","boosted_cat2","boosted_cat3","boosted_baseline_cat3"]  and uncSource in global_cfg_dict['unc_to_not_consider_boosted']: continue
                 #print(cat, var)
                 dir_2 = dir_1.Get(cat)
                 for key in dir_2.GetListOfKeys():
@@ -127,8 +129,8 @@ def GetBTagWeightDict(var, all_histograms):
                 continue
             ch, reg, cat = key_1
             uncName,scale = key_2
-            key_tuple_num = ((ch, reg, 'btag_shape'), key_2)
-            key_tuple_den = ((ch, reg, 'inclusive'), key_2)
+            key_tuple_num = ((ch, reg, 'btag_shape_masswindow'), key_2)
+            key_tuple_den = ((ch, reg, 'inclusive_masswindow'), key_2)
             ratio_num_hist = all_histograms[sample_type][key_tuple_num] if key_tuple_num in all_histograms[sample_type].keys() else None
             ratio_den_hist = all_histograms[sample_type][key_tuple_den] if key_tuple_den in all_histograms[sample_type].keys() else None
             num = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)
@@ -138,10 +140,11 @@ def GetBTagWeightDict(var, all_histograms):
                 ratio = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)/ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
             #if ratio == 0 and hist1D.Integral(0, hist1D.GetNbinsX()+1) ==0 :
             #    continue
-            if cat not in ['boosted','baseline','btag_shape'] : #or sample_type != 'data':
+            if cat not in ["boosted_baseline","inclusive_masswindow","btag_shape_masswindow","baseline_masswindow"'boosted','baseline','btag_shape',"boosted_cat2","boosted_cat3","boosted_baseline_cat3"] : #or sample_type != 'data':
                 histogram.Scale(ratio)
             all_histograms_1D[sample_type][key_name] = histogram
     return all_histograms_1D
+
 
 
 if __name__ == "__main__":
@@ -190,7 +193,7 @@ if __name__ == "__main__":
     unc_to_not_consider_boosted = list(global_cfg_dict['unc_to_not_consider_boosted'])
 
     if args.var.startswith('SelectedFatJet'):
-        categories = ['boosted']
+        categories = ["boosted_baseline","boosted","boosted_cat2","boosted_cat3","boosted_baseline_cat3"]
 
     sample_types_to_merge = list(global_cfg_dict['sample_types_to_merge'])
     scales = list(global_cfg_dict['scales'])

@@ -31,6 +31,7 @@ def RebinHisto(hist_initial, new_binning, sample, verbose=False):
         content=new_hist.GetBinContent(nbin)
         if content<0:
             print(f"for {sample}, bin {nbin} content is < 0:  {content}")
+    fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(new_hist)
     n_finalbin = new_hist.GetBinContent(new_hist.GetNbinsX())
     n_overflow = new_hist.GetBinContent(new_hist.GetNbinsX()+1)
     new_hist.SetBinContent(new_hist.GetNbinsX(), n_finalbin+n_overflow)

@@ -46,8 +46,14 @@ QCDRegions:
   - SS_Iso
   - OS_AntiIso
   - SS_AntiIso
-categories:
+boosted_categories:
   - boosted_baseline
+  - boosted_cat2
+  #- boosted_baseline_cat3
+  - boosted_cat3
+  #- boosted
+
+categories:
   - inclusive
   - btag_shape
   - baseline
@@ -57,14 +63,10 @@ categories:
   #- res0b_inclusive
   #- res1b_inclusive
   #- res2b_inclusive
-  #- boosted
   #- res0b_cat2
   #- res1b_cat2
   - res2b_cat2
-  - boosted_cat2
   - res2b_cat3
-  #- boosted_baseline_cat3
-  - boosted_cat3
   - res1b_cat3
   #- res0b_cat3
 
@@ -373,6 +375,46 @@ FatJetObservables :
   - phi
   - mass
 
+var_only_boosted:
+  - SelectedFatJet_area_boosted
+  - SelectedFatJet_btagCSVV2_boosted
+  - SelectedFatJet_btagDDBvLV2_boosted
+  - SelectedFatJet_btagDeepB_boosted
+  - SelectedFatJet_btagHbb_boosted
+  - SelectedFatJet_deepTagMD_HbbvsQCD_boosted
+  - SelectedFatJet_deepTagMD_ZHbbvsQCD_boosted
+  - SelectedFatJet_deepTagMD_ZbbvsQCD_boosted
+  - SelectedFatJet_deepTagMD_bbvsLight_boosted
+  - SelectedFatJet_deepTag_H_boosted
+  - SelectedFatJet_jetId_boosted
+  - SelectedFatJet_msoftdrop_boosted
+  - SelectedFatJet_nBHadrons_boosted
+  - SelectedFatJet_nCHadrons_boosted
+  - SelectedFatJet_nConstituents_boosted
+  - SelectedFatJet_rawFactor_boosted
+  - SelectedFatJet_particleNetMD_QCD_boosted
+  - SelectedFatJet_particleNetMD_Xbb_boosted
+  - SelectedFatJet_particleNet_HbbvsQCD_boosted
+  - SelectedFatJet_particleNet_mass_boosted
+  - SelectedFatJet_particleNet_QCD_boosted
+  - SelectedFatJet_particleNet_XbbVsQCD_boosted
+  - SelectedFatJet_particleNetLegacy_QCD_boosted
+  - SelectedFatJet_particleNetLegacy_Xbb_boosted
+  - SelectedFatJet_particleNetLegacy_mass_boosted
+  - SelectedFatJet_particleNetWithMass_QCD_boosted
+  - SelectedFatJet_particleNetWithMass_HbbvsQCD_boosted
+  - SelectedFatJet_particleNet_massCorr_boosted
+  - SelectedFatJet_p4_boosted
+  - SelectedFatJet_pt_boosted
+  - SelectedFatJet_eta_boosted
+  - SelectedFatJet_phi_boosted
+  - SelectedFatJet_mass_boosted
+  - SelectedFatJet_particleNetLegacy_mass_boosted
+  - SelectedFatJet_mass_boosted
+  - SelectedFatJet_msoftdrop_boosted
+  - bb_m_vis_softdrop
+  - bb_m_vis_pnet
+  - bb_m_vis_fj
 
 unc_to_not_consider_boosted:
   - PUJetID

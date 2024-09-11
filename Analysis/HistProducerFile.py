@@ -61,15 +61,19 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
     sample_type,uncName,scale = key_2
     isCentral = 'Central' in key_2
     histograms = {}
-
+    boosted_categories = global_cfg_dict['boosted_categories']
+    unc_to_not_consider_boosted = global_cfg_dict['unc_to_not_consider_boosted']
+    boosted_variables = global_cfg_dict['var_only_boosted']
     for key_1,key_cut in key_filter_dict.items():
         ch, reg, cat = key_1
         if ch not in global_cfg_dict['channels_to_consider'] : continue
         if (key_1, key_2) in histograms.keys(): continue
-        if cat == 'boosted' and (var.startswith('b1') or var.startswith('b2')): continue
-        if cat != 'boosted' and var.startswith('SelectedFatJet'): continue
-        if cat == 'boosted' and uncName in global_cfg_dict['unc_to_not_consider_boosted']: continue
-        total_weight_expression = GetWeight(ch,cat) if sample_type!='data' else "1"
+        if cat in boosted_categories:
+            if (var.startswith('b1') or var.startswith('b2')): continue
+            if uncName in unc_to_not_consider_boosted: continue
+        else:
+            if var in boosted_variables: continue
+        total_weight_expression = GetWeight(ch,cat,global_cfg_dict['boosted_categories']) if sample_type!='data' else "1"
         #print(total_weight_expression)
         weight_name = "final_weight"
         if not isCentral:
@@ -87,7 +91,7 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
             dataframe_new = dataframe_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}")
             final_string_weight = ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = f"final_weight_0_{ch}_{cat}_{reg}") if sample_type!='data' else "1"
             dataframe_new = dataframe_new.Filter(f"{cat}")
-            if cat == 'btag_shape' or cat =='btag_shape_masswindow':
+            if cat.startswith('btag_shape'):
                 final_string_weight = f"final_weight_0_{ch}_{cat}_{reg}"
             histograms[(key_1, key_2)].append(dataframe_new.Define("final_weight", final_string_weight).Define("weight_for_hists", f"{weight_name}").Histo1D(GetModel(hist_cfg_dict, var), var, "weight_for_hists"))
 

@@ -27,7 +27,7 @@ ROOT.gStyle.SetPalette(109)
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
-from Studies.MassCuts.DrawPlots import create_2D_histogram
+from Studies.MassCuts.DrawPlots import create_2D_histogram,plot_2D_histogram
 
 def GetModel2D(x_bins, y_bins):#hist_cfg, var1, var2):
     #x_bins = hist_cfg[var1]['x_bins']
@@ -56,18 +56,12 @@ def GetModel2D(x_bins, y_bins):#hist_cfg, var1, var2):
 
 
 
-def Plot2DMassRes2b(df, hist_cfg_dict, global_cfg_dict,channel='tauTau', year='2018'):
+def Plot2DMassRes1b(df, hist_cfg_dict, global_cfg_dict,channel='tauTau', year='2018'):
     x_bins = hist_cfg_dict['bb_m_vis']['x_rebin']['other']
     y_bins = hist_cfg_dict['tautau_m_vis']['x_rebin']['other']
-    hist_denum = df.Filter(f"OS_Iso && {channel} && res2b_inclusive").Histo2D(GetModel2D(x_bins, y_bins),"bb_m_vis","tautau_m_vis").GetValue()
-    hist_num = df.Filter(f"OS_Iso && {channel} && res2b_cat3").Histo2D(GetModel2D(x_bins, y_bins),"bb_m_vis","tautau_m_vis").GetValue()
+    hist_denum = df.Filter(f"OS_Iso && {channel} && !(res2b_cat3) && !(boosted_baseline_cat3) && nSelBtag == 1").Histo2D(GetModel2D(x_bins, y_bins),"bb_m_vis","tautau_m_vis").GetValue()
+    hist_num = df.Filter(f"OS_Iso && {channel} && res1b_cat3").Histo2D(GetModel2D(x_bins, y_bins),"bb_m_vis","tautau_m_vis").GetValue()
     #hist_num.Divide(hist_denum)
-    c1 = ROOT.TCanvas("res2b","res2b",800,600)
-    hist_denum.GetXaxis().SetTitle("m_{bb}")
-    hist_denum.GetYaxis().SetTitle("m_{#tau#tau}")
-    hist_denum.GetZaxis().SetTitle("acceptance")
-    hist_denum.Draw("COLZ")
-
     for xbin in range(1,hist_denum.GetNbinsX()+1):
         if int(hist_denum.GetXaxis().GetBinCenter(xbin))== global_cfg_dict['mass_cut_limits']['bb_m_vis']['other'][0]:
             x1 = hist_denum.GetXaxis().GetBinLowEdge(xbin)
@@ -92,25 +86,52 @@ def Plot2DMassRes2b(df, hist_cfg_dict, global_cfg_dict,channel='tauTau', year='2
         if hist_denum.GetYaxis().GetBinUpEdge(ybin)==global_cfg_dict['mass_cut_limits']['tautau_m_vis'][1]:
             y2 = hist_denum.GetYaxis().GetBinUpEdge(ybin)
 
-    box = ROOT.TBox(x1, y1, x2, y2)
-    box.SetLineColor(ROOT.kRed)  # Colore del bordo rosso
-    box.SetLineWidth(3)        # Spessore della linea
-    box.SetFillStyle(0)        # Nessun riempimento
-    box.Draw("same")           # Disegna il rettangolo sulla canvas
-    create_2D_histogram(hist_denum, c1, "prova.png", f"Run2_{year}")
+    plot_2D_histogram(hist_denum, f"{channel} Res1b", "$m_{bb}$", "$m_{\\tau\\tau}$", [], f"Studies/MassCuts/output/den_2D_res1b_{channel}_{year}.png", f"Run2_{year}", (x1, y1, x2-x1, y2-y1))
+    #create_2D_hist_denum(hist_denum, c1, "prova.png", global_cfg_dict, f"Run2_{year}")
     #c1.SaveAs(f"Studies/MassCuts/output/den_2D_res2b_{channel}.png")
 
-def Plot2DMassboosted(df, hist_cfg_dict, global_cfg_dict, channel='tauTau', pNetWP=0.):
-    x_bins = hist_cfg_dict['bb_m_vis']['x_rebin']['boosted']
-    y_bins = hist_cfg_dict['tautau_m_vis']['x_rebin']['boosted']
+
+def Plot2DMassRes2b(df, hist_cfg_dict, global_cfg_dict,channel='tauTau', year='2018'):
+    x_bins = hist_cfg_dict['bb_m_vis']['x_rebin']['other']
+    y_bins = hist_cfg_dict['tautau_m_vis']['x_rebin']['other']
+    hist_denum = df.Filter(f"OS_Iso && {channel} && res2b_inclusive").Histo2D(GetModel2D(x_bins, y_bins),"bb_m_vis","tautau_m_vis").GetValue()
+    hist_num = df.Filter(f"OS_Iso && {channel} && res2b_cat3").Histo2D(GetModel2D(x_bins, y_bins),"bb_m_vis","tautau_m_vis").GetValue()
+    #hist_num.Divide(hist_denum)
+    for xbin in range(1,hist_denum.GetNbinsX()+1):
+        if int(hist_denum.GetXaxis().GetBinCenter(xbin))== global_cfg_dict['mass_cut_limits']['bb_m_vis']['other'][0]:
+            x1 = hist_denum.GetXaxis().GetBinLowEdge(xbin)
+        if int(hist_denum.GetXaxis().GetBinLowEdge(xbin))== global_cfg_dict['mass_cut_limits']['bb_m_vis']['other'][0]:
+            x1 = hist_denum.GetXaxis().GetBinLowEdge(xbin)
+        if int(hist_denum.GetXaxis().GetBinCenter(xbin))==global_cfg_dict['mass_cut_limits']['bb_m_vis']['other'][1]:
+            x2 = hist_denum.GetXaxis().GetBinLowEdge(xbin)
+        if int(hist_denum.GetXaxis().GetBinUpEdge(xbin))==global_cfg_dict['mass_cut_limits']['bb_m_vis']['other'][1]:
+            x2 = hist_denum.GetXaxis().GetBinUpEdge(xbin)
+            #print(hist_denum.GetXaxis().GetBinCenter(xbin))
+            #print( global_cfg_dict['mass_cut_limits']['bb_m_vis']['other'][0])
+            #print(hist_denum.GetXaxis().GetBinLowEdge(xbin))
+            #print( global_cfg_dict['mass_cut_limits']['bb_m_vis']['other'][1])
+
+    for ybin in range(0,hist_denum.GetNbinsY()+1):
+        if hist_denum.GetYaxis().GetBinCenter(ybin)==global_cfg_dict['mass_cut_limits']['tautau_m_vis'][0]:
+            y1 = hist_denum.GetYaxis().GetBinLowEdge(ybin)
+        if hist_denum.GetYaxis().GetBinLowEdge(ybin)==global_cfg_dict['mass_cut_limits']['tautau_m_vis'][0]:
+            y1 = hist_denum.GetYaxis().GetBinLowEdge(ybin)
+        if hist_denum.GetYaxis().GetBinCenter(ybin)==global_cfg_dict['mass_cut_limits']['tautau_m_vis'][1]:
+            y2 = hist_denum.GetYaxis().GetBinLowEdge(ybin)
+        if hist_denum.GetYaxis().GetBinUpEdge(ybin)==global_cfg_dict['mass_cut_limits']['tautau_m_vis'][1]:
+            y2 = hist_denum.GetYaxis().GetBinUpEdge(ybin)
+
+    plot_2D_histogram(hist_denum, f"{channel} Res2b", "$m_{bb}$", "$m_{\\tau\\tau}$", [], f"Studies/MassCuts/output/den_2D_res2b_{channel}_{year}.png", f"Run2_{year}", (x1, y1, x2-x1, y2-y1))
+    #create_2D_hist_denum(hist_denum, c1, "prova.png", global_cfg_dict, f"Run2_{year}")
+    #c1.SaveAs(f"Studies/MassCuts/output/den_2D_res2b_{channel}.png")
+
+def Plot2DMassboosted(df, hist_cfg_dict, global_cfg_dict,channel='tauTau', year='2018', pNetWP=0.):
+    x_bins = hist_cfg_dict['bb_m_vis']['x_rebin']['boosted_cat3']
+    y_bins = hist_cfg_dict['tautau_m_vis']['x_rebin']['boosted_cat3']
     hist_denum = df.Filter(f"OS_Iso && {channel} && !(res2b_cat3) && SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={pNetWP}].size()>0").Histo2D(GetModel2D(x_bins, y_bins),"bb_m_vis_softdrop","tautau_m_vis").GetValue()
     hist_num = df.Filter(f"OS_Iso && {channel} && boosted_cat3").Histo2D(GetModel2D(x_bins, y_bins),"bb_m_vis","tautau_m_vis").GetValue()
     #hist_num.Divide(hist_denum)
-    c1 = ROOT.TCanvas("res2b","res2b",800,600)
-    hist_denum.GetXaxis().SetTitle("m_{bb}(softdrop)")
-    hist_denum.GetYaxis().SetTitle("m_{#tau#tau}")
-    hist_denum.GetZaxis().SetTitle("acceptance")
-    hist_denum.Draw("COLZ")
+    #hist_num.Divide(hist_denum)
 
     # Converti i numeri dei bin in coordinate reali
     for xbin in range(0,hist_denum.GetNbinsX()+1):
@@ -132,18 +153,8 @@ def Plot2DMassboosted(df, hist_cfg_dict, global_cfg_dict, channel='tauTau', pNet
             y2 = hist_denum.GetYaxis().GetBinLowEdge(ybin)
         if hist_denum.GetYaxis().GetBinUpEdge(ybin)==global_cfg_dict['mass_cut_limits']['tautau_m_vis'][1]:
             y2 = hist_denum.GetYaxis().GetBinUpEdge(ybin)
-    #x1 = hist2D.GetXaxis().GetBinLowEdge(xbin1)  # Coordinate in X per il bin1
-    #x2 = hist2D.GetXaxis().GetBinUpEdge(xbin2)   # Coordinate in X per il bin2
-    #y1 = hist2D.GetYaxis().GetBinLowEdge(ybin1)  # Coordinate in Y per il bin1
-    #y2 = hist2D.GetYaxis().GetBinUpEdge(ybin2)   # Coordinate in Y per il bin2
 
-    box = ROOT.TBox(x1, y1, x2, y2)
-    box.SetLineColor(ROOT.kRed)  # Colore del bordo rosso
-    box.SetLineWidth(3)        # Spessore della linea
-    box.SetFillStyle(0)        # Nessun riempimento
-    box.Draw("same")           # Disegna il rettangolo sulla canvas
-    #create_2D_histogram(hist_denum, c1, "prova.png")
-    c1.SaveAs(f"Studies/MassCuts/output/den_2D_boosted_{channel}.png")
+    plot_2D_histogram(hist_denum, f"{channel} Boosted", "$m_{bb}$", "$m_{\\tau\\tau}$", [], f"Studies/MassCuts/output/den_2D_boosted_{channel}_{year}.png", f"Run2_{year}", (x1, y1, x2-x1, y2-y1))
 
 
 if __name__ == "__main__":
@@ -236,8 +247,8 @@ if __name__ == "__main__":
 
     dfWrapped = PrepareDfForHistograms(DataFrameBuilderForHistograms(df_initial,global_cfg_dict, f"Run2_{args.year}"))
     pNetWP = dfWrapped.pNetWP
-    Plot2DMassRes2b(dfWrapped.df,hist_cfg_dict,global_cfg_dict, 'tauTau', args.year)
 
-    #for channel in ['eTau', 'muTau','tauTau']:
-        #Plot2DMassRes2b(dfWrapped.df,hist_cfg_dict,global_cfg_dict, channel, args.year)
-        #Plot2DMassboosted(dfWrapped.df, hist_cfg_dict, global_cfg_dict,channel, pNetWP)
+    for channel in ['eTau', 'muTau','tauTau']:
+        Plot2DMassRes1b(dfWrapped.df,hist_cfg_dict,global_cfg_dict, channel, args.year)
+        Plot2DMassRes2b(dfWrapped.df,hist_cfg_dict,global_cfg_dict, channel, args.year)
+        Plot2DMassboosted(dfWrapped.df,hist_cfg_dict,global_cfg_dict, channel, args.year, pNetWP)

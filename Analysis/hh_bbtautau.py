@@ -154,7 +154,7 @@ def CompareYields(histograms, all_samples_list, channel, category, uncName, scal
         print(f"{sample} || {key_C} || {n_sample_C}")
         print(f"{sample} || {key_D} || {n_sample_D}")
 
-def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_samples_list, scales, unc_to_not_consider_boosted, wantNegativeContributions=False):
+def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_samples_list, scales, wantNegativeContributions=False):
     if 'QCD' not in all_histograms.keys():
             all_histograms['QCD'] = {}
     for channel in channels:
@@ -162,9 +162,6 @@ def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_sam
             for scale in scales + ['Central']:
                 if uncName=='Central' and scale != 'Central': continue
                 if uncName!='Central' and scale == 'Central': continue
-                if cat in ["boosted_baseline","boosted","boosted_cat2","boosted_cat3","boosted_baseline_cat3"] and (var.startswith('b1') or var.startswith('b2')): continue
-                if cat not in ["boosted_baseline","boosted","boosted_cat2","boosted_cat3","boosted_baseline_cat3"] and var.startswith('SelectedFatJet'): continue
-                if cat in ["boosted_baseline","boosted","boosted_cat2","boosted_cat3","boosted_baseline_cat3"] and uncName in unc_to_not_consider_boosted: continue
                 key =( (channel, 'OS_Iso', cat), (uncName, scale))
                 hist_qcd_Central,hist_qcd_Up,hist_qcd_Down = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale,wantNegativeContributions)
                 all_histograms['QCD'][key] = hist_qcd_Central
@@ -180,13 +177,13 @@ def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = 'fin
     if applyBtag:
         if global_cfg_dict['btag_wps'][cat]!='' : btag_weight = f"weight_bTagSF_{btag_wps[cat]}_Central"
     else:
-        if cat not in ["boosted_baseline","boosted","boosted_cat2","boosted_cat3","boosted_baseline_cat3","baseline", "baseline_masswindow"]:
+        if cat not in global_cfg_dict['boosted_categories'] or cat.startswith("baseline"):
             btagshape_weight = "weight_bTagShape_Central"
     return f'{finalWeight_name}*{btag_weight}*{btagshape_weight}'
 
 
 
-def GetWeight(channel, cat):
+def GetWeight(channel, cat, boosted_categories):
     weights_to_apply = ["weight_MC_Lumi_pu", "weight_L1PreFiring_Central","weight_L1PreFiring_ECAL_Central","weight_L1PreFiring_Muon_Central"]
     trg_weights_dict = {
         #'eTau':["weight_tau1_TrgSF_singleEle_Central_application","weight_tau2_TrgSF_singleEle_Central_application", "weight_tau1_TrgSF_etau_Central_application", "weight_tau2_TrgSF_etau_Central_application", "weight_tau1_TrgSF_singleTau_Central_application","weight_tau2_TrgSF_singleTau_Central_application", "weight_TrgSF_MET_Central_application"]
@@ -222,7 +219,7 @@ def GetWeight(channel, cat):
     #        weights_to_apply.append(f"weight_tau{tau_idx}_{tau_suffix}")
     weights_to_apply.extend(ID_weights_dict[channel])
     weights_to_apply.extend(trg_weights_dict[channel])
-    if cat not in ["boosted_baseline","boosted","boosted_cat2","boosted_cat3","boosted_baseline_cat3"]:
+    if cat not in boosted_categories:
          weights_to_apply.extend(["weight_Jet_PUJetID_Central_b1_2", "weight_Jet_PUJetID_Central_b2_2"])
     total_weight = '*'.join(weights_to_apply)
     return total_weight

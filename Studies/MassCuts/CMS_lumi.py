@@ -12,9 +12,9 @@ relPosY = 0.1  # CMS text position (Y)
 writeExtraText = True
 extraText = "Preliminary"
 extraTextSize = cmsTextSize * 0.7
-extraTextFont = 52  # Font for the "Preliminary"
+extraTextFont = 58  # Font for the "Preliminary"
 relExtraDY = 0.4  # Distance between CMS text and extra text
-relExtraDX = 1.8  # Distance between CMS text and extra text
+relExtraDX = 0.01  # Distance between CMS text and extra text
 
 extraOverCmsTextSize = 0.1  # Extra text size relative to CMS text size
 
@@ -70,13 +70,13 @@ def CMS_lumi(pad, iPeriod, iPosX):
 
     pad.cd()
 
-    posX_ = leftMargin + relPosX # CMS text on the left
-    posY_ = 1 - relPosY + cmsTextOffset
+    posX_ = leftMargin + relPosX*leftMargin # CMS text on the left
+    posY_ = 1 - relPosY #+ cmsTextOffset
     #posY_ = 1 - 0.4*topMargin
 
     # Draw the CMS text on the left
     latex.SetTextFont(cmsTextFont)
-    latex.SetTextSize(cmsTextSize*topMargin)
+    latex.SetTextSize(cmsTextSize * topMargin)
     latex.SetTextAlign(13)  # Align left and top
     latex.DrawLatex(posX_, posY_, cmsText)
 
@@ -85,6 +85,6 @@ def CMS_lumi(pad, iPeriod, iPosX):
         latex.SetTextFont(extraTextFont)
         latex.SetTextAlign(13)
         latex.SetTextSize(extraTextSize*topMargin)
-        latex.DrawLatex(posX_+relExtraDX, posY_, extraText)
+        latex.DrawLatex(posX_+relExtraDX*leftMargin, posY_, extraText)
 
     pad.Update()

@@ -25,7 +25,7 @@ def createKeyFilterDict(global_cfg_dict):
                 #print(ch, reg, cat, filter_str)
                 #print()
                 #print(filter_str)
-                if cat not in boosted_categories and !(cat.startswith("baseline")):
+                if cat not in boosted_categories and not (cat.startswith("baseline")):
                     filter_str += "&& (b1_pt>0 && b2_pt>0)"
                 filter_str += ")"
                 #print(filter_str)

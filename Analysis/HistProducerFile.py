@@ -62,18 +62,21 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
     isCentral = 'Central' in key_2
     histograms = {}
     boosted_categories = global_cfg_dict['boosted_categories']
+    categories = global_cfg_dict['categories']
+    all_categories = categories + boosted_categories
+    if args.var in var_only_boosted:
+        all_categories = boosted_categories
+    if (args.var.startswith('b1') or args.var.startswith('b2')):
+        all_categories = categories
     unc_to_not_consider_boosted = global_cfg_dict['unc_to_not_consider_boosted']
     boosted_variables = global_cfg_dict['var_only_boosted']
     for key_1,key_cut in key_filter_dict.items():
         ch, reg, cat = key_1
+        if cat not in all_categories: continue
         if ch not in global_cfg_dict['channels_to_consider'] : continue
         if (key_1, key_2) in histograms.keys(): continue
-        if cat in boosted_categories:
-            if (var.startswith('b1') or var.startswith('b2')): continue
-            if uncName in unc_to_not_consider_boosted: continue
-        else:
-            if var in boosted_variables: continue
-        total_weight_expression = GetWeight(ch,cat,global_cfg_dict['boosted_categories']) if sample_type!='data' else "1"
+        if var in boosted_variables and uncName in unc_to_not_consider_boosted: continue
+        total_weight_expression = GetWeight(ch,cat,boosted_categories) if sample_type!='data' else "1"
         #print(total_weight_expression)
         weight_name = "final_weight"
         if not isCentral:
@@ -215,6 +218,13 @@ if __name__ == "__main__":
         df_empty = True
 
     scales = global_cfg_dict['scales']
+    all_categories = categories + boosted_categories
+    if args.var in var_only_boosted:
+        all_categories = boosted_categories
+
+    if (args.var.startswith('b1') or args.var.startswith('b2')):
+        all_categories = categories
+    print(all_categories)
 
     create_new_hist = key_not_exist or df_empty
 
@@ -257,7 +267,7 @@ if __name__ == "__main__":
                     central_histograms.update(norm_histograms)
 
         # save histograms
-        SaveHists(central_histograms, outfile, global_cfg_dict['categories'])
+        SaveHists(central_histograms, outfile, all_categories)
 
         # shape weight  histograms
         if args.compute_unc_variations and args.dataset!='data':
@@ -270,7 +280,7 @@ if __name__ == "__main__":
                     if key_2 not in all_dataframes.keys(): continue
                     if not all_dataframes[key_2] : continue
                     shape_histograms=  GetHistogramDictFromDataframes(args.var, all_dataframes, key_2 , key_filter_dict,unc_cfg_dict['shape'], hist_cfg_dict, global_cfg_dict, args.furtherCut)
-                    SaveHists(shape_histograms, outfile,global_cfg_dict['categories'])
+                    SaveHists(shape_histograms, outfile,all_categories)
 
 
         outfile.Close()

@@ -27,11 +27,14 @@ def GetHistName(sample_name, sample_type, uncName, unc_scale,global_cfg_dict):
 def RebinHisto(hist_initial, new_binning, sample, verbose=False):
     new_binning_array = array.array('d', new_binning)
     new_hist = hist_initial.Rebin(len(new_binning)-1, "new_hist", new_binning_array)
-    for nbin in range(0,new_hist.GetNbinsX()+1):
-        content=new_hist.GetBinContent(nbin)
-        if content<0:
-            print(f"for {sample}, bin {nbin} content is < 0:  {content}")
     fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(new_hist)
+    #print(fix_negative_contributions)
+    if not fix_negative_contributions:
+        print(fix_negative_contributions,debug_info,negative_bins_info)
+        for nbin in range(0,new_hist.GetNbinsX()+1):
+            content=new_hist.GetBinContent(nbin)
+            if content<0:
+                print(f"for {sample}, bin {nbin} content is < 0:  {content}")
     n_finalbin = new_hist.GetBinContent(new_hist.GetNbinsX())
     n_overflow = new_hist.GetBinContent(new_hist.GetNbinsX()+1)
     new_hist.SetBinContent(new_hist.GetNbinsX(), n_finalbin+n_overflow)
@@ -151,6 +154,7 @@ if __name__ == "__main__":
     parser.add_argument('--category',required=False, type=str, default = 'inclusive')
     parser.add_argument('--wantData', required=False, type=bool, default=False)
     parser.add_argument('--wantQCD', required=False, type=bool, default=False)
+    parser.add_argument('--wantLogScale', required=False, type=bool, default=False)
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
     parser.add_argument('--year', required=False, type=str,default='2018')
     parser.add_argument('--rebin', required=False, type=bool,default=False)
@@ -271,6 +275,12 @@ if __name__ == "__main__":
     dir_1 = dir_0p1.Get(args.category)
 
     hists_to_plot = {}
+    if args.wantLogScale:
+        hist_cfg_dict[args.var]['use_log_y'] = True
+        hist_cfg_dict[args.var]['max_y_sf'] = 20.2
+    else:
+        hist_cfg_dict[args.var]['use_log_y'] = False
+        hist_cfg_dict[args.var]['max_y_sf'] = 1.2
 
     rebin_condition = args.rebin and 'x_rebin' in hist_cfg_dict[args.var].keys()
     bins_to_compute = hist_cfg_dict[args.var]['x_bins']

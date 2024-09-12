@@ -11,7 +11,8 @@ def createKeyFilterDict(global_cfg_dict):
     filter_str = ""
     channels_to_consider = global_cfg_dict['channels_to_consider']
     qcd_regions_to_consider = global_cfg_dict['QCDRegions']
-    categories_to_consider = global_cfg_dict["categories"]
+    categories_to_consider = global_cfg_dict["categories"] + global_cfg_dict["boosted_categories"]
+    boosted_categories = global_cfg_dict["boosted_categories"]
     triggers = global_cfg_dict['hist_triggers']
     mass_cut_limits = global_cfg_dict['mass_cut_limits']
     for ch in channels_to_consider:
@@ -24,7 +25,7 @@ def createKeyFilterDict(global_cfg_dict):
                 #print(ch, reg, cat, filter_str)
                 #print()
                 #print(filter_str)
-                if cat not in ["boosted_baseline","boosted","boosted_cat2","boosted_cat3","boosted_baseline_cat3","baseline", "baseline_masswindow"]:
+                if cat not in boosted_categories and !(cat.startswith("baseline")):
                     filter_str += "&& (b1_pt>0 && b2_pt>0)"
                 filter_str += ")"
                 #print(filter_str)

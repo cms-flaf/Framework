@@ -63,13 +63,14 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
     histograms = {}
     boosted_categories = global_cfg_dict['boosted_categories']
     categories = global_cfg_dict['categories']
+    boosted_variables = global_cfg_dict['var_only_boosted']
     all_categories = categories + boosted_categories
-    if args.var in var_only_boosted:
+    if args.var in boosted_variables:
         all_categories = boosted_categories
     if (args.var.startswith('b1') or args.var.startswith('b2')):
         all_categories = categories
     unc_to_not_consider_boosted = global_cfg_dict['unc_to_not_consider_boosted']
-    boosted_variables = global_cfg_dict['var_only_boosted']
+
     for key_1,key_cut in key_filter_dict.items():
         ch, reg, cat = key_1
         if cat not in all_categories: continue
@@ -217,9 +218,13 @@ if __name__ == "__main__":
     if not key_not_exist and ROOT.RDataFrame('Events',args.inFile).Count().GetValue() == 0:
         df_empty = True
 
+
     scales = global_cfg_dict['scales']
+    categories = global_cfg_dict['categories']
+    boosted_categories = global_cfg_dict['boosted_categories']
+    boosted_variables = global_cfg_dict['var_only_boosted']
     all_categories = categories + boosted_categories
-    if args.var in var_only_boosted:
+    if args.var in boosted_variables:
         all_categories = boosted_categories
 
     if (args.var.startswith('b1') or args.var.startswith('b2')):

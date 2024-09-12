@@ -236,7 +236,7 @@ if __name__ == "__main__":
     fixNegativeContributions = False
     if args.var != 'kinFit_m':
         fixNegativeContributions=True
-    AddQCDInHistDict(args.var,all_histograms_1D, channels, all_categories, args.uncSource, all_samples_types.keys(), scales,unc_to_not_consider_boosted,fixNegativeContributions)
+    AddQCDInHistDict(args.var, all_histograms_1D, channels, all_categories, args.uncSource, all_samples_types.keys(), scales, wantNegativeContributions=False)
 
 
     outFile = ROOT.TFile(args.outFile, "RECREATE")

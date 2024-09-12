@@ -109,31 +109,30 @@ def MergeHistogramsPerType(all_histograms):
 
 
 
-def GetBTagWeightDict(var,all_histograms, categories, boosted_categories):
+def GetBTagWeightDict(var,all_histograms, categories, boosted_categories, boosted_variables):
     all_histograms_1D = {}
     for sample_type in all_histograms.keys():
         #print(sample_type)
         all_histograms_1D[sample_type] = {}
         for key_name,histogram in all_histograms[sample_type].items():
             (key_1, key_2) = key_name
-            if var.startswith('SelectedFatJet'):
-                all_histograms_1D[sample_type][key_name] = histogram
-                continue
-            ch, reg, cat = key_1
-            uncName,scale = key_2
-            key_tuple_num = ((ch, reg, 'btag_shape'), key_2)
-            key_tuple_den = ((ch, reg, 'inclusive'), key_2)
-            ratio_num_hist = all_histograms[sample_type][key_tuple_num] if key_tuple_num in all_histograms[sample_type].keys() else None
-            ratio_den_hist = all_histograms[sample_type][key_tuple_den] if key_tuple_den in all_histograms[sample_type].keys() else None
-            num = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)
-            den = ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
-            ratio = 0.
-            if ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1) != 0 :
-                ratio = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)/ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
-
-            if cat in boosted_categories or cat.startswith("inclusive") or cat.startswith("btag_shape") or cat.startswith("baseline") :
-                ratio = 1
-            histogram.Scale(ratio)
+            if var not in boosted_variables:
+                print(f"considering var {var}")
+                ch, reg, cat = key_1
+                uncName,scale = key_2
+                key_tuple_num = ((ch, reg, 'btag_shape'), key_2)
+                key_tuple_den = ((ch, reg, 'inclusive'), key_2)
+                ratio_num_hist = all_histograms[sample_type][key_tuple_num] if key_tuple_num in all_histograms[sample_type].keys() else None
+                ratio_den_hist = all_histograms[sample_type][key_tuple_den] if key_tuple_den in all_histograms[sample_type].keys() else None
+                num = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)
+                den = ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
+                ratio = 0.
+                if ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1) != 0 :
+                    ratio = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)/ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
+                if cat in boosted_categories or cat.startswith("inclusive") or cat.startswith("btag_shape") or cat.startswith("baseline") :
+                    print(f"for cat {cat} setting ratio to 1")
+                    ratio = 1
+                histogram.Scale(ratio)
             all_histograms_1D[sample_type][key_name] = histogram
     return all_histograms_1D
 
@@ -180,14 +179,12 @@ if __name__ == "__main__":
         channels = ['muMu', 'eE']
         print(f"""considering {global_cfg_dict["channels_to_consider"]}""")
 
-    #if args.var in ['tau1_pt', 'tau1_phi', 'tau2_pt', 'tau2_phi']:
-        #channels = list(global_cfg_dict['channels_to_consider'])
     signals = list(global_cfg_dict['signal_types'])
     unc_to_not_consider_boosted = list(global_cfg_dict['unc_to_not_consider_boosted'])
-    var_only_boosted = list(global_cfg_dict['var_only_boosted'])
+    boosted_variables = list(global_cfg_dict['var_only_boosted'])
 
     all_categories = categories + boosted_categories
-    if args.var in var_only_boosted:
+    if args.var in boosted_variables:
         all_categories = boosted_categories
 
     if (args.var.startswith('b1') or args.var.startswith('b2')):
@@ -230,8 +227,8 @@ if __name__ == "__main__":
                 all_samples_types[sample_key].append(sample_name)
         inFileRoot.Close()
     MergeHistogramsPerType(all_histograms)
-    all_histograms_1D=GetBTagWeightDict(args.var,all_histograms, categories, boosted_categories)
-    print(all_histograms_1D)
+    all_histograms_1D=GetBTagWeightDict(args.var,all_histograms, categories, boosted_categories, boosted_variables)
+    #print(all_histograms_1D)
 
     fixNegativeContributions = False
     if args.var != 'kinFit_m':

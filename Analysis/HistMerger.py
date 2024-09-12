@@ -117,7 +117,6 @@ def GetBTagWeightDict(var,all_histograms, categories, boosted_categories, booste
         for key_name,histogram in all_histograms[sample_type].items():
             (key_1, key_2) = key_name
             if var not in boosted_variables:
-                print(f"considering var {var}")
                 ch, reg, cat = key_1
                 uncName,scale = key_2
                 key_tuple_num = ((ch, reg, 'btag_shape'), key_2)
@@ -133,6 +132,8 @@ def GetBTagWeightDict(var,all_histograms, categories, boosted_categories, booste
                     print(f"for cat {cat} setting ratio to 1")
                     ratio = 1
                 histogram.Scale(ratio)
+            else:
+                print(f"for var {var} no ratio is considered and the histogram is directly saved")
             all_histograms_1D[sample_type][key_name] = histogram
     return all_histograms_1D
 

@@ -24,9 +24,12 @@ def GetHistName(sample_name, sample_type, uncName, unc_scale,global_cfg_dict):
     return histName
 
 
+#def RebinHisto(hist_initial, new_binning, sample, file_to_save_hist, verbose=False):
 def RebinHisto(hist_initial, new_binning, sample, verbose=False):
     new_binning_array = array.array('d', new_binning)
-    new_hist = hist_initial.Rebin(len(new_binning)-1, "new_hist", new_binning_array)
+    new_hist = hist_initial.Rebin(len(new_binning)-1, sample, new_binning_array)
+    if sample == 'data' : new_hist.SetBinErrorOption(ROOT.TH1.kPoisson)
+    #file_to_save_hist.WriteObject(new_hist, sample)
     fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(new_hist)
     #print(fix_negative_contributions)
     if not fix_negative_contributions:
@@ -263,7 +266,7 @@ if __name__ == "__main__":
 
 
     plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg_dict, inputs_cfg=inputs_cfg_dict)
-    cat_txt = args.category if args.category !='inclusive' else 'incl'
+    cat_txt = args.category.replace('_masswindow','')
     custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS data/simulation','scope_text':''}
     #print(hists_to_plot)
     if args.wantData==False:
@@ -288,7 +291,7 @@ if __name__ == "__main__":
         bins_to_compute = findNewBins(hist_cfg_dict,args.var,args.channel,args.category)
         new_bins = getNewBins(bins_to_compute)
 
-
+    #file_to_save_hist = ROOT.TFile(f"histrebinned_{args.var}_{args.channel}_{args.category}_{args.qcdregion}.root", "RECREATE")
     for sample_name,sample_content in all_samples_types.items():
         sample_type = sample_content['type']
         sample_plot_name = sample_content['plot']
@@ -312,8 +315,8 @@ if __name__ == "__main__":
     #print(hists_to_plot)
     #print(all_samples_types.keys())
 
-
     plotter.plot(args.var, hists_to_plot, args.outFile, want_data = args.wantData, custom=custom1)
     inFile_root.Close()
+    #file_to_save_hist.Close()
     print(args.outFile)
     #print(args.outFile)

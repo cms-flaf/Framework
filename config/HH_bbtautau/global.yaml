@@ -47,10 +47,10 @@ QCDRegions:
   - OS_AntiIso
   - SS_AntiIso
 boosted_categories:
-  - boosted_cat2
-  - boosted_cat3
-  - boosted_masswindow
-  - boosted_cat2_masswindow
+  # - boosted_cat2
+  # - boosted_cat3
+  # - boosted_masswindow
+  # - boosted_cat2_masswindow
   - boosted_cat3_masswindow
 
 categories:
@@ -61,25 +61,25 @@ categories:
   - boosted_baseline_masswindow
   - boosted_baseline_cat3
   - boosted_baseline_cat3_masswindow
-  - res0b_inclusive
-  - res1b_inclusive
-  - res2b_inclusive
-  - boosted
-  - res0b_cat2
-  - res1b_cat2
-  - res2b_cat2
-  - res2b_cat3
-  - res1b_cat3
-  - res0b_cat3
-  - inclusive_masswindow
-  - btag_shape_masswindow
-  - baseline_masswindow
-  - res0b_inclusive_masswindow
-  - res1b_inclusive_masswindow
-  - res2b_inclusive_masswindow
-  - res0b_cat2_masswindow
-  - res1b_cat2_masswindow
-  - res2b_cat2_masswindow
+  # - res0b_inclusive
+  # - res1b_inclusive
+  # - res2b_inclusive
+  # - boosted
+  # - res0b_cat2
+  # - res1b_cat2
+  # - res2b_cat2
+  # - res2b_cat3
+  # - res1b_cat3
+  # - res0b_cat3
+  # - inclusive_masswindow
+  # - btag_shape_masswindow
+  # - baseline_masswindow
+  # - res0b_inclusive_masswindow
+  # - res1b_inclusive_masswindow
+  # - res2b_inclusive_masswindow
+  # - res0b_cat2_masswindow
+  # - res1b_cat2_masswindow
+  # - res2b_cat2_masswindow
   - res2b_cat3_masswindow
   - res1b_cat3_masswindow
   - res0b_cat3_masswindow
@@ -261,19 +261,19 @@ scales:
 
 TTCR_mass_limits:
   eTau:
-    - 50
-    - 100
+    - 30
+    - 110
   muTau:
-    - 40
+    - 30
     - 100
   muMu:
-    - 80
+    - 70
     - 100
   tauTau:
-    - 50
-    - 110
+    - 40
+    - 140
   eE:
-    - 80
+    - 70
     - 100
 # preVFP == APV == HIPM
 unc_2018:

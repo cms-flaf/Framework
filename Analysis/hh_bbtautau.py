@@ -278,14 +278,18 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("SR_bb_boosted", f"(bb_m_vis_softdrop > {SR_mass_limits_bb_boosted[0]} && bb_m_vis_softdrop < {SR_mass_limits_bb_boosted[1]});")
         self.df = self.df.Define("SR", f" SR_tt &&  SR_bb")
         self.df = self.df.Define("SR_boosted", f" SR_tt &&  SR_bb_boosted")
-        self.df = self.df.Define("DYCR", "if(muMu || eE) {return (tautau_m_vis < 92 && tautau_m_vis > 89);} return true;") # for next iteration
+
+
+        self.df = self.df.Define("DYCR", "if(muMu || eE) {return (tautau_m_vis < 92 && tautau_m_vis > 89);} return true;")
+        self.df = self.df.Define("DYCR_boosted", "DYCR")
+
+
         TTCR_mass_limits_eTau = self.config['TTCR_mass_limits']['eTau']
         TTCR_mass_limits_muTau = self.config['TTCR_mass_limits']['muTau']
         TTCR_mass_limits_tauTau = self.config['TTCR_mass_limits']['tauTau']
         TTCR_mass_limits_muMu = self.config['TTCR_mass_limits']['muMu']
         TTCR_mass_limits_eE = self.config['TTCR_mass_limits']['eE']
-
-        self.df = self.df.Define("ttCR", f"""
+        self.df = self.df.Define("TTCR", f"""
                                 if(eTau) {{return (tautau_m_vis < {TTCR_mass_limits_eTau[0]} || tautau_m_vis > {TTCR_mass_limits_eTau[1]});
                                 }};
                                  if(muTau) {{return (tautau_m_vis < {TTCR_mass_limits_muTau[0]} || tautau_m_vis > {TTCR_mass_limits_muTau[1]});
@@ -297,6 +301,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                                  if(eE) {{return (tautau_m_vis < {TTCR_mass_limits_eE[0]} || tautau_m_vis > {TTCR_mass_limits_eE[1]});
                                  }};
                                  return true;""")
+        self.df = self.df.Define("TTCR_boosted", "TTCR")
 
     def redefineWeights(self):
         weights_to_redefine = ["weight_tau1_TrgSF_ditau_Central","weight_tau2_TrgSF_ditau_Central","weight_tau1_TrgSF_singleTau_Central","weight_tau2_TrgSF_singleTau_Central","weight_TrgSF_MET_Central","weight_tau1_TrgSF_singleEle_Central", "weight_tau2_TrgSF_singleEle_Central", "weight_tau1_TrgSF_singleMu_Central", "weight_tau2_TrgSF_singleMu_Central"]
@@ -320,8 +325,6 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {self.bTagWP}) + int(b2_idbtagDeepFlavB >= {self.bTagWP})")
         for category_to_def in self.config['category_definition'].keys():
             category_name = category_to_def
-            if self.region == 'TTCR' or self.region == 'DYCR':
-                category_name += f'{category_to_def}_{self.region}'
             #print(self.config['category_definition'][category_to_def].format(pNetWP=self.pNetWP, region=self.region))
             self.df = self.df.Define(category_to_def, self.config['category_definition'][category_to_def].format(pNetWP=self.pNetWP, region=self.region))
 

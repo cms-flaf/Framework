@@ -237,7 +237,7 @@ class HistProducerFileTTCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                                     '--inFile', local_input.path, '--outFileName',local_output.path,
                                     '--dataset', sample_name, '--uncConfig', unc_config,
                                     '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type,
-                                    '--globalConfig', global_config, '--var', var, '--period', self.period, '--furtherCut', "ttCR" ]
+                                    '--globalConfig', global_config, '--var', var, '--period', self.period, '--region', "ttCR" ]
             if self.global_params['compute_unc_histograms'] or var == 'kinFit_m':
                 HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
             if 'deepTau2p5' in self.version.split('_'):
@@ -336,7 +336,7 @@ class HistProducerFileDYCRTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                                     '--inFile', local_input.path, '--outFileName',local_output.path,
                                     '--dataset', sample_name, '--uncConfig', unc_config,
                                     '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type,
-                                    '--globalConfig', global_config, '--var', var, '--period', self.period, '--furtherCut', "DYCR" ]
+                                    '--globalConfig', global_config, '--var', var, '--period', self.period, '--region', "DYCR" ]
             if self.global_params['compute_unc_histograms'] or var == 'kinFit_m':
                 HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
             if 'deepTau2p5' in self.version.split('_'):

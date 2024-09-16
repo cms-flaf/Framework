@@ -128,14 +128,18 @@ triggers:
   muMu: HLT_singleMu || HLT_MET
 
 hist_triggers:
-  eTau:  ((HLT_singleEle && SingleEle_region) || (HLT_singleTau && SingleTau_region) || (HLT_MET && MET_region ))
-  #eTau:  (((HLT_singleEle || HLT_etau ) && (SingleEle_region || CrossEleTau_region) )|| (HLT_singleTau && SingleTau_region)  || (HLT_MET && MET_region ))
-  muTau: ((HLT_singleMu && SingleMu_region) || (HLT_singleTau && SingleTau_region) || (HLT_MET && MET_region ))
-  #muTau: (((HLT_singleMu || HLT_mutau ) && (SingleMu_region || CrossMuTau_region) ) || (HLT_singleTau && SingleTau_region)  || (HLT_MET && MET_region ))
+  eTau:  ((HLT_singleEle && SingleEle_region) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && MET_region ))
+  #eTau:  (((HLT_singleEle || HLT_etau ) && (SingleEle_region || CrossEleTau_region) )|| (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && MET_region ))
+  muTau: ((HLT_singleMu && SingleMu_region) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && MET_region ))
+  #muTau: (((HLT_singleMu || HLT_mutau ) && (SingleMu_region || CrossMuTau_region) ) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && MET_region ))
   tauTau: ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && MET_region ) )
   eE: (HLT_singleEle && SingleEle_region)
   eMu: ((HLT_singleEle && SingleEle_region) || (HLT_singleMu && SingleMu_region))
   muMu: (HLT_singleMu && SingleMu_region)
+
+
+
+
 
 application_regions:
   HLT_singleMu:
@@ -151,7 +155,7 @@ application_regions:
     region_name: CrossEleTau_region
     region_cut: (tau1_pt > 25 && abs(tau1_eta) < 2.1 && tau2_pt > 35 && abs(tau2_eta) < 2.1)
   HLT_ditau:
-    region_name: Legacy_region
+    region_name: diTau_region
     region_cut: (tau1_pt > 40 && tau2_pt > 40)
   HLT_singleTau:
     region_name: SingleTau_region
@@ -261,17 +265,17 @@ scales:
 
 TTCR_mass_limits:
   eTau:
-    - 30
-    - 110
+    - 15
+    - 130
   muTau:
-    - 30
-    - 100
+    - 15
+    - 130
   muMu:
     - 70
     - 100
   tauTau:
-    - 40
-    - 140
+    - 15
+    - 130
   eE:
     - 70
     - 100

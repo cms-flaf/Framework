@@ -39,7 +39,7 @@ if __name__ == "__main__":
     with open(global_cfg_file, 'r') as f:
         global_cfg_dict = yaml.safe_load(f)
     dfWrapped_DY = PrepareDfForHistograms(DataFrameBuilderForHistograms(df_initial_DY,global_cfg_dict, f"Run2_{args.year}"))
-    GetIntervals.GetMassCut(dfWrapped_DY,global_cfg_dict, global_cfg_dict['channels_to_consider']+['eTau'],['inclusive','res2b_cat3'], 0.95)
+    GetIntervals.GetMassCut(dfWrapped_DY,global_cfg_dict, global_cfg_dict['channels_to_consider'],['inclusive','res2b_cat3'], 0.95)
 
     inFiles = Utilities.ListToVector([
     f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1000/nanoHTT_0.root",
@@ -104,5 +104,5 @@ if __name__ == "__main__":
     with open(global_cfg_file, 'r') as f:
         global_cfg_dict = yaml.safe_load(f)
     dfWrapped = PrepareDfForHistograms(DataFrameBuilderForHistograms(df_initial,global_cfg_dict, f"Run2_{args.year}"))
-    GetIntervals.GetMassCut(dfWrapped,global_cfg_dict, global_cfg_dict['channels_to_consider']+['eTau'],['inclusive','res2b_cat3'], 0.90)
+    GetIntervals.GetMassCut(dfWrapped,global_cfg_dict, global_cfg_dict['channels_to_consider'],['inclusive','res2b_cat3'], 0.90)
     #GetIntervals.GetMassCut(dfWrapped,global_cfg_dict,global_cfg_dict['channels_to_consider'], 0.99)

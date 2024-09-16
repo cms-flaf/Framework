@@ -16,7 +16,7 @@ tau1_pt:
   y_title: Events #/(15 GeV)
   #y_title: Events
   use_log_y: False
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   # use_log_y: True
   # max_y_sf: 20.2
   divide_by_bin_width: False # True
@@ -32,7 +32,7 @@ tau1_met_mt:
   #y_title: dN/dm (1/GeV)
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 tau1_metnomu_mt:
@@ -45,7 +45,7 @@ tau1_metnomu_mt:
   #y_title: dN/dm (1/GeV)
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 tau1_eta:
@@ -54,7 +54,7 @@ tau1_eta:
   x_title: \eta(\tau_1)
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 tau1_phi:
@@ -63,7 +63,7 @@ tau1_phi:
   x_title: \phi(\tau_1)
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 deltaPhi_metnomu_tau1:
@@ -72,7 +72,7 @@ deltaPhi_metnomu_tau1:
   x_title: \Delta(\phi_{tau_1}, \phi_{MET-\mu})
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 deltaPhi_met_tau1:
@@ -81,7 +81,7 @@ deltaPhi_met_tau1:
   x_title: \Delta(\phi_{tau_1}, \phi_{MET})
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 
@@ -102,7 +102,7 @@ tau2_pt:
   y_title: Events #/(15 GeV)
   #y_title: Events
   use_log_y: False
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   # use_log_y: True
   # max_y_sf: 20.2
   divide_by_bin_width: False #True
@@ -118,7 +118,7 @@ tau2_metnomu_mt:
   #y_title: dN/dm (1/GeV)
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 tau2_met_mt:
@@ -131,7 +131,7 @@ tau2_met_mt:
   #y_title: dN/dm (1/GeV)
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 tau2_eta:
@@ -140,7 +140,7 @@ tau2_eta:
   x_title: \eta(\tau_2)
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 tau2_phi:
@@ -149,7 +149,7 @@ tau2_phi:
   x_title: \phi(\tau_2)
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 
@@ -159,7 +159,7 @@ deltaPhi_metnomu_tau2:
   x_title: \Delta(\phi_{tau_2}, \phi_{MET-\mu})
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 deltaPhi_met_tau2:
@@ -168,7 +168,7 @@ deltaPhi_met_tau2:
   x_title: \Delta(\phi_{tau_2}, \phi_{MET})
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 ########## tau2 END ##########
@@ -185,7 +185,7 @@ b1_pt:
   x_title: p_{T}(b_1) (GeV)
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   #use_log_y: True
   #max_y_sf: 21.2
   divide_by_bin_width: False
@@ -196,7 +196,7 @@ b1_eta:
   x_title: \eta(b_1)
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   use_log_x: False
   divide_by_bin_width: False
 
@@ -206,7 +206,7 @@ b1_phi:
   x_title: \phi(b_1)
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 b1_btagDeepFlavB:
@@ -215,7 +215,7 @@ b1_btagDeepFlavB:
   x_title: b-jet_1 deepFlavB
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 b1_btagDeepFlavCvB:
@@ -223,7 +223,7 @@ b1_btagDeepFlavCvB:
   x_title: b-jet_1 DeepFlavCvB
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 b1_btagDeepFlavCvL:
@@ -231,7 +231,7 @@ b1_btagDeepFlavCvL:
   x_title: b-jet_1 DeepFlavCvL
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 
@@ -241,7 +241,7 @@ b1_HHbtag:
   x_title: b-jet_1 HHbtag
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 
@@ -250,7 +250,7 @@ b1_hadronFlavour:
   x_title: b-jet_1 hadronFlavour
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 
@@ -260,7 +260,7 @@ deltaPhi_metnomu_b1:
   x_title: b_2 \phi
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 deltaPhi_met_b1:
@@ -268,7 +268,7 @@ deltaPhi_met_b1:
   x_title: b_2 \phi
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 ########## b1 END ##########
@@ -288,7 +288,7 @@ b2_pt:
   use_log_y: True
   max_y_sf: 21.2
   # use_log_y: False
-  # max_y_sf: 1.2
+  # max_y_sf: 1.8
   divide_by_bin_width: False
 
 
@@ -299,7 +299,7 @@ b2_eta:
   y_title: Events
   use_log_y: False
   use_log_x: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 b2_phi:
@@ -310,7 +310,7 @@ b2_phi:
   x_title: \phi(b_2)
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 b2_mass:
@@ -318,7 +318,7 @@ b2_mass:
   x_title: b-jet_2 mass
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 b2_btagDeepFlavB:
@@ -327,7 +327,7 @@ b2_btagDeepFlavB:
   x_title: b-jet_2 deepFlavB
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 b2_btagDeepFlavCvB:
@@ -335,7 +335,7 @@ b2_btagDeepFlavCvB:
   x_title: b-jet_2 DeepFlavCvB
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 b2_btagDeepFlavCvL:
@@ -343,7 +343,7 @@ b2_btagDeepFlavCvL:
   x_title: b-jet_2 DeepFlavCvL
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 
@@ -353,7 +353,7 @@ b2_HHbtag:
   x_title: b-jet_2 HHbtag
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 
@@ -362,7 +362,7 @@ b2_hadronFlavour:
   x_title: b-jet_2 hadronFlavour
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 deltaPhi_metnomu_b2:
@@ -370,7 +370,7 @@ deltaPhi_metnomu_b2:
   x_title: b_2 \phi
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 deltaPhi_met_b2:
@@ -378,7 +378,7 @@ deltaPhi_met_b2:
   x_title: b_2 \phi
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 ########## b2 END ##########
@@ -396,7 +396,7 @@ pt_ll:
   y_title: Events
   use_log_x: False
   use_log_y: False
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   # use_log_y: True
   # max_y_sf: 20.2
   divide_by_bin_width: False
@@ -411,7 +411,7 @@ pt_bb:
   y_title: Events
   use_log_x: False
   use_log_y: False
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   # use_log_y: True
   # max_y_sf: 20.2
   divide_by_bin_width: False
@@ -425,7 +425,7 @@ tautau_m_vis:
   y_title: Events
   use_log_x: False
   use_log_y: False
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   # use_log_y: True
   # max_y_sf: 20.2
   divide_by_bin_width: False
@@ -440,7 +440,7 @@ bb_m_vis:
   y_title: Events
   use_log_x: False
   use_log_y: False
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   # use_log_y: True
   # max_y_sf: 20.2
   divide_by_bin_width: False
@@ -448,15 +448,12 @@ bb_m_vis:
 
 bb_m_vis_pnet:
   x_bins: "200|0:1000"
-  x_rebin:
-    boosted_cat3: [0, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110,120, 130,140, 150,160, 170,180, 190,200, 210,220, 230, 240, 250, 260, 270, 300, 350, 400, 450, 500] # [40, 80,120,160,
-    boosted_cat3: [0, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110,120, 130,140, 150,160, 170,180, 190,200, 210,220, 230, 240, 250, 260, 270, 300, 350, 400, 450, 500] # [40, 80,120,160,202, 250]200, 250]
-    other: [0, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110,120, 130,140, 150,160, 170,180, 190,200, 210,220, 230, 240, 250, 260, 270, 300, 350, 400, 450, 500, 600, 700, 800, 1000]
+  x_rebin: [0,50,100, 150,200, 450]
   x_title: M^{bb}_{pNet} (GeV)
   y_title: Events
   use_log_x: False
   use_log_y: False
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   # use_log_y: True
   # max_y_sf: 20.2
   divide_by_bin_width: False
@@ -469,7 +466,7 @@ bb_m_vis_softdrop:
   y_title: Events
   use_log_x: False
   use_log_y: False
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   # use_log_y: True
   # max_y_sf: 20.2
   divide_by_bin_width: False
@@ -477,14 +474,12 @@ bb_m_vis_softdrop:
 bb_m_vis_fj:
   x_bins: "200|0:1000"
   x_rebin:
-    boosted_cat3: [0, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110,120, 130,140, 150,160, 170,180, 190,200, 210,220, 230, 240, 250, 260, 270, 300, 350, 400, 450, 500] # [40, 80,120,160,
-    boosted_cat3: [0, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110,120, 130,140, 150,160, 170,180, 190,200, 210,220, 230, 240, 250, 260, 270, 300, 350, 400, 450, 500] # [40, 80,120,160,202, 250]200, 250]
-    other: [0, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110,120, 130,140, 150,160, 170,180, 190,200, 210,220, 230, 240, 250, 260, 270, 300] # [40, 80,120,160,200, 250, 300, 350, 400, 450, 500,600, 700, 800, 1000]
+    other: [0,50,100, 150,200, 450]
   x_title: M^{bb}(GeV)
   y_title: Events
   use_log_x: False
   use_log_y: False
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   # use_log_y: True
   # max_y_sf: 20.2
   divide_by_bin_width: False
@@ -496,7 +491,7 @@ bbtautau_mass:
   y_title: Events
   use_log_y: False
   use_log_x: True
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 dR_tautau:
@@ -505,7 +500,7 @@ dR_tautau:
   x_title: \Delta R(\tau\tau)
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 dR_bb:
@@ -514,7 +509,7 @@ dR_bb:
   x_title: \Delta R(\b\b)
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 nBJets:
@@ -542,7 +537,7 @@ met_phi:
   x_rebin: [-3.2, -2.88, -2.56, -2.24, -1.92, -1.6, -1.28, -0.96, -0.64, -0.32, -0.0, 0.32, 0.64, 0.96, 1.28, 1.6, 1.92, 2.24, 2.56, 2.88, 3.2]
   x_title: \phi_{E_{T}^{miss}}
   y_title: Events
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   use_log_y: False
   divide_by_bin_width: False
 
@@ -559,7 +554,7 @@ met_phi_nano:
   x_rebin: [-3.2, -2.88, -2.56, -2.24, -1.92, -1.6, -1.28, -0.96, -0.64, -0.32, -0.0, 0.32, 0.64, 0.96, 1.28, 1.6, 1.92, 2.24, 2.56, 2.88, 3.2]
   x_title: \phi_{E_{T}^{miss}}
   y_title: Events
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   use_log_y: False
   divide_by_bin_width: True
 
@@ -577,7 +572,7 @@ metnomu_phi:
   x_rebin: [-3.2, -2.88, -2.56, -2.24, -1.92, -1.6, -1.28, -0.96, -0.64, -0.32, -0.0, 0.32, 0.64, 0.96, 1.28, 1.6, 1.92, 2.24, 2.56, 2.88, 3.2]
   x_title: \phi_{E_{T}^{miss}-\mu}
   y_title: Events
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   use_log_y: False
   divide_by_bin_width: False
 
@@ -610,7 +605,7 @@ SelectedFatJet_pt_boosted:
   x_title: p_{T}(fatJet) (GeV)
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 
@@ -620,7 +615,7 @@ SelectedFatJet_phi_boosted:
   y_title: Events
   use_log_y: False
   use_log_x: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 SelectedFatJet_eta_boosted:
@@ -630,7 +625,7 @@ SelectedFatJet_eta_boosted:
   y_title: Events
   use_log_y: False
   use_log_x: False
-  max_y_sf: 1.6
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 
@@ -639,7 +634,7 @@ SelectedFatJet_particleNet_massCorr_boosted:
   x_title: b-jet_2 DeepFlavCvL
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 
@@ -648,7 +643,7 @@ SelectedFatJet_particleNetWithMass_HbbvsQCD_boosted:
   x_title: b-jet_2 DeepFlavCvL
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 
@@ -658,7 +653,7 @@ SelectedFatJet_particleNetMD_Xbb_boosted:
   x_title: b-jet_2 DeepFlavCvL
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 
@@ -667,7 +662,7 @@ SelectedFatJet_particleNetLegacy_Xbb_boosted:
   x_title: b-jet_2 DeepFlavCvL
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.5
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 SelectedFatJet_particleNetLegacy_mass_boosted:
@@ -679,7 +674,7 @@ SelectedFatJet_particleNetLegacy_mass_boosted:
   x_title: pNet mass(fatJet) (GeV)
   y_title: Events
   use_log_y: False
-  max_y_sf: 1.2
+  max_y_sf: 1.8
   divide_by_bin_width: False
 
 

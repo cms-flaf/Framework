@@ -124,9 +124,9 @@ def GetSignalHistogram(inFileSig, channel, category, uncSource, histNamesDict,al
                 key_name = key_name.split('_')[0]
             sample = key_name
             key_name += f'ToHHTo2B2Tau_M-{mass}'
-            print(key_name)
-            print(histNamesDict.keys())
-            print(key_name in histNamesDict.keys())
+            #print(key_name)
+            #print(histNamesDict.keys())
+            #print(key_name in histNamesDict.keys())
             if key_name not in histNamesDict.keys(): continue
             sampleName, uncName, scale = histNamesDict[key_name]
             #sample_type = sample if not sample in sample_cfg_dict.keys() else sample_cfg_dict[sample]['sampleType']
@@ -156,6 +156,7 @@ if __name__ == "__main__":
     parser.add_argument('--qcdregion',required=False, type=str, default = 'OS_Iso')
     parser.add_argument('--category',required=False, type=str, default = 'inclusive')
     parser.add_argument('--wantData', required=False, type=bool, default=False)
+    parser.add_argument('--wantSignals', required=False, type=bool, default=False)
     parser.add_argument('--wantQCD', required=False, type=bool, default=False)
     parser.add_argument('--wantLogScale', required=False, type=bool, default=False)
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
@@ -187,11 +188,23 @@ if __name__ == "__main__":
     #     for input_dict in inputs_cfg_dict:
     #         input_dict['scale'] = 1
 
-    #if args.wantData == False:
-    #    for dicti in inputs_cfg_dict:
-    #        if dicti['name'] == 'data':
-    #            inputs_cfg_dict.remove(dicti)
-        #print(inputs_cfg_dict)
+    index_to_remove = []
+    for dicti in inputs_cfg_dict:
+        #print('type' in dicti.keys())
+        if args.wantSignals == False and 'type' in dicti.keys() and dicti['type']=='signal':
+            #print(dicti['name'])
+            #print(inputs_cfg_dict.index(dicti))
+            index_to_remove.append(inputs_cfg_dict.index(dicti))
+        elif args.wantData == False and dicti['name'] == 'data':
+            index_to_remove.append(inputs_cfg_dict.index(dicti))
+
+
+    index_to_remove.sort(reverse=True)
+
+    if index_to_remove:
+        for idx in index_to_remove:
+            inputs_cfg_dict.pop(idx)
+    #print(inputs_cfg_dict)
 
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
@@ -267,6 +280,8 @@ if __name__ == "__main__":
 
     plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg_dict, inputs_cfg=inputs_cfg_dict)
     cat_txt = args.category.replace('_masswindow','')
+    cat_txt = cat_txt.replace('_cat2','')
+    cat_txt = cat_txt.replace('_cat3','')
     custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS data/simulation','scope_text':''}
     #print(hists_to_plot)
     if args.wantData==False:
@@ -280,11 +295,11 @@ if __name__ == "__main__":
     hists_to_plot = {}
     if args.wantLogScale:
         hist_cfg_dict[args.var]['use_log_y'] = True
-        hist_cfg_dict[args.var]['max_y_sf'] = 20.2
+        hist_cfg_dict[args.var]['max_y_sf'] = 50.2
     else:
         hist_cfg_dict[args.var]['use_log_y'] = False
-        hist_cfg_dict[args.var]['max_y_sf'] = 1.2
-
+        hist_cfg_dict[args.var]['max_y_sf'] = 1.3
+    print(hist_cfg_dict[args.var]['max_y_sf'])
     rebin_condition = args.rebin and 'x_rebin' in hist_cfg_dict[args.var].keys()
     bins_to_compute = hist_cfg_dict[args.var]['x_bins']
     if rebin_condition :

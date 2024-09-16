@@ -258,14 +258,17 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                 if trg not in self.df.GetColumnNames():
                     print(f"{trg} not present in colNames")
                     self.df = self.df.Define(trg, "1")
+
         singleTau_th_dict = self.config['singleTau_th']
         singleMu_th_dict = self.config['singleMu_th']
         singleEle_th_dict = self.config['singleEle_th']
+        legacy_region_definition= "( ( channelId == 13 && (SingleEle_region  || CrossEleTau_region) ) || ( channelId == 23 && (SingleMu_region  || CrossMuTau_region) ) || ( channelId == 33 && ( diTau_region ) ) || (channelId==11 && (SingleEle_region)) || (channelId==12 && ( SingleEle_region || SingleMu_region ) ) || (channelId==22 && (SingleMu_region)) )"
         for trg_name,trg_dict in self.config['application_regions'].items():
+            if trg_name == 'HLT_MET':
+                self.df = self.df.Define("Legacy_region", legacy_region_definition)
             for key in trg_dict.keys():
                 region_name = trg_dict['region_name']
                 region_cut = trg_dict['region_cut'].format(tau_th=singleTau_th_dict[self.period], ele_th=singleEle_th_dict[self.period], mu_th=singleMu_th_dict[self.period])
-                #print(region_name, region_cut)
                 if region_name not in self.df.GetColumnNames():
                     self.df = self.df.Define(region_name, region_cut)
 

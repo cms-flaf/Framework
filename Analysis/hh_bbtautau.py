@@ -325,7 +325,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                                          return 1.f;""")
 
     def defineCategories(self):
-        self.df = self.df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {self.bTagWP}) + int(b2_idbtagDeepFlavB >= {self.bTagWP})")
+        self.df = self.df.Define("nSelBtag", f"int(b1_btagDeepFlavB > 0.2783 + b2_btagDeepFlavB>0.2783)")
         for category_to_def in self.config['category_definition'].keys():
             category_name = category_to_def
             #print(self.config['category_definition'][category_to_def].format(pNetWP=self.pNetWP, region=self.region))

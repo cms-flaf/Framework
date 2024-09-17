@@ -234,7 +234,7 @@ if __name__ == "__main__":
     create_new_hist = key_not_exist or df_empty
 
     if not create_new_hist:
-        dfWrapped_central = DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.inFile),global_cfg_dict, args.period, args.deepTauVersion)
+        dfWrapped_central = DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.inFile),global_cfg_dict, args.period, args.deepTauVersion, args.region)
         all_dataframes = {}
         all_histograms = {}
 
@@ -243,10 +243,11 @@ if __name__ == "__main__":
         outfile  = ROOT.TFile(args.outFileName,'RECREATE')
         col_names_central =  dfWrapped_central.colNames
         col_tpyes_central =  dfWrapped_central.colTypes
+        #print(col_names_central)
 
         hasCache= args.cacheFile != ''
         if hasCache:
-            dfWrapped_cache_central = DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.cacheFile),global_cfg_dict, args.period, args.deepTauVersion)
+            dfWrapped_cache_central = DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.cacheFile),global_cfg_dict, args.period, args.deepTauVersion, args.region)
             AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache_central, "cache_map_Central")
 
         if key_central not in all_dataframes:

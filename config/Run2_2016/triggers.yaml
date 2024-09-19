@@ -27,6 +27,21 @@ ditau:
       doMatching: True
     - ref_leg: 0
 
+singleTau:
+    channels:
+      - tauTau
+      - muTau
+      - eTau
+    path:
+      - HLT_VLooseIsoPFTau120_Trk50_eta2p1
+      - HLT_VLooseIsoPFTau140_Trk50_eta2p1
+    legs:
+      - offline_obj:
+          type: Tau
+          cut: ((HLT_VLooseIsoPFTau120_Trk50_eta2p1 && v_ops::pt(Tau_p4) > 130) || (HLT_VLooseIsoPFTau140_Trk50_eta2p1 && v_ops::pt(Tau_p4) > 150)) && abs(v_ops::eta(Tau_p4)) < 2.1
+        online_obj:
+          cut: TrigObj_id == 15 && (TrigObj_filterBits&4)!=0
+        doMatching: True
 
 singleMu:
   channels:

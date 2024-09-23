@@ -295,10 +295,10 @@ if __name__ == "__main__":
     hists_to_plot = {}
     if args.wantLogScale:
         hist_cfg_dict[args.var]['use_log_y'] = True
-        hist_cfg_dict[args.var]['max_y_sf'] = 50.2
+        hist_cfg_dict[args.var]['max_y_sf'] = 2000.2
     else:
         hist_cfg_dict[args.var]['use_log_y'] = False
-        hist_cfg_dict[args.var]['max_y_sf'] = 1.3
+        hist_cfg_dict[args.var]['max_y_sf'] = 1.4
     print(hist_cfg_dict[args.var]['max_y_sf'])
     rebin_condition = args.rebin and 'x_rebin' in hist_cfg_dict[args.var].keys()
     bins_to_compute = hist_cfg_dict[args.var]['x_bins']

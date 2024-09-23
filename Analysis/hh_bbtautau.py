@@ -375,7 +375,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
     def defineLeptonPreselection(self): # needs channel def
         self.df = self.df.Define("muon1_tightId", "if(muTau || muMu) {return (tau1_Muon_tightId && tau1_Muon_pfRelIso04_all < 0.15); } return true;")
         self.df = self.df.Define("muon2_tightId", "if(muMu || eMu) {return (tau2_Muon_tightId && tau2_Muon_pfRelIso04_all < 0.3);} return true;")
-        self.df = self.df.Define("ele_eMu_mvaIso", "if(eMu){return tau1_Electron_mvaIso_WP80; } return true; ")
+        self.df = self.df.Define("ele_eMu_mvaIso", "if(eMu){return tau1_Electron_mvaIso_WP80==1; } return true; ")
         self.df = self.df.Define("tau1_iso_medium", f"if(tauTau) return (tau1_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value}); return true;")
         if f"tau1_gen_kind" not in self.df.GetColumnNames():
             self.df=self.df.Define("tau1_gen_kind", "if(isData) return 5; return 0;")

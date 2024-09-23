@@ -237,7 +237,6 @@ if __name__ == "__main__":
         dfWrapped_central = DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.inFile),global_cfg_dict, args.period, deepTauVersion=args.deepTauVersion, region=args.region,isData=isData)
         all_dataframes = {}
         all_histograms = {}
-
         key_central = (args.sampleType, "Central", "Central")
         key_filter_dict = createKeyFilterDict(global_cfg_dict)
         outfile  = ROOT.TFile(args.outFileName,'RECREATE')

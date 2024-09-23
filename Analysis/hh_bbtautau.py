@@ -349,7 +349,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
             self.df = self.df.Define(category_to_def, self.config['category_definition'][category_to_def].format(pNetWP=self.pNetWP, region=self.region))
 
     def defineChannels(self):
-        for channel in self.config['channelSelection']:
+        for channel in self.config['all_channels']:
             ch_value = self.config['channelDefinition'][channel]
             self.df = self.df.Define(f"{channel}", f"channelId=={ch_value}")
 

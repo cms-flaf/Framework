@@ -35,9 +35,9 @@ corrections:
   - pu
 deepTauVersion: 2p1
 channelSelection:
-  - eTau
-  - muTau
-  - tauTau
+  # - eTau
+  # - muTau
+  # - tauTau
   - eE
   - eMu
   - muMu
@@ -58,9 +58,9 @@ categories:
   - btag_shape
   - baseline
   - boosted_baseline
-  - boosted_baseline_masswindow
   - boosted_baseline_cat3
-  - boosted_baseline_cat3_masswindow
+  #- boosted_baseline_masswindow
+  #- boosted_baseline_cat3_masswindow
   # - res0b_inclusive
   # - res1b_inclusive
   # - res2b_inclusive
@@ -71,7 +71,7 @@ categories:
   # - res2b_cat3
   # - res1b_cat3
   # - res0b_cat3
-  # - inclusive_masswindow
+  - inclusive_masswindow
   - btag_shape_masswindow
   - baseline_masswindow
   # - res0b_inclusive_masswindow
@@ -90,7 +90,13 @@ deepTauYears:
   v2p1: 2017
   v2p5: 2018
 
-
+all_channels:
+  - eTau
+  - muTau
+  - muMu
+  - tauTau
+  - eE
+  - eMu
 
 channels_to_consider:
   - eTau
@@ -193,7 +199,7 @@ category_definition:
   boosted_baseline_cat3_masswindow:  "!(res2b_cat3_masswindow) && (boosted_baseline)"
   boosted_cat3_masswindow:  "!(res2b_cat3_masswindow) && boosted_masswindow" #(SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={pNetWP}].size()>0) && {region}_boosted"
   res1b_cat3_masswindow:  "!(res2b_cat3_masswindow) && !(boosted_baseline_cat3) && nSelBtag == 1 && {region}"
-  res0b_cat3_masswindow:  "!(res2b_cat3_masswindow) && !(boosted_baseline_cat3) && nSelBtag == 0"
+  res0b_cat3_masswindow:  "!(res2b_cat3_masswindow) && !(boosted_baseline_cat3) && nSelBtag == 0 && {region}"
 
 
 

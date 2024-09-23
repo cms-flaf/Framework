@@ -286,7 +286,7 @@ if __name__ == "__main__":
     #print(hists_to_plot)
     if args.wantData==False:
         custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS simulation', 'scope_text':''}
-
+    print(args.inFile)
     inFile_root = ROOT.TFile.Open(args.inFile, "READ")
     dir_0 = inFile_root.Get(args.channel)
     dir_0p1 = dir_0.Get(args.qcdregion)
@@ -314,11 +314,11 @@ if __name__ == "__main__":
         if args.uncSource != 'Central': continue # to be fixed
         sample_histname = (GetHistName(sample_name, sample_type, 'Central','Central', global_cfg_dict))
         if sample_histname not in dir_1.GetListOfKeys():
-            print("ERRORE")
+            print(f"ERRORE: {sample_histname} non è nelle keys")
             continue
         obj = dir_1.Get(sample_histname)
         if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
-            print("ERRORE")
+            print(f"ERRORE: {sample_histname} non è un istogramma")
         obj.SetDirectory(0)
         if sample_plot_name not in hists_to_plot.keys():
             hists_to_plot[sample_plot_name] = RebinHisto(obj, new_bins, sample_name) if rebin_condition else obj

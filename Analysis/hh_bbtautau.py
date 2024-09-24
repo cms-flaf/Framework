@@ -211,6 +211,8 @@ def GetWeight(channel, cat, boosted_categories):
     weights_to_apply.extend(trg_weights_dict[channel])
     if cat not in boosted_categories:
          weights_to_apply.extend(["weight_Jet_PUJetID_Central_b1_2", "weight_Jet_PUJetID_Central_b2_2"])
+    else:
+        weights_to_apply.extend(["weight_pNet_Central"])
     total_weight = '*'.join(weights_to_apply)
     return total_weight
 
@@ -241,6 +243,14 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                                     SelectedFatJet_{fatJetVar}_boosted_vec[SelectedFatJet_idxOrdered[0]];
                                    """)
                 #print(fatJetVar)
+
+    def definePNetSFs(self):
+        print(f"defining PNet weights")
+        self.df= self.df.Define("weight_pNet_Central", f"""getSFPNet(SelectedFatJet_p4_boosted.Pt(), "{self.period}", "Central", "{self.pNetWPstring}")""")
+        self.df= self.df.Define("weight_pNet_Up", f"""getSFPNet(SelectedFatJet_p4_boosted.Pt(), "{self.period}", "Up", "{self.pNetWPstring}")""")
+        self.df= self.df.Define("weight_pNet_Up_rel", f"""weight_pNet_Up/weight_pNet_Central""")
+        self.df= self.df.Define("weight_pNet_Down", f"""getSFPNet(SelectedFatJet_p4_boosted.Pt(), "{self.period}", "Down", "{self.pNetWPstring}")""")
+        self.df= self.df.Define("weight_pNet_Down_rel", f"""weight_pNet_Down/weight_pNet_Central""")
 
     def defineApplicationRegions(self):
         for ch in self.config['channelSelection']:
@@ -405,6 +415,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.deepTauVersion = deepTauVersion
         self.config = config
         self.bTagWP = bTagWP
+        self.pNetWPstring = pNetWPstring
         self.pNetWP = WorkingPointsParticleNet[period][pNetWPstring]
         self.period = period
         self.region = region
@@ -419,6 +430,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.df = defineAllP4(dfForHistograms.df)
     dfForHistograms.defineBoostedVariables()
+    dfForHistograms.definePNetSFs()
     dfForHistograms.df = createInvMass(dfForHistograms.df)
     dfForHistograms.defineChannels()
     dfForHistograms.defineLeptonPreselection()

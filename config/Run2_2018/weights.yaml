@@ -197,6 +197,8 @@ norm:
     expression: weight_L1PreFiring_Muon_Stat{scale}_rel * final_weight
   L1Prefiring_Muon_Syst:
     expression: weight_L1PreFiring_Muon_Syst{scale}_rel * final_weight
+  pNet_SF:
+    expression: weight_pNet_{scale}_rel * final_weight
 shape:
   - TauES_DM0
   - TauES_DM1

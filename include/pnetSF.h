@@ -3,6 +3,7 @@
 #include <vector>
 #include <tuple>
 #include <iostream>
+// taken from https://github.com/LLRCMS/KLUBAnalysis/blob/10821fdc58f6bdb68b0142740f05b8c9f6e23bf9/src/pnetSF.cc#L5
 
 std::map<std::string, std::vector<float>> getSFmap(float pT_, const std::string& period_) {
 std::map<std::string, std::vector<float>> scaleFactors;

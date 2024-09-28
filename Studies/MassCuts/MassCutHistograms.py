@@ -6,8 +6,9 @@ import numpy as np
 
 ROOT.gStyle.SetOptStat(0)
 
-ROOT.gStyle.SetPalette(109)
-#ROOT.TColor.InvertPalette()
+#ROOT.gStyle.SetPalette(109)
+ROOT.gStyle.SetPalette(51)
+ROOT.TColor.InvertPalette()
 
 # kCubehelix=58, # 5/10 ma inverted è poco colorblind proven
 # kCMYK=73, # 6/10 ma inverted è o cess
@@ -27,7 +28,7 @@ ROOT.gStyle.SetPalette(109)
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
-from Studies.MassCuts.DrawPlots import create_2D_histogram,plot_2D_histogram
+from Studies.MassCuts.DrawPlots import plot_2D_histogram
 
 def GetModel2D(x_bins, y_bins):#hist_cfg, var1, var2):
     #x_bins = hist_cfg[var1]['x_bins']
@@ -56,7 +57,7 @@ def GetModel2D(x_bins, y_bins):#hist_cfg, var1, var2):
 
 
 
-def Plot2DMassRes1b(df, hist_cfg_dict, global_cfg_dict,channel='tauTau', year='2018',mass='1250'):
+def Plot2DMassRes1b(df, hist_cfg_dict, global_cfg_dict,channel='tauTau', year='2018',mass='1250',resonance=''):
     x_bins = hist_cfg_dict['bb_m_vis']['x_rebin']['other']
     y_bins = hist_cfg_dict['tautau_m_vis']['x_rebin']['other']
     hist_denum = df.Filter(f"OS_Iso && {channel} && !(res2b_cat3) && !(boosted_baseline_cat3) && nSelBtag == 1").Histo2D(GetModel2D(x_bins, y_bins),"bb_m_vis","tautau_m_vis").GetValue()
@@ -85,13 +86,14 @@ def Plot2DMassRes1b(df, hist_cfg_dict, global_cfg_dict,channel='tauTau', year='2
             y2 = hist_denum.GetYaxis().GetBinLowEdge(ybin)
         if hist_denum.GetYaxis().GetBinUpEdge(ybin)==global_cfg_dict['mass_cut_limits']['tautau_m_vis'][1]:
             y2 = hist_denum.GetYaxis().GetBinUpEdge(ybin)
-    print(f"Studies/MassCuts/output/res1b/{channel}_{year}_{mass}.png")
-    plot_2D_histogram(hist_denum, f"{channel} Res1b", "$m_{bb}$", "$m_{\\tau\\tau}$", [], f"Studies/MassCuts/output/res1b/{channel}_{year}_{mass}.png", f"Run2_{year}", (x1, y1, x2-x1, y2-y1))
-    #create_2D_hist_denum(hist_denum, c1, "prova.png", global_cfg_dict, f"Run2_{year}")
-    #c1.SaveAs(f"Studies/MassCuts/output/den_2D_res2b_{channel}.png")
+    outFileName = f"Studies/MassCuts/output/Run2_{year}/res1b/{channel}_M-{mass}"
+    if resonance != '' :
+        outFileName = (f"Studies/MassCuts/output/Run2_{year}/res1b/{channel}_{resonance}_M-{mass}")
+    print(outFileName)
+    plot_2D_histogram(hist_denum, f"{channel} Res1b", "$m_{bb}$", "$m_{\\tau\\tau}$", [], outFileName, f"Run2_{year}", (x1, y1, x2-x1, y2-y1))
 
 
-def Plot2DMassRes2b(df, hist_cfg_dict, global_cfg_dict,channel='tauTau', year='2018',mass='1250'):
+def Plot2DMassRes2b(df, hist_cfg_dict, global_cfg_dict,channel='tauTau', year='2018',mass='1250',resonance=''):
     x_bins = hist_cfg_dict['bb_m_vis']['x_rebin']['other']
     y_bins = hist_cfg_dict['tautau_m_vis']['x_rebin']['other']
     hist_denum = df.Filter(f"OS_Iso && {channel} && res2b_inclusive").Histo2D(GetModel2D(x_bins, y_bins),"bb_m_vis","tautau_m_vis").GetValue()
@@ -120,13 +122,14 @@ def Plot2DMassRes2b(df, hist_cfg_dict, global_cfg_dict,channel='tauTau', year='2
             y2 = hist_denum.GetYaxis().GetBinLowEdge(ybin)
         if hist_denum.GetYaxis().GetBinUpEdge(ybin)==global_cfg_dict['mass_cut_limits']['tautau_m_vis'][1]:
             y2 = hist_denum.GetYaxis().GetBinUpEdge(ybin)
-    print(f"Studies/MassCuts/output/res2b/{channel}_{year}_{mass}.png")
-    plot_2D_histogram(hist_denum, f"{channel} Res2b", "$m_{bb}$", "$m_{\\tau\\tau}$", [], f"Studies/MassCuts/output/res2b/{channel}_{year}_{mass}.png", f"Run2_{year}", (x1, y1, x2-x1, y2-y1))
-    #create_2D_hist_denum(hist_denum, c1, "prova.png", global_cfg_dict, f"Run2_{year}")
-    #c1.SaveAs(f"Studies/MassCuts/output/den_2D_res2b_{channel}.png")
+    outFileName = f"Studies/MassCuts/output/Run2_{year}/res2b/{channel}_M-{mass}"
+    if resonance != '' :
+        outFileName = (f"Studies/MassCuts/output/Run2_{year}/res2b/{channel}_{resonance}_M-{mass}")
+    print(outFileName)
+    plot_2D_histogram(hist_denum, f"{channel} Res2b", "$m_{bb}$", "$m_{\\tau\\tau}$", [], outFileName, f"Run2_{year}", (x1, y1, x2-x1, y2-y1))
 
-def Plot2DMassboosted(df, hist_cfg_dict, global_cfg_dict,channel='tauTau', year='2018', pNetWP=0.,mass='1250'):
-    x_bins = hist_cfg_dict['bb_m_vis']['x_rebin']['boosted_cat3']
+def Plot2DMassboosted(df, hist_cfg_dict, global_cfg_dict,channel='tauTau', year='2018', pNetWP=0.,mass='1250',resonance=''):
+    x_bins = hist_cfg_dict['bb_m_vis']['x_rebin']['boosted_cat3_masswindow']
     y_bins = hist_cfg_dict['tautau_m_vis']['x_rebin']['other']
     hist_denum = df.Filter(f"OS_Iso && {channel} && !(res2b_cat3) && SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={pNetWP}].size()>0").Histo2D(GetModel2D(x_bins, y_bins),"bb_m_vis_softdrop","tautau_m_vis").GetValue()
     hist_num = df.Filter(f"OS_Iso && {channel} && boosted_cat3").Histo2D(GetModel2D(x_bins, y_bins),"bb_m_vis","tautau_m_vis").GetValue()
@@ -153,8 +156,11 @@ def Plot2DMassboosted(df, hist_cfg_dict, global_cfg_dict,channel='tauTau', year=
             y2 = hist_denum.GetYaxis().GetBinLowEdge(ybin)
         if hist_denum.GetYaxis().GetBinUpEdge(ybin)==global_cfg_dict['mass_cut_limits']['tautau_m_vis'][1]:
             y2 = hist_denum.GetYaxis().GetBinUpEdge(ybin)
-    print(f"Studies/MassCuts/output/boosted/{channel}_{year}_{mass}.png")
-    plot_2D_histogram(hist_denum, f"{channel} Boosted", "$m_{bb}$", "$m_{\\tau\\tau}$", [], f"Studies/MassCuts/output/boosted/{channel}_{year}_{mass}.png", f"Run2_{year}", (x1, y1, x2-x1, y2-y1))
+    outFileName = f"Studies/MassCuts/output/Run2_{year}/boosted/{channel}_M-{mass}"
+    if resonance != '' :
+        outFileName = (f"Studies/MassCuts/output/Run2_{year}/boosted/{channel}_{resonance}_M-{mass}")
+    print(outFileName)
+    plot_2D_histogram(hist_denum, f"{channel} Boosted", "$m_{bb}$", "$m_{\\tau\\tau}$", [], outFileName, f"Run2_{year}", (x1, y1, x2-x1, y2-y1))
 
 
 if __name__ == "__main__":
@@ -169,6 +175,7 @@ if __name__ == "__main__":
     parser.add_argument('--year', required=False, type=str, default='2018')
     parser.add_argument('--cat', required=False, type=str, default='res2b')
     parser.add_argument('--mass', required=False, type=str, default='1250')
+    parser.add_argument('--res', required=False, type=str, default='both')
     args = parser.parse_args()
 
     headers_dir = os.path.dirname(os.path.abspath(__file__))
@@ -176,73 +183,81 @@ if __name__ == "__main__":
     ROOT.gInterpreter.Declare(f'#include "include/KinFitNamespace.h"')
     ROOT.gInterpreter.Declare(f'#include "include/HistHelper.h"')
     ROOT.gInterpreter.Declare(f'#include "include/Utilities.h"')
+    ROOT.gInterpreter.Declare(f'#include "include/pnetSF.h"')
     ROOT.gROOT.ProcessLine('#include "include/AnalysisTools.h"')
-
     inFiles = Utilities.ListToVector([
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1000/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1250/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1500/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1750/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-2000/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-250/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-2500/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-260/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-270/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-280/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-300/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-3000/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-320/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-350/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-400/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-450/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-500/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-550/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-600/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-650/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-700/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-750/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-800/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-850/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-900/nanoHTT_0.root" , f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-1000/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-1250/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-1500/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-1750/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-2000/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-250/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-2500/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-260/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-270/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-280/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-300/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-3000/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-320/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-350/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-400/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-450/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-500/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-550/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-600/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-650/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-700/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-750/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-800/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-850/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-900/nanoHTT_0.root"
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1000/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1250/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1500/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1750/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-2000/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-250/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-2500/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-260/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-270/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-280/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-300/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-3000/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-320/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-350/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-400/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-450/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-500/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-550/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-600/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-650/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-700/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-750/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-800/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-850/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-900/nanoHTT_0.root" , f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-1000/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-1250/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-1500/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-1750/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-2000/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-250/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-2500/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-260/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-270/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-280/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-300/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-3000/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-320/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-350/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-400/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-450/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-500/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-550/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-600/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-650/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-700/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-750/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-800/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-850/nanoHTT_0.root",
+        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-900/nanoHTT_0.root"
     ])
 
 
 
     masses_list = args.mass.split(',')
-    print(masses_list)
+    if args.mass == 'all':
+        masses_list = [1000, 1250, 1500, 1750, 2000, 2500, 250, 260, 270, 280, 3000, 300, 320, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900]
     inFiles = []
     for mass in masses_list:
-        inFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-{mass}/nanoHTT_0.root")
-        inFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v10_deepTau2p1_HTT/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-{mass}/nanoHTT_0.root")
+        if args.res == 'radion':
+            inFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-{mass}/nanoHTT_0.root")
+        elif args.res == 'graviton':
+            inFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-{mass}/nanoHTT_0.root")
+        else:
+            inFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-{mass}/nanoHTT_0.root")
+            inFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-{mass}/nanoHTT_0.root")
 
     mass_str = f"{masses_list[0]}"
     if len(masses_list) > 1:
         mass_str+=f"_{masses_list[-1]}"
-    print(inFiles)
+    if args.mass == 'all':
+        mass_str = 'all'
+    #print(inFiles)
     print("********************************************************************************")
     print(f"************************************* {args.year} *************************************")
     print("********************************************************************************")
@@ -260,11 +275,15 @@ if __name__ == "__main__":
 
     dfWrapped = PrepareDfForHistograms(DataFrameBuilderForHistograms(df_initial,global_cfg_dict, f"Run2_{args.year}"))
     pNetWP = dfWrapped.pNetWP
-
+    res_str = ''
+    if args.res == 'graviton':
+        res_str = 'grav'
+    elif args.res == 'radion':
+        res_str = 'rad'
     for channel in ['eTau', 'muTau','tauTau']:
         print(f"plotting res1b for {channel} and {args.year}")
-        Plot2DMassRes1b(dfWrapped.df,hist_cfg_dict,global_cfg_dict, channel, args.year, mass_str)
+        Plot2DMassRes1b(dfWrapped.df,hist_cfg_dict,global_cfg_dict, channel, args.year, mass_str,res_str)
         print(f"plotting res2b for {channel} and {args.year}")
-        Plot2DMassRes2b(dfWrapped.df,hist_cfg_dict,global_cfg_dict, channel, args.year, mass_str)
+        Plot2DMassRes2b(dfWrapped.df,hist_cfg_dict,global_cfg_dict, channel, args.year, mass_str,res_str)
         print(f"plotting boosted for {channel} and {args.year}")
-        Plot2DMassboosted(dfWrapped.df,hist_cfg_dict,global_cfg_dict, channel, args.year, pNetWP, mass_str)
+        Plot2DMassboosted(dfWrapped.df,hist_cfg_dict,global_cfg_dict, channel, args.year, pNetWP, mass_str,res_str)

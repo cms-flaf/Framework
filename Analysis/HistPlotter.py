@@ -24,20 +24,10 @@ def GetHistName(sample_name, sample_type, uncName, unc_scale,global_cfg_dict):
     return histName
 
 
-#def RebinHisto(hist_initial, new_binning, sample, file_to_save_hist, verbose=False):
 def RebinHisto(hist_initial, new_binning, sample, verbose=False):
     new_binning_array = array.array('d', new_binning)
     new_hist = hist_initial.Rebin(len(new_binning)-1, sample, new_binning_array)
     if sample == 'data' : new_hist.SetBinErrorOption(ROOT.TH1.kPoisson)
-    #file_to_save_hist.WriteObject(new_hist, sample)
-    fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(new_hist)
-    #print(fix_negative_contributions)
-    if not fix_negative_contributions:
-        print(fix_negative_contributions,debug_info,negative_bins_info)
-        for nbin in range(0,new_hist.GetNbinsX()+1):
-            content=new_hist.GetBinContent(nbin)
-            if content<0:
-                print(f"for {sample}, bin {nbin} content is < 0:  {content}")
     n_finalbin = new_hist.GetBinContent(new_hist.GetNbinsX())
     n_overflow = new_hist.GetBinContent(new_hist.GetNbinsX()+1)
     new_hist.SetBinContent(new_hist.GetNbinsX(), n_finalbin+n_overflow)
@@ -51,6 +41,15 @@ def RebinHisto(hist_initial, new_binning, sample, verbose=False):
     if verbose:
         for nbin in range(0, len(new_binning)):
             print(nbin, new_hist.GetBinContent(nbin))
+    fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(new_hist)
+    if not fix_negative_contributions:
+        print("negative contribution not fixed")
+    #    print(fix_negative_contributions,debug_info,negative_bins_info)
+    #    for nbin in range(0,new_hist.GetNbinsX()+1):
+    #        content=new_hist.GetBinContent(nbin)
+    #        if content<0:
+    #            print(f"for {sample}, bin {nbin} content is < 0:  {content}")
+
     return new_hist
 
 def findNewBins(hist_cfg_dict, var, channel, category):
@@ -286,20 +285,20 @@ if __name__ == "__main__":
     #print(hists_to_plot)
     if args.wantData==False:
         custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS simulation', 'scope_text':''}
-    print(args.inFile)
+    #print(args.inFile)
     inFile_root = ROOT.TFile.Open(args.inFile, "READ")
     dir_0 = inFile_root.Get(args.channel)
     dir_0p1 = dir_0.Get(args.qcdregion)
     dir_1 = dir_0p1.Get(args.category)
 
-    hists_to_plot = {}
+    hists_to_plot_unbinned = {}
     if args.wantLogScale:
         hist_cfg_dict[args.var]['use_log_y'] = True
         hist_cfg_dict[args.var]['max_y_sf'] = 2000.2
     else:
         hist_cfg_dict[args.var]['use_log_y'] = False
         hist_cfg_dict[args.var]['max_y_sf'] = 1.4
-    print(hist_cfg_dict[args.var]['max_y_sf'])
+    #print(hist_cfg_dict[args.var]['max_y_sf'])
     rebin_condition = args.rebin and 'x_rebin' in hist_cfg_dict[args.var].keys()
     bins_to_compute = hist_cfg_dict[args.var]['x_bins']
     if rebin_condition :
@@ -320,17 +319,24 @@ if __name__ == "__main__":
         if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
             print(f"ERRORE: {sample_histname} non è un istogramma")
         obj.SetDirectory(0)
-        if sample_plot_name not in hists_to_plot.keys():
-            hists_to_plot[sample_plot_name] = RebinHisto(obj, new_bins, sample_name) if rebin_condition else obj
+        if sample_plot_name not in hists_to_plot_unbinned.keys():
+            hists_to_plot_unbinned[sample_plot_name] = obj #RebinHisto(obj, new_bins, sample_name) if rebin_condition else obj
         else:
-            if rebin_condition:
-                hists_to_plot[sample_plot_name].Add(hists_to_plot[sample_plot_name],RebinHisto(obj, new_bins,sample_name))
-            else:
-                hists_to_plot[sample_plot_name].Add(hists_to_plot[sample_plot_name],obj)
+            #if rebin_condition:
+            #    hists_to_plot[sample_plot_name].Add(hists_to_plot[sample_plot_name],RebinHisto(obj, new_bins,sample_name))
+            #else:
+                hists_to_plot_unbinned[sample_plot_name].Add(hists_to_plot_unbinned[sample_plot_name],obj)
+    hists_to_plot_binned = {}
+    for hist_key,hist_unbinned in hists_to_plot_unbinned.items():
+        old_hist = hist_unbinned
+        new_hist = RebinHisto(old_hist, new_bins, hist_key)
+
+        hists_to_plot_binned[hist_key] = new_hist if rebin_condition else old_hist
+
     #print(hists_to_plot)
     #print(all_samples_types.keys())
 
-    plotter.plot(args.var, hists_to_plot, args.outFile, want_data = args.wantData, custom=custom1)
+    plotter.plot(args.var, hists_to_plot_binned, args.outFile, want_data = args.wantData, custom=custom1)
     inFile_root.Close()
     #file_to_save_hist.Close()
     print(args.outFile)

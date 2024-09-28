@@ -18,21 +18,13 @@ def createKeyFilterDict(global_cfg_dict):
     for ch in channels_to_consider:
         for reg in qcd_regions_to_consider:
             for cat in categories_to_consider:
-                #print(ch, reg, cat, filter_str)
-                #print()
                 filter_base = f" ({ch} && {triggers[ch]} && {reg} && {cat})"
                 filter_str = f"(" + filter_base
-                #print(ch, reg, cat, filter_str)
-                #print()
-                #print(filter_str)
                 if cat not in boosted_categories and not (cat.startswith("baseline")):
                     filter_str += "&& (b1_pt>0 && b2_pt>0)"
                 filter_str += ")"
-                #print(filter_str)
                 key = (ch, reg, cat)
                 reg_dict[key] = filter_str
-                #print(ch, reg, cat, filter_str)
-                #print()
 
     return reg_dict
 
@@ -178,7 +170,7 @@ def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = 'fin
     if applyBtag:
         if global_cfg_dict['btag_wps'][cat]!='' : btag_weight = f"weight_bTagSF_{btag_wps[cat]}_Central"
     else:
-        if cat not in global_cfg_dict['boosted_categories'] or cat.startswith("baseline"):
+        if cat not in global_cfg_dict['boosted_categories'] and not cat.startswith("baseline"):
             btagshape_weight = "weight_bTagShape_Central"
     return f'{finalWeight_name}*{btag_weight}*{btagshape_weight}'
 
@@ -188,14 +180,14 @@ def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = 'fin
 
 
 def GetWeight(channel, cat, boosted_categories):
-    weights_to_apply = ["weight_MC_Lumi_pu", "weight_L1PreFiring_Central","weight_L1PreFiring_ECAL_Central","weight_L1PreFiring_Muon_Central"]
+    weights_to_apply = ["weight_MC_Lumi_pu", "weight_L1PreFiring_Central"]#,"weight_L1PreFiring_ECAL_Central", "weight_L1PreFiring_Muon_Central"] #for next iteration
     trg_weights_dict = {
         'eTau':["weight_HLT_eTau", "weight_HLT_singleTau", "weight_HLT_MET"],
         'muTau':["weight_HLT_eTau", "weight_HLT_singleTau", "weight_HLT_MET"],
         'tauTau':["weight_HLT_eTau", "weight_HLT_singleTau", "weight_HLT_MET"],
         'eE':["weight_HLT_singleEle"],
         'muMu':["weight_HLT_singleMu"],
-        'eMu':["weight_HLT_singleEle","weight_HLT_singleMu"],
+        'eMu':["weight_HLT_eMu"]#["weight_HLT_singleEle","weight_HLT_singleMu"], #["weight_HLT_eMu"]
         }
     ID_weights_dict = {
         'eTau': ["weight_tau1_EleSF_wp80iso_EleIDCentral", "weight_tau2_TauID_SF_Medium_Central"], # theorically
@@ -245,7 +237,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                 #print(fatJetVar)
 
     def definePNetSFs(self):
-        print(f"defining PNet weights")
+        #print(f"defining PNet weights")
         self.df= self.df.Define("weight_pNet_Central", f"""getSFPNet(SelectedFatJet_p4_boosted.Pt(), "{self.period}", "Central", "{self.pNetWPstring}")""")
         self.df= self.df.Define("weight_pNet_Up", f"""getSFPNet(SelectedFatJet_p4_boosted.Pt(), "{self.period}", "Up", "{self.pNetWPstring}")""")
         self.df= self.df.Define("weight_pNet_Up_rel", f"""weight_pNet_Up/weight_pNet_Central""")
@@ -261,8 +253,9 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         singleTau_th_dict = self.config['singleTau_th']
         singleMu_th_dict = self.config['singleMu_th']
         singleEle_th_dict = self.config['singleEle_th']
-        #legacy_region_definition= "( ( eTau && (SingleEle_region  || CrossEleTau_region) ) || ( muTau && (SingleMu_region  || CrossMuTau_region) ) || ( tauTau && ( diTau_region ) ) || ( eE && (SingleEle_region)) || (eMu && ( SingleEle_region || SingleMu_region ) ) || (muMu && (SingleMu_region)) )"
-        legacy_region_definition= "( ( eTau && (SingleEle_region ) ) || ( muTau && (SingleMu_region ) ) || ( tauTau && ( diTau_region ) ) || ( eE && (SingleEle_region)) || (eMu && ( SingleEle_region || SingleMu_region ) ) || (muMu && (SingleMu_region)) )"
+        legacy_region_definition= "( ( eTau && (SingleEle_region  || CrossEleTau_region) ) || ( muTau && (SingleMu_region  || CrossMuTau_region) ) || ( tauTau && ( diTau_region ) ) || ( eE && (SingleEle_region)) || (eMu && ( SingleEle_region || SingleMu_region ) ) || (muMu && (SingleMu_region)) )"
+        #legacy_region_definition= "( ( eTau && (SingleEle_region ) ) || ( muTau && (SingleMu_region ) ) || ( tauTau && ( diTau_region ) ) || ( eE && (SingleEle_region)) || (eMu && ( SingleEle_region || SingleMu_region ) ) || (muMu && (SingleMu_region)) )"
+        #print(legacy_region_definition)
         for reg_name, reg_exp in self.config['application_regions'].items():
             self.df = self.df.Define(reg_name, reg_exp.format(tau_th=singleTau_th_dict[self.period], ele_th=singleEle_th_dict[self.period], mu_th=singleMu_th_dict[self.period]))
         self.df = self.df.Define("Legacy_region", legacy_region_definition)
@@ -355,7 +348,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
 
     def defineCategories(self): # needs lot of stuff --> at the end
-        self.df = self.df.Define("nSelBtag", f"int(b1_btagDeepFlavB > 0.2783) + int(b2_btagDeepFlavB >0.2783)")
+        self.df = self.df.Define("nSelBtag", f"int(b1_btagDeepFlavB >{self.bTagWP}) + int(b2_btagDeepFlavB >{self.bTagWP})")
         for category_to_def in self.config['category_definition'].keys():
             category_name = category_to_def
             #print(self.config['category_definition'][category_to_def].format(pNetWP=self.pNetWP, region=self.region))
@@ -365,6 +358,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         for channel in self.config['all_channels']:
             ch_value = self.config['channelDefinition'][channel]
             self.df = self.df.Define(f"{channel}", f"channelId=={ch_value}")
+            #print(f"""for {channel} the df has {self.df.Filter(channel).Count().GetValue()} entries""")
 
     def defineL1PrefiringRelativeWeights(self):
         if "weight_L1PreFiringDown_rel" not in self.df.GetColumnNames():
@@ -385,38 +379,41 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
     def defineLeptonPreselection(self): # needs channel def
         self.df = self.df.Define("muon1_tightId", "if(muTau || muMu) {return (tau1_Muon_tightId && tau1_Muon_pfRelIso04_all < 0.15); } return true;")
         self.df = self.df.Define("muon2_tightId", "if(muMu || eMu) {return (tau2_Muon_tightId && tau2_Muon_pfRelIso04_all < 0.3);} return true;")
-        self.df = self.df.Define("ele_eMu_mvaIso", "if(eMu){return tau1_Electron_mvaIso_WP80==1; } return true; ")
+        self.df = self.df.Define("firstele_mvaIso", "if(eMu || eE){return tau1_Electron_mvaIso_WP80==1 && tau1_Electron_pfRelIso03_all < 0.15 ; } return true; ")
         self.df = self.df.Define("tau1_iso_medium", f"if(tauTau) return (tau1_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value}); return true;")
         if f"tau1_gen_kind" not in self.df.GetColumnNames():
             self.df=self.df.Define("tau1_gen_kind", "if(isData) return 5; return 0;")
         if f"tau2_gen_kind" not in self.df.GetColumnNames():
             self.df=self.df.Define("tau2_gen_kind", "if(isData) return 5; return 0;")
         self.df = self.df.Define("tau_true", f"""(tau1_gen_kind==5 && tau2_gen_kind==5)""")
-        self.df = self.df.Define(f"lepton_preselection", "tau1_iso_medium && muon1_tightId && muon2_tightId && ele_eMu_mvaIso")
+        self.df = self.df.Define(f"lepton_preselection", "tau1_iso_medium && muon1_tightId && muon2_tightId && firstele_mvaIso")
         self.df = self.df.Filter(f"lepton_preselection")
+        #print(f" after lepton preselection {self.df.Count().GetValue()}")
 
     def defineQCDRegions(self):
         self.df = self.df.Define("OS", "tau1_charge*tau2_charge < 0")
+        self.df = self.df.Define("SS", "!OS")
 
         self.df = self.df.Define("Iso", f"((tauTau || eTau || muTau) && (tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value} )) || ((muMu||eMu) && (tau2_Muon_pfRelIso04_all < 0.15)) || (eE && tau2_Electron_pfRelIso03_all < 0.15 )")
 
         self.df = self.df.Define("AntiIso", f"((tauTau || eTau || muTau) && (tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value} && tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet < {Utilities.WorkingPointsTauVSjet.Medium.value})) || ((muMu||eMu) && (tau2_Muon_pfRelIso04_all >= 0.15 && tau2_Muon_pfRelIso04_all < 0.3) ) || (eE && (tau2_Electron_pfRelIso03_all >= 0.15 && tau2_Electron_mvaNoIso_WP80 ))")
 
         self.df = self.df.Define("OS_Iso", f"OS && Iso")
-        self.df = self.df.Define("SS_Iso", f"!OS && Iso")
+        self.df = self.df.Define("SS_Iso", f"SS && Iso")
         self.df = self.df.Define("OS_AntiIso", f"OS && AntiIso")
-        self.df = self.df.Define("SS_AntiIso", f"!OS && AntiIso")
+        self.df = self.df.Define("SS_AntiIso", f"SS && AntiIso")
 
     def deepTauYear(self):
         return self.config['deepTauYears'][self.deepTauVersion]
 
-    def __init__(self, df, config, period, deepTauVersion='v2p1', bTagWP = 2, pNetWPstring="Loose", region="SR",isData=False):
+    def __init__(self, df, config, period, deepTauVersion='v2p1', bTagWPString = "Medium", pNetWPstring="Loose", region="SR",isData=False):
         super(DataFrameBuilderForHistograms, self).__init__(df)
         self.deepTauVersion = deepTauVersion
         self.config = config
-        self.bTagWP = bTagWP
+        self.bTagWPString = bTagWPString
         self.pNetWPstring = pNetWPstring
         self.pNetWP = WorkingPointsParticleNet[period][pNetWPstring]
+        self.bTagWP = WorkingPointsDeepFlav[period][bTagWPString]
         self.period = period
         self.region = region
         self.isData = isData

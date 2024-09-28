@@ -69,6 +69,28 @@ WorkingPointsParticleNet = {
             "Tight":0.9883
         },
     }
+WorkingPointsDeepFlav = {
+        "Run2_2018":{
+            "Loose":0.049,
+            "Medium":0.2783,
+            "Tight":0.71
+        },
+        "Run2_2017":{
+            "Loose":0.0532,
+            "Medium":0.304,
+            "Tight":0.7476
+        },
+        "Run2_2016_HIPM":{
+            "Loose":0.0508,
+            "Medium":0.2598,
+            "Tight":0.6502
+        },
+        "Run2_2016":{
+            "Loose":0.048,
+            "Medium":0.2489,
+            "Tight":0.6377
+        },
+    }
 
 class WorkingPointsMuonID(Enum):
     HighPtID = 1

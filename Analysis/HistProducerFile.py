@@ -56,7 +56,7 @@ def SaveHists(histograms, out_file, categories_to_save):
         dir_ptr.WriteTObject(merged_hist, hist_name, "Overwrite")
 
 
-def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict, unc_cfg_dict, hist_cfg_dict, global_cfg_dict, furtherCut=''):
+def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict, unc_cfg_dict, hist_cfg_dict, global_cfg_dict, furtherCut='', verbose=False):
     dataframes = all_dataframes[key_2]
     sample_type,uncName,scale = key_2
     isCentral = 'Central' in key_2
@@ -88,10 +88,24 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
             histograms[(key_1, key_2)] = []
         for dataframe in dataframes:
             if furtherCut != '' : key_cut += f' && {furtherCut}'
-            #print(key_cut)
-            #print(dataframe.Count().GetValue())
+            if verbose == True:
+
+                print(f"events in the {ch} channel : {dataframe.Filter(ch).Count().GetValue()}")
+                print(f"""events in the {ch} channel + triggers : {dataframe.Filter(" tauTau && ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ) )").Count().GetValue()}""")
+                reg1 = reg.split('_')[0]
+                reg2 = reg.split('_')[1]
+                newreg_1 = f"tauTau && ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ) ) && {reg1}"
+                print(f"""events in the {ch} channel + triggers + {reg1} : {dataframe.Filter(newreg_1).Count().GetValue()}""")
+                newreg_2 = f"{newreg_1} && {reg2}"
+                print(f"""events in the {ch} channel + triggers + {reg1} + {reg2} : {dataframe.Filter(newreg_2).Count().GetValue()}""")
+                newreg_3 = f"{newreg_2} && {cat}"
+                print(f"""events in the {ch} channel + triggers + {reg1} + {reg2} + {cat}: {dataframe.Filter(newreg_3).Count().GetValue()}""")
+                print(f"complete cut is {key_cut}")
+                print(f"""final events=  {dataframe.Filter(key_cut).Count().GetValue()}""")
+                print()
             dataframe_new = dataframe.Filter(key_cut)
-            #print(dataframe_new.Count().GetValue())
+            #if ch=='tauTau':( (tauTau && ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ) ) && OS_Iso && inclusive)&& (b1_pt>0 && b2_pt>0))
+            #    print(f"after key filter cut: {dataframe_new.Count().GetValue()}")
             dataframe_new = dataframe_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}")
             final_string_weight = ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = f"final_weight_0_{ch}_{cat}_{reg}") if sample_type!='data' else "1"
             dataframe_new = dataframe_new.Filter(f"{cat}")
@@ -176,6 +190,7 @@ if __name__ == "__main__":
     parser.add_argument('--period', required=True, type=str)
     parser.add_argument('--furtherCut', required=False, type=str, default = "")
     parser.add_argument('--region', required=False, type=str, default = "SR")
+    parser.add_argument('--verbose', type=bool, default=False)
     args = parser.parse_args()
 
 
@@ -243,6 +258,7 @@ if __name__ == "__main__":
         outfile  = ROOT.TFile(args.outFileName,'RECREATE')
         col_names_central =  dfWrapped_central.colNames
         col_tpyes_central =  dfWrapped_central.colTypes
+
         #print(col_names_central)
 
         hasCache= args.cacheFile != ''
@@ -252,7 +268,7 @@ if __name__ == "__main__":
 
         if key_central not in all_dataframes:
             all_dataframes[key_central] = [PrepareDfForHistograms(dfWrapped_central).df]
-        central_histograms = GetHistogramDictFromDataframes(args.var, all_dataframes,  key_central , key_filter_dict, unc_cfg_dict['norm'],hist_cfg_dict, global_cfg_dict, args.furtherCut)
+        central_histograms = GetHistogramDictFromDataframes(args.var, all_dataframes,  key_central , key_filter_dict, unc_cfg_dict['norm'],hist_cfg_dict, global_cfg_dict, args.furtherCut, args.verbose)
         #print(central_histograms)
         # central quantities definition
         compute_variations = ( args.compute_unc_variations or args.compute_rel_weights ) and args.dataset != 'data'

@@ -245,7 +245,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df= self.df.Define("weight_pNet_Down_rel", f"""weight_pNet_Down/weight_pNet_Central""")
 
     def defineApplicationRegions(self):
-        for ch in self.config['channelSelection']:
+        for ch in self.config['channels_to_consider']:
             for trg in self.config['triggers'][ch].split(' || '):
                 if trg not in self.df.GetColumnNames():
                     print(f"{trg} not present in colNames")

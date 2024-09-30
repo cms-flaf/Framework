@@ -183,8 +183,8 @@ def GetWeight(channel, cat, boosted_categories):
     weights_to_apply = ["weight_MC_Lumi_pu", "weight_L1PreFiring_Central"]#,"weight_L1PreFiring_ECAL_Central", "weight_L1PreFiring_Muon_Central"] #for next iteration
     trg_weights_dict = {
         'eTau':["weight_HLT_eTau", "weight_HLT_singleTau", "weight_HLT_MET"],
-        'muTau':["weight_HLT_eTau", "weight_HLT_singleTau", "weight_HLT_MET"],
-        'tauTau':["weight_HLT_eTau", "weight_HLT_singleTau", "weight_HLT_MET"],
+        'muTau':["weight_HLT_muTau", "weight_HLT_singleTau", "weight_HLT_MET"],
+        'tauTau':["weight_HLT_diTau", "weight_HLT_singleTau", "weight_HLT_MET"],
         'eE':["weight_HLT_singleEle"],
         'muMu':["weight_HLT_singleMu"],
         'eMu':["weight_HLT_eMu"]#["weight_HLT_singleEle","weight_HLT_singleMu"], #["weight_HLT_eMu"]

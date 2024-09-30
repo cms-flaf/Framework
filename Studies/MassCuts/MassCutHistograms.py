@@ -275,6 +275,7 @@ if __name__ == "__main__":
 
     dfWrapped = PrepareDfForHistograms(DataFrameBuilderForHistograms(df_initial,global_cfg_dict, f"Run2_{args.year}"))
     pNetWP = dfWrapped.pNetWP
+    print(f"considering resonance {args.res}")
     res_str = ''
     if args.res == 'graviton':
         res_str = 'grav'

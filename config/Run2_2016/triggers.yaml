@@ -13,8 +13,8 @@ ditau:
   channels:
     - tauTau
   path_data:
-    - HLT_DoubleMediumCombinedIsoPFTau35_Trk1_eta2p1_Reg && run >= 278820
-    - HLT_DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg && run < 278820
+    - HLT_DoubleMediumCombinedIsoPFTau35_Trk1_eta2p1_Reg && isEraH # && run >= 278820
+    - HLT_DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg # && run < 278820
   path_MC:
     - HLT_DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg
   legs:
@@ -38,7 +38,7 @@ singleTau:
     legs:
       - offline_obj:
           type: Tau
-          cut: ((HLT_VLooseIsoPFTau120_Trk50_eta2p1 && v_ops::pt(Tau_p4) > 130) || (HLT_VLooseIsoPFTau140_Trk50_eta2p1 && v_ops::pt(Tau_p4) > 150)) && abs(v_ops::eta(Tau_p4)) < 2.1
+          cut: v_ops::pt(Tau_p4) > 130 && abs(v_ops::eta(Tau_p4)) < 2.1 # for next prod
         online_obj:
           cut: TrigObj_id == 15 && (TrigObj_filterBits&4)!=0
         doMatching: True

@@ -88,24 +88,30 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
             histograms[(key_1, key_2)] = []
         for dataframe in dataframes:
             if furtherCut != '' : key_cut += f' && {furtherCut}'
-            if verbose == True:
-
-                print(f"events in the {ch} channel : {dataframe.Filter(ch).Count().GetValue()}")
-                print(f"""events in the {ch} channel + triggers : {dataframe.Filter(" tauTau && ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ) )").Count().GetValue()}""")
-                reg1 = reg.split('_')[0]
-                reg2 = reg.split('_')[1]
-                newreg_1 = f"tauTau && ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ) ) && {reg1}"
-                print(f"""events in the {ch} channel + triggers + {reg1} : {dataframe.Filter(newreg_1).Count().GetValue()}""")
-                newreg_2 = f"{newreg_1} && {reg2}"
-                print(f"""events in the {ch} channel + triggers + {reg1} + {reg2} : {dataframe.Filter(newreg_2).Count().GetValue()}""")
-                newreg_3 = f"{newreg_2} && {cat}"
-                print(f"""events in the {ch} channel + triggers + {reg1} + {reg2} + {cat}: {dataframe.Filter(newreg_3).Count().GetValue()}""")
-                print(f"complete cut is {key_cut}")
-                print(f"""final events=  {dataframe.Filter(key_cut).Count().GetValue()}""")
-                print()
+            # if verbose == True:
+            #     print(f"events in the {ch} channel : {dataframe.Filter(ch).Count().GetValue()}")
+            #     print(f"""events in the {ch} channel + triggers : {dataframe.Filter(" tauTau && ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ) )").Count().GetValue()}""")
+            #     reg1 = reg.split('_')[0]
+            #     reg2 = reg.split('_')[1]
+            #     newreg_1 = f"tauTau && ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ) ) && {reg1}"
+            #     print(f"""events in the {ch} channel + triggers + {reg1} : {dataframe.Filter(newreg_1).Count().GetValue()}""")
+            #     newreg_2 = f"{newreg_1} && {reg2}"
+            #     print(f"""events in the {ch} channel + triggers + {reg1} + {reg2} : {dataframe.Filter(newreg_2).Count().GetValue()}""")
+            #     newreg_3 = f"{newreg_2} && {cat}"
+            #     print(f"""events in the {ch} channel + triggers + {reg1} + {reg2} + {cat}: {dataframe.Filter(newreg_3).Count().GetValue()}""")
+            #     print(f"complete cut is {key_cut}")
+            #     print(f"""final events=  {dataframe.Filter(key_cut).Count().GetValue()}""")
+            #     print()
             dataframe_new = dataframe.Filter(key_cut)
             #if ch=='tauTau':( (tauTau && ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ) ) && OS_Iso && inclusive)&& (b1_pt>0 && b2_pt>0))
             #    print(f"after key filter cut: {dataframe_new.Count().GetValue()}")
+            if ch=='tauTau' and cat == 'res2b_cat3_masswindow' and verbose == True:
+                print(f"total_weight_expression = {total_weight_expression}")
+
+                dataframe_new.Display({"weight_MC_Lumi_pu", "weight_L1PreFiring_Central" }).Print()
+                dataframe_new.Display({"weight_Jet_PUJetID_Central_b1_2", "weight_Jet_PUJetID_Central_b2_2"}).Print()
+                dataframe_new.Display({"weight_tau1_TauID_SF_Medium_Central", "weight_tau2_TauID_SF_Medium_Central"}).Print()
+                dataframe_new.Display({"weight_HLT_diTau", "weight_HLT_singleTau","weight_HLT_MET"}).Print()
             dataframe_new = dataframe_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}")
             final_string_weight = ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = f"final_weight_0_{ch}_{cat}_{reg}") if sample_type!='data' else "1"
             dataframe_new = dataframe_new.Filter(f"{cat}")
@@ -254,7 +260,7 @@ if __name__ == "__main__":
         all_dataframes = {}
         all_histograms = {}
         key_central = (args.sampleType, "Central", "Central")
-        key_filter_dict = createKeyFilterDict(global_cfg_dict)
+        key_filter_dict = createKeyFilterDict(global_cfg_dict, args.period)
         outfile  = ROOT.TFile(args.outFileName,'RECREATE')
         col_names_central =  dfWrapped_central.colNames
         col_tpyes_central =  dfWrapped_central.colTypes

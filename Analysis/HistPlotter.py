@@ -247,6 +247,7 @@ if __name__ == "__main__":
                 del inputs_cfg_dict[input_dict_idx]
 
     for sample_name in bckg_cfg_dict.keys():
+        #print(sample_name)
         if 'sampleType' not in sample_cfg_dict[sample_name].keys(): continue
         bckg_sample_type = sample_cfg_dict[sample_name]['sampleType']
         bckg_sample_name = bckg_sample_type if bckg_sample_type in global_cfg_dict['sample_types_to_merge'] else sample_name
@@ -276,12 +277,11 @@ if __name__ == "__main__":
                     'plot' : sample_name_plot
                 }
 
-
     plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg_dict, inputs_cfg=inputs_cfg_dict)
     cat_txt = args.category.replace('_masswindow','')
     cat_txt = cat_txt.replace('_cat2','')
     cat_txt = cat_txt.replace('_cat3','')
-    custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS data/simulation','scope_text':''}
+    custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS Private Work','scope_text':''}
     #print(hists_to_plot)
     if args.wantData==False:
         custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS simulation', 'scope_text':''}
@@ -309,9 +309,9 @@ if __name__ == "__main__":
     for sample_name,sample_content in all_samples_types.items():
         sample_type = sample_content['type']
         sample_plot_name = sample_content['plot']
-        #print(sample_plot_name)
         if args.uncSource != 'Central': continue # to be fixed
         sample_histname = (GetHistName(sample_name, sample_type, 'Central','Central', global_cfg_dict))
+        #print(sample_name, sample_type, sample_plot_name,sample_histname)
         if sample_histname not in dir_1.GetListOfKeys():
             print(f"ERRORE: {sample_histname} non è nelle keys")
             continue
@@ -319,6 +319,15 @@ if __name__ == "__main__":
         if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
             print(f"ERRORE: {sample_histname} non è un istogramma")
         obj.SetDirectory(0)
+        k_factor = 1
+        if sample_name=='TTTo2L2Nu':
+            k_factor =  ((1 - 0.665) * (1 - 0.665))/( (1 - 0.6741) * (1 - 0.6741))
+        if sample_name == 'TTToSemiLeptonic':
+            k_factor = ( 0.665 * (1-0.665) )/( 0.6741 * (1-0.6741) )
+        if sample_name == 'TTToHadronic':
+            k_factor = (0.665 * 0.665)/(0.6741 * 0.6741)
+        #print(sample_name, k_factor)
+        obj.Scale(k_factor)
         if sample_plot_name not in hists_to_plot_unbinned.keys():
             hists_to_plot_unbinned[sample_plot_name] = obj #RebinHisto(obj, new_bins, sample_name) if rebin_condition else obj
         else:

@@ -6,19 +6,23 @@ from Analysis.HistHelper import *
 from Common.Utilities import *
 
 
-def createKeyFilterDict(global_cfg_dict):
+def createKeyFilterDict(global_cfg_dict, year):
     reg_dict = {}
     filter_str = ""
     channels_to_consider = global_cfg_dict['channels_to_consider']
     qcd_regions_to_consider = global_cfg_dict['QCDRegions']
     categories_to_consider = global_cfg_dict["categories"] + global_cfg_dict["boosted_categories"]
     boosted_categories = global_cfg_dict["boosted_categories"]
-    triggers = global_cfg_dict['hist_triggers']
+    triggers_dict = global_cfg_dict['hist_triggers']
     mass_cut_limits = global_cfg_dict['mass_cut_limits']
     for ch in channels_to_consider:
+        triggers = triggers_dict[ch]['default']
+        if year in triggers_dict[ch].keys():
+            print(f"using the key {year}")
+            triggers = triggers_dict[ch][year]
         for reg in qcd_regions_to_consider:
             for cat in categories_to_consider:
-                filter_base = f" ({ch} && {triggers[ch]} && {reg} && {cat})"
+                filter_base = f" ({ch} && {triggers} && {reg} && {cat})"
                 filter_str = f"(" + filter_base
                 if cat not in boosted_categories and not (cat.startswith("baseline")):
                     filter_str += "&& (b1_pt>0 && b2_pt>0)"
@@ -188,7 +192,7 @@ def GetWeight(channel, cat, boosted_categories):
         'eE':["weight_HLT_singleEle"],
         'muMu':["weight_HLT_singleMu"],
         'eMu':["weight_HLT_eMu"]#["weight_HLT_singleEle","weight_HLT_singleMu"], #["weight_HLT_eMu"]
-        }
+    }
     ID_weights_dict = {
         'eTau': ["weight_tau1_EleSF_wp80iso_EleIDCentral", "weight_tau2_TauID_SF_Medium_Central"], # theorically
         'muTau': ["weight_tau1_HighPt_MuonID_SF_RecoCentral", "weight_tau1_HighPt_MuonID_SF_TightIDCentral", "weight_tau1_MuonID_SF_RecoCentral", "weight_tau1_MuonID_SF_TightID_TrkCentral", "weight_tau1_MuonID_SF_TightRelIsoCentral","weight_tau2_TauID_SF_Medium_Central"],
@@ -331,7 +335,10 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         Eff_MC_expression = f"{passSingleLep} * {Eff_SL_ele_MC}   - {passCrossLep} * {passSingleLep} * std::min({Eff_cross_ele_MC}  , {Eff_SL_ele_MC})   * {Eff_cross_tau_MC}   + {passCrossLep} * {Eff_cross_ele_MC}   * {Eff_cross_tau_MC};"
         self.df = self.df.Define(f"eff_eTau_data", Eff_Data_expression)
         self.df = self.df.Define(f"eff_eTau_MC", Eff_MC_expression)
-        self.df = self.df.Define(f"weight_HLT_eTau", "if ( (HLT_singleEle || HLT_etau) && Legacy_region && eff_eTau_MC!=0) {return eff_eTau_data/eff_eTau_MC;} return 1.f; ")
+        if self.period == 'Run2_2016' or self.period == 'Run2_2016_HIPM':
+            self.df = self.df.Define(f"weight_HLT_eTau", "if (HLT_singleEle && SingleEle_region) {return (weight_tau1_TrgSF_singleEle_Central ) ;} return 1.f; ")
+        else:
+            self.df = self.df.Define(f"weight_HLT_eTau", "if ( (HLT_singleEle || HLT_etau) && Legacy_region && eff_eTau_MC!=0) {return eff_eTau_data/eff_eTau_MC;} return 1.f; ")
         # *********************** tauTau ***********************
         self.df = self.df.Define(f"weight_HLT_diTau", "if (HLT_ditau && Legacy_region) {return (weight_tau1_TrgSF_ditau_Central*weight_tau2_TrgSF_ditau_Central); }return 1.f;")
         # *********************** singleTau ***********************

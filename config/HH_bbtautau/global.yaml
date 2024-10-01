@@ -135,13 +135,21 @@ triggers:
 
 hist_triggers:
   #eTau:  ((HLT_singleEle && SingleEle_region) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
-  eTau:  (( (HLT_singleEle || HLT_etau ) && Legacy_region ) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
+  eTau:
+    default: ( ( (HLT_singleEle || HLT_etau ) && Legacy_region ) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
+    Run2_2016 :  ( ( (HLT_singleEle && SingleEle_region) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
+    Run2_2016_HIPM :  ((HLT_singleEle && SingleEle_region) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
   #muTau: ((HLT_singleMu && SingleMu_region) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
-  muTau:  (( (HLT_singleMu || HLT_mutau ) && Legacy_region ) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
-  tauTau: ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ) )
-  eE: (HLT_singleEle && SingleEle_region)
-  eMu: ((HLT_singleEle && SingleEle_region) || (HLT_singleMu && SingleMu_region))
-  muMu: (HLT_singleMu && SingleMu_region)
+  muTau:
+    default: (( (HLT_singleMu || HLT_mutau ) && Legacy_region ) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
+  tauTau:
+    default: ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ) )
+  eE:
+    default: (HLT_singleEle && SingleEle_region)
+  eMu:
+    default: ((HLT_singleEle && SingleEle_region) || (HLT_singleMu && SingleMu_region))
+  muMu:
+    default: (HLT_singleMu && SingleMu_region)
 
 
 
@@ -154,8 +162,8 @@ application_regions:
   CrossMuTau_region: (tau1_pt > 22 && abs(tau1_eta) < 2.1 && tau2_pt > 32 && abs(tau2_eta) < 2.1)
   SingleEle_region: ((tau1_pt > {ele_th}  && abs(tau1_eta) < 2.5) || (tau2_pt > {ele_th}  && abs(tau2_eta) < 2.5))
   CrossEleTau_region: (tau1_pt > 25 && abs(tau1_eta) < 2.1 && tau2_pt > 35 && abs(tau2_eta) < 2.1)
-  diTau_region: (tau1_pt > 40 && tau2_pt > 40)
-  SingleTau_region: (((tau1_pt >= {tau_th} && abs(tau1_eta) < 2.1) || (tau2_pt >= {tau_th} && abs(tau2_eta) < 2.1)) )
+  diTau_region: (tau1_pt > 40 && abs(tau1_eta) < 2.1 && tau2_pt > 40 && abs(tau2_eta) < 2.1)
+  SingleTau_region: (((tau1_pt > {tau_th} && abs(tau1_eta) < 2.1) || (tau2_pt > {tau_th} && abs(tau2_eta) < 2.1)) )
   #MET_region: (!(Legacy_region) && !(SingleTau_region))
 
 category_definition:
@@ -281,19 +289,19 @@ unc_2018:
   - JES_HF_2018
   - JES_RelativeSample_2018
 unc_2017:
-  -JES_BBEC1_2017
+  - JES_BBEC1_2017
   - JES_Absolute_2017
   - JES_EC2_2017
   - JES_HF_2017
   - JES_RelativeSample_2017
 unc_2016preVFP:
-  -JES_BBEC1_2016preVFP
+  - JES_BBEC1_2016preVFP
   - JES_Absolute_2016preVFP
   - JES_EC2_2016preVFP
   - JES_HF_2016preVFP
   - JES_RelativeSample_2016preVFP
 unc_2016postVFP:
-  -JES_BBEC1_2016postVFP
+  - JES_BBEC1_2016postVFP
   - JES_Absolute_2016postVFP
   - JES_EC2_2016postVFP
   - JES_HF_2016postVFP

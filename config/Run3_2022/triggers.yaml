@@ -1,0 +1,132 @@
+singleIsoMu:
+  channels:
+    - muMu
+    - eMu
+    - mu
+  path:
+    - HLT_IsoMu24
+  legs:
+    - offline_obj:
+        type: Muon
+        cut:  v_ops::pt(Muon_p4) > 26
+      online_obj:
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&8)!=0
+      doMatching: False
+
+singleIsoMuHT:
+  channels:
+    - muMu
+    - eMu
+    - mu
+  path:
+    - HLT_Mu15_IsoVVVL_PFHT450
+  legs:
+    - offline_obj:
+        type: Muon
+        cut:  v_ops::pt(Muon_p4) > 17
+      online_obj:
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&32)!=0
+      doMatching: False
+singleIsoEleHT:
+  channels:
+    - eE
+    - eMu
+    - e
+  path:
+    - HLT_Ele15_IsoVVVL_PFHT450
+  legs:
+    - offline_obj:
+        type: Electron
+        cut:  v_ops::pt(Electron_p4) > 17
+      online_obj:
+        cut: TrigObj_id == 11 && (TrigObj_filterBits&32)!=0
+      doMatching: False
+singleEleWpTight:
+  channels:
+    - eMu
+    - eE
+    - e
+  path:
+    - HLT_Ele30_WPTight_Gsf
+  legs:
+    - offline_obj:
+        type: Electron
+        cut: v_ops::pt(Electron_p4) > 32
+      online_obj:
+        cut: TrigObj_id == 11 && (TrigObj_filterBits&4)!=0
+      doMatching: False
+
+diElec:
+  channels:
+    - e
+    - eE
+  path:
+    - HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL
+  legs:
+    - offline_obj:
+        type: Electron
+        cut: v_ops::pt(Electron_p4) > 25
+      online_obj:
+        cut: TrigObj_id == 11 &&  (TrigObj_filterBits&16)!=0
+      doMatching: False
+    - offline_obj:
+        type: Electron
+        cut: v_ops::pt(Electron_p4) > 14
+      online_obj:
+        cut: TrigObj_id == 11 && (TrigObj_filterBits&32)!=0
+      doMatching: False
+
+diMuon:
+  channels:
+    - muMu
+    - mu
+  path:
+    - HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8
+  legs:
+    - offline_obj:
+        type: Muon
+        cut:  v_ops::pt(Muon_p4) > 19
+      online_obj:
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&16)!=0
+      doMatching: False
+
+EMu:
+  channels:
+    - e
+    - Mu
+    - eMu
+  path:
+    - HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ
+  legs:
+    - offline_obj:
+        type: Muon
+        cut: v_ops::pt(Muon_p4) > 10
+      online_obj:
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&32)!=0
+      doMatching: False
+    - offline_obj:
+        type: Electron
+        cut: v_ops::pt(Electron_p4) > 25
+      online_obj:
+        cut:  TrigObj_id==11 && (TrigObj_filterBits&64)!=0
+      doMatching: False
+MuE:
+  channels:
+    - e
+    - Mu
+    - eMu
+  path:
+    - HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ
+  legs:
+    - offline_obj:
+        type: Muon
+        cut: v_ops::pt(Muon_p4) > 25
+      online_obj:
+        cut: TrigObj_id == 13 & (TrigObj_filterBits&32)!=0
+      doMatching: False
+    - offline_obj:
+        type: Electron
+        cut: v_ops::pt(Electron_p4) > 14
+      online_obj:
+        cut:  TrigObj_id==11 && (TrigObj_filterBits&64)!=0
+      doMatching: False

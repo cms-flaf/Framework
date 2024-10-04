@@ -10,6 +10,7 @@ if __name__ == "__main__":
 
 import Common.Utilities as Utilities
 from Analysis.HistHelper import *
+from Analysis.QCD_estimation import *
 from Analysis.hh_bbtautau import *
 
 
@@ -234,7 +235,7 @@ if __name__ == "__main__":
     fixNegativeContributions = False
     if args.var != 'kinFit_m':
         fixNegativeContributions=True
-    AddQCDInHistDict(args.var, all_histograms_1D, channels, all_categories, args.uncSource, all_samples_types.keys(), scales, wantNegativeContributions=False)
+    error_on_qcdnorm,error_on_qcdnorm_varied = AddQCDInHistDict(args.var, all_histograms_1D, channels, all_categories, args.uncSource, all_samples_types.keys(), scales, wantNegativeContributions=False)
 
 
     outFile = ROOT.TFile(args.outFile, "RECREATE")

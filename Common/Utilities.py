@@ -176,9 +176,13 @@ class DataFrameBuilderBase:
         colNames[eventIdx], colNames[2] = colNames[2], colNames[eventIdx]
         colNames[lumiIdx], colNames[3] = colNames[3], colNames[lumiIdx]
         self.colNames = colNames
+        self.colTypes = [str(self.df.GetColumnType(c)) for c in self.colNames]
+        for n,c in zip(self.colNames[0:3],self.colTypes[0:3]):
+             print(n,c)
+        #print(self.colNames)
+        #print(self.colTypes)
         #if "kinFit_result" in self.colNames:
         #    self.colNames.remove("kinFit_result")
-        self.colTypes = [str(self.df.GetColumnType(c)) for c in self.colNames]
 
     def __init__(self, df):
         self.df = df
@@ -194,13 +198,18 @@ class DataFrameBuilderBase:
                 continue
             var_name_forDelta = var_name.removesuffix("Diff")
             central_col_idx = central_columns.index(var_name_forDelta)
+            #print(var_name_forDelta, var_name, central_col_idx, central_columns[central_col_idx])
             if central_columns[central_col_idx]!=var_name_forDelta:
                 raise RuntimeError(f"CreateFromDelta: {central_columns[central_col_idx]} != {var_name_forDelta}")
             self.df = self.df.Define(f"{var_name_forDelta}", f"""analysis::FromDelta({var_name},
                                      analysis::GetEntriesMap()[std::make_tuple(entryIndex, run, event, luminosityBlock)]->GetValue<{self.colTypes[var_idx]}>({central_col_idx}) )""")
             var_list.append(f"{var_name_forDelta}")
+
+    def AddMissingColumns(self,central_columns,central_col_types):
         for central_col_idx,central_col in enumerate(central_columns):
-            if central_col in var_list or central_col in self.colNames: continue
+            #print(central_col)
+            #print(central_col in self.colNames)
+            if central_col in self.df.GetColumnNames(): continue
             self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[std::make_tuple(entryIndex, run, event, luminosityBlock)]->GetValue<{central_col_types[central_col_idx]}>({central_col_idx})""")
 
     def AddCacheColumns(self,cache_cols,cache_col_types):

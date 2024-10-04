@@ -3,6 +3,7 @@ if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
 from Analysis.HistHelper import *
+from Analysis.GetCrossWeights import *
 from Common.Utilities import *
 
 
@@ -32,141 +33,6 @@ def createKeyFilterDict(global_cfg_dict, year):
 
     return reg_dict
 
-def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, scale, wantNegativeContributions):
-    key_B = ((channel, 'OS_AntiIso', category), (uncName, scale))
-    key_C = ((channel, 'SS_Iso', category), (uncName, scale))
-    key_D = ((channel, 'SS_AntiIso', category), (uncName, scale))
-    hist_data = histograms['data']
-    hist_data_B = hist_data[key_B].Clone()
-    hist_data_C = hist_data[key_C].Clone()
-    hist_data_D = hist_data[key_D].Clone()
-    n_data_B = hist_data_B.Integral(0, hist_data_B.GetNbinsX()+1)
-    n_data_C = hist_data_C.Integral(0, hist_data_C.GetNbinsX()+1)
-    n_data_D = hist_data_D.Integral(0, hist_data_D.GetNbinsX()+1)
-    print(f"Initially Yield for data in OS AntiIso region is {key_B} is {n_data_B}")
-    print(f"Initially Yield for data in SS Iso region is{key_C} is {n_data_C}")
-    print(f"Initially Yield for data in SS AntiIso region is{key_D} is {n_data_D}")
-    for sample in all_samples_list:
-        if sample=='data' or 'GluGluToBulkGraviton' in sample or 'GluGluToRadion' in sample or 'VBFToBulkGraviton' in sample or 'VBFToRadion' in sample or sample=='QCD':
-            ##print(f"sample {sample} is not considered")
-            continue
-        hist_sample = histograms[sample]
-        hist_sample_B = hist_sample[key_B].Clone()
-        hist_sample_C = hist_sample[key_C].Clone()
-        hist_sample_D = hist_sample[key_D].Clone()
-        n_sample_B= hist_sample_B.Integral(0, hist_sample_B.GetNbinsX()+1)
-        n_data_B-=n_sample_B
-        n_sample_C = hist_sample_C.Integral(0, hist_sample_C.GetNbinsX()+1)
-        n_data_C-=n_sample_C
-        n_sample_D = hist_sample_D.Integral(0, hist_sample_D.GetNbinsX()+1)
-        n_data_D-=n_sample_D
-        if n_data_B < 0:
-            print(f"Yield for data in OS AntiIso region {key_B} after removing {sample} with yield {n_sample_B} is {n_data_B}")
-        if n_data_C < 0:
-            print(f"Yield for data in SS Iso region {key_C} after removing {sample} with yield {n_sample_C} is {n_data_C}")
-        if n_data_D < 0:
-            print(f"Yield for data in SS AntiIso region {key_D} after removing {sample} with yield {n_sample_D} is {n_data_D}")
-        hist_data_B.Add(hist_sample_B, -1)
-        hist_data_C.Add(hist_sample_C, -1)
-    if n_data_C <= 0 or n_data_D <= 0:
-        print(f"n_data_C = {n_data_C}")
-        print(f"n_data_D = {n_data_D}")
-
-    qcd_norm = n_data_B * n_data_C / n_data_D if n_data_D != 0 else 0
-    if qcd_norm<0:
-        print(f"transfer factor <0, {category}, {channel}, {uncName}, {scale}")
-        return ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX())),ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX())),ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX()))
-        #raise  RuntimeError(f"transfer factor <=0 ! {qcd_norm}")
-    #hist_data_B.Scale(kappa)
-    if n_data_B != 0:
-        hist_data_B.Scale(1/n_data_B)
-    if n_data_C != 0:
-        hist_data_C.Scale(1/n_data_C)
-
-    hist_qcd_Up = hist_data_B.Clone()
-    hist_qcd_Up.Scale(qcd_norm)
-    hist_qcd_Down = hist_data_C.Clone()
-    hist_qcd_Down.Scale(qcd_norm)
-    hist_qcd_Central = hist_data_B.Clone()
-    hist_qcd_Central.Add(hist_data_C)
-    hist_qcd_Central.Scale(1./2.)
-    hist_qcd_Central.Scale(qcd_norm)
-    if wantNegativeContributions:
-        fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(hist_qcd_Central)
-        if not fix_negative_contributions:
-            #return hist_data_B
-            print(debug_info)
-            print(negative_bins_info)
-            print("Unable to estimate QCD")
-            final_hist = ROOT.TH1D("","",hist_qcd_Central.GetNbinsX(), hist_qcd_Central.GetXaxis().GetBinLowEdge(1), hist_qcd_Central.GetXaxis().GetBinUpEdge(hist_qcd_Central.GetNbinsX())),ROOT.TH1D("","",hist_qcd_Central.GetNbinsX(), hist_qcd_Central.GetXaxis().GetBinLowEdge(1), hist_qcd_Central.GetXaxis().GetBinUpEdge(hist_qcd_Central.GetNbinsX()))
-            return final_hist,final_hist,final_hist
-            #raise RuntimeError("Unable to estimate QCD")
-    #if uncName == 'Central':
-    #    return hist_qcd_Central,hist_qcd_Up,hist_qcd_Down
-    return hist_qcd_Central,hist_qcd_Up,hist_qcd_Down
-
-
-def CompareYields(histograms, all_samples_list, channel, category, uncName, scale):
-    #print(channel, category)
-    #print(histograms.keys())key_B_data = ((channel, 'OS_AntiIso', category), ('Central', 'Central'))
-    key_A_data = ((channel, 'OS_Iso', category), ('Central', 'Central'))
-    key_A = ((channel, 'OS_Iso', category), (uncName, scale))
-    key_B_data = ((channel, 'OS_AntiIso', category), ('Central', 'Central'))
-    key_B = ((channel, 'OS_AntiIso', category), (uncName, scale))
-    key_C_data = ((channel, 'SS_Iso', category), ('Central', 'Central'))
-    key_C = ((channel, 'SS_Iso', category), (uncName, scale))
-    key_D_data = ((channel, 'SS_AntiIso', category), ('Central', 'Central'))
-    key_D = ((channel, 'SS_AntiIso', category), (uncName, scale))
-    hist_data = histograms['data']
-    #print(hist_data.keys())
-    hist_data_A = hist_data[key_A_data]
-    hist_data_B = hist_data[key_B_data]
-    #if channel != 'tauTau' and category != 'inclusive': return hist_data_B
-    hist_data_C = hist_data[key_C_data]
-    hist_data_D = hist_data[key_D_data]
-    n_data_A = hist_data_A.Integral(0, hist_data_A.GetNbinsX()+1)
-    n_data_B = hist_data_B.Integral(0, hist_data_B.GetNbinsX()+1)
-    n_data_C = hist_data_C.Integral(0, hist_data_C.GetNbinsX()+1)
-    n_data_D = hist_data_D.Integral(0, hist_data_D.GetNbinsX()+1)
-    print(f"data || {key_A_data} || {n_data_A}")
-    print(f"data || {key_B_data} || {n_data_B}")
-    print(f"data || {key_C_data} || {n_data_C}")
-    print(f"data || {key_D_data} || {n_data_D}")
-    for sample in all_samples_list:
-        #print(sample)
-        # find kappa value
-        hist_sample = histograms[sample]
-        #print(histograms[sample].keys())
-        hist_sample_A = hist_sample[key_A]
-        hist_sample_B = hist_sample[key_B]
-        hist_sample_C = hist_sample[key_C]
-        hist_sample_D = hist_sample[key_D]
-        n_sample_A = hist_sample_A.Integral(0, hist_sample_A.GetNbinsX()+1)
-        n_sample_B = hist_sample_B.Integral(0, hist_sample_B.GetNbinsX()+1)
-        n_sample_C = hist_sample_C.Integral(0, hist_sample_C.GetNbinsX()+1)
-        n_sample_D = hist_sample_D.Integral(0, hist_sample_D.GetNbinsX()+1)
-
-        print(f"{sample} || {key_A} || {n_sample_A}")
-        print(f"{sample} || {key_B} || {n_sample_B}")
-        print(f"{sample} || {key_C} || {n_sample_C}")
-        print(f"{sample} || {key_D} || {n_sample_D}")
-
-def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_samples_list, scales, wantNegativeContributions=False):
-    if 'QCD' not in all_histograms.keys():
-            all_histograms['QCD'] = {}
-    for channel in channels:
-        for cat in categories:
-            for scale in scales + ['Central']:
-                if uncName=='Central' and scale != 'Central': continue
-                if uncName!='Central' and scale == 'Central': continue
-                key =( (channel, 'OS_Iso', cat), (uncName, scale))
-                hist_qcd_Central,hist_qcd_Up,hist_qcd_Down = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale,wantNegativeContributions)
-                all_histograms['QCD'][key] = hist_qcd_Central
-            if uncName=='QCDScale':
-                keyQCD_up =( (channel, 'OS_Iso', cat), ('QCDScale', 'Up'))
-                keyQCD_down =( (channel, 'OS_Iso', cat), ('QCDScale', 'Down'))
-                all_histograms['QCD'][keyQCD_up] = hist_qcd_Up
-                all_histograms['QCD'][keyQCD_down] = hist_qcd_Down
 
 def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = 'final_weight_0'):
     btag_weight = "1"
@@ -306,52 +172,6 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                                             return static_cast<float>({weight}) ;
                                          return 1.f;""")
 
-    def defineTriggerWeights(self): # needs application region def
-        # *********************** muTau ***********************
-        passSingleLep = "SingleMu_region"
-        passCrossLep = "CrossMuTau_region"
-        Eff_SL_mu_Data = "eff_data_tau1_TrgSF_singleMu_Central"
-        Eff_cross_mu_Data = "eff_data_tau1_TrgSF_mutau_Central"
-        Eff_cross_tau_Data = "eff_data_tau2_TrgSF_mutau_Central"
-        Eff_Data_expression = f"{passSingleLep} * {Eff_SL_mu_Data} - {passCrossLep} * {passSingleLep} * std::min({Eff_cross_mu_Data}, {Eff_SL_mu_Data}) * {Eff_cross_tau_Data} + {passCrossLep} * {Eff_cross_mu_Data} * {Eff_cross_tau_Data};"
-        Eff_SL_mu_MC = "eff_MC_tau1_TrgSF_singleMu_Central"
-        Eff_cross_mu_MC = "eff_MC_tau1_TrgSF_mutau_Central"
-        Eff_cross_tau_MC = "eff_MC_tau2_TrgSF_mutau_Central"
-        Eff_MC_expression = f"{passSingleLep} * {Eff_SL_mu_MC}   - {passCrossLep} * {passSingleLep} * std::min({Eff_cross_mu_MC}  , {Eff_SL_mu_MC})   * {Eff_cross_tau_MC}   + {passCrossLep} * {Eff_cross_mu_MC}   * {Eff_cross_tau_MC};"
-        self.df = self.df.Define(f"eff_muTau_data", Eff_Data_expression)
-        self.df = self.df.Define(f"eff_muTau_MC", Eff_MC_expression)
-        self.df = self.df.Define(f"weight_HLT_muTau", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && eff_muTau_MC!=0) {return eff_muTau_data/eff_muTau_MC;} return 1.f; ")
-        # *********************** eTau ***********************
-        passSingleLep = "SingleEle_region"
-        passCrossLep = "CrossEleTau_region"
-        # eff_data_{leg_name}_TrgSF_{trg_name}_{getSystName(central,central)}
-        Eff_SL_ele_Data = "eff_data_tau1_TrgSF_singleEle_Central"
-        Eff_cross_ele_Data = "eff_data_tau1_TrgSF_etau_Central"
-        Eff_cross_tau_Data = "eff_data_tau2_TrgSF_etau_Central"
-        Eff_Data_expression = f"{passSingleLep} * {Eff_SL_ele_Data} - {passCrossLep} * {passSingleLep} * std::min({Eff_cross_ele_Data}, {Eff_SL_ele_Data}) * {Eff_cross_tau_Data} + {passCrossLep} * {Eff_cross_ele_Data} * {Eff_cross_tau_Data};"
-        Eff_SL_ele_MC = "eff_MC_tau1_TrgSF_singleEle_Central"
-        Eff_cross_ele_MC = "eff_MC_tau1_TrgSF_etau_Central"
-        Eff_cross_tau_MC = "eff_MC_tau2_TrgSF_etau_Central"
-        Eff_MC_expression = f"{passSingleLep} * {Eff_SL_ele_MC}   - {passCrossLep} * {passSingleLep} * std::min({Eff_cross_ele_MC}  , {Eff_SL_ele_MC})   * {Eff_cross_tau_MC}   + {passCrossLep} * {Eff_cross_ele_MC}   * {Eff_cross_tau_MC};"
-        self.df = self.df.Define(f"eff_eTau_data", Eff_Data_expression)
-        self.df = self.df.Define(f"eff_eTau_MC", Eff_MC_expression)
-        if self.period == 'Run2_2016' or self.period == 'Run2_2016_HIPM':
-            self.df = self.df.Define(f"weight_HLT_eTau", "if (HLT_singleEle && SingleEle_region) {return (weight_tau1_TrgSF_singleEle_Central ) ;} return 1.f; ")
-        else:
-            self.df = self.df.Define(f"weight_HLT_eTau", "if ( (HLT_singleEle || HLT_etau) && Legacy_region && eff_eTau_MC!=0) {return eff_eTau_data/eff_eTau_MC;} return 1.f; ")
-        # *********************** tauTau ***********************
-        self.df = self.df.Define(f"weight_HLT_diTau", "if (HLT_ditau && Legacy_region) {return (weight_tau1_TrgSF_ditau_Central*weight_tau2_TrgSF_ditau_Central); }return 1.f;")
-        # *********************** singleTau ***********************
-        self.df = self.df.Define(f"weight_HLT_singleTau", "if (HLT_singleTau && SingleTau_region && !Legacy_region) {return (weight_tau1_TrgSF_singleTau_Central*weight_tau2_TrgSF_singleTau_Central) ;} return 1.f;")
-        # *********************** MET ***********************
-        self.df = self.df.Define(f"weight_HLT_MET", "if (HLT_MET && !(SingleTau_region && !Legacy_region)) { return (weight_TrgSF_MET_Central) ;} return 1.f;")
-        # *********************** singleEle ***********************
-        self.df = self.df.Define(f"weight_HLT_singleEle", "if (HLT_singleEle && SingleEle_region) {return (weight_tau1_TrgSF_singleEle_Central*weight_tau2_TrgSF_singleEle_Central);} return 1.f;")
-        # *********************** singleMu ***********************
-        self.df = self.df.Define(f"weight_HLT_singleMu", "if (HLT_singleMu && SingleMu_region) {return (weight_tau1_TrgSF_singleMu_Central*weight_tau2_TrgSF_singleMu_Central);} return 1.f;")
-        # *********************** singleLepPerEMu ***********************
-        self.df = self.df.Define(f"weight_HLT_eMu", "if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau1_TrgSF_singleEle_Central!=1.) {return (weight_tau1_TrgSF_singleEle_Central*weight_tau2_TrgSF_singleMu_Central);} return 1.f;")
-        #self.df = self.df.Define(f"weight_HLT_muE", f"if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau2_TrgSF_singleEle_Central!=1.) return (weight_tau2_TrgSF_singleEle_Central*weight_tau1_TrgSF_singleMu_Central); return 1.f;")
 
 
     def defineCategories(self): # needs lot of stuff --> at the end
@@ -413,7 +233,31 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
     def deepTauYear(self):
         return self.config['deepTauYears'][self.deepTauVersion]
 
-    def __init__(self, df, config, period, deepTauVersion='v2p1', bTagWPString = "Medium", pNetWPstring="Loose", region="SR",isData=False):
+    def addNewCols(self):
+        self.colNames = []
+        self.colTypes = []
+        colNames = [str(c) for c in self.df.GetColumnNames()]#if 'kinFit_result' not in str(c)]
+        cols_to_remove = []
+        for colName in colNames:
+            col_name_split = colName.split("_")
+            if "p4" in col_name_split or "vec" in col_name_split:
+                cols_to_remove.append(colName)
+        for col_to_remove in cols_to_remove:
+            colNames.remove(col_to_remove)
+        entryIndexIdx = colNames.index("entryIndex")
+        runIdx = colNames.index("run")
+        eventIdx = colNames.index("event")
+        lumiIdx = colNames.index("luminosityBlock")
+        colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
+        colNames[runIdx], colNames[1] = colNames[1], colNames[runIdx]
+        colNames[eventIdx], colNames[2] = colNames[2], colNames[eventIdx]
+        colNames[lumiIdx], colNames[3] = colNames[3], colNames[lumiIdx]
+        self.colNames = colNames
+        self.colTypes = [str(self.df.GetColumnType(c)) for c in self.colNames]
+        for colName,colType in zip(self.colNames,self.colTypes):
+            print(colName,colType)
+
+    def __init__(self, df, config, period, deepTauVersion='v2p1', bTagWPString = "Medium", pNetWPstring="Loose", region="SR",isData=False, isCentral=False, wantTriggerSFErrors=False):
         super(DataFrameBuilderForHistograms, self).__init__(df)
         self.deepTauVersion = deepTauVersion
         self.config = config
@@ -424,14 +268,19 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.period = period
         self.region = region
         self.isData = isData
-        print(f"deepTauVersion = {self.deepTauVersion}")
-        print(f"bTagWP = {self.bTagWP}")
-        print(f"pNetWP = {self.pNetWP}")
-        print(f"region = {self.region}")
-        print(f"period = {self.period}")
-        print(f"isData = {self.isData}")
+        self.isCentral = isCentral
+        self.wantTriggerSFErrors = wantTriggerSFErrors
+        # print(f"deepTauVersion = {self.deepTauVersion}")
+        # print(f"period = {self.period}")
+        # print(f"bTagWPString = {self.bTagWPString}")
+        # print(f"bTagWP = {self.bTagWP}")
+        # print(f"pNetWP = {self.pNetWP}")
+        # print(f"region = {self.region}")
+        # print(f"isData = {self.isData}")
+        # print(f"isCentral = {self.isCentral}")
 
 def PrepareDfForHistograms(dfForHistograms):
+    # if dfForHistograms.isCentral:
     dfForHistograms.df = defineAllP4(dfForHistograms.df)
     dfForHistograms.defineBoostedVariables()
     dfForHistograms.definePNetSFs()
@@ -440,9 +289,13 @@ def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.defineLeptonPreselection()
     dfForHistograms.defineApplicationRegions()
     if not dfForHistograms.isData:
-        dfForHistograms.defineTriggerWeights()
+        defineTriggerWeights(dfForHistograms)
+        if dfForHistograms.wantTriggerSFErrors:
+            defineTriggerWeightsErrors(dfForHistograms)
+    #print(dfForHistograms.df.GetColumnNames())
     dfForHistograms.redefinePUJetIDWeights()
     dfForHistograms.defineCRs()
     dfForHistograms.defineCategories()
     dfForHistograms.defineQCDRegions()
+    # dfForHistograms.addNewCols()
     return dfForHistograms

@@ -99,12 +99,12 @@ all_channels:
   - eMu
 
 channels_to_consider:
-  - eTau
-  - muTau
-  - muMu
+  # - eTau
+  # - muTau
+  # - muMu
   - tauTau
-  - eE
-  - eMu
+  # - eE
+  # - eMu
 gen_channels:
   eTau:
     - 3

@@ -10,6 +10,7 @@ if __name__ == "__main__":
 
 import Common.Utilities as Utilities
 from Analysis.HistHelper import *
+from Analysis.QCD_estimation import *
 from Analysis.hh_bbtautau import *
 
 
@@ -38,30 +39,24 @@ def checkFile(inFileRoot, channels, qcdRegions, categories, var):
         for qcdRegion in QCDregions:
             dir_1 = dir_0.Get(qcdRegion)
             keys_categories = [str(key.GetName()) for key in dir_1.GetListOfKeys()]
-            if 'boosted' in categories and ( var.startswith('b1') or var.startswith('b2') ): categories.remove('boosted')
             if not checkLists(keys_categories, categories):
                     print("check list not worked for categories")
                     return False
             for cat in categories:
-                if cat == 'boosted' and (var.startswith('b1') or var.startswith('b2')): continue
-                if cat != 'boosted' and var.startswith('SelectedFatJet'): continue
                 dir_2 = dir_1.Get(cat)
                 keys_histograms = [str(key.GetName()) for key in dir_2.GetListOfKeys()]
                 if not keys_histograms: return False
     return True
 
 
-def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, categories, uncSource,sample_name,sample_types_to_merge):
+def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_categories, uncSource,sample_name,sample_types_to_merge):
     for channel in channels:
         dir_0 = inFileRoot.Get(channel)
         #print(dir_0.GetListOfKeys())
         for qcdRegion in QCDregions:
             dir_1 = dir_0.Get(qcdRegion)
             #print(dir_1.GetListOfKeys())
-            for cat in categories:
-                if cat == 'boosted' and (var.startswith('b1') or var.startswith('b2')): continue
-                if cat != 'boosted' and var.startswith('SelectedFatJet'): continue
-                if cat == 'boosted' and uncSource in global_cfg_dict['unc_to_not_consider_boosted']: continue
+            for cat in all_categories:
                 #print(cat, var)
                 dir_2 = dir_1.Get(cat)
                 for key in dir_2.GetListOfKeys():
@@ -115,29 +110,34 @@ def MergeHistogramsPerType(all_histograms):
 
 
 
-def GetBTagWeightDict(var, all_histograms):
+def GetBTagWeightDict(var,all_histograms, categories, boosted_categories, boosted_variables):
     all_histograms_1D = {}
     for sample_type in all_histograms.keys():
         #print(sample_type)
         all_histograms_1D[sample_type] = {}
         for key_name,histogram in all_histograms[sample_type].items():
             (key_1, key_2) = key_name
-            ch, reg, cat = key_1
-            uncName,scale = key_2
-            key_tuple_num = ((ch, reg, 'btag_shape'), key_2)
-            key_tuple_den = ((ch, reg, 'inclusive'), key_2)
-            ratio_num_hist = all_histograms[sample_type][key_tuple_num] if key_tuple_num in all_histograms[sample_type].keys() else None
-            ratio_den_hist = all_histograms[sample_type][key_tuple_den] if key_tuple_den in all_histograms[sample_type].keys() else None
-            num = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)
-            den = ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
-            ratio = 0.
-            if ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1) != 0 :
-                ratio = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)/ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
-            #if ratio == 0 and hist1D.Integral(0, hist1D.GetNbinsX()+1) ==0 :
-            #    continue
-            histogram.Scale(ratio)
+            if var not in boosted_variables:
+                ch, reg, cat = key_1
+                uncName,scale = key_2
+                key_tuple_num = ((ch, reg, 'btag_shape'), key_2)
+                key_tuple_den = ((ch, reg, 'inclusive'), key_2)
+                ratio_num_hist = all_histograms[sample_type][key_tuple_num] if key_tuple_num in all_histograms[sample_type].keys() else None
+                ratio_den_hist = all_histograms[sample_type][key_tuple_den] if key_tuple_den in all_histograms[sample_type].keys() else None
+                num = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)
+                den = ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
+                ratio = 0.
+                if ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1) != 0 :
+                    ratio = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)/ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
+                if cat in boosted_categories or cat.startswith("inclusive") or cat.startswith("btag_shape") or cat.startswith("baseline") :
+                    print(f"for cat {cat} setting ratio to 1")
+                    ratio = 1
+                histogram.Scale(ratio)
+            else:
+                print(f"for var {var} no ratio is considered and the histogram is directly saved")
             all_histograms_1D[sample_type][key_name] = histogram
     return all_histograms_1D
+
 
 
 if __name__ == "__main__":
@@ -154,6 +154,7 @@ if __name__ == "__main__":
     parser.add_argument('--globalConfig', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
+    parser.add_argument('--region', required=False, type=str,default='SR')
 
     args = parser.parse_args()
     startTime = time.time()
@@ -172,10 +173,25 @@ if __name__ == "__main__":
         print("unknown unc source {args.uncSource}")
 
     categories = list(global_cfg_dict['categories'])
+    boosted_categories = list(global_cfg_dict['boosted_categories'])
     QCDregions = list(global_cfg_dict['QCDRegions'])
     channels = list(global_cfg_dict['channels_to_consider'])
+
+    if args.region=='DYCR':
+        channels = ['muMu', 'eE']
+        print(f"""considering {global_cfg_dict["channels_to_consider"]}""")
+
     signals = list(global_cfg_dict['signal_types'])
     unc_to_not_consider_boosted = list(global_cfg_dict['unc_to_not_consider_boosted'])
+    boosted_variables = list(global_cfg_dict['var_only_boosted'])
+
+    all_categories = categories + boosted_categories
+    if args.var in boosted_variables:
+        all_categories = boosted_categories
+
+    if (args.var.startswith('b1') or args.var.startswith('b2')):
+        all_categories = categories
+
     sample_types_to_merge = list(global_cfg_dict['sample_types_to_merge'])
     scales = list(global_cfg_dict['scales'])
     files_separated = {}
@@ -196,12 +212,12 @@ if __name__ == "__main__":
             os.remove(inFileName)
             ignore_samples.append(sample_name)
             raise RuntimeError(f"{inFileName} is Zombie")
-        if  not checkFile(inFileRoot, channels, QCDregions, categories,args.var):
+        if  not checkFile(inFileRoot, channels, QCDregions, all_categories,args.var):
             print(f"{sample_name} has void file")
             ignore_samples.append(sample_name)
             inFileRoot.Close()
             continue
-        getHistDict(args.var,all_histograms, inFileRoot,channels, QCDregions, categories, args.uncSource,sample_name,sample_types_to_merge)
+        getHistDict(args.var,all_histograms, inFileRoot,channels, QCDregions, all_categories, args.uncSource,sample_name,sample_types_to_merge)
         #print(all_histograms)
         if sample_name == 'data':
             all_samples_types['data'] = ['data']
@@ -213,16 +229,13 @@ if __name__ == "__main__":
                 all_samples_types[sample_key].append(sample_name)
         inFileRoot.Close()
     MergeHistogramsPerType(all_histograms)
-    all_histograms_1D=GetBTagWeightDict(args.var,all_histograms)
-    print(all_histograms_1D)
+    all_histograms_1D=GetBTagWeightDict(args.var,all_histograms, categories, boosted_categories, boosted_variables)
+    #print(all_histograms_1D)
 
     fixNegativeContributions = False
     if args.var != 'kinFit_m':
         fixNegativeContributions=True
-    #if args.var == 'kinFit_m':
-        #fixNegativeContributions=FatJetObservables
-    #    fixNegativeContributions=False
-    AddQCDInHistDict(args.var,all_histograms_1D, channels, categories, args.uncSource, all_samples_types.keys(), scales,unc_to_not_consider_boosted,fixNegativeContributions)
+    error_on_qcdnorm,error_on_qcdnorm_varied = AddQCDInHistDict(args.var, all_histograms_1D, channels, all_categories, args.uncSource, all_samples_types.keys(), scales, wantNegativeContributions=False)
 
 
     outFile = ROOT.TFile(args.outFile, "RECREATE")

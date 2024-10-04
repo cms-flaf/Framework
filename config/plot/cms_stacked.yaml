@@ -1,7 +1,7 @@
 page_setup:
-  canvas_size: [ 700, 700 ]
-  main_pad: [ 0.02, 0.25, 0.95, 0.94 ]
-  margins: [ 0.18, 0.14, 0.02, 0.02 ]
+  canvas_size: [ 1000, 1000 ]
+  main_pad: [ 0.02, 0.25, 0.98, 0.96 ]
+  margins: [ 0.14, 0.12, 0.03, 0.05 ]
   paper_size: [ 20, 20 ]
   canvas_color: kWhite
   canvas_border_size: 10
@@ -15,13 +15,13 @@ page_setup:
   y_min: 0
   y_min_log: 1e-2
   axis_title_sizes: [ 0.055, 0.055 ]
-  axis_title_offsets: [ 0.8, 1.4 ]
+  axis_title_offsets: [ 0.8, 1.2 ]
   axis_label_sizes: [ 0.04, 0.04 ]
   axis_label_offsets: [ 0.005, 0.005 ]
   draw_ratio: true
   ratio_y_title: "Obs/Bkg"
   ratio_y_title_size: 0.055
-  ratio_y_title_offset: 0.4
+  ratio_y_title_offset: 0.3
   ratio_y_label_size: 0.04
   ratio_y_label_offset: 0.005
   ratio_n_div_y: 505
@@ -41,39 +41,39 @@ page_setup:
 
 legend:
   pos_ref: inner_right_top
-  pos: [ 0.4, 0.44 ]
-  size: [ 0.56, 0.42 ]
+  pos: [ 0.5, 0.3 ]
+  size: [ 0.5, 0.3 ]
   fill_color: kWhite
   fill_style: 0
   border_size: 0
-  text_size: 0.017
-  font: 42
-
-ana_text:
-  text: "hh#rightarrowbb#tau#tau"
-  pos_ref: inner_left_top
-  pos: [ 0.1, -0.02 ]
   text_size: 0.02
-  font: 62
-  align: left_bottom
+  font: 42
 
 cms_text:
   text: "CMS"
   pos_ref: inner_left_top
-  pos: [ -0.01, -0.07 ]
-  text_size: 0.035
+  pos: [ 0., -0.09 ]
+  text_size: 0.04
   font: 61
+
+ana_text:
+  text: "hh#rightarrowbb#tau#tau"
+  pos_ref: cms_text
+  pos: [ 0.12, -0.06 ]
+  text_size: 0.03
+  font: 62
+  align: left_bottom
 
 scope_text:
   text: "Private work"
   pos_ref: cms_text
-  pos: [ 0.05, -0.08 ]
+  pos: [ 0.012, -0.1 ]
   text_size: 0.04
   font: 52
 
 datasim_text:
   pos_ref: scope_text
-  pos: [ 0, 0 ]
+  pos: [ 0.02, 0 ]
   text_size: 0.04
   font: 52
 

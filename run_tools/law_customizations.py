@@ -70,6 +70,15 @@ class Task(law.Task):
     @property
     def fs_histograms(self):
         return self.setup.get_fs('histograms')
+    @property
+    def fs_histograms_DYCR(self):
+        return self.setup.get_fs('histograms_DYCR')
+    @property
+    def fs_histograms_TTCR(self):
+        return self.setup.get_fs('histograms_TTCR')
+    @property
+    def fs_histograms_SR(self):
+        return self.setup.get_fs('histograms_SR')
 
     def ana_path(self):
         return os.getenv("ANALYSIS_PATH")
@@ -120,7 +129,7 @@ class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
     max_runtime = law.DurationParameter(default=12.0, unit="h", significant=False,
                                         description="maximum runtime, default unit is hours")
     n_cpus = luigi.IntParameter(default=1, description="number of cpus")
-    poll_interval = copy_param(law.htcondor.HTCondorWorkflow.poll_interval, 5)
+    poll_interval = copy_param(law.htcondor.HTCondorWorkflow.poll_interval, 2)
     transfer_logs = luigi.BoolParameter(default=True, significant=False,
                                         description="transfer job logs to the output directory")
 

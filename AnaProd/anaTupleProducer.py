@@ -34,6 +34,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
     spin = -100 if 'spin' not in sample_config else sample_config['spin']
     isHH = True if mass > 0 else False
     isData = True if sample_config['sampleType'] == 'data' else False
+    isEraH = True if 'isEraH' in sample_config and sample_config['isEraH'] else False
     loadTF = anaTupleDef.loadTF
     loadHHBtag = anaTupleDef.loadHHBtag
     lepton_legs = anaTupleDef.lepton_legs
@@ -70,6 +71,8 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
     df = df.Define("entryIndex", "static_cast<int>(rdfentry_)")
     is_data = 'true' if isData else 'false'
     df = df.Define("isData", is_data)
+    is_era_H = 'true' if isEraH else 'false'
+    df = df.Define("isEraH", is_era_H)
 
     df = Baseline.CreateRecoP4(df, nano_version=setup.global_params['nano_version'])
     df = Baseline.DefineGenObjects(df, isData=isData, isHH=isHH)

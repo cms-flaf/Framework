@@ -177,10 +177,11 @@ class DataFrameBuilderBase:
         colNames[lumiIdx], colNames[3] = colNames[3], colNames[lumiIdx]
         self.colNames = colNames
         self.colTypes = [str(self.df.GetColumnType(c)) for c in self.colNames]
-        for n,c in zip(self.colNames[0:3],self.colTypes[0:3]):
-             print(n,c)
-        #print(self.colNames)
-        #print(self.colTypes)
+        # for n,c in zip(self.colNames,self.colTypes):
+        #      print(n,c)
+        #      self.df.Filter("event==16677").Display({n}).Print()
+        # print(self.colNames)
+        # print(self.colTypes)
         #if "kinFit_result" in self.colNames:
         #    self.colNames.remove("kinFit_result")
 
@@ -203,6 +204,7 @@ class DataFrameBuilderBase:
                 raise RuntimeError(f"CreateFromDelta: {central_columns[central_col_idx]} != {var_name_forDelta}")
             self.df = self.df.Define(f"{var_name_forDelta}", f"""analysis::FromDelta({var_name},
                                      analysis::GetEntriesMap()[std::make_tuple(entryIndex, run, event, luminosityBlock)]->GetValue<{self.colTypes[var_idx]}>({central_col_idx}) )""")
+            #self.df.Filter("event==16677").Display({var_name_forDelta}).Print()
             var_list.append(f"{var_name_forDelta}")
 
     def AddMissingColumns(self,central_columns,central_col_types):

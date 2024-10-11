@@ -89,15 +89,16 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
             for scale in scales:
                 print(scale)
                 treeName = f"Events_{uncName}{scale}"
-                #print(treeName)
+                print(treeName)
                 treeName_noDiff = f"{treeName}_noDiff"
                 if treeName_noDiff in file_keys:
                     print(treeName_noDiff)
                     df_noDiff = ROOT.RDataFrame(treeName_noDiff, inFileName)
                     print(df_noDiff.Count().GetValue())
-                    #print(df_noDiff.GetColumnNames())
+                    print(df_noDiff.GetColumnNames())
                     dfWrapped_noDiff = Utilities.DataFrameBuilderBase(df_noDiff)
                     dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
+                    dfWrapped_noDiff.AddMissingColumns(colNames, colTypes)
                     dfW_noDiff = Utilities.DataFrameWrapper(dfWrapped_noDiff.df,defaultColToSave)
                     applyLegacyVariables(dfW_noDiff,global_cfg_dict, False)
                     varToSave = Utilities.ListToVector(dfW_noDiff.colToSave)
@@ -105,23 +106,26 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     dfW_noDiff.df.Snapshot(treeName_noDiff, f'{outFileName}_{uncName}{scale}_noDiff.root', varToSave, snapshotOptions)
                 treeName_Valid = f"{treeName}_Valid"
                 if treeName_Valid in file_keys:
-                    print(treeName_Valid)
+                    print(f"tree name valid is {treeName_Valid}")
                     df_Valid = ROOT.RDataFrame(treeName_Valid, inFileName)
-                    print(df_Valid.Count().GetValue())
-                    #print(df_Valid.GetColumnNames())
                     dfWrapped_Valid = Utilities.DataFrameBuilderBase(df_Valid)
                     dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
+                    dfWrapped_Valid.AddMissingColumns(colNames, colTypes)
                     dfW_Valid = Utilities.DataFrameWrapper(dfWrapped_Valid.df,defaultColToSave)
                     applyLegacyVariables(dfW_Valid,global_cfg_dict, False)
                     varToSave = Utilities.ListToVector(dfW_Valid.colToSave)
                     all_files.append(f'{outFileName}_{uncName}{scale}_Valid.root')
                     dfW_Valid.df.Snapshot(treeName_Valid, f'{outFileName}_{uncName}{scale}_Valid.root', varToSave, snapshotOptions)
+                    if treeName == "Events_EleFakingTauES_DM1Down":
+                        print("Event tree name is Events_EleFakingTauES_DM1Down")
+                        dfW_Valid.df.Filter("event==16677").Display({"tau2_charge", "tau2_decayMode"}).Print()
                 treeName_nonValid = f"{treeName}_nonValid"
                 if treeName_nonValid in file_keys:
                     print(treeName_nonValid)
                     df_nonValid = ROOT.RDataFrame(treeName_nonValid, inFileName)
                     print(df_nonValid.Count().GetValue())
                     dfWrapped_nonValid = Utilities.DataFrameBuilderBase(df_nonValid)
+                    dfWrapped_nonValid.AddMissingColumns(colNames, colTypes)
                     dfW_nonValid = Utilities.DataFrameWrapper(dfWrapped_nonValid.df,defaultColToSave)
                     applyLegacyVariables(dfW_nonValid,global_cfg_dict, False)
                     varToSave = Utilities.ListToVector(dfW_nonValid.colToSave)

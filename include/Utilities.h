@@ -22,6 +22,7 @@ namespace detail {
       return shifted - central;
     }
     static T FromDelta(const T& delta, const T& central){
+      // std::cout << "delta = " << delta << " central = " << central << std::endl;
       return delta + central;
     }
 
@@ -40,7 +41,9 @@ namespace detail {
     static ROOT::VecOps::RVec<T> FromDelta(const ROOT::VecOps::RVec<T>& delta, const ROOT::VecOps::RVec<T>& central){
       ROOT::VecOps::RVec<T> fromDeltaVec = delta;
       size_t n_max = std::min(delta.size(), central.size());
+      // std::cout<< "delta vec size = "<< fromDeltaVec.size() <<  " central size = "<<central.size()<<std::endl;
       for (size_t n =0 ; n < n_max; ++n){
+        // std::cout<<"deltaVec["<<n<<"] = "<<fromDeltaVec[n]<< " central["<<n<<"] = "<< central[n]<<std::endl;
         fromDeltaVec[n]+= central[n];
       }
       return fromDeltaVec;

@@ -354,7 +354,7 @@ b2_phi:
   # x_bins:  "100|-3.2:3.2" for next round
   #x_rebin: [-3.2, -2.88, -2.56, -2.24, -1.92, -1.6, -1.28, -0.96, -0.64, -0.32, -0.0, 0.32, 0.64, 0.96, 1.28, 1.6, 1.92, 2.24, 2.56, 2.88, 3.2]
   x_bins:  "70|-3.5:3.5"
-  x_rebin: [-3.5, -3.0,-2.5,-2.0,-1.5,-1.0,-0.5,0.0,0.5,1.0,1.5,2.0,2.5,3.0,3.5]
+  x_rebin: [-3.5,-3.3, -3.1,-2.9,-2.7,-2.5,-2.3, -2.1,-1.9,-1.7,-1.5,-1.3, -1.1,-0.9,-0.7,-0.5,-0.3,-0.1,0.1,0.3,0.5,0.7,0.9,1.1,1.3,1.5,1.7,1.9,2.1,2.3,2.5,2.7,2.9,3.1,3.3,3.5]
   x_title: \phi(b_{2})
   y_title: Events
   use_log_y: False
@@ -455,7 +455,7 @@ pt_ll:
   max_y_sf: 1.8
   # use_log_y: True
   # max_y_sf: 20.2
-  divide_by_bin_width: False
+  divide_by_bin_width: True
 
 pt_bb:
   x_bins: "200|0:1000"
@@ -464,13 +464,13 @@ pt_bb:
     boosted_cat2: [0, 20, 40, 60, 80, 100, 125, 150,175, 200, 250, 300]
     other: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180,190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300]
   x_title: p_{T}(bb)(GeV)
-  y_title: Events
+  y_title: "#frac{Events}{bin width} #left(#frac{1}{GeV}#right) "
   use_log_x: False
   use_log_y: False
   max_y_sf: 1.8
   # use_log_y: True
   # max_y_sf: 20.2
-  divide_by_bin_width: False
+  divide_by_bin_width: True
 
 
 tautau_m_vis:
@@ -596,10 +596,10 @@ met_pt:
   x_bins : "500|0:1000"
   x_rebin: [0,20,30,40,50,60,70,80,90,100,110,120,140,160,180,200]
   x_title : P_{T}^{miss} (GeV)
-  y_title : Events
+  y_title : "#frac{Events}{bin width} #left(#frac{1}{GeV}#right) "
   max_y_sf : 1.6
   use_log_y: False
-  divide_by_bin_width: False
+  divide_by_bin_width: True
 
 met_phi:
   x_bins: "100|-3.2:3.2"
@@ -613,16 +613,16 @@ met_phi:
 met_pt_nano:
   x_bins : "500|0:1000" # [0,20,40,60,80,100,125,150,175,200,250,300]
   x_title : P_{T}^{miss} (GeV)
-  y_title : Events
+  y_title : "#frac{Events}{bin width} #left(#frac{1}{GeV}#right) "
   max_y_sf : 1.6
   use_log_y: False
-  divide_by_bin_width: False
+  divide_by_bin_width: True
 
 met_phi_nano:
   x_bins: "100|-3.2:3.2"
   x_rebin: [-3.2, -2.88, -2.56, -2.24, -1.92, -1.6, -1.28, -0.96, -0.64, -0.32, -0.0, 0.32, 0.64, 0.96, 1.28, 1.6, 1.92, 2.24, 2.56, 2.88, 3.2]
   x_title: \phi_{E_{T}^{miss}}
-  y_title: Events
+  y_title: "#frac{Events}{bin width} #left(#frac{1}{GeV}#right) "
   max_y_sf: 1.8
   use_log_y: False
   divide_by_bin_width: True
@@ -631,10 +631,10 @@ metnomu_pt:
   x_bins : "500|0:1000" #[0,20,40,60,80,100,125,150,175,200,250,300]
   x_rebin: [0,20,30,40,50,60,70,80,90,100,110,120,140,160,180,200]
   x_title : P_{T}^{miss} (GeV)
-  y_title : dN/dm (1/GeV)
+  y_title : "#frac{Events}{bin width} #left(#frac{1}{GeV}#right) "
   max_y_sf : 1.6
   use_log_y: False
-  divide_by_bin_width: False
+  divide_by_bin_width: True
 
 metnomu_phi:
   x_bins: "40|-3.2:3.2"

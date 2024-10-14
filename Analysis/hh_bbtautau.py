@@ -203,6 +203,23 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         if "weight_L1PreFiring_Muon_SystDown_rel" not in self.df.GetColumnNames():
             self.df = self.df.Define("weight_L1PreFiring_Muon_SystDown_rel","weight_L1PreFiring_Muon_SystDown/weight_L1PreFiring_Muon_Central")
 
+    # def defineLeptonPreselection(self): # needs channel def
+    #     self.df = self.df.Define("muon1_tightId", "if(muTau || muMu) {return (tau1_Muon_tightId && tau1_Muon_pfRelIso04_all < 0.15); } return true;")
+    #     print(self.df.Count().GetValue())
+    #     self.df = self.df.Define("muon2_tightId", "if(muMu || eMu) {return (tau2_Muon_tightId && tau2_Muon_pfRelIso04_all < 0.3);} return true;")
+    #     print(self.df.Count().GetValue())
+    #     self.df = self.df.Define("firstele_mvaIso", "if(eMu || eE){return tau1_Electron_mvaIso_WP80==1 && tau1_Electron_pfRelIso03_all < 0.15 ; } return true; ")
+    #     print(self.df.Count().GetValue())
+    #     self.df = self.df.Define("tau1_iso_medium", f"if(tauTau) return (tau1_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value}); return true;")
+    #     if f"tau1_gen_kind" not in self.df.GetColumnNames():
+    #         self.df=self.df.Define("tau1_gen_kind", "if(isData) return 5; return 0;")
+    #     if f"tau2_gen_kind" not in self.df.GetColumnNames():
+    #         self.df=self.df.Define("tau2_gen_kind", "if(isData) return 5; return 0;")
+    #     self.df = self.df.Define("tau_true", f"""(tau1_gen_kind==5 && tau2_gen_kind==5)""")
+    #     self.df = self.df.Define(f"lepton_preselection", "tau1_iso_medium && muon1_tightId && muon2_tightId && firstele_mvaIso")
+    #     self.df = self.df.Filter(f"lepton_preselection")
+    #     #print(f" after lepton preselection {self.df.Count().GetValue()}")
+
     def defineLeptonPreselection(self): # needs channel def
         self.df = self.df.Define("muon1_tightId", "if(muTau || muMu) {return (tau1_Muon_tightId && tau1_Muon_pfRelIso04_all < 0.15); } return true;")
         self.df = self.df.Define("muon2_tightId", "if(muMu || eMu) {return (tau2_Muon_tightId && tau2_Muon_pfRelIso04_all < 0.3);} return true;")
@@ -214,8 +231,8 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
             self.df=self.df.Define("tau2_gen_kind", "if(isData) return 5; return 0;")
         self.df = self.df.Define("tau_true", f"""(tau1_gen_kind==5 && tau2_gen_kind==5)""")
         self.df = self.df.Define(f"lepton_preselection", "tau1_iso_medium && muon1_tightId && muon2_tightId && firstele_mvaIso")
-        self.df = self.df.Filter(f"lepton_preselection")
-        #print(f" after lepton preselection {self.df.Count().GetValue()}")
+        # self.df = self.df.Filter(f"lepton_preselection")
+        # #print(f" after lepton preselection {self.df.Count().GetValue()}")
 
     def defineQCDRegions(self):
         self.df = self.df.Define("OS", "tau1_charge*tau2_charge < 0")
@@ -225,10 +242,10 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
         self.df = self.df.Define("AntiIso", f"((tauTau || eTau || muTau) && (tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value} && tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet < {Utilities.WorkingPointsTauVSjet.Medium.value})) || ((muMu||eMu) && (tau2_Muon_pfRelIso04_all >= 0.15 && tau2_Muon_pfRelIso04_all < 0.3) ) || (eE && (tau2_Electron_pfRelIso03_all >= 0.15 && tau2_Electron_mvaNoIso_WP80 ))")
 
-        self.df = self.df.Define("OS_Iso", f"OS && Iso")
-        self.df = self.df.Define("SS_Iso", f"SS && Iso")
-        self.df = self.df.Define("OS_AntiIso", f"OS && AntiIso")
-        self.df = self.df.Define("SS_AntiIso", f"SS && AntiIso")
+        self.df = self.df.Define("OS_Iso", f"lepton_preselection && OS && Iso")
+        self.df = self.df.Define("SS_Iso", f"lepton_preselection && SS && Iso")
+        self.df = self.df.Define("OS_AntiIso", f"lepton_preselection && OS && AntiIso")
+        self.df = self.df.Define("SS_AntiIso", f"lepton_preselection && SS && AntiIso")
 
     def deepTauYear(self):
         return self.config['deepTauYears'][self.deepTauVersion]

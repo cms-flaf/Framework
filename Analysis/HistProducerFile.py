@@ -60,7 +60,7 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
     dataframes = all_dataframes[key_2]
     sample_type,uncName,scale = key_2
     isCentral = 'Central' in key_2
-    print(f"key2 is {key_2}")
+    # print(f"key2 is {key_2}")
     histograms = {}
     boosted_categories = global_cfg_dict['boosted_categories']
     categories = global_cfg_dict['categories']
@@ -102,26 +102,20 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, fil
     if compute_variations and key!=key_central and sample_type!='data':
         if key not in all_dataframes.keys():
             all_dataframes[key] = []
-        #print(file_keys)
         treeName = f"Events_{uncName}{scale}"
-        #treeName = f"Events_nanoHTT_{uncName}{scale}"
-        #print(treeName)
-        #print(colNames, colTypes)
         treeName_noDiff = f"{treeName}_noDiff"
         if treeName_noDiff in file_keys:
             # print(treeName_noDiff)
             dfWrapped_noDiff = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_noDiff, inFile),global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False)
-            #dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
             if hasCache:
                 dfWrapped_cache_noDiff = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_noDiff,inFileCache),global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False)
                 AddCacheColumnsInDf(dfWrapped_noDiff, dfWrapped_cache_noDiff,f"cache_map_{uncName}{scale}_noDiff")
+            dfWrapped_noDiff.AddMissingColumns(colNames, colTypes)
             dfWrapped_noDiff = PrepareDfForHistograms(dfWrapped_noDiff)
-            dfWrapped_Valid.AddMissingColumns(colNames, colTypes)
             all_dataframes[key].append(dfWrapped_noDiff.df)
-
         treeName_Valid = f"{treeName}_Valid"
         if treeName_Valid in file_keys:
-            print(treeName_Valid)
+            # print(treeName_Valid)
             dfWrapped_Valid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_Valid, inFile),global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium", pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False)
             if hasCache:
                 dfWrapped_cache_Valid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_Valid,inFileCache), global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False)
@@ -129,26 +123,19 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, fil
             dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
             dfWrapped_Valid = PrepareDfForHistograms(dfWrapped_Valid)
             dfWrapped_Valid.AddMissingColumns(colNames, colTypes)
-            #newdf = dfWrapped_Valid.df
-            print(type(dfWrapped_Valid.df))
-            print(dfWrapped_Valid.df.Count().GetValue())
-            all_dataframes[key].append(newdf)
-            # new_df = ROOT.RDataFrame(dfWrapped_Valid.df)
-            # print(type(new_df))
-
+            all_dataframes[key].append(dfWrapped_Valid.df)
         treeName_nonValid = f"{treeName}_nonValid"
         if treeName_nonValid in file_keys:
             # print(treeName_nonValid)
             dfWrapped_nonValid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_nonValid, inFile),global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False)
-            #dfWrapped_nonValid.CreateFromDelta(colNames, colTypes)
             if hasCache:
                 dfWrapped_cache_nonValid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_nonValid,inFileCache), global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False)
                 AddCacheColumnsInDf(dfWrapped_nonValid, dfWrapped_cache_nonValid, f"cache_map_{uncName}{scale}_nonValid")
+            dfWrapped_nonValid.AddMissingColumns(colNames, colTypes)
             dfWrapped_nonValid = PrepareDfForHistograms(dfWrapped_nonValid)
-            dfWrapped_Valid.AddMissingColumns(colNames, colTypes)
             all_dataframes[key].append(dfWrapped_nonValid.df)
-        #if not all_dataframes[key]:
-        #    all_dataframes.pop(key)
+        if not all_dataframes[key]:
+           all_dataframes.pop(key)
 
 
 
@@ -198,7 +185,9 @@ if __name__ == "__main__":
     with open(args.globalConfig, 'r') as f:
         global_cfg_dict = yaml.safe_load(f)
 
-
+    if args.region == "SR":
+        global_cfg_dict['channels_to_consider'] = ['eTau', 'muTau', 'tauTau']
+        print(f"""considering {global_cfg_dict["channels_to_consider"]}""")
     if args.region=='DYCR':
         global_cfg_dict['channels_to_consider'] = ['muMu', 'eE']
         print(f"""considering {global_cfg_dict["channels_to_consider"]}""")
@@ -231,7 +220,7 @@ if __name__ == "__main__":
     all_dataframes_shape = {}
     all_histograms = {}
     if not create_new_hist:
-        print("creating central histo")
+        # print("creating central histo")
         dfWrapped_central = DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.inFile),global_cfg_dict, period=args.period, deepTauVersion=args.deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=args.region,isData=isData,isCentral=True, wantTriggerSFErrors=True)
         key_central = (args.sampleType, "Central", "Central")
         key_filter_dict = createKeyFilterDict(global_cfg_dict, args.period)
@@ -276,45 +265,18 @@ if __name__ == "__main__":
         all_dataframes_shape[key_central]=[all_dataframes[key_central][0]]
         compute_shape = args.compute_unc_variations and args.dataset!='data'
         if compute_shape:
-            for uncName in unc_cfg_dict['shape'][0:1]:
-                print(f"uncname is {uncName}")
+            for uncName in unc_cfg_dict['shape']:
+                # print(f"uncname is {uncName}")
                 for scale in scales:
                     key_2 = (args.sampleType, uncName, scale)
-                    print(f" key 2 is {key_2}")
-
+                    # print(f" key 2 is {key_2}")
                     GetShapeDataFrameDict(all_dataframes_shape, global_cfg_dict, key_2, key_central, inFile_keys,args.inFile, args.cacheFile,compute_shape , args.period, args.deepTauVersion, col_names_central, col_types_central, args.region, isData, hasCache)
-                    print(all_dataframes_shape)
                     if key_2 not in all_dataframes_shape.keys(): continue
                     if all_dataframes_shape[key_2]==[] :
                         print('empty list')
                         continue
-                    # print(all_dataframes_shape[key_2])
-
-
-
-                    for df in all_dataframes_shape[key_2]:
-                        print(type(df))
-                        print(key_2)
-                    '''
-                        print(df.Count().GetValue())
                     shape_histograms =  GetHistogramDictFromDataframes(args.var, all_dataframes_shape, key_2 , key_filter_dict,unc_cfg_dict['shape'], hist_cfg_dict, global_cfg_dict, args.furtherCut, True)
-                    #for dfCentral in all_dataframes_shape[key_central]:
-                    #    print(type(dfCentral))
-                    #    print(key_central)
-                    #    print(dfCentral.Count().GetValue())
-
-                    for key,blabla in shape_histograms.items():
-                        print(key)
-                        print(type(blabla))
-                        for blublu in blabla:
-                            print(blublu.GetValue().GetEntries())
-                            print(blublu.GetValue().Integral(0, blublu.GetNbinsX()))
-                    '''
-
-                    #SaveHists(shape_histograms, outfile,all_categories)
-
-
-
+                    SaveHists(shape_histograms, outfile,all_categories)
         outfile.Close()
     else:
         print(f"NO HISTOGRAM CREATED!!!! dataset: {args.dataset} ")

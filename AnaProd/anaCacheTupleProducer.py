@@ -92,10 +92,10 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                 print(treeName)
                 treeName_noDiff = f"{treeName}_noDiff"
                 if treeName_noDiff in file_keys:
-                    print(treeName_noDiff)
+                    # print(treeName_noDiff)
                     df_noDiff = ROOT.RDataFrame(treeName_noDiff, inFileName)
-                    print(df_noDiff.Count().GetValue())
-                    print(df_noDiff.GetColumnNames())
+                    # print(df_noDiff.Count().GetValue())
+                    # print(df_noDiff.GetColumnNames())
                     dfWrapped_noDiff = Utilities.DataFrameBuilderBase(df_noDiff)
                     dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
                     dfWrapped_noDiff.AddMissingColumns(colNames, colTypes)
@@ -121,9 +121,9 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                         dfW_Valid.df.Filter("event==16677").Display({"tau2_charge", "tau2_decayMode"}).Print()
                 treeName_nonValid = f"{treeName}_nonValid"
                 if treeName_nonValid in file_keys:
-                    print(treeName_nonValid)
+                    # print(treeName_nonValid)
                     df_nonValid = ROOT.RDataFrame(treeName_nonValid, inFileName)
-                    print(df_nonValid.Count().GetValue())
+                    # print(df_nonValid.Count().GetValue())
                     dfWrapped_nonValid = Utilities.DataFrameBuilderBase(df_nonValid)
                     dfWrapped_nonValid.AddMissingColumns(colNames, colTypes)
                     dfW_nonValid = Utilities.DataFrameWrapper(dfWrapped_nonValid.df,defaultColToSave)

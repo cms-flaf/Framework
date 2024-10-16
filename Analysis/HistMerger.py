@@ -175,11 +175,15 @@ if __name__ == "__main__":
     categories = list(global_cfg_dict['categories'])
     boosted_categories = list(global_cfg_dict['boosted_categories'])
     QCDregions = list(global_cfg_dict['QCDRegions'])
-    channels = list(global_cfg_dict['channels_to_consider'])
 
     if args.region=='DYCR':
-        channels = ['muMu', 'eE']
+        global_cfg_dict['channels_to_consider'] = ['muMu', 'eE']
         print(f"""considering {global_cfg_dict["channels_to_consider"]}""")
+    if args.region=='SR':
+        global_cfg_dict['channels_to_consider'] = ['eTau', 'muTau', 'tauTau']
+        print(f"""considering {global_cfg_dict["channels_to_consider"]}""")
+
+    channels = list(global_cfg_dict['channels_to_consider'])
 
     signals = list(global_cfg_dict['signal_types'])
     unc_to_not_consider_boosted = list(global_cfg_dict['unc_to_not_consider_boosted'])

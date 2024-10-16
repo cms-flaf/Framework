@@ -145,21 +145,21 @@ norm:
 
 
 shape:
-  - TauES_DM0
+  #- TauES_DM0
   - TauES_DM1
-  - TauES_3prong
-  - EleFakingTauES_DM0
-  - EleFakingTauES_DM1
-  - MuFakingTauES
-  - JER
-  - JES_FlavorQCD
-  - JES_RelativeBal
-  - JES_HF
-  - JES_BBEC1
-  - JES_EC2
-  - JES_Absolute
-  - JES_BBEC1_2018
-  - JES_Absolute_2018
-  - JES_EC2_2018
-  - JES_HF_2018
-  - JES_RelativeSample_2018
+  #- TauES_3prong
+  #- EleFakingTauES_DM0
+  #- EleFakingTauES_DM1
+  #- MuFakingTauES
+  #- JER
+  #- JES_FlavorQCD
+  #- JES_RelativeBal
+  #- JES_HF
+  #- JES_BBEC1
+  #- JES_EC2
+  #- JES_Absolute
+  #- JES_BBEC1_2018
+  #- JES_Absolute_2018
+  #- JES_EC2_2018
+  #- JES_HF_2018
+  #- JES_RelativeSample_2018

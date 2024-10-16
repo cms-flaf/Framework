@@ -126,7 +126,6 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 branches[branch_idx] = (sample_id, sample_name, self.samples[sample_name]['sampleType'],
                                         self.remote_target(input_file, fs=self.fs_nanoAOD))
                 branch_idx += 1
-        print(branches)
         return branches
 
     def workflow_requires(self):

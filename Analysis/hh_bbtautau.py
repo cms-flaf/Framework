@@ -176,14 +176,15 @@ def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_sam
                 all_histograms['QCD'][keyQCD_up] = hist_qcd_Up
                 all_histograms['QCD'][keyQCD_down] = hist_qcd_Down
 
-def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = 'final_weight_0'):
+def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False):
     btag_weight = "1"
     btagshape_weight = "1"
     if applyBtag:
         if global_cfg_dict['btag_wps'][cat]!='' : btag_weight = f"weight_bTagSF_{btag_wps[cat]}_Central"
     else:
         if cat !='btag_shape' and cat !='boosted': btagshape_weight = "weight_bTagShape_Central"
-    return f'{finalWeight_name}*{btag_weight}*{btagshape_weight}'
+    #return f'{finalWeight_name}*{btag_weight}*{btagshape_weight}'
+    return f'{btag_weight}*{btagshape_weight}'
 
 
 
@@ -348,3 +349,16 @@ def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.redefineWeights()
     dfForHistograms.df = createInvMass(dfForHistograms.df)
     return dfForHistograms
+
+
+def defineAllP4(df):
+    df = df.Define(f"SelectedFatJet_idx", f"CreateIndexes(SelectedFatJet_pt.size())")
+    df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")
+    for idx in [0,1]:
+        df = Utilities.defineP4(df, f"tau{idx+1}")
+        df = Utilities.defineP4(df, f"b{idx+1}")
+    for met_var in ['met','metnomu']:
+        df = df.Define(f"{met_var}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({met_var}_pt,0.,{met_var}_phi,0.)")
+    df = df.Define(f"met_nano_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(met_pt_nano,0.,met_phi_nano,0.)")
+
+    return df

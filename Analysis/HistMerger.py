@@ -10,9 +10,10 @@ if __name__ == "__main__":
 
 import Common.Utilities as Utilities
 from Analysis.HistHelper import *
-from Analysis.hh_bbtautau import *
 
-
+#Import correct analysis
+#from Analysis.hh_bbtautau import *
+import Analysis.hh_bbww as analysis
 
 def checkLists(list1, list2):
     if len(list1) != len(list2):
@@ -125,9 +126,12 @@ def GetBTagWeightDict(var, all_histograms):
             ch, reg, cat = key_1
             uncName,scale = key_2
             key_tuple_num = ((ch, reg, 'btag_shape'), key_2)
+            #Why is this hard coded? What is 'btag_shape' here?
+            key_tuple_num = ((ch, reg, 'inclusive'), key_2)
             key_tuple_den = ((ch, reg, 'inclusive'), key_2)
             ratio_num_hist = all_histograms[sample_type][key_tuple_num] if key_tuple_num in all_histograms[sample_type].keys() else None
             ratio_den_hist = all_histograms[sample_type][key_tuple_den] if key_tuple_den in all_histograms[sample_type].keys() else None
+            
             num = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)
             den = ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
             ratio = 0.
@@ -190,6 +194,13 @@ if __name__ == "__main__":
             continue
             #raise RuntimeError(f"{inFileName} removed")
         #print(sample_name)
+
+        #Sometimes we do not want to stack all samples (signal)
+        if 'samples_to_skip_hist' in global_cfg_dict.keys():
+            #Add this key check to avoid breaking bbtautau
+            if sample_name in global_cfg_dict['samples_to_skip_hist']:
+                continue
+
         inFileRoot = ROOT.TFile.Open(inFileName, "READ")
         if inFileRoot.IsZombie():
             inFileRoot.Close()
@@ -222,7 +233,7 @@ if __name__ == "__main__":
     #if args.var == 'kinFit_m':
         #fixNegativeContributions=FatJetObservables
     #    fixNegativeContributions=False
-    AddQCDInHistDict(args.var,all_histograms_1D, channels, categories, args.uncSource, all_samples_types.keys(), scales,unc_to_not_consider_boosted,fixNegativeContributions)
+    analysis.AddQCDInHistDict(args.var,all_histograms_1D, channels, categories, args.uncSource, all_samples_types.keys(), scales,unc_to_not_consider_boosted,fixNegativeContributions)
 
 
     outFile = ROOT.TFile(args.outFile, "RECREATE")
@@ -234,7 +245,7 @@ if __name__ == "__main__":
             #if qcdRegion != 'OS_Iso': continue
             dirStruct = (channel,qcdRegion, cat)
             dir_name = '/'.join(dirStruct)
-            dir_ptr = mkdir(outFile,dir_name)
+            dir_ptr = Utilities.mkdir(outFile,dir_name)
             hist = all_histograms_1D[sample_type][key]
             #print(sample_type, key, hist.GetEntries())
             hist_name =  sample_type

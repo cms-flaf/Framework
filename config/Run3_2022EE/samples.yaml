@@ -4,8 +4,8 @@ GLOBAL:
   fs_nanoAOD:
   - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/skim_2024_v1/Run3_2022EE'
   nano_version: v14
-  crossSectionsFile : config/crossSections13TeV.yaml
-  use_stitching: false
+  crossSectionsFile : config/crossSections13p6TeV.yaml
+  triggerFile: config/Run3_2022EE/triggers.yaml
 
 ############## Data ##############
 EGamma_Run2022E:
@@ -93,7 +93,7 @@ DYto2E_MLL-6000_powheg:
   miniAOD: /DYto2E_MLL-6000_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6-v2/MINIAODSIM
 DYto2L_M-10to50_amcatnloFXFX:
   sampleType: DY
-  crossSectionStitch: DYto2L_M-10to50_amcatnloFXFX
+  crossSection: DYto2L_M-10to50_amcatnloFXFX
   generator: amcatnloFXFX
   miniAOD: /DYto2L-2Jets_MLL-10to50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6-v2/MINIAODSIM
 DYto2L_M-10to50_madgraphMLM:
@@ -141,6 +141,8 @@ DYto2L_M-50_amcatnloFXFX:
   crossSectionStitch: DYto2L_M-50_amcatnloFXFX
   generator: amcatnloFXFX
   miniAOD: /DYto2L-2Jets_MLL-50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6-v2/MINIAODSIM
+  isReference: True
+  crossSection: DY_NNLO_QCD+NLO_EW
 
 DYto2L_M-50_madgraphMLM:
   sampleType: DY

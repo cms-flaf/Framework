@@ -13,6 +13,7 @@ unc_2017 = ['JES_BBEC1_2017', 'JES_Absolute_2017', 'JES_EC2_2017', 'JES_HF_2017'
 unc_2016preVFP = ['JES_BBEC1_2016preVFP', 'JES_Absolute_2016preVFP', 'JES_EC2_2016preVFP', 'JES_HF_2016preVFP', 'JES_RelativeSample_2016preVFP' ]
 unc_2016postVFP = ['JES_BBEC1_2016postVFP', 'JES_Absolute_2016postVFP', 'JES_EC2_2016postVFP', 'JES_HF_2016postVFP', 'JES_RelativeSample_2016postVFP' ]
 
+#This gets overwritten by the global config
 uncs_to_exclude = {
     'Run2_2018': unc_2017+ unc_2016preVFP + unc_2016postVFP,
     'Run2_2017': unc_2018+ unc_2016preVFP + unc_2016postVFP,
@@ -33,6 +34,8 @@ def getYear(period):
         'Run2_2016':'2016',
         'Run2_2017':'2017',
         'Run2_2018':'2018',
+        'Run3_2022':'2022',
+        'Run3_2022EE':'2022EE',
     }
     return year_dict[period]
 
@@ -127,7 +130,8 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_name, prod_br, var, need_cache = self.branch_data
         input_file = self.input()[0]
         print(f'input file is {input_file.path}')
-        global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
+        #global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
+        global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         sample_type = self.samples[sample_name]['sampleType'] if sample_name != 'data' else 'data'
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
@@ -254,7 +258,8 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def run(self):
         var, branches_idx = self.branch_data
         sample_config = os.path.join(self.ana_path(), 'config',self.period, f'samples.yaml')
-        global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
+        #global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
+        global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         uncNames = ['Central']
         unc_cfg_dict = load_unc_config(unc_config)
@@ -310,6 +315,8 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 HaddMergedHistsProducer_cmd.extend(local_merged_files)
                 ps_call(HaddMergedHistsProducer_cmd,verbose=1)
         with tmp_outFile.localize("r") as tmpFile, self.output().localize("w") as outFile:
+            print("Doing the rename hist producer")
+            print(RenameHistsProducer)
             RenameHistsProducer_cmd = ['python3', RenameHistsProducer,'--inFile', tmpFile.path, '--outFile', outFile.path, '--var', var, '--year', getYear(self.period)]
             ps_call(RenameHistsProducer_cmd,verbose=1)
 

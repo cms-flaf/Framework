@@ -12,7 +12,12 @@ if __name__ == "__main__":
 
 import Common.Utilities as Utilities
 from Analysis.HistHelper import *
-from Analysis.hh_bbtautau import *
+
+import importlib
+
+#Import correct analysis
+#from Analysis.hh_bbtautau import *
+import Analysis.hh_bbww as analysis
 
 def createCacheQuantities(dfWrapped_cache, cache_map_name):
     df_cache = dfWrapped_cache.df
@@ -44,7 +49,7 @@ def SaveHists(histograms, out_file):
         ch, reg, cat = key_1
         sample_type,uncName,scale = key_2
         dir_name = '/'.join(key_1)
-        dir_ptr = mkdir(out_file,dir_name)
+        dir_ptr = Utilities.mkdir(out_file,dir_name)
         merged_hist = hist_list[0].GetValue()
         for hist in hist_list[1:] :
             merged_hist.Add(hist.GetValue())
@@ -68,7 +73,7 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
         if cat == 'boosted' and (var.startswith('b1') or var.startswith('b2')): continue
         if cat != 'boosted' and var.startswith('SelectedFatJet'): continue
         if cat == 'boosted' and uncName in global_cfg_dict['unc_to_not_consider_boosted']: continue
-        total_weight_expression = GetWeight(ch,cat) if sample_type!='data' else "1"
+        total_weight_expression = analysis.GetWeight(ch,cat) if sample_type!='data' else "1"
         #print(total_weight_expression)
         weight_name = "final_weight"
         if not isCentral:
@@ -83,12 +88,14 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
             #print(dataframe.Count().GetValue())
             dataframe_new = dataframe.Filter(key_cut)
             #print(dataframe_new.Count().GetValue())
+            #final_string_weight = analysis.ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = f"final_weight_0_{ch}_{cat}_{reg}") if sample_type!='data' else "1"
+            btag_weight = analysis.ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False) if sample_type!='data' else "1"
+            total_weight_expression = "*".join([total_weight_expression,btag_weight])
             dataframe_new = dataframe_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}")
-            final_string_weight = ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = f"final_weight_0_{ch}_{cat}_{reg}") if sample_type!='data' else "1"
             dataframe_new = dataframe_new.Filter(f"{cat}")
-            if cat == 'btag_shape':
+            if cat == 'btag_shape': #This should be absorbed into ApplyBTagWeight func
                 final_string_weight = f"final_weight_0_{ch}_{cat}_{reg}"
-            histograms[(key_1, key_2)].append(dataframe_new.Define("final_weight", final_string_weight).Define("weight_for_hists", f"{weight_name}").Histo1D(GetModel(hist_cfg_dict, var), var, "weight_for_hists"))
+            histograms[(key_1, key_2)].append(dataframe_new.Define("final_weight", total_weight_expression).Define("weight_for_hists", f"{weight_name}").Histo1D(GetModel(hist_cfg_dict, var), var, "weight_for_hists"))
 
     return histograms
 
@@ -207,23 +214,33 @@ if __name__ == "__main__":
     create_new_hist = key_not_exist or df_empty
 
     if not create_new_hist:
-        dfWrapped_central = DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.inFile),global_cfg_dict, args.period, args.deepTauVersion)
+        args.deepTauVersion = "garbage"
+        #Put kwargset into config later
+        kwargset = {}
+        which_ana = "bbww"
+        if which_ana == "bbww":
+            kwargset = {}
+        if which_ana == "bbtautau":
+            kwargset = {"deepTauVersion": args.deepTauVersion}
+        dfWrapped_central = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.inFile),global_cfg_dict, args.period, **kwargset)
+
+        #dfWrapped_central = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.inFile),global_cfg_dict, args.period, args.deepTauVersion)
         all_dataframes = {}
         all_histograms = {}
 
         key_central = (args.sampleType, "Central", "Central")
-        key_filter_dict = createKeyFilterDict(global_cfg_dict)
+        key_filter_dict = analysis.createKeyFilterDict(global_cfg_dict)
         outfile  = ROOT.TFile(args.outFileName,'RECREATE')
         col_names_central =  dfWrapped_central.colNames
         col_tpyes_central =  dfWrapped_central.colTypes
 
         hasCache= args.cacheFile != ''
         if hasCache:
-            dfWrapped_cache_central = DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.cacheFile),global_cfg_dict, args.period, args.deepTauVersion)
+            dfWrapped_cache_central = DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.cacheFile),global_cfg_dict, args.period, **kwargset)
             AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache_central, "cache_map_Central")
 
         if key_central not in all_dataframes:
-            all_dataframes[key_central] = [PrepareDfForHistograms(dfWrapped_central).df]
+            all_dataframes[key_central] = [analysis.PrepareDfForHistograms(dfWrapped_central).df]
         central_histograms = GetHistogramDictFromDataframes(args.var, all_dataframes,  key_central , key_filter_dict, unc_cfg_dict['norm'],hist_cfg_dict, global_cfg_dict, args.furtherCut)
         #print(central_histograms)
         # central quantities definition

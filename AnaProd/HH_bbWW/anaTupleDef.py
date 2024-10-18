@@ -4,8 +4,7 @@ from Corrections.Corrections import Corrections
 
 loadTF = False
 loadHHBtag = False
-lepton_legs = [ "tau1", "tau2" ]
-
+lepton_legs = [ "lep1", "lep2" ]
 
 Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all","Muon_tightId","Muon_highPtId"]
 
@@ -147,6 +146,9 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
                                 return subjet_var;
                                 """)
 
+    if trigger_class is not None:
+        hltBranches = dfw.Apply(trigger_class.ApplyTriggers, lepton_legs, isData, isSignal, "bbww")
+        dfw.colToSave.extend(hltBranches)
     # save all selected reco jets
     dfw.Define("centralJet_idx", "CreateIndexes(Jet_btagPNetB[Jet_sel].size())")
     dfw.Define("centralJet_idxSorted", "ReorderObjects(Jet_btagPNetB[Jet_sel], centralJet_idx)")
@@ -184,7 +186,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
                                             res.push_back(idx == -1 ? false : GenJet_TrueBjetTag[idx]);
                                         }
                                         return res;""")
-
     reco_jet_obs = []
     reco_jet_obs.extend(JetObservables)
     if not isData:

@@ -158,6 +158,7 @@ if __name__ == "__main__":
     parser.add_argument('--period', required=True, type=str)
     parser.add_argument('--furtherCut', required=False, type=str, default = "")
     parser.add_argument('--region', required=False, type=str, default = "SR")
+    parser.add_argument('--channels', required=False, type=str, default = "eTau,muTau,tauTau")
     parser.add_argument('--verbose', type=bool, default=False)
     args = parser.parse_args()
 
@@ -185,13 +186,7 @@ if __name__ == "__main__":
     with open(args.globalConfig, 'r') as f:
         global_cfg_dict = yaml.safe_load(f)
 
-    if args.region == "SR":
-        global_cfg_dict['channels_to_consider'] = ['eTau', 'muTau', 'tauTau']
-        print(f"""considering {global_cfg_dict["channels_to_consider"]}""")
-    if args.region=='DYCR':
-        global_cfg_dict['channels_to_consider'] = ['muMu', 'eE']
-        print(f"""considering {global_cfg_dict["channels_to_consider"]}""")
-
+    global_cfg_dict['channels_to_consider'] = args.channels.split(',')
     # central hist definition
     create_new_hist = False
     key_not_exist = False

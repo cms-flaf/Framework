@@ -93,10 +93,10 @@ deepTauYears:
 all_channels:
   - eTau
   - muTau
-  # - muMu
+  - muMu
   - tauTau
-  # - eE
-  # - eMu
+  - eE
+  - eMu
 
 channels_to_consider:
   - eTau

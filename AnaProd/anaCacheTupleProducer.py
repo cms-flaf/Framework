@@ -116,9 +116,6 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     varToSave = Utilities.ListToVector(dfW_Valid.colToSave)
                     all_files.append(f'{outFileName}_{uncName}{scale}_Valid.root')
                     dfW_Valid.df.Snapshot(treeName_Valid, f'{outFileName}_{uncName}{scale}_Valid.root', varToSave, snapshotOptions)
-                    if treeName == "Events_EleFakingTauES_DM1Down":
-                        print("Event tree name is Events_EleFakingTauES_DM1Down")
-                        dfW_Valid.df.Filter("event==16677").Display({"tau2_charge", "tau2_decayMode"}).Print()
                 treeName_nonValid = f"{treeName}_nonValid"
                 if treeName_nonValid in file_keys:
                     # print(treeName_nonValid)

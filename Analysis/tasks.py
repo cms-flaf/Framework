@@ -149,23 +149,24 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_type = self.samples[sample_name]['sampleType'] if sample_name != 'data' else 'data'
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
         print(f'output file is {self.output().path}')
+        channels='eTau,muTau,tauTau'
+        region = 'SR'
+        if isDYCR:
+            region = 'DYCR'
+            channels='eE,eMu,muMu'
+        if isTTCR:
+            region = 'TTCR'
+            if isSC:
+                channels='eTau,muTau,tauTau'
+            else:
+                channels='eE,eMu,muMu'
+        '''
         with input_file.localize("r") as local_input, self.output().localize("w") as local_output:
             HistProducerFile_cmd = [ 'python3', HistProducerFile,
                                     '--inFile', local_input.path, '--outFileName',local_output.path,
                                     '--dataset', sample_name, '--uncConfig', unc_config,
                                     '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type,
-                                    '--globalConfig', global_config, '--var', var, '--period', self.period]
-            channels='eTau,muTau,tauTau'
-            if isDYCR:
-                HistProducerFile_cmd.extend(['--region', 'DYCR'])
-                channels='eE,eMu,muMu'
-            if isTTCR:
-                HistProducerFile_cmd.extend(['--region', 'TTCR'])
-                if isSC:
-                    channels='eTau,muTau,tauTau'
-                else:
-                    channels='eE,eMu,muMu'
-            HistProducerFile_cmd.extend(['--channels', channels])
+                                    '--globalConfig', global_config, '--var', var, '--period', self.period'--region', region, '--channels', channels]
             if self.global_params['compute_unc_histograms'] or var == 'kinFit_m':
                 HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
             if is2p5:
@@ -177,6 +178,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     ps_call(HistProducerFile_cmd, verbose=1)
             else:
                 ps_call(HistProducerFile_cmd, verbose=1)
+        '''
 
 
 class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):

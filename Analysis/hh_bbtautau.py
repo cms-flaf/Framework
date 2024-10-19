@@ -108,10 +108,10 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def definePNetSFs(self):
         #print(f"defining PNet weights")
-        self.df= self.df.Define("weight_pNet_Central", f"""getSFPNet(SelectedFatJet_p4_boosted.Pt(), "{self.period}", "Central", "{self.pNetWPstring}")""")
-        self.df= self.df.Define("weight_pNet_Up", f"""getSFPNet(SelectedFatJet_p4_boosted.Pt(), "{self.period}", "Up", "{self.pNetWPstring}")""")
+        self.df= self.df.Define("weight_pNet_Central", f"""getSFPNet(SelectedFatJet_p4_boosted.Pt(), "{self.period}", "Central", "{self.pNetWPstring}",{self.whichType})""")
+        self.df= self.df.Define("weight_pNet_Up", f"""getSFPNet(SelectedFatJet_p4_boosted.Pt(), "{self.period}", "Up", "{self.pNetWPstring}",{self.whichType})""")
         self.df= self.df.Define("weight_pNet_Up_rel", f"""weight_pNet_Up/weight_pNet_Central""")
-        self.df= self.df.Define("weight_pNet_Down", f"""getSFPNet(SelectedFatJet_p4_boosted.Pt(), "{self.period}", "Down", "{self.pNetWPstring}")""")
+        self.df= self.df.Define("weight_pNet_Down", f"""getSFPNet(SelectedFatJet_p4_boosted.Pt(), "{self.period}", "Down", "{self.pNetWPstring}",{self.whichType})""")
         self.df= self.df.Define("weight_pNet_Down_rel", f"""weight_pNet_Down/weight_pNet_Central""")
 
     def defineApplicationRegions(self):
@@ -274,7 +274,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         for colName,colType in zip(self.colNames,self.colTypes):
             print(colName,colType)
 
-    def __init__(self, df, config, period, deepTauVersion='v2p1', bTagWPString = "Medium", pNetWPstring="Loose", region="SR",isData=False, isCentral=False, wantTriggerSFErrors=False):
+    def __init__(self, df, config, period, deepTauVersion='v2p1', bTagWPString = "Medium", pNetWPstring="Loose", region="SR",isData=False, isCentral=False, wantTriggerSFErrors=False, whichType=3):
         super(DataFrameBuilderForHistograms, self).__init__(df)
         self.deepTauVersion = deepTauVersion
         self.config = config
@@ -285,6 +285,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.period = period
         self.region = region
         self.isData = isData
+        self.whichType = whichType
         self.isCentral = isCentral
         self.wantTriggerSFErrors = wantTriggerSFErrors
         # print(f"deepTauVersion = {self.deepTauVersion}")

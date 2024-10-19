@@ -52,7 +52,7 @@ def SaveHists(histograms, out_file, categories_to_save):
         hist_name =  sample_type
         if not isCentral:
             hist_name+=f"_{uncName}{scale}"
-        #print(hist_name)
+        #print(dir_name, hist_name)
         dir_ptr.WriteTObject(merged_hist, hist_name, "Overwrite")
 
 
@@ -86,6 +86,7 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
                     weight_name = unc_cfg_dict[uncName]['expression'].format(scale=scale)
         if (key_1, key_2) not in histograms.keys():
             histograms[(key_1, key_2)] = []
+
         for dataframe in dataframes:
             if furtherCut != '' : key_cut += f' && {furtherCut}'
             dataframe_new = dataframe.Filter(key_cut)
@@ -150,7 +151,7 @@ if __name__ == "__main__":
     parser.add_argument('--sampleType', required=True, type=str)
     parser.add_argument('--deepTauVersion', required=False, type=str, default='v2p1')
     parser.add_argument('--compute_unc_variations', type=bool, default=False)
-    parser.add_argument('--compute_rel_weights', type=bool, default=False)
+    parser.add_argument('--compute_rel_weights', type=bool, default=True)
     parser.add_argument('--histConfig', required=True, type=str)
     parser.add_argument('--globalConfig', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str)
@@ -188,7 +189,7 @@ if __name__ == "__main__":
         global_cfg_dict = yaml.safe_load(f)
 
     global_cfg_dict['channels_to_consider'] = args.channels.split(',')
-    print(global_cfg_dict['channels_to_consider'])
+    # print(global_cfg_dict['channels_to_consider'])
     # central hist definition
     create_new_hist = False
     key_not_exist = False
@@ -216,8 +217,10 @@ if __name__ == "__main__":
         datasetType = 1
     if args.sampleType == 'DY':
         datasetType = 2
-    if args.sampleType in  global_cfg_dict['signal_types']:
+    if args.sampleType in global_cfg_dict['signal_types']:
         datasetType = 0
+    # print(f"datasetType is {datasetType}")
+
     create_new_hist = key_not_exist or df_empty
     all_dataframes = {}
     all_dataframes_shape = {}
@@ -225,7 +228,7 @@ if __name__ == "__main__":
     if not create_new_hist:
         # print("creating central histo")
         dfWrapped_central = DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.inFile),global_cfg_dict, period=args.period, deepTauVersion=args.deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=args.region,isData=isData,isCentral=True, wantTriggerSFErrors=True,whichType=datasetType)
-        key_central = (args.sampleType, "Central", "Central")
+        key_central = (args.dataset, "Central", "Central")
         key_filter_dict = createKeyFilterDict(global_cfg_dict, args.period)
         outfile  = ROOT.TFile(args.outFileName,'RECREATE')
 
@@ -254,7 +257,7 @@ if __name__ == "__main__":
             for uncName in unc_cfg_dict['norm'].keys():
                 for scale in scales:
                     # print(uncName, scale)
-                    key_2 = (args.sampleType, uncName, scale)
+                    key_2 = (args.dataset, uncName, scale)
                     if key_2 not in all_dataframes.keys():
                         all_dataframes[key_2] = []
                     all_dataframes[key_2] = [all_dataframes[key_central][0]]
@@ -271,7 +274,7 @@ if __name__ == "__main__":
             for uncName in unc_cfg_dict['shape']:
                 # print(f"uncname is {uncName}")
                 for scale in scales:
-                    key_2 = (args.sampleType, uncName, scale)
+                    key_2 = (args.dataset, uncName, scale)
                     # print(f" key 2 is {key_2}")
                     GetShapeDataFrameDict(all_dataframes_shape, global_cfg_dict, key_2, key_central, inFile_keys,args.inFile, args.cacheFile,compute_shape , args.period, args.deepTauVersion, col_names_central, col_types_central, args.region, isData,datasetType, hasCache)
                     if key_2 not in all_dataframes_shape.keys(): continue

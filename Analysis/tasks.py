@@ -160,25 +160,25 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 channels='eTau,muTau,tauTau'
             else:
                 channels='eE,eMu,muMu'
-        '''
         with input_file.localize("r") as local_input, self.output().localize("w") as local_output:
             HistProducerFile_cmd = [ 'python3', HistProducerFile,
                                     '--inFile', local_input.path, '--outFileName',local_output.path,
                                     '--dataset', sample_name, '--uncConfig', unc_config,
                                     '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type,
-                                    '--globalConfig', global_config, '--var', var, '--period', self.period'--region', region, '--channels', channels]
+                                    '--globalConfig', global_config, '--var', var, '--period', self.period, '--region', region, '--channels', channels]
             if self.global_params['compute_unc_histograms'] or var == 'kinFit_m':
                 HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
             if is2p5:
                 HistProducerFile_cmd.extend([ '--deepTauVersion', 'v2p5'])
             if need_cache:
                 anaCache_file = self.input()[1]
+                print(anaCache_file)
                 with anaCache_file.localize("r") as local_anacache:
                     HistProducerFile_cmd.extend(['--cacheFile', local_anacache.path])
                     ps_call(HistProducerFile_cmd, verbose=1)
             else:
                 ps_call(HistProducerFile_cmd, verbose=1)
-        '''
+
 
 
 class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):

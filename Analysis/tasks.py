@@ -166,7 +166,8 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                                     '--dataset', sample_name, '--uncConfig', unc_config,
                                     '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type,
                                     '--globalConfig', global_config, '--var', var, '--period', self.period, '--region', region, '--channels', channels]
-            if self.global_params['compute_unc_histograms'] or var == 'kinFit_m':
+            # if self.global_params['compute_unc_histograms'] or var == 'kinFit_m':
+            if (var=='bbtautau_mass' or var == 'kinFit_m') and (isSC==False):
                 HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
             if is2p5:
                 HistProducerFile_cmd.extend([ '--deepTauVersion', 'v2p5'])

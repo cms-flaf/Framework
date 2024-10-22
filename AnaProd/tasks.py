@@ -169,9 +169,9 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                                  '--anaTupleDef', anaTupleDef, '--anaCache', anaCache_input.path ]
                 if len(self.customisations) > 0:
                     anatuple_cmd.extend([ '--customisations', self.customisations ])
-                if self.global_params.get('compute_unc_variations', False):
+                if 'SC' in self.version.split('_') and (self.global_params.get('compute_unc_variations', False)):
                     anatuple_cmd.append('--compute-unc-variations')
-                if self.global_params.get('store_noncentral', False):
+                if 'SC' in self.version.split('_') and (self.global_params.get('store_noncentral', False)):
                     anatuple_cmd.append('--store-noncentral')
                 centralFileName = os.path.basename(local_input.path)
                 if self.test:
@@ -270,7 +270,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def output(self):
         sample_name, sample_type = self.branch_data
         outFileName = os.path.basename(self.input()[0].path)
-        outDir = os.path.join('anaCacheTuple', self.period, sample_name, self.version)
+        outDir = os.path.join('anaCacheTuples', self.period, sample_name, self.version)
         finalFile = os.path.join(outDir, outFileName)
         return self.remote_target(finalFile, fs=self.fs_anaCacheTuple)
 

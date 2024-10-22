@@ -357,7 +357,7 @@ VBFHToWWTo2L2Nu:
 
 ############## VH non-inclusive ##############
 WplusHToTauTau:
-  crossSec: 0.84*0.0627
+  crossSec: 0.84*0.06272
   reference: Higgs_XSBR_YR4_update https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt13TeV
   unc: WH (+0,5 -0,7 +/-1,9 +/-1,7 +/-0,9) (scale,  PDF+ alfas, PDF, alfas) HTauTau (+1.17 -1.16 +0.98 -0.99 +0.62 -0.62) (thu, pu[mq], pu[alphas])
 
@@ -510,9 +510,9 @@ ST_t-channel_antitop:
   unc: +2.53 -1.71 (scale) +/-3.18(PDF+alphaS) +4.06 -3.61(Total) +0.71 -0.70(mass) +/-0.16 (Ebeam)
 
 ST_tW:
-  crossSec: 71.7
+  crossSec: 71.7 # 79.3 new value
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopRefXsec
-  unc: +/-1.80(scale) +/- 3.40(pdf)
+  unc: +/-1.80(scale) +/- 3.40(pdf) # +1.8 -1.9 , +2.2 new values for scale and pdf+alphas
 
 ST_s-channel_lep:
   crossSec: 10.32 # ADD BR

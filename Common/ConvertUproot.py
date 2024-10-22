@@ -53,15 +53,15 @@ def toUproot(inFile, outFile):
     for key in keys:
       parts = key.split("_", 1)
       if len(parts) == 1:
-        print(key)
+        # print(key)
         other_columns.append(key)
       else:
         col_name, br_name = parts
-        print(col_name, br_name)
+        # print(col_name, br_name)
         if not col_name in collections:
           collections[col_name] = []
         collections[col_name].append(br_name)
-    print(collections.items())
+    # print(collections.items())
     for col_name, columns in collections.items():
       out_tree[col_name] = ak.zip({ column: df[col_name + "_" + column] for column in columns })
 

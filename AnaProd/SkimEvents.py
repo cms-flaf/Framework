@@ -76,7 +76,7 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Event
 
   for var_idx,var_name in enumerate(colNames):
     if var_name in colToNotToMakeDiff: continue
-    condition_noDiff_list.append(f"analysis::IsSame(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})")
+    condition_noDiff_list.append(f"analysis::IsSame({var_name}, _entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}))")
 
   condition_noDiff = ' && '.join(condition_noDiff_list)
   df_out_valid = df_out_valid.Define("isSame", condition_noDiff)
@@ -84,7 +84,7 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Event
   df_out_valid_diff = df_out_valid.Filter("!isSame")
   for var_idx,var_name in enumerate(colNames):
     if var_name in colToNotToMakeDiff: continue
-    df_out_valid_diff=df_out_valid_diff.Define(f"{var_name}Diff", f"""analysis::Delta(_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}),{var_name})""")
+    df_out_valid_diff=df_out_valid_diff.Define(f"{var_name}Diff", f"""analysis::Delta({var_name},_entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}))""")
     colToSave_diff.append(f"{var_name}Diff")
 
   snaps = []

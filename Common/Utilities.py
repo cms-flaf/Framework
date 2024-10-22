@@ -47,6 +47,51 @@ class WorkingPointsbTag(Enum):
     Medium = 2
     Tight = 3
 
+WorkingPointsParticleNet = {
+        "Run2_2018":{
+            "Loose":0.9172,
+            "Medium":0.9734,
+            "Tight":0.988
+        },
+        "Run2_2017":{
+            "Loose":0.9105,
+            "Medium":0.9714,
+            "Tight":0.987
+        },
+        "Run2_2016":{
+            "Loose":0.9137,
+            "Medium":0.9735,
+            "Tight":0.9883
+        },
+        "Run2_2016_HIPM":{
+            "Loose":0.9088,
+            "Medium":0.9737,
+            "Tight":0.9883
+        },
+    }
+WorkingPointsDeepFlav = {
+        "Run2_2018":{
+            "Loose":0.049,
+            "Medium":0.2783,
+            "Tight":0.71
+        },
+        "Run2_2017":{
+            "Loose":0.0532,
+            "Medium":0.304,
+            "Tight":0.7476
+        },
+        "Run2_2016_HIPM":{
+            "Loose":0.0508,
+            "Medium":0.2598,
+            "Tight":0.6502
+        },
+        "Run2_2016":{
+            "Loose":0.048,
+            "Medium":0.2489,
+            "Tight":0.6377
+        },
+    }
+
 class WorkingPointsMuonID(Enum):
     HighPtID = 1
     LooseID = 2
@@ -131,9 +176,14 @@ class DataFrameBuilderBase:
         colNames[eventIdx], colNames[2] = colNames[2], colNames[eventIdx]
         colNames[lumiIdx], colNames[3] = colNames[3], colNames[lumiIdx]
         self.colNames = colNames
+        self.colTypes = [str(self.df.GetColumnType(c)) for c in self.colNames]
+        # for n,c in zip(self.colNames,self.colTypes):
+        #      print(n,c)
+        #      self.df.Filter("event==16677").Display({n}).Print()
+        # print(self.colNames)
+        # print(self.colTypes)
         #if "kinFit_result" in self.colNames:
         #    self.colNames.remove("kinFit_result")
-        self.colTypes = [str(self.df.GetColumnType(c)) for c in self.colNames]
 
     def __init__(self, df):
         self.df = df
@@ -149,13 +199,19 @@ class DataFrameBuilderBase:
                 continue
             var_name_forDelta = var_name.removesuffix("Diff")
             central_col_idx = central_columns.index(var_name_forDelta)
+            #print(var_name_forDelta, var_name, central_col_idx, central_columns[central_col_idx])
             if central_columns[central_col_idx]!=var_name_forDelta:
                 raise RuntimeError(f"CreateFromDelta: {central_columns[central_col_idx]} != {var_name_forDelta}")
             self.df = self.df.Define(f"{var_name_forDelta}", f"""analysis::FromDelta({var_name},
                                      analysis::GetEntriesMap()[std::make_tuple(entryIndex, run, event, luminosityBlock)]->GetValue<{self.colTypes[var_idx]}>({central_col_idx}) )""")
+            #self.df.Filter("event==16677").Display({var_name_forDelta}).Print()
             var_list.append(f"{var_name_forDelta}")
+
+    def AddMissingColumns(self,central_columns,central_col_types):
         for central_col_idx,central_col in enumerate(central_columns):
-            if central_col in var_list or central_col in self.colNames: continue
+            #print(central_col)
+            #print(central_col in self.colNames)
+            if central_col in self.df.GetColumnNames(): continue
             self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[std::make_tuple(entryIndex, run, event, luminosityBlock)]->GetValue<{central_col_types[central_col_idx]}>({central_col_idx})""")
 
     def AddCacheColumns(self,cache_cols,cache_col_types):

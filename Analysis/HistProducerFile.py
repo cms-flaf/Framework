@@ -151,7 +151,7 @@ if __name__ == "__main__":
     parser.add_argument('--sampleType', required=True, type=str)
     parser.add_argument('--deepTauVersion', required=False, type=str, default='v2p1')
     parser.add_argument('--compute_unc_variations', type=bool, default=False)
-    parser.add_argument('--compute_rel_weights', type=bool, default=True)
+    parser.add_argument('--compute_rel_weights', type=bool, default=False)
     parser.add_argument('--histConfig', required=True, type=str)
     parser.add_argument('--globalConfig', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str)
@@ -225,16 +225,16 @@ if __name__ == "__main__":
     all_dataframes = {}
     all_dataframes_shape = {}
     all_histograms = {}
+    compute_rel_weights_not_data = args.compute_rel_weights and args.dataset!='data'
     if not create_new_hist:
         # print("creating central histo")
-        dfWrapped_central = DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.inFile),global_cfg_dict, period=args.period, deepTauVersion=args.deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=args.region,isData=isData,isCentral=True, wantTriggerSFErrors=True,whichType=datasetType)
+        dfWrapped_central = DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.inFile),global_cfg_dict, period=args.period, deepTauVersion=args.deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=args.region,isData=isData,isCentral=True, wantTriggerSFErrors=compute_rel_weights_not_data,whichType=datasetType)
         key_central = (args.dataset, "Central", "Central")
         key_filter_dict = createKeyFilterDict(global_cfg_dict, args.period)
         outfile  = ROOT.TFile(args.outFileName,'RECREATE')
 
         #print(col_names_central)
 
-        compute_rel_weights_not_data = args.compute_rel_weights and args.dataset!='data'
         hasCache= args.cacheFile != ''
         if hasCache:
             dfWrapped_cache_central = DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.cacheFile),global_cfg_dict, args.period, deepTauVersion=args.deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose",region=args.region,isData=isData,isCentral=True, wantTriggerSFErrors=compute_rel_weights_not_data,whichType=datasetType)

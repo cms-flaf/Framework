@@ -796,7 +796,15 @@ SelectedFatJet_mass_boosted:
   divide_by_bin_width: True
 
 
-
+bbtautau_mass:
+  x_bins: "652|245:3505"
+  x_title: M_{H}^{kinfit} (GeV)
+  y_title: dN/dm_{H}^{kinfit} (1/GeV)
+  max_y_sf: 100
+  divide_by_bin_width: False
+  use_log_y: False
+  use_log_x: True
+  blind_ranges : [250, 3500]
 
 kinFit_m:
   x_bins: "652|245:3505"

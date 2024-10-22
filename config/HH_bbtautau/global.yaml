@@ -35,12 +35,12 @@ corrections:
   - pu
 deepTauVersion: 2p1
 channelSelection:
-  - eTau
-  - muTau
-  - tauTau
-  # - eE
-  # - eMu
-  # - muMu
+  # - eTau
+  # - muTau
+  # - tauTau
+  - eE
+  - eMu
+  - muMu
 QCDRegions:
   - OS_Iso
   - SS_Iso

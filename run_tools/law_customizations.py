@@ -70,15 +70,6 @@ class Task(law.Task):
     @property
     def fs_histograms(self):
         return self.setup.get_fs('histograms')
-    @property
-    def fs_histograms_DYCR(self):
-        return self.setup.get_fs('histograms_DYCR')
-    @property
-    def fs_histograms_TTCR(self):
-        return self.setup.get_fs('histograms_TTCR')
-    @property
-    def fs_histograms_SR(self):
-        return self.setup.get_fs('histograms_SR')
 
     def ana_path(self):
         return os.getenv("ANALYSIS_PATH")

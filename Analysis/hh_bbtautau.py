@@ -274,7 +274,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         for colName,colType in zip(self.colNames,self.colTypes):
             print(colName,colType)
 
-    def __init__(self, df, config, period, deepTauVersion='v2p1', bTagWPString = "Medium", pNetWPstring="Loose", region="SR",isData=False, isCentral=False, wantTriggerSFErrors=False, whichType=3):
+    def __init__(self, df, config, period, deepTauVersion='v2p1', bTagWPString = "Medium", pNetWPstring="Loose", region="SR",isData=False, isCentral=False, wantTriggerSFErrors=False, whichType=3, wantScales=True):
         super(DataFrameBuilderForHistograms, self).__init__(df)
         self.deepTauVersion = deepTauVersion
         self.config = config
@@ -288,6 +288,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.whichType = whichType
         self.isCentral = isCentral
         self.wantTriggerSFErrors = wantTriggerSFErrors
+        self.wantScales = isCentral and wantScales
         # print(f"deepTauVersion = {self.deepTauVersion}")
         # print(f"period = {self.period}")
         # print(f"bTagWPString = {self.bTagWPString}")
@@ -308,7 +309,7 @@ def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.defineApplicationRegions()
     if not dfForHistograms.isData:
         defineTriggerWeights(dfForHistograms)
-        if dfForHistograms.wantTriggerSFErrors:
+        if dfForHistograms.wantTriggerSFErrors and dfForHistograms.isCentral:
             defineTriggerWeightsErrors(dfForHistograms)
     #print(dfForHistograms.df.GetColumnNames())
     dfForHistograms.redefinePUJetIDWeights()

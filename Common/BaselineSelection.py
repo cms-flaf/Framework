@@ -32,13 +32,13 @@ def Initialize(loadTF=False, loadHHBtag=False):
             import RunKit.includeCMSSWlibs as IncludeLibs
             IncludeLibs.includeLibTool("tensorflow")
         if(loadHHBtag):
-            lib_path = os.path.join(os.environ["DEFAULT_CMSSW_BASE"], "lib", os.environ["DEFAULT_CMSSW_ARCH"],
+            lib_path = os.path.join(os.environ["FLAF_CMSSW_BASE"], "lib", os.environ["FLAF_CMSSW_ARCH"],
                                     "libHHToolsHHbtag.so")
             load_result = ROOT.gSystem.Load(lib_path)
             if load_result != 0:
                 raise RuntimeError(f"HHBtagWrapper failed to load with status {load_result}")
             ROOT.gInterpreter.Declare(f'#include "{header_path_HHbTag}"')
-            ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 1)')
+            ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 2)')
 
         initialized = True
 

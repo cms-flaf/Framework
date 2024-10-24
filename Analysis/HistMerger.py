@@ -38,6 +38,7 @@ def checkFile(inFileRoot, channels, qcdRegions, categories, var):
         for qcdRegion in QCDregions:
             dir_1 = dir_0.Get(qcdRegion)
             keys_categories = [str(key.GetName()) for key in dir_1.GetListOfKeys()]
+            if 'boosted' in categories and ( var.startswith('b1') or var.startswith('b2') ): categories.remove('boosted')
             if not checkLists(keys_categories, categories):
                     print("check list not worked for categories")
                     return False
@@ -83,6 +84,13 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, categories
                         if key_total not in all_histograms[name_to_use].keys():
                             all_histograms[name_to_use][key_total] = []
                         all_histograms[name_to_use][key_total].append(obj)
+                    elif uncSource == 'QCDScale':
+                        for scale in ['Up','Down']:
+                            key_total = ((channel, qcdRegion, cat), ('QCDScale', scale))
+                            if len(key_name_split)>1:continue
+                            if key_total not in all_histograms[name_to_use].keys():
+                                all_histograms[name_to_use][key_total] = []
+                            all_histograms[name_to_use][key_total].append(obj)
                     else:
                         uncName_scale ='' if name_to_use == 'data' else '_'.join(n for n in key_name_split[1:])
                         for scale in ['Up','Down']:
@@ -165,7 +173,7 @@ if __name__ == "__main__":
 
     categories = list(global_cfg_dict['categories'])
     QCDregions = list(global_cfg_dict['QCDRegions'])
-    channels = list(global_cfg_dict['channelSelection'])
+    channels = list(global_cfg_dict['channels_to_consider'])
     signals = list(global_cfg_dict['signal_types'])
     unc_to_not_consider_boosted = list(global_cfg_dict['unc_to_not_consider_boosted'])
     sample_types_to_merge = list(global_cfg_dict['sample_types_to_merge'])
@@ -206,6 +214,8 @@ if __name__ == "__main__":
         inFileRoot.Close()
     MergeHistogramsPerType(all_histograms)
     all_histograms_1D=GetBTagWeightDict(args.var,all_histograms)
+    print(all_histograms_1D)
+
     fixNegativeContributions = False
     if args.var != 'kinFit_m':
         fixNegativeContributions=True
@@ -221,8 +231,8 @@ if __name__ == "__main__":
 
         for key in all_histograms_1D[sample_type]:
             (channel, qcdRegion, cat), (uncNameType, uncScale) = key
-            if qcdRegion != 'OS_Iso': continue
-            dirStruct = (channel, cat)
+            #if qcdRegion != 'OS_Iso': continue
+            dirStruct = (channel,qcdRegion, cat)
             dir_name = '/'.join(dirStruct)
             dir_ptr = mkdir(outFile,dir_name)
             hist = all_histograms_1D[sample_type][key]
@@ -240,4 +250,5 @@ if __name__ == "__main__":
             dir_ptr.WriteTObject(hist, hist_name, "Overwrite")
     outFile.Close()
     executionTime = (time.time() - startTime)
+
     print('Execution time in seconds: ' + str(executionTime))

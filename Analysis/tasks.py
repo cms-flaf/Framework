@@ -133,20 +133,19 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         print(f'input file is {input_file.path}')
         global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
-        sample_config = os.path.join(self.ana_path(), 'config',self.period, f'samples.yaml')
         sample_type = self.samples[sample_name]['sampleType'] if sample_name != 'data' else 'data'
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
         print(f'output file is {self.output().path}')
         with input_file.localize("r") as local_input, self.output().localize("w") as local_output:
+            print(local_output.path)
+
             HistProducerFile_cmd = [ 'python3', HistProducerFile,
                                     '--inFile', local_input.path, '--outFileName',local_output.path,
                                     '--dataset', sample_name, '--uncConfig', unc_config,
                                     '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type,
-                                    '--globalConfig', global_config, '--var', var ]
-            if self.global_params['store_noncentral']:
-                HistProducerFile_cmd.extend(['--compute_unc_variations', 'True'])
-            if self.global_params['compute_unc_variations']:
-                HistProducerFile_cmd.extend(['--compute_rel_weights', 'True'])
+                                    '--globalConfig', global_config, '--var', var, '--period', self.period  ]
+            if self.global_params['compute_unc_histograms'] or var == 'kinFit_m':
+                HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
             if 'deepTau2p5' in self.version.split('_'):
                 print("deepTau2p5 in use")
                 HistProducerFile_cmd.extend([ '--deepTauVersion', 'v2p5'])
@@ -159,7 +158,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 ps_call(HistProducerFile_cmd, verbose=1)
 
 class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 1.0)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
     def workflow_requires(self):
@@ -264,12 +263,11 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         uncNames = ['Central']
         unc_cfg_dict = load_unc_config(unc_config)
         uncs_to_exclude = self.global_params['uncs_to_exclude'][self.period]
-
-
         print(uncs_to_exclude)
-        for uncName in list(unc_cfg_dict['norm'].keys())+unc_cfg_dict['shape']:
-            if uncName in uncs_to_exclude: continue
-            uncNames.append(uncName)
+        if self.global_params['compute_unc_histograms']:
+            for uncName in list(unc_cfg_dict['norm'].keys())+unc_cfg_dict['shape']:
+                if uncName in uncs_to_exclude: continue
+                uncNames.append(uncName)
         MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger.py')
         HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
         RenameHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'renameHists.py')

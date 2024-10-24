@@ -1,18 +1,18 @@
 norm:
   EleID:
     expression: weight_tau1_EleSF_EleID{scale}_rel * weight_tau2_EleSF_EleID{scale}_rel * final_weight
-  HighPtMuon_HighPtID:
-    expression: weight_tau1_HighPt_MuonID_SF_HighPtID{scale}_rel * weight_tau2_HighPt_MuonID_SF_HighPtID{scale}_rel * final_weight
-  HighPtMuon_HighPtIDIso:
-    expression: weight_tau1_HighPt_MuonID_SF_HighPtIdRelTkIso{scale}_rel * weight_tau2_HighPt_MuonID_SF_HighPtIdRelTkIso{scale}_rel * final_weight
-  HighPtMuon_Reco:
-    expression: weight_tau1_HighPt_MuonID_SF_Reco{scale}_rel * weight_tau2_HighPt_MuonID_SF_Reco{scale}_rel * final_weight
-  HighPtMuon_TightID:
-    expression: weight_tau1_HighPt_MuonID_SF_TightID{scale}_rel * weight_tau2_HighPt_MuonID_SF_TightID{scale}_rel * final_weight
-  Muon_HighPtID:
-    expression: weight_tau1_MuonID_SF_HighPtID_Trk{scale}_rel * weight_tau2_MuonID_SF_HighPtID_Trk{scale}_rel * final_weight
-  MuonID_HighPtIso:
-    expression: weight_tau1_MuonID_SF_HighPtIdRelTkIso{scale}_rel * weight_tau2_MuonID_SF_HighPtIdRelTkIso{scale}_rel * final_weight
+  #HighPtMuon_HighPtID:
+  #  expression: weight_tau1_HighPt_MuonID_SF_HighPtID{scale}_rel * weight_tau2_HighPt_MuonID_SF_HighPtID{scale}_rel * final_weight
+  #HighPtMuon_HighPtIDIso:
+  #  expression: weight_tau1_HighPt_MuonID_SF_HighPtIdRelTkIso{scale}_rel * weight_tau2_HighPt_MuonID_SF_HighPtIdRelTkIso{scale}_rel * final_weight
+  #HighPtMuon_Reco:
+  #  expression: weight_tau1_HighPt_MuonID_SF_Reco{scale}_rel * weight_tau2_HighPt_MuonID_SF_Reco{scale}_rel * final_weight
+  #HighPtMuon_TightID:
+  #  expression: weight_tau1_HighPt_MuonID_SF_TightID{scale}_rel * weight_tau2_HighPt_MuonID_SF_TightID{scale}_rel * final_weight
+  #Muon_HighPtID:
+  #  expression: weight_tau1_MuonID_SF_HighPtID_Trk{scale}_rel * weight_tau2_MuonID_SF_HighPtID_Trk{scale}_rel * final_weight
+  #MuonID_HighPtIso:
+  #  expression: weight_tau1_MuonID_SF_HighPtIdRelTkIso{scale}_rel * weight_tau2_MuonID_SF_HighPtIdRelTkIso{scale}_rel * final_weight
   MuonID_Reco:
     expression: weight_tau1_MuonID_SF_Reco{scale}_rel * weight_tau2_MuonID_SF_Reco{scale}_rel * final_weight
   MuonID_TightID:
@@ -73,6 +73,8 @@ norm:
     expression: weight_tau1_TauID_SF_Medium_syst_highpT_bin2{scale}_rel * weight_tau2_TauID_SF_Medium_syst_highpT_bin2{scale}_rel * final_weight
   TauID_SF_syst_highpT_extrap:
     expression: weight_tau1_TauID_SF_Medium_syst_highpT_extrap{scale}_rel * weight_tau2_TauID_SF_Medium_syst_highpT_extrap{scale}_rel * final_weight
+  TrigSF_MET:
+    expression: weight_TrgSF_MET{scale}_rel * final_weight
   TrigSF_diTau_DM0:
     expression: weight_tau1_TrgSF_ditau_DM0{scale}_rel * weight_tau2_TrgSF_ditau_DM0{scale}_rel * final_weight
   TrigSF_diTau_DM1:
@@ -229,3 +231,4 @@ shape:
   - JES_EC2_2016postVFP
   - JES_HF_2016postVFP
   - JES_RelativeSample_2016postVFP
+  - QCDScale

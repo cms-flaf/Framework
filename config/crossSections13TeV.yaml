@@ -97,6 +97,11 @@ DY_LO:
     crossSec: 5379.0 # 5398.0
     reference: XSDB DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2023-02-12 07:28:48 # 2021-06-21 09:27:15
     unc: 40.44 # 13.12
+DY_LO_M-10to50:
+  crossSec: 15810.0
+  reference: XSDB DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-07-16 14:49:00
+  unc: 5.764
+
 DY_NLO_0J:
   crossSec: 5090.0 # 5129.0
   reference: XSDB DYJetsToLL_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2023-02-12 07:28:30 # 2021-06-21 09:27:00
@@ -109,6 +114,22 @@ DY_NLO_2J:
   crossSec: 353.6 #361.4
   reference: XSDB DYJetsToLL_1J_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2023-02-12 07:28:34 #2021-06-21 09:27:03
   unc: 10.47 #3.704
+DY_LO_1J:
+  crossSec: 928.3
+  reference: XSDB DY1JetsToLL_M-50_MatchEWPDG20_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-06-21 09:26:40
+  unc: 2.54
+DY_LO_2J:
+  crossSec: 293.6
+  reference: XSDB DY2JetsToLL_M-50_MatchEWPDG20_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-10-11 11:22:53
+  unc: 0.8613
+DY_LO_3J:
+  crossSec: 86.53
+  reference: XSDB DY3JetsToLL_M-50_MatchEWPDG20_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-06-21 09:26:51
+  unc: 0.2633
+DY_LO_4J:
+  crossSec: 41.28
+  reference: XSDB DY4JetsToLL_M-50_MatchEWPDG20_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-06-21 09:26:51
+  unc: 0.1267
 
 DY_LO_M-10to50:
   crossSec: 15810.0
@@ -140,6 +161,140 @@ DY_NLO_LHEFilterPtZ-650ToInf:
   reference: XSDB DYJetsToLL_LHEFilterPtZ-650ToInf_MatchEWPDG20_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-07-15 09:17:15
   unc: 0.0002801
 
+
+DY_muTau_LO:
+  crossSec: 1 #to be fixed
+  reference:
+  unc: 0.1 # to be fixed
+
+DYJetsToLL_M-100to200:
+  crossSec: 247.8
+  reference: XSDB DYJetsToLL_M-100to200_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2020-09-22 01:32:20
+  unc: 1.083
+DYJetsToLL_M-200to500:
+  crossSec: 8.911
+  reference: XSDB DYJetsToLL_M-200to500_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-09-04 09:04:44
+  unc: 0.1255
+DYJetsToLL_M-500to700:
+  crossSec: 0.2558
+  reference: XSDB DYJetsToLL_M-500to700_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2020-09-22 01:32:29
+  unc: 0.001236
+DYJetsToLL_M-700to800:
+  crossSec: 0.04023
+  reference: XSDB DYJetsToLL_M-700to800_TuneCP5_13TeV-amcatnloFXFX-pythia8 2020-09-22 01:32:34
+  unc: 0.0001955
+DYJetsToLL_M-800to1000:
+  crossSec: 0.03406
+  reference: XSDB DYJetsToLL_M-800to1000_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2020-09-22 01:32:34
+  unc: 0.0001636
+DYJetsToLL_M-1000to1500:
+  crossSec: 0.01828
+  reference: XSDB DYJetsToLL_M-1000to1500_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2020-09-22 01:32:19
+  unc: 8.743e-05
+DYJetsToLL_M-1500to2000:
+  crossSec: 0.002367
+  reference: XSDB DYJetsToLL_M-1500to2000_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2020-09-22 01:32:23
+  unc: 1.143e-05
+DYJetsToLL_M-2000to3000:
+  crossSec: 0.0005409
+  reference: XSDB DYJetsToLL_M-2000to3000_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2020-09-22 01:32:27
+  unc: 2.745e-06
+DYJetsToLL_0J_MLL_200_400:
+  crossSec: 5.726
+  reference: from GenXSecAnalyzer /DYJetsToLL_0J_MLL_200_400_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM
+  unc: 2.968e-03
+DYJetsToLL_0J_MLL_400_800:
+  crossSec: 4.289e-01
+  reference: from GenXSecAnalyzer /DYJetsToLL_0J_MLL_400_800_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM
+  unc: 1.122e-03
+DYJetsToLL_0J_MLL_800_1400:
+  crossSec: 0.02492
+  reference: XSDB DYJetsToLL_0J_MLL_800_1400_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:21
+  unc: 6.134e-05
+DYJetsToLL_0J_MLL_1400_2300:
+  crossSec: 0.001792
+  reference: XSDB DYJetsToLL_0J_MLL_1400_2300_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:19
+  unc: 4.57e-06
+DYJetsToLL_0J_MLL_2300_3500:
+  crossSec: 1.008e-04
+  reference: from GenXSecAnalyzer /DYJetsToLL_0J_MLL_2300_3500_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v4/MINIAODSIM
+  unc: 2.212e-07
+DYJetsToLL_0J_MLL_3500_4500:
+  crossSec: 3.979e-06
+  reference: XSDB DYJetsToLL_0J_MLL_3500_4500_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:19"
+  unc: 1.052e-08
+DYJetsToLL_0J_MLL_4500_6000:
+  crossSec: 4.007e-07
+  reference: XSDB DYJetsToLL_0J_MLL_4500_6000_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:20
+  unc: 1.499e-09
+DYJetsToLL_0J_MLL_6000_Inf:
+  crossSec: 2.788e-08
+  reference: XSDB DYJetsToLL_0J_MLL_6000_Inf_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:20
+  unc: 1.042e-10
+DYJetsToLL_1J_MLL_200_400:
+  crossSec: 2.22
+  reference: XSDB DYJetsToLL_1J_MLL_200_400_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 14:23:27
+  unc: 0.04284
+DYJetsToLL_1J_MLL_400_800:
+  crossSec: 0.2417
+  reference: XSDB DYJetsToLL_1J_MLL_400_800_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:23
+  unc: 0.001478
+DYJetsToLL_1J_MLL_800_1400:
+  crossSec: 0.01836
+  reference: XSDB DYJetsToLL_1J_MLL_800_1400_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:23
+  unc: 0.0001037
+DYJetsToLL_1J_MLL_1400_2300:
+  crossSec: 0.001509
+  reference: XSDB DYJetsToLL_1J_MLL_1400_2300_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:21
+  unc: 1.326e-05
+DYJetsToLL_1J_MLL_2300_3500:
+  crossSec: 8.822e-05
+  reference: XSDB DYJetsToLL_1J_MLL_2300_3500_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:22
+  unc: 4.414e-07
+DYJetsToLL_1J_MLL_3500_4500:
+  crossSec: 3.432e-06
+  reference: XSDB DYJetsToLL_1J_MLL_3500_4500_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:22
+  unc: 1.69e-08
+DYJetsToLL_1J_MLL_4500_6000:
+  crossSec: 3.542e-07
+  reference: GenXSecAnalyzer /DYJetsToLL_1J_MLL_4500_6000_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v4/MINIAODSIM
+  unc: 2.482e-09
+DYJetsToLL_1J_MLL_6000_Inf:
+  crossSec: 2.508e-08
+  reference: XSDB DYJetsToLL_1J_MLL_6000_Inf_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 14:23:28
+  unc: 3.509e-10
+DYJetsToLL_2J_MLL_200_400:
+  crossSec: 0.9216
+  reference: XSDB DYJetsToLL_2J_MLL_200_400_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:24
+  unc: 0.00899
+DYJetsToLL_2J_MLL_400_800:
+  crossSec: 0.1099
+  reference: XSDB DYJetsToLL_2J_MLL_400_800_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:26
+  unc: 0.001
+DYJetsToLL_2J_MLL_800_1400:
+  crossSec: 0.009504
+  reference: XSDB DYJetsToLL_2J_MLL_800_1400_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:27
+  unc: 8.134e-05
+DYJetsToLL_2J_MLL_1400_2300:
+  crossSec: 0.000848
+  reference: XSDB DYJetsToLL_2J_MLL_1400_2300_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:24
+  unc: 7.132e-06
+DYJetsToLL_2J_MLL_2300_3500:
+  crossSec: 5.522e-05
+  reference: XSDB DYJetsToLL_2J_MLL_2300_3500_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:25
+  unc: 4.61e-07
+DYJetsToLL_2J_MLL_3500_4500:
+  crossSec: 2.405e-06
+  reference: XSDB DYJetsToLL_2J_MLL_3500_4500_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:25
+  unc: 2.061e-08
+DYJetsToLL_2J_MLL_4500_6000:
+  crossSec: 2.806e-07
+  reference: XSDB DYJetsToLL_2J_MLL_4500_6000_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:26
+  unc: 3.496e-09
+DYJetsToLL_2J_MLL_6000_Inf:
+  crossSec: 2.065e-08
+  reference: XSDB DYJetsToLL_2J_MLL_6000_Inf_TuneCP5_13TeV-amcatnloFXFX-pythia8 modifiedOn 2022-08-13 06:43:27
+  unc: 2.681e-10
 
 ############## EWK ##############
 EWK_ZTo2L:
@@ -253,7 +408,7 @@ GluGluZH_HToWW_ZTo2L:
 ############## VV inclusive ##############
 WW:
   crossSec: 118.7 #75.95
-  ref: https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat13TeV?rev=27 # XSDB WW_TuneCP5_13TeV-pythia8 modifiedOn 2021-06-21 10:00:53
+  ref: https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat13TeV?rev=27 # arXiv:1408.5243 # XSDB WW_TuneCP5_13TeV-pythia8 modifiedOn 2021-06-21 10:00:53
   unc: +2.5%-2.2% #0.1124
 
 WZ:
@@ -358,6 +513,16 @@ ST_tW:
   crossSec: 71.7
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopRefXsec
   unc: +/-1.80(scale) +/- 3.40(pdf)
+
+ST_s-channel_lep:
+  crossSec: 10.32 # ADD BR
+  reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopRefXsec
+  unc: +0.29 -0.24 +0.27 -0.27 +0.40 -0.36 +0.23 -0.22 ±0.01
+
+ST_s-channel_had:
+  crossSec: 10.32 # ADD BR
+  reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopRefXsec
+  unc: +0.29 -0.24 +0.27 -0.27 +0.40 -0.36 +0.23 -0.22 ±0.01
 
 #ST_tW_antitop:
 #  crossSec: 32.51
@@ -709,3 +874,23 @@ QCD_Pt-300toInf_EMEnriched:
   reference: XSDB QCD_Pt-300toInf_EMEnriched_TuneCP5_13TeV-pythia8 modifiedOn 2021-10-11 11:25:28
   unc: 3.282
 
+WGToLNuG:
+  crossSec: 412.7
+  ref: XSDB WGToLNuG_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-06-21 09:59:47
+  unc: 1.027
+ZJetsToQQ_HT-200to400:
+  crossSec: 1012.0
+  reference: XSDB ZJetsToQQ_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2022-03-02 06:46:48
+  unc: 2.997
+ZJetsToQQ_HT-400to600:
+  crossSec: 114.2
+  reference: XSDB ZJetsToQQ_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2022-03-02 06:46:49
+  unc: 0.3432
+ZJetsToQQ_HT-600to800:
+  crossSec: 25.34
+  reference: XSDB ZJetsToQQ_HT-600to800_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2021-10-11 11:27:15
+  unc: 0.07663
+ZJetsToQQ_HT-800toInf:
+  crossSec: 190.2
+  reference: XSDB ZJetsToQQ_HT-800toInf_TuneCP5_13TeV-madgraphMLM-pythia8 modifiedOn 2018-07-10 12:55:08
+  unc: 0.1051

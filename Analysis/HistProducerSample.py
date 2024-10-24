@@ -27,7 +27,7 @@ if __name__ == "__main__":
     # 1 list files :
     all_files = [ fileName for fileName in args.inputFile ]
 
-    hadd_str = f'hadd -f209 -j -O {args.outFile} '
+    hadd_str = f'hadd -f209 -n 0 {args.outFile} '
     hadd_str += ' '.join(f for f in all_files)
     if len(all_files) > 1:
         ps_call([hadd_str], True)

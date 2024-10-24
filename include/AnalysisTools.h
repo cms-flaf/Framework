@@ -98,6 +98,10 @@ constexpr inline int LegsToInt(Legs... legs)
 }
 
 enum class Channel : int {
+  e = LegsToInt(Leg::e),
+  mu = LegsToInt(Leg::mu),
+  tau = LegsToInt(Leg::tau),
+
   eE = LegsToInt(Leg::e, Leg::e),
   eMu = LegsToInt(Leg::e, Leg::mu),
   eTau = LegsToInt(Leg::e, Leg::tau),

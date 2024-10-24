@@ -52,13 +52,14 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
         df = df.Range(range)
     if len(evtIds) > 0:
         df = df.Filter(f"static const std::set<ULong64_t> evts = {{ {evtIds} }}; return evts.count(event) > 0;")
-
     if isData and 'lumiFile' in setup.global_params:
         lumiFilter = LumiFilter(setup.global_params['lumiFile'])
         df = lumiFilter.filter(df)
 
+    # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters#Analysis_Recommendations_for_any
     if "MET_flags" in setup.global_params:
         df = Baseline.applyMETFlags(df, setup.global_params["MET_flags"])
+
     df = df.Define("sample_type", f"static_cast<int>(SampleType::{sample_config['sampleType']})")
     df = df.Define("sample_name", f"static_cast<int>({zlib.crc32(sample_name.encode())})")
     isSignal = sample_config['sampleType'] in setup.global_params['signal_types']
@@ -122,12 +123,12 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
                         dfw.DefineAndAppend(f"{new_branch_name}_b{bjet_idx}", f"Hbb_isValid ? {puIDbranch}[b{bjet_idx}_idx] : -100.f")
                 if puIDbranch in weight_branches: weight_branches.remove(puIDbranch)
             dfw.colToSave.extend(weight_branches)
-        reports.append(dfw.df.Report())
         varToSave = Utilities.ListToVector(dfw.colToSave)
         outfile_prefix = inFile.split('/')[-1]
         outfile_prefix = outfile_prefix.split('.')[0]
         outFileName = os.path.join(outDir, f"{outfile_prefix}{suffix}.root")
         outfilesNames.append(outFileName)
+        reports.append(dfw.df.Report())
         snaps.append(dfw.df.Snapshot(f"Events", outFileName, varToSave, snapshotOptions))
     if snapshotOptions.fLazy == True:
         ROOT.RDF.RunGraphs(snaps)

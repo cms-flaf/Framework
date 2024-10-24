@@ -1,4 +1,4 @@
-GLOBAL:
+GLOBAL: # preVFP == APV == HIPM
   era: 'Run2_2016_HIPM' # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVDatasetsUL2016
   luminosity: 19500 #36310.
   fs_nanoAOD:
@@ -25,18 +25,38 @@ GLOBAL:
   sampleSelection:
     - drop ^VBFToRadion*
     - drop ^VBFToBulkGraviton*
-    - drop ^.*NoFully
-    - drop ^.*Enriched
+    - drop ^.*Enriched*
     - drop ^JetHT_Run201*
     - drop ^WWTo*
     - drop ^WZTo*
     - drop ^ZZTo*
-    - drop ^TTZToLLNuNu_M*
+    - drop ^TTZTo*
+    - drop ^TTGamma*
+    - drop ^TTWJetsTo*
+    - drop ^GluGluToHHTo2B2Tau_node*
+    - drop ^.*madgraphMLM*
     - drop ^TTZZTo*
     - drop ^TTZHTo*
+    - drop ^QCD*
     - drop ^TTHHTo*
-    - drop ^.*ext*
-    - drop ^.*erdON
+    - drop ^.*ext1*
+    - drop ^.*ext2*
+    - drop ^ST_s-channel*
+    - drop ^ST*5f*
+    - drop ^.*_MLL_*
+    - drop ^DYJetsToLL_M-*
+    - keep ^DYJetsToLL_M-50-amcatnloFXFX$
+    - keep ^DYJetsToLL_LHEFilter*
+    - drop ^WGToLNuG$
+    - drop ^ZJetsToQQ_HT*
+    - drop ^WToTauNu_M*
+    - drop ^WToMuNu_M*
+    - drop ^WJetsToLNu-amcatnloFXFX$
+    - drop ^W0JetsToLNu-amcatnloFXFX$
+    - drop ^W1JetsToLNu-amcatnloFXFX$
+    - drop ^W2JetsToLNu-amcatnloFXFX$
+    #- drop ^W[0-2]Jets*amcatnlo*
+
 
 ############## Data ##############
 SingleElectron_Run2016B:
@@ -94,6 +114,7 @@ MET_Run2016E:
   sampleType: data
 MET_Run2016F:
   sampleType: data
+
 
 ############## Signals ##############
 GluGluToRadionToHHTo2B2Tau_M-250:
@@ -697,6 +718,7 @@ VBFToBulkGravitonToHHTo2B2Tau_M-3000:
   spin: 2
   crossSection: 1pb
 
+
 ############## TT ##############
 TTTo2L2Nu:
   sampleType: TT
@@ -744,11 +766,6 @@ WJetsToLNu_HT-1200To2500:
   sampleType: W
   generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-1200To2500_LO
-  ext: ['WJetsToLNu_HT-1200To2500_ext1']
-WJetsToLNu_HT-1200To2500_ext1:
-  sampleType: W
-  generator: madgraph
-  crossSectionStitch: WJetsToLNu_HT-1200To2500_LO
 WJetsToLNu_HT-200To400:
   sampleType: W
   generator: madgraph
@@ -757,26 +774,11 @@ WJetsToLNu_HT-2500ToInf:
   sampleType: W
   generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-2500ToInf_LO
-  ext: ['WJetsToLNu_HT-2500ToInf_ext1']
-WJetsToLNu_HT-2500ToInf_ext1:
-  sampleType: W
-  generator: madgraph
-  crossSectionStitch: WJetsToLNu_HT-2500ToInf_LO
 WJetsToLNu_HT-400To600:
   sampleType: W
   generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-400To600_LO
-  ext: ['WJetsToLNu_HT-400To600_ext1']
-WJetsToLNu_HT-400To600_ext1:
-  sampleType: W
-  generator: madgraph
-  crossSectionStitch: WJetsToLNu_HT-400To600_LO
 WJetsToLNu_HT-600To800:
-  sampleType: W
-  generator: madgraph
-  crossSectionStitch: WJetsToLNu_HT-600To800_LO
-  ext: ['WJetsToLNu_HT-600To800_ext1']
-WJetsToLNu_HT-600To800_ext1:
   sampleType: W
   generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-600To800_LO
@@ -788,14 +790,64 @@ WJetsToLNu_HT-800To1200:
   sampleType: W
   generator: madgraph
   crossSectionStitch: WJetsToLNu_HT-800To1200_LO
-  ext: ['WJetsToLNu_HT-800To1200_ext1']
-WJetsToLNu_HT-800To1200_ext1:
-  sampleType: W
-  generator: madgraph
-  crossSectionStitch: WJetsToLNu_HT-800To1200_LO
 
+
+
+WJetsToLNu-amcatnloFXFX:
+  sampleType: W
+  generator: amcatnlo
+  isReference: True
+  crossSection: WJetsToLNu_NNLO
+  crossSectionStitch: WJetsToLNu_LO
+W0JetsToLNu-amcatnloFXFX:
+  sampleType: W
+  generator: amcatnlo
+  crossSectionStitch: W0JetsToLNu_NLO
+W1JetsToLNu-amcatnloFXFX:
+  sampleType: W
+  generator: amcatnlo
+  crossSectionStitch:  W1JetsToLNu_NLO
+W2JetsToLNu-amcatnloFXFX:
+  sampleType: W
+  generator: amcatnlo
+  crossSectionStitch: W2JetsToLNu_NLO
+
+
+WToTauNu_M-200:
+  sampleType: W
+  generator: tauola
+  crossSectionStitch: WToTauNu_M-200
+WToMuNu_M-200:
+  sampleType: W
+  generator: pythia
+  crossSectionStitch: WToMuNu_M-200
 
 ############## DY ##############
+
+DYJetsToLL_M-50-madgraphMLM:
+  sampleType: DY
+  generator: madgraph
+  isReference: True
+  crossSection: DY_NNLO
+  crossSectionStitch: DY_LO
+DY1JetsToLL_M-50-madgraphMLM:
+  generator: madgraph
+  sampleType: DY
+  crossSectionStitch: DY_LO_1J
+DY2JetsToLL_M-50-madgraphMLM:
+  generator: madgraph
+  sampleType: DY
+  crossSectionStitch: DY_LO_2J
+DY3JetsToLL_M-50-madgraphMLM:
+  generator: madgraph
+  sampleType: DY
+  crossSectionStitch: DY_LO_3J
+DY4JetsToLL_M-50-madgraphMLM:
+  generator: madgraph
+  sampleType: DY
+  crossSectionStitch: DY_LO_4J
+
+
 DYJetsToLL_M-50-amcatnloFXFX:
   sampleType: DY
   generator: amcatnlo
@@ -905,7 +957,7 @@ ZH_Hbb_Zqq:
   sampleType: VH
   generator: powheg
   crossSection: ZH_Hbb_Zqq
-  HWplusJ_HToWW_M125:
+HWplusJ_HToWW_M125:
   sampleType: VH
   generator: powheg
   crossSection: HWplusJ_HToWW
@@ -1035,44 +1087,24 @@ ZZZ_ext1:
   generator: amcatnlo
   crossSection: ZZZ
 
+
 ############## ST #############
 ST_t-channel_antitop_4f_InclusiveDecays:
   sampleType: ST
-  generator: powheg
+  generator: amcatnlo
   crossSection: ST_t-channel_antitop
 ST_t-channel_top_4f_InclusiveDecays:
   sampleType: ST
-  generator: powheg
+  generator: amcatnlo
   crossSection: ST_t-channel_top
 ST_tW_antitop_5f_InclusiveDecays:
   sampleType: ST
-  generator: powheg
+  generator: amcatnlo
   crossSection: ST_tW
 ST_tW_top_5f_InclusiveDecays:
   sampleType: ST
-  generator: powheg
+  generator: amcatnlo
   crossSection: ST_tW
-
-#ST_tW_antitop_5f_NoFullyHadronicDecays:
-#
-#  sampleType: ST
-#  generator: powheg
-#  crossSection: ST_tW_antitop
-#ST_tW_top_5f_NoFullyHadronicDecays:
-#
-#  sampleType: ST
-#  generator: powheg
-#  crossSection: ST_tW_top
-#ST_t-channel_antitop_4f_InclusiveDecays_erdON:
-#
-#  sampleType: ST
-#  generator: powheg
-#  crossSection: ST_t-channel_antitop
-#ST_t-channel_top_4f_InclusiveDecays_erdON:
-#
-#  sampleType: ST
-#  generator: powheg
-#  crossSection: ST_t-channel_top
 
 
 ############## TTX inclusive ##############
@@ -1096,10 +1128,6 @@ TTZH:
   sampleType: TTX
   generator: madgraph
   crossSection: TTZH
-TTZZ:
-  sampleType: TTX
-  generator: madgraph
-  crossSection: TTZZ
 TTWZ:
   sampleType: TTX
   generator: madgraph
@@ -1124,6 +1152,12 @@ TTGJets:
   sampleType: TTX
   generator: amcatnlo
   crossSection: TTGJets
+  ext: ['TTGJets_ext1']
+TTGJets_ext1:
+  sampleType: TTX
+  generator: amcatnlo
+  crossSection: TTGJets
+
 ############## TTX non-inclusive ##############
 TT4b:
   sampleType: TTX
@@ -1287,7 +1321,7 @@ GluGluToHHTo2B2Tau_node_12:
   crossSection: 1pb
 
 
-############## QCD ##############
+# ############## QCD ##############
 QCD_HT50to100_MLM:
   sampleType: QCD
   generator: madgraph
@@ -1509,3 +1543,199 @@ QCD_Pt-300toInf_EMEnriched:
   generator: pythia
   crossSection: QCD_Pt-300toInf_EMEnriched
 
+
+########### to ignore ###############
+
+ST_s-channel_4f_leptonDecays:
+  sampleType: ST
+  generator: amcatnlo
+  crossSection: ST_s-channel_lep
+ST_s-channel_4f_hadronicDecays:
+  sampleType: ST
+  generator: amcatnlo
+  crossSection: ST_s-channel_had
+
+ST_tW_antitop_5f_InclusiveDecays:
+  sampleType: ST
+  generator: powheg
+  crossSection: ST_tW
+ST_tW_top_5f_InclusiveDecays:
+  sampleType: ST
+  generator: powheg
+  crossSection: ST_tW
+
+
+DYJetsToLL_M-10to50-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DY_LO_M-10to50
+
+DYJetsToTauTauToMuTauh-madgraphMLM:
+  sampleType: DY
+  generator: madgraph
+  crossSection: DY_muTau_LO
+DYJetsToTauTauToMuTauh-madgraphMLM_ext1:
+  sampleType: DY
+  generator: madgraph
+  crossSection: DY_muTau_LO
+DYJetsToTauTauToMuTauh-madgraphMLM_ext2:
+  sampleType: DY
+  generator: madgraph
+  crossSection: DY_muTau_LO
+
+
+
+DYJetsToLL_M-100to200-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_M-100to200
+DYJetsToLL_M-200to500-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_M-200to500
+DYJetsToLL_M-500to700-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_M-500to700
+DYJetsToLL_M-700to800-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_M-700to800
+DYJetsToLL_M-800to1000-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_M-800to1000
+DYJetsToLL_M-1000to1500-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_M-1000to1500
+DYJetsToLL_M-1500to2000-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_M-1500to2000
+DYJetsToLL_M-2000to3000-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_M-2000to3000
+
+DYJetsToLL_0J_MLL_1400_2300-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_0J_MLL_1400_2300
+DYJetsToLL_0J_MLL_200_400-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_0J_MLL_200_400
+DYJetsToLL_0J_MLL_2300_3500-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_0J_MLL_2300_3500
+DYJetsToLL_0J_MLL_3500_4500-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_0J_MLL_3500_4500
+DYJetsToLL_0J_MLL_400_800-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_0J_MLL_400_800
+DYJetsToLL_0J_MLL_4500_6000-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_0J_MLL_4500_6000
+DYJetsToLL_0J_MLL_6000_Inf-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_0J_MLL_6000_Inf
+DYJetsToLL_0J_MLL_800_1400-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_0J_MLL_800_1400
+
+DYJetsToLL_1J_MLL_1400_2300-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_1J_MLL_1400_2300
+DYJetsToLL_1J_MLL_200_400-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_1J_MLL_200_400
+DYJetsToLL_1J_MLL_2300_3500-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_1J_MLL_2300_3500
+DYJetsToLL_1J_MLL_3500_4500-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_1J_MLL_3500_4500
+DYJetsToLL_1J_MLL_400_800-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_1J_MLL_400_800
+DYJetsToLL_1J_MLL_4500_6000-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_1J_MLL_4500_6000
+DYJetsToLL_1J_MLL_6000_Inf-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_1J_MLL_6000_Inf
+DYJetsToLL_1J_MLL_800_1400-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_1J_MLL_800_1400
+
+DYJetsToLL_2J_MLL_1400_2300-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_2J_MLL_1400_2300
+DYJetsToLL_2J_MLL_200_400-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_2J_MLL_200_400
+DYJetsToLL_2J_MLL_2300_3500-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_2J_MLL_2300_3500
+DYJetsToLL_2J_MLL_3500_4500-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_2J_MLL_3500_4500
+DYJetsToLL_2J_MLL_400_800-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_2J_MLL_400_800
+DYJetsToLL_2J_MLL_4500_6000-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_2J_MLL_4500_6000
+DYJetsToLL_2J_MLL_6000_Inf-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_2J_MLL_6000_Inf
+DYJetsToLL_2J_MLL_800_1400-amcatnloFXFX:
+  sampleType: DY
+  generator: amcatnlo
+  crossSectionStitch: DYJetsToLL_2J_MLL_800_1400
+
+
+WGToLNuG:
+  sampleType: VV
+  generator: madgraph
+  crossSection: WGToLNuG
+
+ZJetsToQQ_HT-200to400:
+  generator: madgraph
+  sampleType: EWK
+  crossSection: ZJetsToQQ_HT-200to400
+ZJetsToQQ_HT-400to600:
+  generator: madgraph
+  sampleType: EWK
+  crossSection: ZJetsToQQ_HT-400to600
+ZJetsToQQ_HT-600to800:
+  generator: madgraph
+  sampleType: EWK
+  crossSection: ZJetsToQQ_HT-600to800
+ZJetsToQQ_HT-800toInf:
+  generator: madgraph
+  sampleType: EWK
+  crossSection: ZJetsToQQ_HT-800toInf

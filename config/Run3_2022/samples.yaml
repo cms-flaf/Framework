@@ -6,6 +6,8 @@ GLOBAL:
   nano_version: v14
   crossSectionsFile : config/crossSections13p6TeV.yaml
   triggerFile: config/Run3_2022/triggers.yaml
+  use_stitching: false
+  met_type: PFMET
 
 ############## Data ##############
 EGamma_Run2022C:

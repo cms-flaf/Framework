@@ -88,7 +88,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         # self.df = self.df.Define(f"lepton_preselection", "(lep1_tight)")
         # self.df = self.df.Filter(f"lepton_preselection")
 
-        self.df = self.df.Define("passed_singleIsoMu", "HLT_singleIsoMu && ((lep1_type == 2 && lep1_HasMatching_singleIsoMu) || (lep2_type == 2 && lep2_lep1_HasMatching_singleIsoMu))")
+        self.df = self.df.Define("passed_singleIsoMu", "HLT_singleIsoMu && ((lep1_type == 2 && lep1_HasMatching_singleIsoMu) || (lep2_type == 2 && lep2_HasMatching_singleIsoMu))")
         self.df = self.df.Filter(f"passed_singleIsoMu")
 
     def defineJetSelections(self):
@@ -104,7 +104,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineQCDRegions(self):
         self.df = self.df.Define("OS", "(lep2_type < 1) || (lep1_charge*lep2_charge < 0)")
-        self.df = self.df.Define("Iso", f"( (lep1_type == 1 && lep1_Electron_mvaIso_WP90) || (lep1_type == 2 && lep1_pfIsoId >=2) ) && (lep2_type < 1 || ( (lep2_type == 1 && lep2_Electron_mvaIso_WP90) || (lep2_type == 2 && lep2_pfIsoId >= 2) ))")
+        self.df = self.df.Define("Iso", f"( (lep1_type == 1 && lep1_Electron_mvaIso_WP90) || (lep1_type == 2 && lep1_Muon_pfIsoId >=2) ) && (lep2_type < 1 || ( (lep2_type == 1 && lep2_Electron_mvaIso_WP90) || (lep2_type == 2 && lep2_Muon_pfIsoId >= 2) ))") #Ask if this is supposed to be lep*_Muon_pfIsoId
         self.df = self.df.Define("OS_Iso", f"OS && Iso") 
 
 

@@ -125,21 +125,21 @@ norm:
     expression: weight_HLT_singleMu{scale}_rel * final_weight
   HLT_eMu:
     expression: weight_HLT_eMu{scale}_rel * final_weight
-
+  weight_trigSF_cross_ele:
     expression: (weight_trigSF_cross_ele_{scale}/weight_HLT_eTau) * final_weight
-
+  weight_trigSF_SL_ele:
     expression: (weight_trigSF_SL_ele_{scale}/weight_HLT_eTau) * final_weight
-
+  weight_trigSF_ele:
     expression: (weight_trigSF_ele_{scale}/weight_HLT_eTau) * final_weight
-
+  weight_trigSF_etau_tau:
     expression: (weight_trigSF_etau_tau_{scale}/weight_HLT_eTau) * final_weight
-
+  weight_trigSF_cross_mu:
     expression: (weight_trigSF_cross_mu_{scale}/weight_HLT_muTau) * final_weight
-
+  weight_trigSF_SL_mu:
     expression: (weight_trigSF_SL_mu_{scale}/weight_HLT_muTau) * final_weight
-
+  weight_trigSF_mu:
     expression: (weight_trigSF_mu_{scale}/weight_HLT_muTau) * final_weight
-
+  weight_trigSF_mutau_tau:
     expression: (weight_trigSF_mutau_tau_{scale}/weight_HLT_muTau) * final_weight
 
 

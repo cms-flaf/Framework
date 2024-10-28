@@ -284,6 +284,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         try:
             job_home, remove_job_home = self.law_job_home()
             input_file = self.input()[0]
+            print(f"considering sample {sample_name}, {sample_type} and file {input_file.path}")
 
             with input_file.localize("r") as local_input, self.output().localize("w") as outFile:
                 anaCacheTupleProducer_cmd = ['python3', producer_anacachetuples,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config, '--globalConfig', global_config]

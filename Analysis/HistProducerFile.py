@@ -213,10 +213,10 @@ if __name__ == "__main__":
     if (args.var.startswith('b1') or args.var.startswith('b2')):
         all_categories = categories
     datasetType = 3
-    if args.sampleType == 'TT':
-        datasetType = 1
-    if args.sampleType == 'DY':
-        datasetType = 2
+    # if args.sampleType == 'TT':
+    #     datasetType = 1
+    # if args.sampleType == 'DY':
+    #     datasetType = 2
     if args.sampleType in global_cfg_dict['signal_types']:
         datasetType = 0
     # print(f"datasetType is {datasetType}")

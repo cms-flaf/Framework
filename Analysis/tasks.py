@@ -2,6 +2,7 @@ import law
 import os
 import yaml
 import contextlib
+import luigi
 
 from RunKit.run_tools import ps_call
 from RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
@@ -167,7 +168,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                                     '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type,
                                     '--globalConfig', global_config, '--var', var, '--period', self.period, '--region', region, '--channels', channels]
             # if self.global_params['compute_unc_histograms'] or var == 'kinFit_m':
-            if (var=='bbtautau_mass' or var == 'kinFit_m') and (isSC==True):
+            if (var=='bbtautau_mass' or var == 'kinFit_m') and self.global_params['compute_unc_histograms'] and (isSC==True):
                 HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
             if is2p5:
                 HistProducerFile_cmd.extend([ '--deepTauVersion', 'v2p5'])
@@ -185,21 +186,25 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
+    use_FileTask = luigi.BoolParameter(default=True)
 
     def workflow_requires(self):
         branch_set = set()
         for br_idx, (sample_name, dep_br_list, var) in self.branch_map.items():
             branch_set.update(dep_br_list)
         branches = tuple(branch_set)
-        return { "HistProducerFileTask": HistProducerFileTask.req(self, branches=branches,customisations=self.customisations) }
+        #return { "HistProducerFileTask": HistProducerFileTask.req(self, branches=branches,customisations=self.customisations) }
+        return {  }
 
     def requires(self):
         sample_name, dep_br_list, var = self.branch_data
-        return [
-            HistProducerFileTask.req(self, max_runtime=HistProducerFileTask.max_runtime._default,
+        if self.use_FileTask:
+            return [
+                HistProducerFileTask.req(self, max_runtime=HistProducerFileTask.max_runtime._default,
                                                  branch=dep_br, branches=(dep_br,),customisations=self.customisations)
-            for dep_br in dep_br_list
-        ]
+                for dep_br in dep_br_list
+            ]
+        return []
 
     def create_branch_map(self):
         branches = {}
@@ -246,7 +251,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
 
     def workflow_requires(self):
-        histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=()).create_branch_map()
+        histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations,use_FileTask=False).create_branch_map()
         all_samples = {}
         branches = {}
         for br_idx, (smpl_name, idx_list, var) in histProducerSample_map.items():
@@ -264,7 +269,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def requires(self):
         var, branches_idx = self.branch_data
-        deps = [HistProducerSampleTask.req(self, max_runtime=HistProducerSampleTask.max_runtime._default, branch=prod_br,customisations=self.customisations) for prod_br in branches_idx ]
+        deps = [HistProducerSampleTask.req(self, max_runtime=HistProducerSampleTask.max_runtime._default, branch=prod_br,customisations=self.customisations,use_FileTask=False) for prod_br in branches_idx ]
         return deps
 
     def create_branch_map(self):
@@ -299,18 +304,20 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_config = os.path.join(self.ana_path(), 'config',self.period, f'samples.yaml')
         global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
+        isTTCR,isDYCR,is2p5,isSC=getCustomisations(self.customisations,self.version)
+        print(isSC)
         uncNames = ['Central']
         unc_cfg_dict = load_unc_config(unc_config)
         uncs_to_exclude = self.global_params['uncs_to_exclude'][self.period]
-        for uncName in list(unc_cfg_dict['norm'].keys())+unc_cfg_dict['shape']:
-            if uncName in uncs_to_exclude: continue
-            uncNames.append(uncName)
-        # print(uncNames)
+        if (var=='bbtautau_mass' or var == 'kinFit_m') and self.global_params['compute_unc_histograms'] and (isSC==True):
+            for uncName in list(unc_cfg_dict['norm'].keys())+unc_cfg_dict['shape']:
+                if uncName in uncs_to_exclude: continue
+                uncNames.append(uncName)
+        print(uncNames)
         MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger.py')
         HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
         RenameHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'renameHists.py')
 
-        isTTCR,isDYCR,is2p5,isSC=getCustomisations(self.customisations,self.version)
         split_dir = 'split_SR'
         merge_dir = 'merged_SR'
         if isTTCR:
@@ -368,7 +375,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                         MergerProducer_cmd.extend(local_inputs)
                         print(MergerProducer_cmd)
                         ps_call(MergerProducer_cmd,verbose=1)
-                        all_outputs_merged.append(tmp_outfile_merge_unc.path)
+                        all_outputs_merged.append(tmp_outfile_merge_unc)
                     print(all_outputs_merged)
         if len(uncNames) > 1:
             all_uncertainties_string = ','.join(unc for unc in uncNames)

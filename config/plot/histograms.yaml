@@ -524,8 +524,10 @@ bb_m_vis_softdrop:
   x_bins: "200|0:1000"
   x_rebin:
     boosted_cat3_masswindow: [30, 50, 70, 90, 110, 130, 150, 200, 300, 500]
+    other: [30, 50, 70, 90, 110, 130, 150, 200, 300, 500]
     tauTau:
       boosted_cat3_masswindow: [30, 70, 110, 150, 300, 500]
+      other: [30, 70, 110, 150, 300, 500]
   x_title: M^{bb}_{softdrop}(GeV)
   y_title: Events
   use_log_x: False
@@ -798,20 +800,54 @@ SelectedFatJet_mass_boosted:
 
 bbtautau_mass:
   x_bins: "652|245:3505"
-  x_title: M_{H}^{kinfit} (GeV)
-  y_title: dN/dm_{H}^{kinfit} (1/GeV)
+  x_rebin:
+    eTau:
+      baseline_masswindow: [250, 300, 350, 400, 450, 500, 550, 600, 700, 800, 1000, 3000]
+      res1b_cat3_masswindow: [250, 300, 350, 400, 450, 500, 600,800, 3000]
+      res2b_cat3_masswindow: [250, 300, 350, 400, 500,700, 1000, 3000]
+      # res2b_cat3_masswindow: [250,350,500,1000]
+      boosted_cat3_masswindow: [250, 500,1000, 3000]
+    muTau:
+      baseline_masswindow: [250, 300, 350, 400, 450, 500, 550, 600, 700, 800, 1000, 3000]
+      res1b_cat3_masswindow: [250, 300, 350, 400, 450, 500, 600, 800, 3000]
+      res2b_cat3_masswindow: [250, 300, 350, 400, 500,700, 1000, 3000]
+      # res2b_cat3_masswindow: [250,350,500,1000]
+      boosted_cat3_masswindow: [250, 500,1000, 3000]
+    tauTau:
+      baseline_masswindow: [250, 300, 350, 400, 450, 500, 550, 600, 700, 800, 1000, 3000]
+      res1b_cat3_masswindow: [250, 300, 350, 400, 450, 500, 600, 800, 3000]
+      res2b_cat3_masswindow: [250, 300, 350, 400, 500, 800, 3000]
+      #res2b_cat3_masswindow: [250,350,500,1000]
+      boosted_cat3_masswindow: [250,500,1000, 3000]
+    other: [250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 900, 1000, 1250, 2000,3000]
+  x_title: M(bb#tau#tau) (GeV)
+  y_title: dN/dm(bb#tau#tau) (1/GeV)
   max_y_sf: 100
-  divide_by_bin_width: False
-  use_log_y: False
+  divide_by_bin_width: True
+  use_log_y: True
   use_log_x: True
   blind_ranges : [250, 3500]
 
 kinFit_m:
   x_bins: "652|245:3505"
+  x_rebin:
+    eTau:
+      baseline_masswindow: [250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 2000, 3000]
+      res1b_cat3_masswindow: [250, 300, 350, 400, 450, 500, 600, 700, 800, 1000, 1500, 3000]
+      res2b_cat3_masswindow: [250, 300, 350, 400, 450, 500, 600, 1000, 3000]
+    muTau:
+      baseline_masswindow: [250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1250, 1500, 2000, 3000]
+      res1b_cat3_masswindow: [250, 300, 350, 400, 450, 500, 600, 700, 800, 1000, 1500, 3000]
+      res2b_cat3_masswindow: [250, 300, 350, 400, 450, 500, 600, 800, 1000, 3000]
+    tauTau:
+      baseline_masswindow: [250, 300, 350, 400, 450, 500, 550,600, 700, 800, 900, 1000, 1250, 1500, 2000, 3000]
+      res1b_cat3_masswindow: [250, 300, 350, 400, 450, 500,550, 600, 700, 800, 1000, 3000]
+      res2b_cat3_masswindow: [250, 300, 350, 400, 450, 500,550, 600, 800, 1000, 3000]
+    other: [250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 900, 1000, 1250, 2000,3000]
   x_title: M_{H}^{kinfit} (GeV)
   y_title: dN/dm_{H}^{kinfit} (1/GeV)
   max_y_sf: 100
-  divide_by_bin_width: False
+  divide_by_bin_width: True
   use_log_y: False
   use_log_x: True
   blind_ranges : [250, 3500]

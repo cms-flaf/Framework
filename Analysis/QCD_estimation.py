@@ -23,6 +23,7 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
         if sample=='data' or 'GluGluToBulkGraviton' in sample or 'GluGluToRadion' in sample or 'VBFToBulkGraviton' in sample or 'VBFToRadion' in sample or sample=='QCD':
             ##print(f"sample {sample} is not considered")
             continue
+        print(sample)
         hist_sample = histograms[sample]
         hist_sample_B = hist_sample[key_B].Clone()
         hist_sample_C = hist_sample[key_C].Clone()

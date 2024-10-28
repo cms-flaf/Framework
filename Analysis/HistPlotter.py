@@ -157,7 +157,7 @@ if __name__ == "__main__":
     parser.add_argument('--wantData', required=False, type=bool, default=False)
     parser.add_argument('--wantSignals', required=False, type=bool, default=False)
     parser.add_argument('--wantQCD', required=False, type=bool, default=False)
-    parser.add_argument('--wantLogScale', required=False, type=bool, default=False)
+    parser.add_argument('--wantLogScale', required=False, type=str, default="")
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
     parser.add_argument('--year', required=False, type=str,default='2018')
     parser.add_argument('--rebin', required=False, type=bool,default=False)
@@ -290,14 +290,22 @@ if __name__ == "__main__":
     dir_0 = inFile_root.Get(args.channel)
     dir_0p1 = dir_0.Get(args.qcdregion)
     dir_1 = dir_0p1.Get(args.category)
+    hist_cfg_dict[args.var]['max_y_sf'] = 1.4
+    hist_cfg_dict[args.var]['use_log_y'] = False
+    hist_cfg_dict[args.var]['use_log_x'] = False
 
     hists_to_plot_unbinned = {}
-    if args.wantLogScale:
+    if args.wantLogScale == 'y':
         hist_cfg_dict[args.var]['use_log_y'] = True
         hist_cfg_dict[args.var]['max_y_sf'] = 2000.2
-    else:
-        hist_cfg_dict[args.var]['use_log_y'] = False
-        hist_cfg_dict[args.var]['max_y_sf'] = 1.4
+    if args.wantLogScale == 'x':
+        hist_cfg_dict[args.var]['use_log_x'] = True
+    if args.wantLogScale == 'xy':
+        hist_cfg_dict[args.var]['use_log_y'] = True
+        hist_cfg_dict[args.var]['max_y_sf'] = 2000.2
+        hist_cfg_dict[args.var]['use_log_x'] = True
+
+
     #print(hist_cfg_dict[args.var]['max_y_sf'])
     rebin_condition = args.rebin and 'x_rebin' in hist_cfg_dict[args.var].keys()
     bins_to_compute = hist_cfg_dict[args.var]['x_bins']
@@ -339,7 +347,6 @@ if __name__ == "__main__":
     for hist_key,hist_unbinned in hists_to_plot_unbinned.items():
         old_hist = hist_unbinned
         new_hist = RebinHisto(old_hist, new_bins, hist_key)
-
         hists_to_plot_binned[hist_key] = new_hist if rebin_condition else old_hist
 
     #print(hists_to_plot)

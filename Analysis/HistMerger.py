@@ -26,10 +26,12 @@ def checkLists(list1, list2):
     return True
 
 def checkFile(inFileRoot, channels, qcdRegions, categories, var):
-    keys_channel = [str(key.GetName()) for key in inFileRoot.GetListOfKeys()]
-    if not (checkLists(keys_channel, channels)):
-        print("check list not worked for channels")
-        return False
+    keys_channels = [str(key.GetName()) for key in inFileRoot.GetListOfKeys()]
+    # if not (checkLists(keys_channel, channels)):
+    #     print("check list not worked for channels")
+    for channel in channels:
+        if channel not in keys_channels:
+            return False
     for channel in channels:
         dir_0 = inFileRoot.Get(channel)
         keys_qcdRegions = [str(key.GetName()) for key in dir_0.GetListOfKeys()]
@@ -49,7 +51,15 @@ def checkFile(inFileRoot, channels, qcdRegions, categories, var):
     return True
 
 
+
 def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_categories, uncSource,sample_name,sample_type, sample_types_to_merge):
+    name_to_use = sample_name
+    if sample_type in sample_types_to_merge:
+        name_to_use = sample_type
+    if name_to_use not in all_histograms.keys():
+        all_histograms[name_to_use] = {}
+        # print(f"name to use is {name_to_use}")
+        # print(all_histograms.keys())
     for channel in channels:
         dir_0 = inFileRoot.Get(channel)
         #print(dir_0.GetListOfKeys())
@@ -57,71 +67,45 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
             dir_1 = dir_0.Get(qcdRegion)
             #print(dir_1.GetListOfKeys())
             for cat in all_categories:
-                print(cat, var)
+                # print(cat, var)
+                key_total = ((channel, qcdRegion, cat), (uncSource, 'Central'))
                 dir_2 = dir_1.Get(cat)
-                for key in dir_2.GetListOfKeys():
-                    obj = key.ReadObj()
-                    key_name = key.GetName()
-                    key_name_split = key_name.split('_')
-                    print(f"key_name_split = {key_name_split}")
+                if uncSource == 'Central':
+                    key_to_use = sample_name
+                    obj=dir_2.Get(key_to_use)
                     obj.SetDirectory(0)
+                    # print(key_to_use)
                     if not obj.IsA().InheritsFrom(ROOT.TH1.Class()): continue
-                    sample_type = key_name_split[0]
-                    name_to_use = sample_name
-                    if sample_type in sample_types_to_merge:
-                        name_to_use = sample_type
-                    if name_to_use not in all_histograms.keys():
-                        all_histograms[name_to_use] = {}
-                    # print(all_histograms.keys())
-                    print(f"name to use is {name_to_use}")
-                    key_total = ((channel, qcdRegion, cat), (uncSource, ''))
-                    print(uncSource)
-                    if uncSource=='Central':
-                        key_total = ((channel, qcdRegion, cat), ('Central', 'Central'))
-                        isCentral = True
-                        for item  in key_name_split:
-                            if 'Up' in item : isCentral = False
-                            if 'Down' in item: isCentral = False
-                        print(f"{key_name_split} isCentral? {isCentral}")
-                        if len(key_name_split)>2:continue
+                    if key_total not in all_histograms[name_to_use].keys():
+                        all_histograms[name_to_use][key_total] = []
+                    all_histograms[name_to_use][key_total].append(obj)
+                else:
+                    key_to_use = sample_name + '_' + uncSource
+                    for scale in ['Up', 'Down']:
+                        key_final = key_to_use+scale
+                        # print(key_final)
+                        if sample_name=='data':
+                            key_final = 'data'
+                        obj=dir_2.Get(key_final)
+                        obj.SetDirectory(0)
+                        if not obj.IsA().InheritsFrom(ROOT.TH1.Class()): continue
+                        key_total = ((channel, qcdRegion, cat), (uncSource, scale))
                         if key_total not in all_histograms[name_to_use].keys():
                             all_histograms[name_to_use][key_total] = []
                         all_histograms[name_to_use][key_total].append(obj)
-                        print(f"key total is {key_total}")
-                        print(f"name to use is {name_to_use}, sample_type={sample_type}, sample_name = {sample_name}, key_name = {key_name}")
-                    elif uncSource == 'QCDScale':
-                        for scale in ['Up','Down']:
-                            key_total = ((channel, qcdRegion, cat), ('QCDScale', scale))
-                            for item  in key_name_split:
-                                if 'Up' in item : isCentral = False
-                                if 'Down' in item: isCentral = False
-                            if key_total not in all_histograms[name_to_use].keys():
-                                all_histograms[name_to_use][key_total] = []
-                            all_histograms[name_to_use][key_total].append(obj)
-                            print(f"key total is {key_total}")
-                            print(f"name to use is {name_to_use}, sample_type={sample_type}, sample_name = {sample_name}, key_name = {key_name}")
-                    else:
-                        uncName_scale ='' if name_to_use == 'data' else '_'.join(n for n in key_name_split[1:])
-                        uncName_in_key= False
-                        for spl in key_name_split[1:]:
-                            if uncSource in spl:
-                                uncName_in_key = True
-                                break
-                        for scale in ['Up','Down']:
-                            print(name_to_use)
-                            uncScale_in_key= False
-                            for spl in key_name_split[1:]:
-                                if scale in spl:
-                                    uncScale_in_key = True
-                                    break
-                            print(f"{scale} in {key_name_split}? {uncScale_in_key}")
-                            if name_to_use != 'data' and uncName_in_key and uncScale_in_key: continue
-                            key_total = ((channel, qcdRegion, cat), (uncSource, scale))
-                            if key_total not in all_histograms[name_to_use].keys():
-                                all_histograms[name_to_use][key_total] = []
-                            all_histograms[name_to_use][key_total].append(obj)
-                            print(f"key total is {key_total}")
-                            print(f"name to use is {name_to_use}, sample_type={sample_type}, sample_name = {sample_name}, key_name = {key_name}")
+
+                        # if len(key_name_split)>2:continue
+                        # print(f"key total is {key_total}")
+                        # print(f"name to use is {name_to_use}, sample_type={sample_type}, sample_name = {sample_name}, key_name = {key_name}")
+                    # elif uncSource == 'QCDScale':
+                    #     for scale in ['Up','Down']:
+                    #         key_total = ((channel, qcdRegion, cat), ('QCDScale', scale))
+                    #         if key_total not in all_histograms[name_to_use].keys():
+                    #             all_histograms[name_to_use][key_total] = []
+                    #         all_histograms[name_to_use][key_total].append(obj)
+                    #         # print(f"key total is {key_total}")
+                    #         # print(f"name to use is {name_to_use}, sample_type={sample_type}, sample_name = {sample_name}, key_name = {key_name}")
+
 
 def MergeHistogramsPerType(all_histograms):
     for sample_type in all_histograms.keys():
@@ -159,12 +143,12 @@ def GetBTagWeightDict(var,all_histograms, categories, boosted_categories, booste
                     ratio = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)/ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
                 if cat in boosted_categories or cat.startswith("inclusive") or cat.startswith("btag_shape") or cat.startswith("baseline") :
                     ratio = 1
-                print(f"for cat {cat} setting ratio is {ratio}")
+                #print(f"for cat {cat} setting ratio is {ratio}")
                 histogram.Scale(ratio)
             else:
                 print(f"for var {var} no ratio is considered and the histogram is directly saved")
             all_histograms_1D[sample_type][key_name] = histogram
-            print(sample_type, key_name, histogram.Integral(0, histogram.GetNbinsX()+1))
+            # print(sample_type, key_name, histogram.Integral(0, histogram.GetNbinsX()+1))
     return all_histograms_1D
 
 
@@ -207,8 +191,9 @@ if __name__ == "__main__":
     boosted_categories = list(global_cfg_dict['boosted_categories'])
     QCDregions = list(global_cfg_dict['QCDRegions'])
     global_cfg_dict['channels_to_consider']=args.channels.split(',')
+
     channels = global_cfg_dict['channels_to_consider']
-    # print(channels)
+    print(channels)
 
     signals = list(global_cfg_dict['signal_types'])
     unc_to_not_consider_boosted = list(global_cfg_dict['unc_to_not_consider_boosted'])
@@ -246,27 +231,37 @@ if __name__ == "__main__":
             ignore_samples.append(sample_name)
             inFileRoot.Close()
             continue
-        # print(all_histograms.keys())
         sample_type= 'data' if sample_name == 'data' else sample_cfg_dict[sample_name]['sampleType']
-        print(sample_type)
-        if sample_type == 'DY':
-            getHistDict(args.var,all_histograms, inFileRoot,channels, QCDregions, all_categories, args.uncSource,sample_name,sample_type,sample_types_to_merge)
-        #print(all_histograms)
+        getHistDict(args.var,all_histograms, inFileRoot,channels, QCDregions, all_categories, args.uncSource,sample_name,sample_type,sample_types_to_merge)
+        # print(all_histograms.keys())
+        inFileRoot.Close()
         if sample_name == 'data':
             all_samples_types['data'] = ['data']
         else:
-            #sample_type=sample_cfg_dict[sample_name]['sampleType']
-            # print(f"sample type is {sample_type}")
             sample_key = sample_type if sample_type in sample_types_to_merge else sample_name
             if sample_name not in ignore_samples:
                 if sample_key not in all_samples_types.keys(): all_samples_types[sample_key] = []
                 all_samples_types[sample_key].append(sample_name)
-        inFileRoot.Close()
+
+    # for key in all_histograms.keys():
+    #     print(key, len(all_histograms[key]))
+    # for key in all_samples_types.keys():
+    #     print(key, all_samples_types[key])
+
     MergeHistogramsPerType(all_histograms)
     all_histograms_1D=GetBTagWeightDict(args.var,all_histograms, categories, boosted_categories, boosted_variables)
     # print(all_histograms_1D)
-    # for key in all_histograms_1D.keys():
-    #     print(key, len(all_histograms_1D[key]))
+
+    '''
+    for key in all_histograms_1D.keys():
+        print(key)
+
+        for subdict,hito in all_histograms_1D[key].items():
+            print(subdict)
+            histo = hito.Clone()
+            # hito = all_histograms_1D[key]
+            print(f"integral is {histo.Integral(0,histo.GetNbinsX())}")
+    '''
     fixNegativeContributions = False
     if args.var != 'kinFit_m':
         fixNegativeContributions=True

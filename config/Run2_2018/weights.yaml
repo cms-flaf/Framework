@@ -1,6 +1,6 @@
 norm:
   PUJetID:
-    expression: weight_Jet_PUJetID_eff{scale}_rel_b1 * weight_Jet_PUJetID_eff{scale}_rel_b2 * final_weight
+    expression: weight_Jet_PUJetID_eff{scale}_rel_b1_2 * weight_Jet_PUJetID_eff{scale}_rel_b2_2 * final_weight
   PileUp_Lumi_MC:
     expression: weight_MC_Lumi_pu{scale}_rel  * final_weight
   L1Prefiring:

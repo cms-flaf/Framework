@@ -60,7 +60,7 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
     dataframes = all_dataframes[key_2]
     sample_type,uncName,scale = key_2
     isCentral = 'Central' in key_2
-    # print(f"key2 is {key_2}")
+    print(f"key2 is {key_2}")
     histograms = {}
     boosted_categories = global_cfg_dict['boosted_categories']
     categories = global_cfg_dict['categories']
@@ -71,6 +71,8 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
     if (args.var.startswith('b1') or args.var.startswith('b2')):
         all_categories = categories
     unc_to_not_consider_boosted = global_cfg_dict['unc_to_not_consider_boosted']
+    if not isCentral:
+        print(unc_to_not_consider_boosted)
 
     for key_1,key_cut in key_filter_dict.items():
         ch, reg, cat = key_1
@@ -79,11 +81,14 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
         if (key_1, key_2) in histograms.keys(): continue
         if var in boosted_variables and uncName in unc_to_not_consider_boosted: continue
         total_weight_expression = GetWeight(ch,cat,boosted_categories) if sample_type!='data' else "1"
+        if not isCentral:
+            print(f"total weight expression = {total_weight_expression}")
         weight_name = "final_weight"
         if not isCentral:
             if type(unc_cfg_dict)==dict:
                 if uncName in unc_cfg_dict.keys() and 'expression' in unc_cfg_dict[uncName].keys():
                     weight_name = unc_cfg_dict[uncName]['expression'].format(scale=scale)
+            print(f" weight name = {weight_name}")
         if (key_1, key_2) not in histograms.keys():
             histograms[(key_1, key_2)] = []
 
@@ -91,7 +96,11 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
             if furtherCut != '' : key_cut += f' && {furtherCut}'
             dataframe_new = dataframe.Filter(key_cut)
             dataframe_new = dataframe_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}")
+            if not isCentral:
+                dataframe_new.Display({f"""final_weight_0_{ch}_{cat}_{reg}"""}).Print()
             final_string_weight = ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = f"final_weight_0_{ch}_{cat}_{reg}") if sample_type!='data' else "1"
+            if not isCentral:
+                print(f"final string weight is {final_string_weight}")
             dataframe_new = dataframe_new.Filter(f"{cat}")
             if cat.startswith('btag_shape'):
                 final_string_weight = f"final_weight_0_{ch}_{cat}_{reg}"

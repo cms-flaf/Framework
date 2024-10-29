@@ -165,7 +165,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("TTCR_boosted", "TTCR")
 
     def redefinePUJetIDWeights(self):
-        for weight in ["weight_Jet_PUJetID_Central_b1","weight_Jet_PUJetID_Central_b2"]:
+        for weight in ["weight_Jet_PUJetID_Central_b1","weight_Jet_PUJetID_Central_b2","weight_Jet_PUJetID_effUp_rel_b1","weight_Jet_PUJetID_effUp_rel_b2","weight_Jet_PUJetID_effDown_rel_b1","weight_Jet_PUJetID_effDown_rel_b2"]:
             if weight not in self.df.GetColumnNames(): continue
             self.df = self.df.Define(f"{weight}_2", f"""
                                          if({weight}!=-100)

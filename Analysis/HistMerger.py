@@ -69,6 +69,7 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
             for cat in all_categories:
                 # print(cat, var)
                 key_total = ((channel, qcdRegion, cat), (uncSource, 'Central'))
+                # print(key_total)
                 dir_2 = dir_1.Get(cat)
                 if uncSource == 'Central':
                     key_to_use = sample_name
@@ -79,6 +80,15 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
                     if key_total not in all_histograms[name_to_use].keys():
                         all_histograms[name_to_use][key_total] = []
                     all_histograms[name_to_use][key_total].append(obj)
+                elif uncSource == 'QCDScale':
+                    key_to_use = sample_name
+                    obj=dir_2.Get(key_to_use)
+                    obj.SetDirectory(0)
+                    for scale in ['Up','Down']:
+                        key_total_QCD = ((channel, qcdRegion, cat), ('QCDScale', scale))
+                        if key_total_QCD not in all_histograms[name_to_use].keys():
+                            all_histograms[name_to_use][key_total_QCD] = []
+                        all_histograms[name_to_use][key_total_QCD].append(obj)
                 else:
                     key_to_use = sample_name + '_' + uncSource
                     for scale in ['Up', 'Down']:
@@ -93,6 +103,7 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
                         if key_total not in all_histograms[name_to_use].keys():
                             all_histograms[name_to_use][key_total] = []
                         all_histograms[name_to_use][key_total].append(obj)
+
 
                         # if len(key_name_split)>2:continue
                         # print(f"key total is {key_total}")

@@ -26,17 +26,13 @@ uncReNames = {
     "bTagShape_hfstats2":"CMS_btag_hfstats2_{}",
     "bTagShape_cferr1":"CMS_btag_cferr1",
     "bTagShape_cferr2":"CMS_btag_cferr2",
-    "EleID":"CMS_eff_e_{}",
+    "pNet_SF":"CMS_pnet_{}", # correlated??
     "PUJetID":"CMS_eff_j_PUJET_id_{}",
-    #"HighPtMuon_HighPtID":"CMS_eff_m_highpt_id_HighPtID_{}",
-    #"HighPtMuon_HighPtIDIso":"CMS_eff_m_highpt_id_HighPtIDIso_{}",
-    #"HighPtMuon_Reco":"CMS_eff_m_highpt_id_Reco_{}",
-    #"HighPtMuon_TightID":"CMS_eff_m_highpt_id_TightID_{}",
-    "Muon_HighPtID":"CMS_eff_m_id_highptid{}",
-    "MuonID_HighPtIso":"CMS_eff_m_id_HighPtIso_{}",
-    "MuonID_Reco":"CMS_eff_m_id_Reco_{}",
-    "MuonID_TightID":"CMS_eff_m_id_TightID_{}",
-    "MuonID_TightIDIso":"CMS_eff_m_id_TightIDIso_{}",
+    "PileUp_Lumi_MC":"CMS_pileup_{}",
+    "L1Prefiring":"CMS_l1_prefiring_{}",
+    "L1Prefiring_ECAL":"CMS_l1_ecal_prefiring_{}",
+    "L1Prefiring_Muon_Stat":"CMS_l1_muon_stat_prefiring_{}",
+    "L1Prefiring_Muon_Syst":"CMS_l1_muon_syst_prefiring_{}",
     "TauID_total":"CMS_eff_t_id_total_{}", # da capire
     "TauID_stat1_DM0":"CMS_eff_t_id_stat1_DM0_{}",
     "TauID_stat1_DM10":"CMS_eff_t_id_stat1_DM10_{}",
@@ -64,17 +60,29 @@ uncReNames = {
     "TauID_SF_syst_highpT_bin1":"CMS_eff_t_id_syst_highpT_bin1",
     "TauID_SF_syst_highpT_bin2":"CMS_eff_t_id_syst_highpT_bin2",
     "TauID_SF_syst_highpT_extrap":"CMS_eff_t_id_syst_highpT_extrap",
-
-    "TauID_stat_highpT_bin1":"CMS_eff_t_id_stat_highpT_bin1_{}",
-    "TauID_stat_highpT_bin2":"CMS_eff_t_id_stat_highpT_bin2_{}",
-    "TauID_syst_highpT_bin1":"CMS_eff_t_id_syst_highpT_bin1",
-    "TauID_syst_highpT_bin2":"CMS_eff_t_id_syst_highpT_bin2",
-    "TauID_syst_highpT_extrap":"CMS_eff_t_id_syst_highpT_extrap",
-    "L1Prefiring":"CMS_l1_prefiring_{}",
-    "L1Prefiring_ECAL":"CMS_l1_ecal_prefiring_{}",
-    "L1Prefiring_Muon_Stat":"CMS_l1_muon_stat_prefiring_{}",
-    "L1Prefiring_Muon_Syst":"CMS_l1_muon_syst_prefiring_{}",
-    "PileUp_Lumi_MC":"CMS_pileup_{}",
+    "EleID_Iso":"CMS_eff_e_{}",
+    "EleIS_noIso":"CMS_eff_e_noiso_{}",
+    "MuID_Reco":"CMS_eff_m_id_reco_{}",
+    "MuID_Reco_highPt":"CMS_eff_m_id_reco_highpt_{}",
+    "MuID_TightID":"CMS_eff_m_id_{}",
+    "MuID_TightID_highPt":"CMS_eff_m_id_highpt_{}",
+    "MuID_TightRelIso":"CMS_eff_m_id_iso_{}",
+    "HLT_MET":"CMS_bbtt_trig_MET_{}",
+    "HLT_ditau_DM0":"CMS_bbtt_trig_diTau_DM0_{}",
+    "HLT_ditau_DM1":"CMS_bbtt_trig_diTau_DM1_{}",
+    "HLT_ditau_3Prong":"CMS_bbtt_trig_diTau_3Prong_{}",
+    "HLT_singleTau":"CMS_bbtt_trig_singleTau_{}",
+    "HLT_singleEle":"CMS_bbtt_trig_singleEle_{}", # for eE and eMu
+    "HLT_singleMu":"CMS_bbtt_trig_singleMu_{}", # for muMu and eMu
+    "HLT_eMu":"CMS_bbtt_trig_eMu_{}", # for eMu
+    "weight_trigSF_cross_ele":"CMS_bbtt_trig_eTau_cross_ele_{}",  # cross trigger leg efficiency of ele
+    "weight_trigSF_SL_ele":"CMS_bbtt_trig_eTau_SL_ele_{}",   # single trigger leg efficiency of ele
+    "weight_trigSF_etau_tau":"CMS_bbtt_trig_eTau_cross_tau_{}", # cross trigger leg efficiency of tau - depends on DM
+    "weight_trigSF_ele":"CMS_bbtt_trg_eTau_ele_{}", # SL+xL electron trigger SF for eTau
+    "weight_trigSF_cross_mu":"CMS_bbtt_trig_muTau_cross_mu_{}",  # cross trigger leg efficiency of mu
+    "weight_trigSF_SL_mu":"CMS_bbtt_trig_muTau_SL_mu_{}",   # single trigger leg efficiency of mu
+    "weight_trigSF_mutau_tau":"CMS_bbtt_trig_muTau_cross_tau_{}", # cross trigger leg efficiency of tau - depends on DM
+    "weight_trigSF_mu":"CMS_bbtt_trg_muTau_mu_{}", # SL+xL mu trigger SF for eTau
     "TauES_DM0": "CMS_scale_t_DM0_{}",
     "TauES_DM1": "CMS_scale_t_DM1_{}",
     "TauES_3prong": "CMS_scale_t_3prong_{}",
@@ -108,30 +116,8 @@ uncReNames = {
     "JES_RelativeSample_2017": "CMS_scale_j_RelSample_2017",
     "JES_RelativeSample_2016preVFP": "CMS_scale_j_RelSample_2016_HIPM" ,
     "JES_RelativeSample_2016postVFP": "CMS_scale_j_RelSample_2016" ,
-    "TrigSF_diTau_DM0":"CMS_bbtt_trigdiTau_DM0_{}",
-    "TrigSF_diTau_DM1":"CMS_bbtt_trigdiTau_DM1_{}",
-    "TrigSF_diTau_3Prong":"CMS_bbtt_trigdiTau_3Prong_{}",
-    "TrigSF_singleEle":"CMS_bbtt_trigsingleEle_{}",
-    "TrigSF_singleMu":"CMS_bbtt_trigsingleMu_{}",
-    "TrigSF_eTau_Ele":"CMS_bbtt_trigeTau_Ele_{}",
-    "TrigSF_eTau_DM0":"CMS_bbtt_trigeTau_DM0_{}",
-    "TrigSF_eTau_DM1":"CMS_bbtt_trigeTau_DM1_{}",
-    "TrigSF_eTau_3Prong":"CMS_bbtt_trigeTau_3Prong_{}",
-    "TrigSF_muTau_Mu":"CMS_bbtt_trigmuTau_Mu_{}",
-    "TrigSF_muTau_DM0":"CMS_bbtt_trigmuTau_DM0_{}",
-    "TrigSF_muTau_DM1":"CMS_bbtt_trigmuTau_DM1_{}",
-    "TrigSF_muTau_3Prong":"CMS_bbtt_trigmuTau_3Prong_{}",
-    "TrgSF_etau_DM0":"CMS_bbtt_trgetau_DM0_{}",
-    "TrgSF_etau_DM1":"CMS_bbtt_trgetau_DM1_{}",
-    "TrgSF_etau_ele":"CMS_bbtt_trgetau_ele_{}",
-    "TrgSF_mutau_3Prong":"CMS_bbtt_trgmutau_3Prong_{}",
-    "TrgSF_mutau_DM0":"CMS_bbtt_trgmutau_DM0_{}",
-    "TrgSF_mutau_DM1":"CMS_bbtt_trgmutau_DM1_{}",
-    "TrgSF_mutau_mu":"CMS_bbtt_trgmutau_mu_{}",
-    "TrgSF_singleEle":"CMS_bbtt_trgsingleEle_{}",
-    "TrgSF_singleMu24":"CMS_bbtt_trgsingleMu24_{}",
-    "TrgSF_MET":"CMS_bbtt_trgMET{}",
-    "TrigSF_MET":"CMS_bbtt_trgMET{}",
+    "QCDScale":"CMS_scale_qcd_{}",
+
 }
 
 
@@ -156,11 +142,7 @@ for process in processes:
         #print(unc_old.split('_'))
         #print(args.year)
         for scale in ['Up','Down']:
-            #if args.year in unc_old.split('_'):
-            all_histnames[f"{process}_{unc_old}_{args.year}{scale}"] = f"{process}_{new_unc}{scale}"
             all_histnames[f"{process}_{unc_old}_{args.year}_{scale}"] = f"{process}_{new_unc}{scale}"
-            #else:
-            all_histnames[f"{process}_{unc_old}{scale}"] = f"{process}_{new_unc}{scale}"
             all_histnames[f"{process}_{unc_old}_{scale}"] = f"{process}_{new_unc}{scale}"
 
 #print(all_histnames.keys())
@@ -169,13 +151,14 @@ outFile = ROOT.TFile.Open(args.outFile, "RECREATE")
 channels =[str(key.GetName()) for key in inFile.GetListOfKeys()]
 for channel in channels:
     dir_0 = inFile.Get(channel)
-    keys_categories = [str(key.GetName()) for key in dir_0.GetListOfKeys()]
+    dir_1 = dir_0.Get("OS_Iso")
+    keys_categories = [str(key.GetName()) for key in dir_1.GetListOfKeys()]
     for cat in keys_categories:
-        dir_1= dir_0.Get(cat)
-        for key_hist in dir_1.GetListOfKeys():
+        dir_2= dir_1.Get(cat)
+        for key_hist in dir_2.GetListOfKeys():
             key_name = key_hist.GetName()
             if key_name not in all_histnames.keys():
-                #print(f"{key_name} not in all_histnames keys")
+                print(f"{key_name} not in all_histnames keys")
                 continue
             #key_hist = dir_1.Get(key_name)
             obj = key_hist.ReadObj()

@@ -369,11 +369,11 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     tmp_outfile_merge = os.path.join(outdir_histograms,final_histname)
                     print(tmp_outfile_merge)
                     tmp_outfile_merge_remote = self.remote_target(tmp_outfile_merge, fs=self.fs_histograms)
-                    # with tmp_outfile_merge_remote.localize("w") as tmp_outfile_merge_unc:
-                    #     MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config,'--channels',channels]#, '--remove-files', 'True']
-                    #     MergerProducer_cmd.extend(local_inputs)
-                    #     print(MergerProducer_cmd)
-                    #     ps_call(MergerProducer_cmd,verbose=1)
+                    with tmp_outfile_merge_remote.localize("w") as tmp_outfile_merge_unc:
+                        MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config,'--channels',channels]#, '--remove-files', 'True']
+                        MergerProducer_cmd.extend(local_inputs)
+                        print(MergerProducer_cmd)
+                        ps_call(MergerProducer_cmd,verbose=1)
                     all_outputs_merged.append(tmp_outfile_merge)
                     print(all_outputs_merged)
         if len(uncNames) > 1:

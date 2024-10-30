@@ -75,8 +75,6 @@ def findNewBins(hist_cfg_dict, var, channel, category):
             if channel in new_dict[category].keys():
                 if type(new_dict[category][channel]) == list:
                     return new_dict[category][channel]
-
-
     return hist_cfg_dict[var]['x_rebin']['other']
 
 def getNewBins(bins):

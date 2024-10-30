@@ -15,6 +15,7 @@ GLOBAL: # preVFP == APV == HIPM
     - Flag_eeBadScFilter
     #- Flag_hfNoisyHitsFilter
     #- Flag_BadChargedCandidateFilter
+  met_type: MET
   triggerFile: config/Run2_2016_HIPM/triggers.yaml
   crossSectionsFile : config/crossSections13TeV.yaml
   # from https://twiki.cern.ch/twiki/bin/viewauth/CMS/DCUserPage

@@ -309,6 +309,7 @@ if __name__ == "__main__":
     #print(hist_cfg_dict[args.var]['max_y_sf'])
     rebin_condition = args.rebin and 'x_rebin' in hist_cfg_dict[args.var].keys()
     bins_to_compute = hist_cfg_dict[args.var]['x_bins']
+    new_bins = bins_to_compute
     if rebin_condition :
         bins_to_compute = findNewBins(hist_cfg_dict,args.var,args.channel,args.category)
         new_bins = getNewBins(bins_to_compute)

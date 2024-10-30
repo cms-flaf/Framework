@@ -369,13 +369,12 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     tmp_outfile_merge = os.path.join(outdir_histograms,final_histname)
                     print(tmp_outfile_merge)
                     tmp_outfile_merge_remote = self.remote_target(tmp_outfile_merge, fs=self.fs_histograms)
-                    print(tmp_outfile_merge_remote.path)
-                    with tmp_outfile_merge_remote.localize("w") as tmp_outfile_merge_unc:
-                        MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config,'--channels',channels]#, '--remove-files', 'True']
-                        MergerProducer_cmd.extend(local_inputs)
-                        print(MergerProducer_cmd)
-                        ps_call(MergerProducer_cmd,verbose=1)
-                        all_outputs_merged.append(tmp_outfile_merge_unc)
+                    # with tmp_outfile_merge_remote.localize("w") as tmp_outfile_merge_unc:
+                    #     MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config,'--channels',channels]#, '--remove-files', 'True']
+                    #     MergerProducer_cmd.extend(local_inputs)
+                    #     print(MergerProducer_cmd)
+                    #     ps_call(MergerProducer_cmd,verbose=1)
+                    all_outputs_merged.append(tmp_outfile_merge)
                     print(all_outputs_merged)
         if len(uncNames) > 1:
             all_uncertainties_string = ','.join(unc for unc in uncNames)
@@ -384,9 +383,10 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             with contextlib.ExitStack() as stack:
                 local_merged_files = []
                 for infile_merged in all_outputs_merged:
-                    local_merged_files.append(stack.enter_context(infile_merged.localize('r')).path)
+                    tmp_outfile_merge_remote = self.remote_target(infile_merged, fs=self.fs_histograms)
+                    local_merged_files.append(stack.enter_context(tmp_outfile_merge_remote.localize('r')).path)
                 with tmp_outFile.localize("w") as tmpFile:
-                    HaddMergedHistsProducer_cmd = ['python3', HaddMergedHistsProducer,'--outFile', tmp_outFile.path, '--var', var]
+                    HaddMergedHistsProducer_cmd = ['python3', HaddMergedHistsProducer,'--outFile', tmpFile.path, '--var', var]
                     HaddMergedHistsProducer_cmd.extend(local_merged_files)
                     ps_call(HaddMergedHistsProducer_cmd,verbose=1)
             with tmp_outFile.localize("r") as tmpFile, self.output().localize("w") as outFile:

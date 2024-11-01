@@ -1,6 +1,6 @@
 norm:
   PUJetID:
-    expression: weight_Jet_PUJetID_eff{scale}_rel_b1 * weight_Jet_PUJetID_eff{scale}_rel_b2 * final_weight
+    expression: weight_Jet_PUJetID_eff{scale}_rel_b1_2 * weight_Jet_PUJetID_eff{scale}_rel_b2_2 * final_weight
   PileUp_Lumi_MC:
     expression: weight_MC_Lumi_pu{scale}_rel  * final_weight
   L1Prefiring:
@@ -13,7 +13,6 @@ norm:
     # expression: weight_L1PreFiring_Muon_Syst{scale}_rel * final_weight
   pNet_SF:
     expression: weight_pNet_{scale}_rel * final_weight
-
   bTagShape_lf:
     expression: weight_bTagShape_lf{scale}_rel * final_weight
     requires_btag: False
@@ -163,3 +162,4 @@ shape:
   - JES_EC2_2016preVFP
   - JES_HF_2016preVFP
   - JES_RelativeSample_2016preVFP
+  - QCDScale

@@ -167,6 +167,9 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 anatuple_cmd = [ 'python3', producer_anatuples, '--period', self.period,
                                  '--inFile', local_input.path, '--outDir', outdir_anatuples, '--sample', sample_name,
                                  '--anaTupleDef', anaTupleDef, '--anaCache', anaCache_input.path ]
+                isCC = 'CC' in self.version.split('_')
+                if isCC:
+                    anatuple_cmd.extend(['--channels', 'eE,eMu,muMu'])
                 if len(self.customisations) > 0:
                     anatuple_cmd.extend([ '--customisations', self.customisations ])
                 if 'SC' in self.version.split('_') and (self.global_params.get('compute_unc_variations', False)):

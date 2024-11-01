@@ -33,8 +33,8 @@ qcdReg = "OS_Iso"
 cat = 'res1b_cat3_masswindow'
 
 dir_0 = inFile.Get(channel)
-# dir_1 = dir_0.Get(qcdReg)
-dir_2= dir_0.Get(cat)
+dir_1 = dir_0.Get(qcdReg)
+dir_2= dir_1.Get(cat)
 keys2 = [str(key.GetName()) for key in dir_2.GetListOfKeys()]
 for key_hist in dir_2.GetListOfKeys():
     key_name = key_hist.GetName()
@@ -43,3 +43,6 @@ for key_hist in dir_2.GetListOfKeys():
 
 inFile.Close()
 
+
+
+# /eos/user/v/vdamante/HH_bbtautau_resonant_Run2/histograms/v12_deepTau2p1_HTT_SC/Run2_2016/merged_SR/kinFit_m/tmp/all_histograms_kinFit_m_hadded.root

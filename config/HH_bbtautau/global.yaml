@@ -53,6 +53,7 @@ boosted_categories:
   # - boosted_cat2_masswindow
   - boosted_cat3_masswindow
 
+met_type: "MET"
 categories:
   - inclusive
   - btag_shape

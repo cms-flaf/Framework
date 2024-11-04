@@ -161,7 +161,8 @@ hist_triggers:
 application_regions:
   SingleMu_region: ((tau1_pt > {mu_th}  && abs(tau1_eta) < 2.4) ||  (tau2_pt > {mu_th}  && abs(tau2_eta) < 2.4))
   CrossMuTau_region: (tau1_pt > 22 && abs(tau1_eta) < 2.1 && tau2_pt > 32 && abs(tau2_eta) < 2.1)
-  SingleEle_region: ((tau1_pt > {ele_th}  && abs(tau1_eta) < 2.5) || (tau2_pt > {ele_th}  && abs(tau2_eta) < 2.5))
+  SingleEle_region: ((tau1_pt > {ele_th}  && abs(tau1_eta) < 2) || (tau2_pt > {ele_th}  && abs(tau2_eta) < 2))
+  # SingleEle_region: ((tau1_pt > {ele_th}  && abs(tau1_eta) < 2.5) || (tau2_pt > {ele_th}  && abs(tau2_eta) < 2.5))
   CrossEleTau_region: (tau1_pt > 25 && abs(tau1_eta) < 2.1 && tau2_pt > 35 && abs(tau2_eta) < 2.1)
   diTau_region: (tau1_pt > 40 && abs(tau1_eta) < 2.1 && tau2_pt > 40 && abs(tau2_eta) < 2.1)
   SingleTau_region: (((tau1_pt > {tau_th} && abs(tau1_eta) < 2.1) || (tau2_pt > {tau_th} && abs(tau2_eta) < 2.1)) )

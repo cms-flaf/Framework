@@ -31,19 +31,20 @@ def RebinHisto(hist_initial, new_binning, sample, verbose=False):
     n_finalbin = new_hist.GetBinContent(new_hist.GetNbinsX())
     n_overflow = new_hist.GetBinContent(new_hist.GetNbinsX()+1)
     new_hist.SetBinContent(new_hist.GetNbinsX(), n_finalbin+n_overflow)
-    err_finalbin = new_hist.GetBinContent(new_hist.GetNbinsX())
-    err_overflow = new_hist.GetBinContent(new_hist.GetNbinsX()+1)
+    err_finalbin = new_hist.GetBinError(new_hist.GetNbinsX())
+    err_overflow = new_hist.GetBinError(new_hist.GetNbinsX()+1)
     if n_finalbin+n_overflow > 0:
         new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(n_finalbin+n_overflow))
     else:
         new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(err_finalbin*err_finalbin+err_overflow*err_overflow))
 
     if verbose:
+        print(sample)
         for nbin in range(0, len(new_binning)):
-            print(nbin, new_hist.GetBinContent(nbin))
-    fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(new_hist)
-    if not fix_negative_contributions:
-        print("negative contribution not fixed")
+            print(f"nbin = {nbin}, content = {new_hist.GetBinContent(nbin)}, error {new_hist.GetBinError(nbin)}")
+    # fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(new_hist)
+    # if not fix_negative_contributions:
+    #     print("negative contribution not fixed")
     #    print(fix_negative_contributions,debug_info,negative_bins_info)
     #    for nbin in range(0,new_hist.GetNbinsX()+1):
     #        content=new_hist.GetBinContent(nbin)
@@ -307,10 +308,10 @@ if __name__ == "__main__":
     #print(hist_cfg_dict[args.var]['max_y_sf'])
     rebin_condition = args.rebin and 'x_rebin' in hist_cfg_dict[args.var].keys()
     bins_to_compute = hist_cfg_dict[args.var]['x_bins']
-    new_bins = bins_to_compute
+
     if rebin_condition :
         bins_to_compute = findNewBins(hist_cfg_dict,args.var,args.channel,args.category)
-        new_bins = getNewBins(bins_to_compute)
+    new_bins = getNewBins(bins_to_compute)
 
     #file_to_save_hist = ROOT.TFile(f"histrebinned_{args.var}_{args.channel}_{args.category}_{args.qcdregion}.root", "RECREATE")
     for sample_name,sample_content in all_samples_types.items():

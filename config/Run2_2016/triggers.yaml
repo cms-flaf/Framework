@@ -107,7 +107,7 @@ singleEle:
   legs:
     - offline_obj:
         type: Electron
-        cut: v_ops::pt(Electron_p4) > 27 && abs(v_ops::eta(Electron_p4)) < 2.5
+        cut: v_ops::pt(Electron_p4) > 27 && abs(v_ops::eta(Electron_p4)) < 2.1
       online_obj:
         cut: TrigObj_id == 11 && (TrigObj_filterBits&2)!=0
       doMatching: True

@@ -45,28 +45,27 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
     if n_data_C <= 0 or n_data_D <= 0:
         print(f"n_data_C = {n_data_C}")
         print(f"n_data_D = {n_data_D}")
-    # no symmetrization
-    '''
-    qcd_norm = n_data_B * n_data_C / n_data_D if n_data_D != 0 else 0
-    if qcd_norm<0:
-        print(f"transfer factor <0, {category}, {channel}, {uncName}, {scale}")
-        return ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX())),ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX())),ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX()))
-        #raise  RuntimeError(f"transfer factor <=0 ! {qcd_norm}")
-    #hist_data_B.Scale(kappa)
-    if n_data_B != 0:
-        hist_data_B.Scale(1/n_data_B)
-    if n_data_C != 0:
-        hist_data_C.Scale(1/n_data_C)
+    # for symmetrization uncomment those lines
 
-    hist_qcd_Up = hist_data_B.Clone()
-    hist_qcd_Up.Scale(qcd_norm)
-    hist_qcd_Down = hist_data_C.Clone()
-    hist_qcd_Down.Scale(qcd_norm)
-    hist_qcd_Central = hist_data_B.Clone()
-    hist_qcd_Central.Add(hist_data_C)
-    hist_qcd_Central.Scale(1./2.)
-    hist_qcd_Central.Scale(qcd_norm)
-    '''
+    # qcd_norm = n_data_B * n_data_C / n_data_D if n_data_D != 0 else 0
+    # if qcd_norm<0:
+    #     print(f"transfer factor <0, {category}, {channel}, {uncName}, {scale}")
+    #     return ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX())),ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX())),ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX()))
+    #     #raise  RuntimeError(f"transfer factor <=0 ! {qcd_norm}")
+    # #hist_data_B.Scale(kappa)
+    # if n_data_B != 0:
+    #     hist_data_B.Scale(1/n_data_B)
+    # if n_data_C != 0:
+    #     hist_data_C.Scale(1/n_data_C)
+
+    # hist_qcd_Up = hist_data_B.Clone()
+    # hist_qcd_Up.Scale(qcd_norm)
+    # hist_qcd_Down = hist_data_C.Clone()
+    # hist_qcd_Down.Scale(qcd_norm)
+    # hist_qcd_Central = hist_data_B.Clone()
+    # hist_qcd_Central.Add(hist_data_C)
+    # hist_qcd_Central.Scale(1./2.)
+    # hist_qcd_Central.Scale(qcd_norm)
 
     qcd_norm = n_data_B / n_data_D if n_data_D != 0. else 0.
     hist_qcd_Central = hist_data_C.Clone()
@@ -75,7 +74,6 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
     if n_data_D < 0:
         n_data_D_abs = math.sqrt(n_data_D * n_data_D)
         print(f"attention, n_data_D < 0, {n_data_D}")
-
     n_data_B_abs = n_data_B
     if n_data_B < 0:
         n_data_B_abs = math.sqrt(n_data_B * n_data_B)
@@ -101,11 +99,13 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
             print(negative_bins_info)
             print("Unable to estimate QCD")
             final_hist = ROOT.TH1D("","",hist_qcd_Central.GetNbinsX(), hist_qcd_Central.GetXaxis().GetBinLowEdge(1), hist_qcd_Central.GetXaxis().GetBinUpEdge(hist_qcd_Central.GetNbinsX())),ROOT.TH1D("","",hist_qcd_Central.GetNbinsX(), hist_qcd_Central.GetXaxis().GetBinLowEdge(1), hist_qcd_Central.GetXaxis().GetBinUpEdge(hist_qcd_Central.GetNbinsX()))
-            return final_hist,final_hist,final_hist
+            return final_hist,final_hist,final_hist,0,0
             #raise RuntimeError("Unable to estimate QCD")
     #if uncName == 'Central':
     #    return hist_qcd_Central,hist_qcd_Up,hist_qcd_Down
     return hist_qcd_Central,hist_qcd_Up,hist_qcd_Down,error_on_qcdnorm,error_on_qcdnorm_varied
+
+
 
 
 def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_samples_list, scales, wantNegativeContributions=False):
@@ -115,7 +115,7 @@ def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_sam
         for cat in categories:
             for scale in scales + ['Central']:
                 if uncName=='Central' and scale != 'Central': continue
-                if uncName!='Central' and scale == 'Central': continue
+                # if uncName!='Central' and scale == 'Central': continue
                 key =( (channel, 'OS_Iso', cat), (uncName, scale))
                 hist_qcd_Central,hist_qcd_Up,hist_qcd_Down,error_on_qcdnorm,error_on_qcdnorm_varied = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale,wantNegativeContributions)
                 all_histograms['QCD'][key] = hist_qcd_Central

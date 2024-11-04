@@ -50,14 +50,14 @@ def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = 'fin
 
 
 def GetWeight(channel, cat, boosted_categories):
-    weights_to_apply = ["weight_MC_Lumi_pu", "weight_L1PreFiring_Central"]#,"weight_L1PreFiring_ECAL_Central", "weight_L1PreFiring_Muon_Central"] #for next iteration
+    weights_to_apply = ["weight_MC_Lumi_pu", "weight_L1PreFiring_Central"]#,"weight_L1PreFiring_ECAL_Central", "weight_L1PreFiring_Muon_Central"]
     trg_weights_dict = {
         'eTau':["weight_HLT_eTau", "weight_HLT_singleTau", "weight_HLT_MET"],
         'muTau':["weight_HLT_muTau", "weight_HLT_singleTau", "weight_HLT_MET"],
         'tauTau':["weight_HLT_diTau", "weight_HLT_singleTau", "weight_HLT_MET"],
         'eE':["weight_HLT_singleEle"],
         'muMu':["weight_HLT_singleMu"],
-        'eMu':["weight_HLT_eMu"]#["weight_HLT_singleEle","weight_HLT_singleMu"], #["weight_HLT_eMu"]
+        'eMu':["weight_HLT_eMu"]
     }
     ID_weights_dict = {
         'eTau': ["weight_tau1_EleSF_wp80iso_EleIDCentral", "weight_tau2_TauID_SF_Medium_Central"], # theorically
@@ -172,6 +172,15 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                                             return static_cast<float>({weight}) ;
                                          return 1.f;""")
 
+    def GetTauIDTotalWeight(self):
+        prod_central_1 = "weight_tau1_TauID_SF_Medium_genuineElectron_barrelCentral * weight_tau1_TauID_SF_Medium_genuineElectron_endcapsCentral * weight_tau1_TauID_SF_Medium_genuineMuon_eta0p4to0p8Central * weight_tau1_TauID_SF_Medium_genuineMuon_eta0p8to1p2Central * weight_tau1_TauID_SF_Medium_genuineMuon_eta1p2to1p7Central * weight_tau1_TauID_SF_Medium_genuineMuon_etaGt1p7Central * weight_tau1_TauID_SF_Medium_genuineMuon_etaLt0p4Central * weight_tau1_TauID_SF_Medium_stat1_dm0Central * weight_tau1_TauID_SF_Medium_stat1_dm10Central * weight_tau1_TauID_SF_Medium_stat1_dm11Central * weight_tau1_TauID_SF_Medium_stat1_dm1Central * weight_tau1_TauID_SF_Medium_stat2_dm0Central * weight_tau1_TauID_SF_Medium_stat2_dm10Central * weight_tau1_TauID_SF_Medium_stat2_dm11Central * weight_tau1_TauID_SF_Medium_stat2_dm1Central * weight_tau1_TauID_SF_Medium_stat_highpT_bin1Central * weight_tau1_TauID_SF_Medium_stat_highpT_bin2Central * weight_tau1_TauID_SF_Medium_syst_allerasCentral * weight_tau1_TauID_SF_Medium_syst_highpTCentral * weight_tau1_TauID_SF_Medium_syst_highpT_bin1Central * weight_tau1_TauID_SF_Medium_syst_highpT_bin2Central * weight_tau1_TauID_SF_Medium_syst_highpT_extrapCentral * weight_tau1_TauID_SF_Medium_syst_yearCentral * weight_tau1_TauID_SF_Medium_syst_year_dm0Central * weight_tau1_TauID_SF_Medium_syst_year_dm10Central * weight_tau1_TauID_SF_Medium_syst_year_dm11Central * weight_tau1_TauID_SF_Medium_syst_year_dm1Central "
+        prod_central_2 = "weight_tau2_TauID_SF_Medium_genuineElectron_barrelCentral * weight_tau2_TauID_SF_Medium_genuineElectron_endcapsCentral * weight_tau2_TauID_SF_Medium_genuineMuon_eta0p4to0p8Central * weight_tau2_TauID_SF_Medium_genuineMuon_eta0p8to1p2Central * weight_tau2_TauID_SF_Medium_genuineMuon_eta1p2to1p7Central * weight_tau2_TauID_SF_Medium_genuineMuon_etaGt1p7Central * weight_tau2_TauID_SF_Medium_genuineMuon_etaLt0p4Central * weight_tau2_TauID_SF_Medium_stat1_dm0Central * weight_tau2_TauID_SF_Medium_stat1_dm10Central * weight_tau2_TauID_SF_Medium_stat1_dm11Central * weight_tau2_TauID_SF_Medium_stat1_dm1Central * weight_tau2_TauID_SF_Medium_stat2_dm0Central * weight_tau2_TauID_SF_Medium_stat2_dm10Central * weight_tau2_TauID_SF_Medium_stat2_dm11Central * weight_tau2_TauID_SF_Medium_stat2_dm1Central * weight_tau2_TauID_SF_Medium_stat_highpT_bin1Central * weight_tau2_TauID_SF_Medium_stat_highpT_bin2Central * weight_tau2_TauID_SF_Medium_syst_allerasCentral * weight_tau2_TauID_SF_Medium_syst_highpTCentral * weight_tau2_TauID_SF_Medium_syst_highpT_bin1Central * weight_tau2_TauID_SF_Medium_syst_highpT_bin2Central * weight_tau2_TauID_SF_Medium_syst_highpT_extrapCentral * weight_tau2_TauID_SF_Medium_syst_yearCentral * weight_tau2_TauID_SF_Medium_syst_year_dm0Central * weight_tau2_TauID_SF_Medium_syst_year_dm10Central * weight_tau2_TauID_SF_Medium_syst_year_dm11Central * weight_tau2_TauID_SF_Medium_syst_year_dm1Central "
+        # print(prod_central_1)
+        # print(prod_central_2)
+        if "weight_tau1_TauID_SF_Medium_Central" not in self.df.GetColumnNames():
+            self.df = self.df.Define("weight_tau1_TauID_SF_Medium_Central", prod_central_1)
+        if "weight_tau2_TauID_SF_Medium_Central" not in self.df.GetColumnNames():
+            self.df = self.df.Define("weight_tau2_TauID_SF_Medium_Central", prod_central_2)
 
 
     def defineCategories(self): # needs lot of stuff --> at the end
@@ -303,6 +312,8 @@ def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.df = defineAllP4(dfForHistograms.df)
     dfForHistograms.defineBoostedVariables()
     dfForHistograms.definePNetSFs()
+    dfForHistograms.GetTauIDTotalWeight()
+    dfForHistograms.redefinePUJetIDWeights()
     dfForHistograms.df = createInvMass(dfForHistograms.df)
     dfForHistograms.defineChannels()
     dfForHistograms.defineLeptonPreselection()
@@ -312,7 +323,6 @@ def PrepareDfForHistograms(dfForHistograms):
         if dfForHistograms.wantTriggerSFErrors and dfForHistograms.isCentral:
             defineTriggerWeightsErrors(dfForHistograms)
     #print(dfForHistograms.df.GetColumnNames())
-    dfForHistograms.redefinePUJetIDWeights()
     dfForHistograms.defineCRs()
     dfForHistograms.defineCategories()
     dfForHistograms.defineQCDRegions()

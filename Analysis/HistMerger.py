@@ -105,19 +105,6 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
                         all_histograms[name_to_use][key_total].append(obj)
 
 
-                        # if len(key_name_split)>2:continue
-                        # print(f"key total is {key_total}")
-                        # print(f"name to use is {name_to_use}, sample_type={sample_type}, sample_name = {sample_name}, key_name = {key_name}")
-                    # elif uncSource == 'QCDScale':
-                    #     for scale in ['Up','Down']:
-                    #         key_total = ((channel, qcdRegion, cat), ('QCDScale', scale))
-                    #         if key_total not in all_histograms[name_to_use].keys():
-                    #             all_histograms[name_to_use][key_total] = []
-                    #         all_histograms[name_to_use][key_total].append(obj)
-                    #         # print(f"key total is {key_total}")
-                    #         # print(f"name to use is {name_to_use}, sample_type={sample_type}, sample_name = {sample_name}, key_name = {key_name}")
-
-
 def MergeHistogramsPerType(all_histograms):
     for sample_type in all_histograms.keys():
         if sample_type == 'data': print(f"DURING MERGE HISTOGRAMS, sample_type is {sample_type}")
@@ -274,8 +261,8 @@ if __name__ == "__main__":
             print(f"integral is {histo.Integral(0,histo.GetNbinsX())}")
     '''
     fixNegativeContributions = False
-    if args.var != 'kinFit_m':
-        fixNegativeContributions=True
+    # if args.var != 'kinFit_m':
+        # fixNegativeContributions=True
     # print(args.var, all_histograms_1D, channels, all_categories, args.uncSource, all_samples_types.keys(), scales)
     error_on_qcdnorm,error_on_qcdnorm_varied = AddQCDInHistDict(args.var, all_histograms_1D, channels, all_categories, args.uncSource, all_samples_types.keys(), scales, wantNegativeContributions=False)
 

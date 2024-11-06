@@ -42,14 +42,14 @@ def RebinHisto(hist_initial, new_binning, sample, verbose=False):
         print(sample)
         for nbin in range(0, len(new_binning)):
             print(f"nbin = {nbin}, content = {new_hist.GetBinContent(nbin)}, error {new_hist.GetBinError(nbin)}")
-    # fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(new_hist)
-    # if not fix_negative_contributions:
-    #     print("negative contribution not fixed")
-    #    print(fix_negative_contributions,debug_info,negative_bins_info)
-    #    for nbin in range(0,new_hist.GetNbinsX()+1):
-    #        content=new_hist.GetBinContent(nbin)
-    #        if content<0:
-    #            print(f"for {sample}, bin {nbin} content is < 0:  {content}")
+    fix_negative_contributions,debug_info,negative_bins_info = FixNegativeContributions(new_hist)
+    if not fix_negative_contributions:
+        print("negative contribution not fixed")
+        print(fix_negative_contributions,debug_info,negative_bins_info)
+        for nbin in range(0,new_hist.GetNbinsX()+1):
+            content=new_hist.GetBinContent(nbin)
+            if content<0:
+               print(f"for {sample}, bin {nbin} content is < 0:  {content}")
 
     return new_hist
 
@@ -328,12 +328,12 @@ if __name__ == "__main__":
             print(f"ERRORE: {sample_histname} non è un istogramma")
         obj.SetDirectory(0)
         k_factor = 1
-        if sample_name=='TTTo2L2Nu':
-            k_factor =  ((1 - 0.665) * (1 - 0.665))/( (1 - 0.6741) * (1 - 0.6741))
-        if sample_name == 'TTToSemiLeptonic':
-            k_factor = ( 0.665 * (1-0.665) )/( 0.6741 * (1-0.6741) )
-        if sample_name == 'TTToHadronic':
-            k_factor = (0.665 * 0.665)/(0.6741 * 0.6741)
+        # if sample_name=='TTTo2L2Nu':
+        #     k_factor =  ((1 - 0.665) * (1 - 0.665))/( (1 - 0.6741) * (1 - 0.6741))
+        # if sample_name == 'TTToSemiLeptonic':
+        #     k_factor = ( 0.665 * (1-0.665) )/( 0.6741 * (1-0.6741) )
+        # if sample_name == 'TTToHadronic':
+        #     k_factor = (0.665 * 0.665)/(0.6741 * 0.6741)
         #print(sample_name, k_factor)
         obj.Scale(k_factor)
         if sample_plot_name not in hists_to_plot_unbinned.keys():

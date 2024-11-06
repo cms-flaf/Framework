@@ -75,7 +75,6 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
                     key_to_use = sample_name
                     obj=dir_2.Get(key_to_use)
                     obj.SetDirectory(0)
-                    # print(key_to_use)
                     if not obj.IsA().InheritsFrom(ROOT.TH1.Class()): continue
                     if key_total not in all_histograms[name_to_use].keys():
                         all_histograms[name_to_use][key_total] = []
@@ -191,7 +190,7 @@ if __name__ == "__main__":
     global_cfg_dict['channels_to_consider']=args.channels.split(',')
 
     channels = global_cfg_dict['channels_to_consider']
-    print(channels)
+    # print(channels)
 
     signals = list(global_cfg_dict['signal_types'])
     unc_to_not_consider_boosted = list(global_cfg_dict['unc_to_not_consider_boosted'])
@@ -250,16 +249,16 @@ if __name__ == "__main__":
     all_histograms_1D=GetBTagWeightDict(args.var,all_histograms, categories, boosted_categories, boosted_variables)
     # print(all_histograms_1D)
 
-    '''
-    for key in all_histograms_1D.keys():
-        print(key)
 
-        for subdict,hito in all_histograms_1D[key].items():
-            print(subdict)
-            histo = hito.Clone()
-            # hito = all_histograms_1D[key]
-            print(f"integral is {histo.Integral(0,histo.GetNbinsX())}")
-    '''
+    # for key in all_histograms_1D.keys():
+    #     print(key)
+
+    #     for subdict,hito in all_histograms_1D[key].items():
+    #         print(subdict)
+    #         histo = hito.Clone()
+    #         # hito = all_histograms_1D[key]
+    #         print(f"integral is {histo.Integral(0,histo.GetNbinsX())}")
+
     fixNegativeContributions = False
     # if args.var != 'kinFit_m':
         # fixNegativeContributions=True

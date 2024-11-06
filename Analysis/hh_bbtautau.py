@@ -230,6 +230,10 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
     #     #print(f" after lepton preselection {self.df.Count().GetValue()}")
 
     def defineLeptonPreselection(self): # needs channel def
+        if self.period == 'Run2_2016' or self.period == 'Run2_2016_HIPM':
+            self.df = self.df.Define("eleEta2016", "if(eE) {return (abs(tau1_eta) < 2 && abs(tau2_eta)<2); } return true;")
+        else:
+            self.df = self.df.Define("eleEta2016", "return true;")
         self.df = self.df.Define("muon1_tightId", "if(muTau || muMu) {return (tau1_Muon_tightId && tau1_Muon_pfRelIso04_all < 0.15); } return true;")
         self.df = self.df.Define("muon2_tightId", "if(muMu || eMu) {return (tau2_Muon_tightId && tau2_Muon_pfRelIso04_all < 0.3);} return true;")
         self.df = self.df.Define("firstele_mvaIso", "if(eMu || eE){return tau1_Electron_mvaIso_WP80==1 && tau1_Electron_pfRelIso03_all < 0.15 ; } return true; ")
@@ -239,7 +243,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         if f"tau2_gen_kind" not in self.df.GetColumnNames():
             self.df=self.df.Define("tau2_gen_kind", "if(isData) return 5; return 0;")
         self.df = self.df.Define("tau_true", f"""(tau1_gen_kind==5 && tau2_gen_kind==5)""")
-        self.df = self.df.Define(f"lepton_preselection", "tau1_iso_medium && muon1_tightId && muon2_tightId && firstele_mvaIso")
+        self.df = self.df.Define(f"lepton_preselection", "eleEta2016 && tau1_iso_medium && muon1_tightId && muon2_tightId && firstele_mvaIso")
         #self.df = self.df.Filter(f"lepton_preselection")
         #print(f" after lepton preselection {self.df.Count().GetValue()}")
 
@@ -311,14 +315,14 @@ def PrepareDfForHistograms(dfForHistograms):
     # if dfForHistograms.isCentral:
     dfForHistograms.df = defineAllP4(dfForHistograms.df)
     dfForHistograms.defineBoostedVariables()
-    dfForHistograms.definePNetSFs()
-    dfForHistograms.GetTauIDTotalWeight()
     dfForHistograms.redefinePUJetIDWeights()
     dfForHistograms.df = createInvMass(dfForHistograms.df)
     dfForHistograms.defineChannels()
     dfForHistograms.defineLeptonPreselection()
     dfForHistograms.defineApplicationRegions()
     if not dfForHistograms.isData:
+        dfForHistograms.definePNetSFs()
+        dfForHistograms.GetTauIDTotalWeight()
         defineTriggerWeights(dfForHistograms)
         if dfForHistograms.wantTriggerSFErrors and dfForHistograms.isCentral:
             defineTriggerWeightsErrors(dfForHistograms)

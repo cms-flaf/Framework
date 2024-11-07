@@ -7,9 +7,9 @@ loadHHBtag = False
 lepton_legs = [ "tau1", "tau2" ]
 
 
-Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all","Muon_tightId","Muon_highPtId"]
+Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all","Muon_tightId","Muon_highPtId","Muon_miniPFRelIso_all"]
 
-Electron_observables = ["Electron_mvaNoIso_WP90", "Electron_mvaIso_WP90", "Electron_pfRelIso03_all"]
+Electron_observables = ["Electron_mvaNoIso_WP80", "Electron_mvaIso_WP80", "Electron_pfRelIso03_all","Electron_miniPFRelIso_all","Electron_mvaIso","Electron_mvaNoIso"]
 
 JetObservables = ["PNetRegPtRawCorr", "PNetRegPtRawCorrNeutrino", "PNetRegPtRawRes",
                   "btagDeepFlavB", "btagDeepFlavCvB", "btagDeepFlavCvL", "btagDeepFlavQG",
@@ -89,6 +89,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
     # save reco lepton from HWWcandidate
     dfw.DefineAndAppend(f"nPreselMu", f"Muon_pt[Muon_presel].size()")
     dfw.DefineAndAppend(f"nPreselEle", f"Electron_pt[Electron_presel].size()")
+    dfw.DefineAndAppend(f"nTightMu", f"Muon_pt[Muon_sel].size()")
+    dfw.DefineAndAppend(f"nTightEle", f"Electron_pt[Electron_sel].size()")
     n_legs = 2
     for leg_idx in range(n_legs):
         def LegVar(var_name, var_expr, var_type=None, var_cond=None, default=0):
@@ -109,6 +111,17 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         for ele_obs in Electron_observables:
             LegVar(ele_obs, f"{ele_obs}.at(HwwCandidate.leg_index.at({leg_idx}))",
                    var_cond=f"HwwCandidate.leg_type.at({leg_idx}) == Leg::e", default='-1')
+
+    #save all pre selcted muons
+    for var in PtEtaPhiM:
+        dfw.DefineAndAppend(f"SelectedMuon_{var}", f"v_ops::{var}(Muon_p4[Muon_presel])")
+    for muon_obs in Muon_observables:
+        dfw.DefineAndAppend(f"Selected{muon_obs}" , f"{muon_obs}[Muon_presel]")
+    #save all pre selcted electrons.
+    for var in PtEtaPhiM:
+        dfw.DefineAndAppend(f"SelectedElectron_{var}", f"v_ops::{var}(Electron_p4[Electron_presel])")
+    for ele_obs in Electron_observables:
+        dfw.DefineAndAppend(f"Selected{ele_obs}" , f"{ele_obs}[Electron_presel]")
 
     #save information for fatjets
     fatjet_obs = []

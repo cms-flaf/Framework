@@ -33,12 +33,10 @@ def RecoHWWCandidateSelection(df):
 
     df = df.Define("Muon_sel", f"""
         (Muon_presel && Muon_tightId)""")
+
     df = df.Define("Electron_iso", "Electron_miniPFRelIso_all") \
            .Define("Muon_iso", "Muon_miniPFRelIso_all")
 
-    df = df.Define("N_sel_Ele", "Electron_pt[Electron_sel].size()")
-    df = df.Define("N_sel_Mu", "Muon_pt[Muon_sel].size()")
-    df = df.Define("N_sel_lep", "N_sel_Ele + N_sel_Mu")
     cand_columns = []
     for ch in channels:
         legs = getChannelLegs(ch)
@@ -47,7 +45,7 @@ def RecoHWWCandidateSelection(df):
         for leg_idx, leg in enumerate(legs):
             leg_args.extend([f"{leg}_sel", f"{leg}_p4", f"{leg}_iso", f"{leg}_charge", f"{leg}_genMatchIdx"])
         leg_str = ', '.join(leg_args)
-        df = df.Define(cand_column, f"GetHWWCandidates(Channel::{ch}, 0.4, {leg_str})")
+        df = df.Define(cand_column, f"GetHWWCandidates(Channel::{ch}, 0.1, {leg_str})")
         cand_columns.append(cand_column)
     cand_filters = [ f'{c}.size() > 0' for c in cand_columns ]
     stringfilter = " || ".join(cand_filters)
@@ -61,7 +59,7 @@ def RecoHWWJetSelection(df):
     df = df.Define("Jet_Incl", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 2.5 && ( Jet_jetId & 2 )")
     df = df.Define("FatJet_Incl", "(v_ops::pt(FatJet_p4)>200 && abs(v_ops::eta(FatJet_p4)) < 2.5 ) && ( FatJet_jetId & 2 ) && (FatJet_msoftdrop > 30) ")
     df = df.Define("Jet_sel", """return RemoveOverlaps(Jet_p4, Jet_Incl,HwwCandidate.getLegP4s(), 0.4);""")
-    df = df.Define("FatJet_sel", """return RemoveOverlaps(FatJet_p4, FatJet_Incl,HwwCandidate.getLegP4s(), 0.4);""")
+    df = df.Define("FatJet_sel", """return RemoveOverlaps(FatJet_p4, FatJet_Incl,HwwCandidate.getLegP4s(), 0.8);""")
     df = df.Define("Jet_cleaned", " RemoveOverlaps(Jet_p4, Jet_sel,{ {FatJet_p4[FatJet_sel][0], },}, 1, 0.8)")
 
     df = df.Define("n_eff_Jets", "(FatJet_p4[FatJet_sel].size()*2)+(Jet_p4[Jet_cleaned].size())")

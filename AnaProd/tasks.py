@@ -10,9 +10,24 @@ import yaml
 
 from RunKit.run_tools import ps_call, natural_sort
 from RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
-from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param
-from Common.Utilities import SerializeObjectToString
+from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
+from Common.Utilities import SerializeObjectToString,checkLists
 from AnaProd.anaCacheProducer import addAnaCaches
+
+
+def getCustomisationSplit(customisations):
+    customisation_dict = {}
+    if customisations is None or len(customisations) == 0: return {}
+    if type(customisations) == str:
+        customisations = customisations.split(';')
+    if type(customisations) != list:
+        raise RuntimeError(f'Invalid type of customisations: {type(customisations)}')
+    for customisation in customisations:
+        substrings = customisation.split('=')
+        if len(substrings) != 2 :
+            raise RuntimeError("len of substring is not 2!")
+        customisation_dict[substrings[0]] = substrings[1]
+    return customisation_dict
 
 class InputFileTask(Task, law.LocalWorkflow):
     def __init__(self, *args, **kwargs):
@@ -107,8 +122,14 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 40.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 4)
 
+    def GetVersions(self):
+        AnaCacheTask_version = get_param_value(AnaCacheTask, 'version') if get_param_value(AnaCacheTask, 'version') else self.version
+        InputFileTask_version = get_param_value(InputFileTask, 'version') if get_param_value(InputFileTask, 'version') else self.version
+        return AnaCacheTask_version,InputFileTask_version
+
     def create_branch_map(self):
-        input_file_task_complete = InputFileTask.req(self, branches=()).complete()
+        AnaCacheTask_version,InputFileTask_version=self.GetVersions()
+        input_file_task_complete = InputFileTask.req(self, branches=(),version=InputFileTask_version).complete()
         if not input_file_task_complete:
             self.cache_branch_map = False
             if not hasattr(self, '_branches_backup'):
@@ -120,7 +141,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branch_idx = 0
         branches = {}
         for sample_id, sample_name in self.iter_samples():
-            input_file_list = InputFileTask.req(self, branch=sample_id, branches=(sample_id,)).output().path
+            input_file_list = InputFileTask.req(self, branch=sample_id, branches=(sample_id,), version=InputFileTask_version).output().path
             input_files = InputFileTask.load_input_files(input_file_list, sample_name)
             for input_file in input_files:
                 branches[branch_idx] = (sample_id, sample_name, self.samples[sample_name]['sampleType'],
@@ -130,15 +151,17 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def workflow_requires(self):
         branches_set = set()
+        AnaCacheTask_version,InputFileTask_version=self.GetVersions()
         for branch_idx, (sample_id, sample_name, sample_type, input_file) in self.branch_map.items():
             branches_set.add(sample_id)
         branches = tuple(branches_set)
-        return { "anaCache" : AnaCacheTask.req(self, branches=branches),
-                 "inputFile": InputFileTask.req(self, branches=branches) }
+        return { "anaCache" : AnaCacheTask.req(self, branches=branches,version=AnaCacheTask_version),
+                 "inputFile": InputFileTask.req(self, branches=branches,version=InputFileTask_version) }
 
     def requires(self):
+        AnaCacheTask_version,InputFileTask_version=self.GetVersions()
         sample_id, sample_name, sample_type, input_file = self.branch_data
-        return [ AnaCacheTask.req(self, branch=sample_id, max_runtime=AnaCacheTask.max_runtime._default, branches=()) ]
+        return [ AnaCacheTask.req(self, branch=sample_id, max_runtime=AnaCacheTask.max_runtime._default, branches=(),version=AnaCacheTask_version) ]
 
     def output(self):
         if len(self.branch_data) == 0:
@@ -155,6 +178,10 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         thread = threading.Thread(target=update_kinit_thread)
         thread.start()
         anaCache_remote = self.input()[0]
+        customisation_dict = getCustomisationSplit(self.customisations)
+        channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']['signal']
+        signal_channels = CheckLists(channels.split(','),self.global_params['channelSelection']['signal'])
+        deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
         try:
             job_home, remove_job_home = self.law_job_home()
             print(f"sample_id = {sample_id}\nsample_name = {sample_name}\nsample_type = {sample_type}\n"
@@ -166,15 +193,12 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             with input_file.localize("r") as local_input, anaCache_remote.localize("r") as anaCache_input:
                 anatuple_cmd = [ 'python3', producer_anatuples, '--period', self.period,
                                  '--inFile', local_input.path, '--outDir', outdir_anatuples, '--sample', sample_name,
-                                 '--anaTupleDef', anaTupleDef, '--anaCache', anaCache_input.path ]
-                isCC = 'CC' in self.version.split('_')
-                if isCC:
-                    anatuple_cmd.extend(['--channels', 'eE,eMu,muMu'])
-                if len(self.customisations) > 0:
-                    anatuple_cmd.extend([ '--customisations', self.customisations ])
-                if 'SC' in self.version.split('_') and (self.global_params.get('compute_unc_variations', False)):
+                                 '--anaTupleDef', anaTupleDef, '--anaCache', anaCache_input.path, '--channels', channels ]
+                if deepTauVersion!="":
+                    anatuple_cmd.extend([ '--customisations', f"deepTauVersion={deepTauVersion}" ])
+                if signal_channels and (self.global_params.get('compute_unc_variations', False)):
                     anatuple_cmd.append('--compute-unc-variations')
-                if 'SC' in self.version.split('_') and (self.global_params.get('store_noncentral', False)):
+                if signal_channels and (self.global_params.get('store_noncentral', False)):
                     anatuple_cmd.append('--store-noncentral')
                 centralFileName = os.path.basename(local_input.path)
                 if self.test:
@@ -213,20 +237,29 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
 
+    def GetVersions(self):
+        AnaTupleTask_version = get_param_value(AnaTupleTask, 'version') if get_param_value(AnaTupleTask, 'version') else self.version
+        AnaCacheTask_version = get_param_value(AnaCacheTask, 'version') if get_param_value(AnaCacheTask, 'version') else self.version
+        InputFileTask_version = get_param_value(InputFileTask, 'version') if get_param_value(InputFileTask, 'version') else self.version
+        return AnaTupleTask_version,AnaCacheTask_version,InputFileTask_version
+
     def workflow_requires(self):
         branch_set = set()
+        AnaTupleTask_version,AnaCacheTask_version,InputFileTask_version = self.GetVersions()
         for idx, prod_branches in self.branch_map.items():
             branch_set.update(prod_branches)
-        return { "anaTuple" : AnaTupleTask.req(self, branches=tuple(branch_set)) }
+        return { "anaTuple" : AnaTupleTask.req(self, branches=tuple(branch_set), version=AnaTupleTask_version) }
 
     def requires(self):
+        AnaTupleTask_version,AnaCacheTask_version,InputFileTask_version = self.GetVersions()
         return [
-            AnaTupleTask.req(self, max_runtime=AnaCacheTask.max_runtime._default, branch=prod_br, branches=(prod_br,))
+            AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),version=AnaTupleTask_version)
             for prod_br in self.branch_data
         ]
 
     def create_branch_map(self):
-        anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
+        AnaTupleTask_version,AnaCacheTask_version,InputFileTask_version = self.GetVersions()
+        anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=(),version=AnaTupleTask_version).create_branch_map()
         prod_branches = []
         for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
             if sample_type != "data": continue
@@ -251,20 +284,28 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
+    def GetVersions(self):
+        AnaTupleTask_version = get_param_value(AnaTupleTask, 'version') if get_param_value(AnaTupleTask, 'version') else self.version
+        AnaCacheTask_version = get_param_value(AnaCacheTask, 'version') if get_param_value(AnaCacheTask, 'version') else self.version
+        InputFileTask_version = get_param_value(InputFileTask, 'version') if get_param_value(InputFileTask, 'version') else self.version
+        return AnaTupleTask_version,AnaCacheTask_version,InputFileTask_version
 
     def workflow_requires(self):
         workflow_dict = {}
+        AnaTupleTask_version,AnaCacheTask_version,InputFileTask_version = self.GetVersions()
         workflow_dict["anaTuple"] = {
-            br_idx: AnaTupleTask.req(self, branch=br_idx)
+            br_idx: AnaTupleTask.req(self, branch=br_idx,version=AnaTupleTask_version)
             for br_idx, _ in self.branch_map.items()
         }
         return workflow_dict
 
     def requires(self):
-        return [ AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default) ]
+        AnaTupleTask_version,AnaCacheTask_version,InputFileTask_version = self.GetVersions()
+        return [ AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default,version=AnaTupleTask_version) ]
 
     def create_branch_map(self):
         branches = {}
+        AnaTupleTask_version,AnaCacheTask_version,InputFileTask_version = self.GetVersions()
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).branch_map
         for br_idx, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
             branches[br_idx] = (sample_name, sample_type)
@@ -288,13 +329,14 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             job_home, remove_job_home = self.law_job_home()
             input_file = self.input()[0]
             print(f"considering sample {sample_name}, {sample_type} and file {input_file.path}")
-
+            customisation_dict = getCustomisationSplit(self.customisations)
+            deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else ""
             with input_file.localize("r") as local_input, self.output().localize("w") as outFile:
                 anaCacheTupleProducer_cmd = ['python3', producer_anacachetuples,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config, '--globalConfig', global_config]
                 if self.global_params['store_noncentral'] and sample_type != 'data':
                     anaCacheTupleProducer_cmd.extend(['--compute_unc_variations', 'True'])
-                if 'deepTau2p5' in self.version.split('_'):
-                    anaCacheTupleProducer_cmd.extend([ '--deepTauVersion', 'v2p5'])
+                if deepTauVersion!="":
+                    anaCacheTupleProducer_cmd.extend([ '--deepTauVersion', deepTauVersion])
                 ps_call(anaCacheTupleProducer_cmd, env=self.cmssw_env, verbose=1)
             print(f"finished to produce anacachetuple")
 
@@ -307,20 +349,29 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 class DataCacheMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
+    def GetVersions(self):
+        AnaTupleTask_version = get_param_value(AnaTupleTask, 'version') if get_param_value(AnaTupleTask, 'version') else self.version
+        AnaCacheTask_version = get_param_value(AnaCacheTask, 'version') if get_param_value(AnaCacheTask, 'version') else self.version
+        AnaCacheTupleTask_version = get_param_value(AnaCacheTupleTask, 'version') if get_param_value(AnaCacheTupleTask, 'version') else self.version
+        InputFileTask_version = get_param_value(InputFileTask, 'version') if get_param_value(InputFileTask, 'version') else self.version
+        return AnaTupleTask_version,AnaCacheTupleTask_version,AnaCacheTask_version,InputFileTask_version
 
     def workflow_requires(self):
         workflow_dep = {}
+        AnaTupleTask_version,AnaCacheTupleTask_version,AnaCacheTask_version,InputFileTask_version = self.GetVersions()
         for idx, prod_branches in self.branch_map.items():
-            workflow_dep[idx] = AnaCacheTupleTask.req(self, branches=prod_branches)
+            workflow_dep[idx] = AnaCacheTupleTask.req(self, branches=prod_branches,version=AnaCacheTupleTask_version)
         return workflow_dep
 
     def requires(self):
         prod_branches = self.branch_data
-        deps = [ AnaCacheTupleTask.req(self, max_runtime=AnaCacheTask.max_runtime._default, branch=prod_br) for prod_br in prod_branches ]
+        AnaTupleTask_version,AnaCacheTupleTask_version,AnaCacheTask_version,InputFileTask_version = self.GetVersions()
+        deps = [ AnaCacheTupleTask.req(self, max_runtime=AnaCacheTask.max_runtime._default, branch=prod_br,version=AnaCacheTupleTask_version) for prod_br in prod_branches ]
         return deps
 
     def create_branch_map(self):
-        anaProd_branch_map = AnaCacheTupleTask.req(self, branch=-1, branches=()).branch_map
+        AnaTupleTask_version,AnaCacheTupleTask_version,AnaCacheTask_version,InputFileTask_version = self.GetVersions()
+        anaProd_branch_map = AnaCacheTupleTask.req(self, branch=-1, branches=(),version=AnaCacheTupleTask_version).branch_map
         prod_branches = []
         for prod_br, (sample_name, sample_type) in anaProd_branch_map.items():
             if sample_type == "data":

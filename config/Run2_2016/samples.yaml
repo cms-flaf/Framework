@@ -65,34 +65,29 @@ SingleElectron_Run2016G:
 SingleElectron_Run2016H:
   sampleType: data
 SingleMuon_Run2016F:
-  isEraH: True
   sampleType: data
 SingleMuon_Run2016G:
   sampleType: data
 SingleMuon_Run2016H:
   sampleType: data
 Tau_Run2016F:
-  isEraH: True
   sampleType: data
 Tau_Run2016G:
   sampleType: data
 Tau_Run2016H:
   sampleType: data
-  isEraH: True
 JetHT_Run2016F:
   sampleType: data
 JetHT_Run2016G:
   sampleType: data
 JetHT_Run2016H:
   sampleType: data
-  isEraH: True
 MET_Run2016F:
   sampleType: data
 MET_Run2016G:
   sampleType: data
 MET_Run2016H:
   sampleType: data
-  isEraH: True
 
 
 

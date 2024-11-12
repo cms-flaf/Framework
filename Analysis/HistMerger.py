@@ -15,19 +15,9 @@ from Analysis.hh_bbtautau import *
 
 
 
-def checkLists(list1, list2):
-    if len(list1) != len(list2):
-        print(f"lists have different length: {list1} and {list2}")
-        return False
-    for item in list1:
-        if item not in list2:
-            print(f"{item} in {list1} but not in {list2}")
-            return False
-    return True
-
 def checkFile(inFileRoot, channels, qcdRegions, categories, var):
     keys_channels = [str(key.GetName()) for key in inFileRoot.GetListOfKeys()]
-    # if not (checkLists(keys_channel, channels)):
+    # if not (Utilities.checkLists(keys_channel, channels)):
     #     print("check list not worked for channels")
     for channel in channels:
         if channel not in keys_channels:
@@ -35,13 +25,13 @@ def checkFile(inFileRoot, channels, qcdRegions, categories, var):
     for channel in channels:
         dir_0 = inFileRoot.Get(channel)
         keys_qcdRegions = [str(key.GetName()) for key in dir_0.GetListOfKeys()]
-        if not checkLists(keys_qcdRegions, QCDregions):
+        if not Utilities.checkLists(keys_qcdRegions, QCDregions):
             print("check list not worked for QCDregions")
             return False
         for qcdRegion in QCDregions:
             dir_1 = dir_0.Get(qcdRegion)
             keys_categories = [str(key.GetName()) for key in dir_1.GetListOfKeys()]
-            if not checkLists(keys_categories, categories):
+            if not Utilities.checkLists(keys_categories, categories):
                     print("check list not worked for categories")
                     return False
             for cat in categories:
@@ -102,6 +92,7 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
                         if key_total not in all_histograms[name_to_use].keys():
                             all_histograms[name_to_use][key_total] = []
                         all_histograms[name_to_use][key_total].append(obj)
+    # print(all_histograms)
 
 
 def MergeHistogramsPerType(all_histograms):

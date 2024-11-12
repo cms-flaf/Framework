@@ -18,8 +18,15 @@ def copy_param(ref_param, new_default):
   return param
 
 def get_param_value(cls, param_name):
-    param = getattr(cls, param_name)
-    return param.task_value(cls.__name__, param_name)
+    try:
+        param = getattr(cls, param_name)
+        return param.task_value(cls.__name__, param_name)
+    except:
+        return None
+
+# def get_param_value(cls, param_name):
+#     param = getattr(cls, param_name)
+#     return param.task_value(cls.__name__, param_name)
 
 class Task(law.Task):
     """

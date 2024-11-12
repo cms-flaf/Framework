@@ -74,11 +74,14 @@ def apply_customisations(config_dict, customisations):
         key_entries = substrings[0].split('.')
         cfg_entry = config_dict
         for key in key_entries[:-1]:
-            if key in config_dict.keys():
-                cfg_entry = cfg_entry[key]
-        if key_entries[-1] in config_dict.keys():
-            entry_type = type(cfg_entry[key_entries[-1]])
-            cfg_entry[key_entries[-1]] = entry_type(value)
+            cfg_entry = cfg_entry[key]
+        entry_type = type(cfg_entry[key_entries[-1]])
+        cfg_entry[key_entries[-1]] = entry_type(value)
+        #     if key in config_dict.keys():
+        #         cfg_entry = cfg_entry[key]
+        # if key_entries[-1] in config_dict.keys():
+        #     entry_type = type(cfg_entry[key_entries[-1]])
+        #     cfg_entry[key_entries[-1]] = entry_type(value)
 
 class Setup:
     _global_instances = {}

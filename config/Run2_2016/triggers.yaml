@@ -13,8 +13,8 @@ ditau:
   channels:
     - tauTau
   path_data:
-    - HLT_DoubleMediumCombinedIsoPFTau35_Trk1_eta2p1_Reg && isEraH # && run >= 278820
-    - HLT_DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg # && run < 278820
+    - HLT_DoubleMediumCombinedIsoPFTau35_Trk1_eta2p1_Reg && run >= 278820
+    - HLT_DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg && run < 278820
   path_MC:
     - HLT_DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg
   legs:

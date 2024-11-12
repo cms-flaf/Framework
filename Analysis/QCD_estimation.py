@@ -299,7 +299,7 @@ def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_sam
         for cat in categories:
             for scale in scales + ['Central']:
                 if uncName=='Central' and scale != 'Central': continue
-                # if uncName!='Central' and scale == 'Central': continue
+                if uncName!='Central' and scale == 'Central': continue
                 key =( (channel, 'OS_Iso', cat), (uncName, scale))
                 hist_qcd_Central,hist_qcd_Up,hist_qcd_Down,error_on_qcdnorm,error_on_qcdnorm_varied = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale,True)
                 all_histograms['QCD'][key] = hist_qcd_Central

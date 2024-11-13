@@ -1,0 +1,19 @@
+GLOBAL:
+  triggerFile: config/HH_bbWW/Run3_2022/triggers.yaml
+  sampleSelection:
+    - drop ^.*
+    - keep ^TT.*
+    - keep ^ST.*
+    - keep ^GluGlutoRadiontoHHto2B2Vto2B2L2Nu.*
+    - keep DYto2L_M-10to50_amcatnloFXFX
+    - keep DYto2L_M-50_amcatnloFXFX
+    - keep WtoLNu_amcatnloFXFX
+    - keep WW
+    - keep WZ
+    - keep ZZ
+    - keep ^EGamma_.*
+    - keep ^Muon_.*
+    - keep ^DoubleMuon_.*
+    - keep ^SingleMuon_.*
+    - keep ^MuonEG_.*
+  use_stitching: false

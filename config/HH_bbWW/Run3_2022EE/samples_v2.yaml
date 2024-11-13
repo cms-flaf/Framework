@@ -1,12 +1,12 @@
 GLOBAL:
-  triggerFile: config/HH_bbWW/Run3_2022/triggers.yaml
+  triggerFile: config/HH_bbWW/Run3_2022EE/triggers.yaml
   sampleSelection:
     - drop ^.*
     - keep ^TT.*
     - keep ^ST.*
     - keep ^GluGlutoRadiontoHHto2B2Vto2B2L2Nu.*
-    - keep DYto2L_M_10to50_amcatnloFXFX
-    - keep DYto2L_M_50_amcatnloFXFX
+    - keep DYto2L_M-10to50_amcatnloFXFX
+    - keep DYto2L_M-50_amcatnloFXFX
     - keep WtoLNu_amcatnloFXFX
     - keep WW
     - keep WZ
@@ -578,31 +578,35 @@ VBFHHto2B2V_CV_1_C2V_1_C3_1:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb
-VBFHHto2B2V_CV_1p74_C2V_1p37_C3_14p4:
+VBFHHto2B2V_CV_1p74_C2V_1p37_C3-14p4:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb
-VBFHHto2B2V_CV_m0p012_C2V_0p030_C3_10p2:
+VBFHHto2B2V_CV_m0p012_C2V_0p030_C3-10p2:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb
-VBFHHto2B2V_CV_m0p758_C2V_1p44_C3_m19p3:
+VBFHHto2B2V_CV_m0p758_C2V_1p44_C3-m19p3:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb
-VBFHHto2B2V_CV_m0p962_C2V_0p959_C3_m1p43:
+VBFHHto2B2V_CV_m0p962_C2V_0p959_C3-m1p43:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb
-VBFHHto2B2V_CV_m1p21_C2V_1p94_C3_m0p94:
+VBFHHto2B2V_CV_m1p21_C2V_1p94_C3-m0p94:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb
-VBFHHto2B2V_CV_m1p60_C2V_2p72_C3_m1p36:
+VBFHHto2B2V_CV_m1p60_C2V_2p72_C3-m1p36:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb
-VBFHHto2B2V_CV_m2p12_C2V_3p87_C3_m5p96:
+VBFHHto2B2V_CV_m2p12_C2V_3p87_C3-m5p96:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: 1pb
+VBFHHto2B2V_CV_m1p83_C2V_3p57_C3-m3p39:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb
@@ -614,31 +618,35 @@ VBFHHto2B2Vto2L2Nu_CV_1_C2V_1_C3_1:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb
-VBFHHto2B2Vto2L2Nu_CV_1p74_C2V_1p37_C3_14p4:
+VBFHHto2B2Vto2L2Nu_CV_1p74_C2V_1p37_C3-14p4:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb
-VBFHHto2B2Vto2L2Nu_CV_m0p012_C2V_0p030_C3_10p2:
+VBFHHto2B2Vto2L2Nu_CV_m0p012_C2V_0p030_C3-10p2:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb
-VBFHHto2B2Vto2L2Nu_CV_m0p758_C2V_1p44_C3_m19p3:
+VBFHHto2B2Vto2L2Nu_CV_m0p758_C2V_1p44_C3-m19p3:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb
-VBFHHto2B2Vto2L2Nu_CV_m0p962_C2V_0p959_C3_m1p43:
+VBFHHto2B2Vto2L2Nu_CV_m0p962_C2V_0p959_C3-m1p43:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb
-VBFHHto2B2Vto2L2Nu_CV_m1p21_C2V_1p94_C3_m0p94:
+VBFHHto2B2Vto2L2Nu_CV_m1p21_C2V_1p94_C3-m0p94:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb
-VBFHHto2B2Vto2L2Nu_CV_m1p60_C2V_2p72_C3_m1p36:
+VBFHHto2B2Vto2L2Nu_CV_m1p60_C2V_2p72_C3-m1p36:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb
-VBFHHto2B2Vto2L2Nu_CV_m2p12_C2V_3p87_C3_m5p96:
+VBFHHto2B2Vto2L2Nu_CV_m2p12_C2V_3p87_C3-m5p96:
+  sampleType: HHnonRes
+  generator: madgraph
+  crossSection: 1pb
+VBFHHto2B2Vto2L2Nu_CV_m1p83_C2V_3p57_C3-m3p39:
   sampleType: HHnonRes
   generator: madgraph
   crossSection: 1pb

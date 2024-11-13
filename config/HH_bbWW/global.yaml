@@ -1,23 +1,28 @@
 anaTupleDef: AnaProd/HH_bbWW/anaTupleDef.py
 signal_types:
   - GluGluToRadion
+  - GluGlutoRadion
   - GluGluToBulkGraviton
-corrections: []
+corrections: 
+  - mu
+  - trg
+  #- ele
+  #- pu
 
 #This is for Analysis Selection
 channelSelection:
-  - e
+  #- e
   - mu
-  - eE
-  - eMu
+  #- eE
+  #- eMu
   - muMu
 
 #This is for Histogram Making
 channels_to_consider:
-  - e
+  #- e
   - mu
-  - eE
-  - eMu
+  #- eE
+  #- eMu
   - muMu
 
 channelDefinition:
@@ -38,12 +43,23 @@ QCDRegions:
   - OS_Iso
 
 
+# triggers:
+#   e:  HLT_singleEleWpTight
+#   mu: HLT_singleIsoMu
+#   eE: HLT_singleEleWpTight || diElec
+#   eMu: HLT_singleIsoMu || HLT_singleEleWpTight || EMu || MuE
+#   muMu: HLT_singleIsoMu || diMuon
+
+
 triggers:
-  e:  HLT_singleEleWpTight
-  mu: HLT_singleIsoMu
-  eE: HLT_singleEleWpTight
-  eMu: HLT_singleIsoMu
-  muMu: HLT_singleIsoMu
+  e: [singleEleWpTight]
+  mu: [singleIsoMu]
+  eE: [singleEleWpTight, diElec]
+  eMu: [singleIsoMu]
+  muMu: [singleIsoMu]
+
+
+
 
 application_regions:
   HLT_singleEleWpTight:
@@ -93,3 +109,5 @@ uncs_to_exclude:
 
 storeExtraJets: False
 scales: []
+  #- Up
+  #- Down

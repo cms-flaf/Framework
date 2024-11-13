@@ -7,7 +7,8 @@ class Triggers():
             self.trigger_dict= yaml.safe_load(stream)
         self.deltaR_matching = deltaR_matching
 
-    def ApplyTriggers(self, df, offline_lepton_legs, isData = False, isSignal=False):
+    def ApplyTriggers(self, df, offline_lepton_legs, channel, isData = False, isSignal=False, default=0):
+
         hltBranches = []
         matchedObjectsBranches= []
         for path, path_dict in self.trigger_dict.items():
@@ -18,7 +19,7 @@ class Triggers():
             keys = [k for k in path_dict[path_key]]
             # check that HLT path exists:
             for key in keys:
-                #print(key)
+                #print("key: ", key)
                 trigger_string = key.split(' ')
                 trigName = trigger_string[0]
                 if trigName not in df.GetColumnNames():
@@ -42,8 +43,8 @@ class Triggers():
                         var_name_offline = f'{leg_dict_offline["type"]}_idx[{var_name_offline}].size()>0'
                     additional_conditions.append(var_name_offline)
                 else:
-                    df = df.Define(f'{type_name_offline}_{var_name_offline}_sel', f'HttCandidate.isLeg({type_name_offline}_idx, {self.dict_legtypes[type_name_offline]}) && ({var_name_offline})')
-                    #print(f'HttCandidate.isLeg({type_name_offline}_idx, {self.dict_legtypes[type_name_offline]}) && ({var_name_offline})')
+                    print(f'{channel}Candidate')
+                    df = df.Define(f'{type_name_offline}_{var_name_offline}_sel', f'{channel}Candidate.isLeg({type_name_offline}_idx, {self.dict_legtypes[type_name_offline]}) && ({var_name_offline})')
                     leg_dict_online= leg_tuple["online_obj"]
                     var_name_online =  f'{leg_dict_offline["type"]}_onlineCut_{leg_id+1}_{path}'
                     cut_vars = []
@@ -71,8 +72,10 @@ class Triggers():
             for offline_leg_id, offline_leg_name in enumerate(offline_lepton_legs):
                 matching_var_bool = f'{offline_leg_name}_HasMatching_{path}'
                 #print(matching_var_bool)
-                df = df.Define(matching_var_bool,
-                               f'hasOOMatching_{path}_details.second.count(LegIndexPair(HttCandidate.leg_type.at({offline_leg_id}), HttCandidate.leg_index.at({offline_leg_id}) ) ) > 0')
+                #print("offline_leg_id: ", offline_leg_id)
+                #print("offline_leg_name: ", offline_leg_name)
+                cond = f"{channel}Candidate.leg_type.size() > {offline_leg_id}"
+                df = df.Define(matching_var_bool, f'{cond} ? (hasOOMatching_{path}_details.second.count(LegIndexPair({channel}Candidate.leg_type.at({offline_leg_id}), {channel}Candidate.leg_index.at({offline_leg_id}) ) ) > 0 ): 0')
                 matchedObjectsBranches.append(matching_var_bool)
                 #print(type(matching_var_bool))
                 #df.Display({matching_var_bool}).Print()

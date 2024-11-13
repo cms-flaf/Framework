@@ -1,3 +1,5 @@
+GLOBAL:
+  triggerFile: config/HH_bbWW/Run3_2022/triggers.yaml
 ############## Start Resonant Signal samples)##############
 ############## Signals(SL,S=0)##############
 GluGlutoRadiontoHHto2B2Vto2B2JLNu_M-250:

@@ -4,7 +4,7 @@ GLOBAL:
   fs_nanoAOD:
   - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/skim_2024_v1/Run3_2022'
   nano_version: v14
-  crossSectionsFile : config/crossSections13TeV.yaml
+  crossSectionsFile : config/crossSections13p6TeV.yaml
   use_stitching: false
   met_type: PFMET
 

@@ -1,0 +1,14 @@
+singleIsoMu:
+  channels:
+    - muMu
+    - eMu
+    - mu
+  path:
+    - HLT_IsoMu24
+  legs:
+    - offline_obj:
+        type: Muon
+        cut:  v_ops::pt(Muon_p4) > 26
+      online_obj:
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&8)!=0
+      doMatching: False

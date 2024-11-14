@@ -11,7 +11,6 @@ Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all","Muon_tightId","Muon_
 
 Electron_observables = ["Electron_mvaNoIso_WP80", "Electron_mvaIso_WP80", "Electron_pfRelIso03_all","Electron_miniPFRelIso_all","Electron_mvaIso","Electron_mvaNoIso"]
 
-
 JetObservables = ["PNetRegPtRawCorr", "PNetRegPtRawCorrNeutrino", "PNetRegPtRawRes",
                   "btagDeepFlavB", "btagDeepFlavCvB", "btagDeepFlavCvL", "btagDeepFlavQG",
                   "btagPNetB", "btagPNetCvB", "btagPNetCvL", "btagPNetCvNotB", "btagPNetQvG"] # 2024
@@ -112,8 +111,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         for ele_obs in Electron_observables:
             LegVar(ele_obs, f"{ele_obs}.at(HwwCandidate.leg_index.at({leg_idx}))",
                    var_cond=f"HwwCandidate.leg_type.at({leg_idx}) == Leg::e", default='-1')
-
-
         #Save the lep* p4 and index directly to avoid using HwwCandidate in SF LUTs
         dfw.Define( f"lep{leg_idx+1}_p4", f"HwwCandidate.leg_type.size() > {leg_idx} ? HwwCandidate.leg_p4.at({leg_idx}) : LorentzVectorM()")
         dfw.Define( f"lep{leg_idx+1}_index", f"HwwCandidate.leg_type.size() > {leg_idx} ? HwwCandidate.leg_index.at({leg_idx}) : -1")
@@ -128,8 +125,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         dfw.DefineAndAppend(f"SelectedElectron_{var}", f"v_ops::{var}(Electron_p4[Electron_presel])")
     for ele_obs in Electron_observables:
         dfw.DefineAndAppend(f"Selected{ele_obs}" , f"{ele_obs}[Electron_presel]")
-
-
     #save information for fatjets
     fatjet_obs = []
     fatjet_obs.extend(FatJetObservables)
@@ -166,6 +161,11 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
                                 }}
                                 return subjet_var;
                                 """)
+    pf_str = global_params["met_type"]
+    dfw.DefineAndAppend(f"met_pt_nano", f"static_cast<float>({pf_str}_p4_nano.pt())")
+    dfw.DefineAndAppend(f"met_phi_nano", f"static_cast<float>({pf_str}_p4_nano.phi())")
+    dfw.DefineAndAppend("met_pt", f"static_cast<float>({pf_str}_p4.pt())")
+    dfw.DefineAndAppend("met_phi", f"static_cast<float>({pf_str}_p4.phi())")
 
     if trigger_class is not None:
         channel = f'H{global_params["analysis_config_area"][-2:].lower()}'
@@ -253,7 +253,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
     if not isData:
         # save gen leptons matched to reco leptons
         for lep in [1, 2]:
-            name = f"lep{lep}_genLep"
+            name = f"lep{lep}_gen"
             # MatchGenLepton returns index of in genLetpons collection if match exists
             dfw.Define(f"{name}_idx", f" HwwCandidate.leg_type.size() >= {lep} ? MatchGenLepton(HwwCandidate.leg_p4.at({lep - 1}), genLeptons, 0.4) : -1")
             dfw.Define(f"{name}_p4", f"return {name}_idx == -1 ? LorentzVectorM() : LorentzVectorM(genLeptons.at({name}_idx).visibleP4());")

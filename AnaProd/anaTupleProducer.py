@@ -84,16 +84,24 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
     reports = []
     outfilesNames = []
     k=0
+    print("syst_dict: ", syst_dict)
     for syst_name, source_name in syst_dict.items():
+        print("syst_name: ", syst_name)
+        print("source_name: ", source_name)
+        print("uncertainties: ", uncertainties)
         if source_name not in uncertainties and "all" not in uncertainties: continue
+        print("Line 93: ")
         is_central = syst_name in [ 'Central', 'nano' ]
+        compute_unc_variations = True
         if not is_central and not compute_unc_variations: continue
+        print("Line 96: ")
         suffix = '' if is_central else f'_{syst_name}'
+        store_noncentral = True
         if len(suffix) and not store_noncentral: continue
+        print("Line 100: ")
         dfw = Utilities.DataFrameWrapper(df_empty, anaTupleDef.getDefaultColumnsToSave(isData))
-
-        anaTupleDef.addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal, setup.global_params,channels)
-
+        print("running  Ana")
+        anaTupleDef.addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal, setup.global_params)
         if setup.global_params['nano_version'] == 'v12':
             dfw.DefineAndAppend("weight_L1PreFiring_Central","L1PreFiringWeight_Nom")
             dfw.DefineAndAppend("weight_L1PreFiring_ECAL_Central","L1PreFiringWeight_ECAL_Nom")

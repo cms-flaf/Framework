@@ -4,13 +4,19 @@ signal_types:
   - GluGluToRadion
   - GluGlutoRadion
   - GluGluToBulkGraviton
-corrections: 
+corrections:
+<<<<<<< Updated upstream
   - mu
   - trg
-  #- ele
+  - ele
   - pu
 
 #This is for Analysis Selection
+=======
+- ele
+- eleES
+
+>>>>>>> Stashed changes
 channelSelection:
   #- e
   - mu

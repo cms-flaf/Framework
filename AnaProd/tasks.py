@@ -196,9 +196,11 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                                  '--anaTupleDef', anaTupleDef, '--anaCache', anaCache_input.path, '--channels', channels ]
                 if deepTauVersion!="":
                     anatuple_cmd.extend([ '--customisations', f"deepTauVersion={deepTauVersion}" ])
-                if signal_channels and (self.global_params.get('compute_unc_variations', False)):
+                # if signal_channels and (self.global_params.get('compute_unc_variations', False)):
+                if self.global_params.get('compute_unc_variations', False):
                     anatuple_cmd.append('--compute-unc-variations')
-                if signal_channels and (self.global_params.get('store_noncentral', False)):
+                # if signal_channels and (self.global_params.get('store_noncentral', False)):
+                if self.global_params.get('store_noncentral', False):
                     anatuple_cmd.append('--store-noncentral')
                 centralFileName = os.path.basename(local_input.path)
                 if self.test:

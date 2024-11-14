@@ -35,11 +35,9 @@ corrections:
   - pu
 
 channelSelection:
-  signal:
     - eTau
     - muTau
     - tauTau
-  control:
     - eE
     - eMu
     - muMu

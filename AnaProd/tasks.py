@@ -179,8 +179,8 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         thread.start()
         anaCache_remote = self.input()[0]
         customisation_dict = getCustomisationSplit(self.customisations)
-        channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']['signal']
-        signal_channels = CheckLists(channels.split(','),self.global_params['channelSelection']['signal'])
+        channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']#['signal']
+        # signal_channels = CheckLists(channels.split(','),self.global_params['channelSelection']['signal'])
         deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
         try:
             job_home, remove_job_home = self.law_job_home()

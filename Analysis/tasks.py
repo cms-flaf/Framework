@@ -63,22 +63,35 @@ def getCustomisationSplit(customisations):
         customisation_dict[substrings[0]] = substrings[1]
     return customisation_dict
 
-
+# @staticmethod
+def SetTaskVersion(Task,default_version):
+    new_par_value = get_param_value(Task,'version') if get_param_value(Task,'version') else default_version
+    Task.version = copy_param(Task.version, new_par_value)
+    print(f"at the end the version is ", get_param_value(Task,'version'))
 
 class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
-    def GetVersions(self):
-        anaProd_version = get_param_value(AnaTupleTask, 'version') if get_param_value(AnaTupleTask, 'version') else self.version
-        dataMerge_version = get_param_value(DataMergeTask, 'version') if get_param_value(DataMergeTask, 'version') else self.version
-        anaCacheProd_version = get_param_value(AnaCacheTupleTask, 'version') if get_param_value(AnaCacheTupleTask, 'version') else self.version
-        dataCacheMerge_version = get_param_value(DataCacheMergeTask, 'version') if get_param_value(DataCacheMergeTask, 'version') else self.version
-        return anaProd_version,dataMerge_version,anaCacheProd_version,dataCacheMerge_version
+
+    # def GetVersions(self):
+
+        # if self.consider_former_tasks:
+        #     SetTaskVersion(AnaTupleTask,self.version)
+        #     print("anaTupleTask version is ", get_param_value(AnaTupleTask,'version'))
+        #     SetTaskVersion(DataMergeTask,get_param_value(AnaTupleTask,'version'))
+        #     print("DataMergeTask version is ", get_param_value(DataMergeTask,'version'))
+        #     SetTaskVersion(AnaCacheTupleTask,get_param_value(AnaTupleTask,'version'))
+        #     print("AnaCacheTupleTask version is ", get_param_value(AnaCacheTupleTask,'version'))
+        #     SetTaskVersion(DataCacheMergeTask,get_param_value(AnaTupleTask,'version'))
+        #     print("DataCacheMergeTask version is ", get_param_value(DataCacheMergeTask,'version'))
+        # SetTaskVersion(HistProducerFileTask,self.version)
+        # print("HistProducerFileTask version is ", get_param_value(HistProducerFileTask,'version'))
+
+
 
     def workflow_requires(self):
         need_data = False
         need_data_cache = False
-        anaProd_version,dataMerge_version,anaCacheProd_version,dataCacheMerge_version=self.GetVersions()
         branch_set = set()
         branch_set_cache = set()
         for idx, (sample, br, var, need_cache) in self.branch_map.items():
@@ -92,35 +105,35 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     branch_set_cache.add(br)
         reqs = {}
         if len(branch_set) > 0:
-            reqs['anaTuple'] = AnaTupleTask.req(self, branches=tuple(branch_set),version=anaProd_version)
+            reqs['anaTuple'] = AnaTupleTask.req(self, branches=tuple(branch_set))
         if len(branch_set_cache) > 0:
-            reqs['anaCacheTuple'] = AnaCacheTupleTask.req(self, branches=tuple(branch_set_cache),version=anaCacheProd_version)
+            reqs['anaCacheTuple'] = AnaCacheTupleTask.req(self, branches=tuple(branch_set_cache))
         if need_data:
-            reqs['dataMergeTuple'] = DataMergeTask.req(self, branches=(), version=dataMerge_version)
+            reqs['dataMergeTuple'] = DataMergeTask.req(self, branches=())
         if need_data_cache:
-            reqs['dataCacheMergeTuple'] = DataCacheMergeTask.req(self, branches=(),version=dataCacheMerge_version)
+            reqs['dataCacheMergeTuple'] = DataCacheMergeTask.req(self, branches=())
         return reqs
 
     def requires(self):
-        anaProd_version,dataMerge_version,anaCacheProd_version,dataCacheMerge_version=self.GetVersions()
         sample_name, prod_br, var, need_cache = self.branch_data
-
         deps = []
         if sample_name =='data':
-            deps.append(DataMergeTask.req(self, max_runtime=DataMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),version=dataMerge_version))
+            deps.append(DataMergeTask.req(self, max_runtime=DataMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
             if need_cache:
-                deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),version=dataCacheMerge_version))
+                deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
         else:
-            deps.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),version=anaProd_version))
+            deps.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
             if need_cache:
-                deps.append(AnaCacheTupleTask.req(self, max_runtime=AnaCacheTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),version=anaCacheProd_version))
+                deps.append(AnaCacheTupleTask.req(self, max_runtime=AnaCacheTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
         return deps
 
     def create_branch_map(self):
-        anaProd_version,dataMerge_version,anaCacheProd_version,dataCacheMerge_version=self.GetVersions()
+        # print(self.version)
+        # print(self.consider_former_tasks)
+        # self.GetVersions()
         n = 0
         branches = {}
-        anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=(), version=anaProd_version).create_branch_map()
+        anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
         samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
         for var_entry in self.global_params['vars_to_plot']:
             var_name, need_cache = parseVarEntry(var_entry)
@@ -131,6 +144,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 n += 1
             branches[n] = ('data', 0, var_name, need_cache)
             n += 1
+        # print(branches)
         return branches
 
     def output(self):
@@ -179,30 +193,48 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
-    use_FileTask = luigi.BoolParameter(default=True)
+
+    def GetVersions(self):
+        if self.consider_former_tasks:
+            SetTaskVersion(AnaTupleTask,self.version)
+            print("anaTupleTask version is ", get_param_value(AnaTupleTask,'version'))
+            SetTaskVersion(DataMergeTask,get_param_value(AnaTupleTask,'version'))
+            print("DataMergeTask version is ", get_param_value(DataMergeTask,'version'))
+            SetTaskVersion(AnaCacheTupleTask,get_param_value(AnaTupleTask,'version'))
+            print("AnaCacheTupleTask version is ", get_param_value(AnaCacheTupleTask,'version'))
+            SetTaskVersion(DataCacheMergeTask,get_param_value(AnaTupleTask,'version'))
+            print("DataCacheMergeTask version is ", get_param_value(DataCacheMergeTask,'version'))
+            SetTaskVersion(HistProducerFileTask,self.version)
+            print("HistProducerFileTask version is ", get_param_value(HistProducerFileTask,'version'))
+        SetTaskVersion(HistProducerSampleTask,get_param_value(HistProducerFileTask,'version'))
+        print("HistProducerSampleTask version is ", get_param_value(HistProducerSampleTask,'version'))
 
     def workflow_requires(self):
         branch_set = set()
         for br_idx, (sample_name, dep_br_list, var) in self.branch_map.items():
             branch_set.update(dep_br_list)
         branches = tuple(branch_set)
-        if self.use_FileTask:
-            return { "HistProducerFileTask": HistProducerFileTask.req(self, branches=branches,customisations=self.customisations) }
+        deps = { "HistProducerFileTask": HistProducerFileTask.req(self, branches=branches,customisations=self.customisations, consider_former_tasks=False) }
+        if self.consider_former_tasks:
+            return deps
         return {  }
 
     def requires(self):
         sample_name, dep_br_list, var = self.branch_data
-        if self.use_FileTask:
-            return [
+        reqs = [
                 HistProducerFileTask.req(self, max_runtime=HistProducerFileTask.max_runtime._default,
-                                                 branch=dep_br, branches=(dep_br,),customisations=self.customisations)
+                                                 branch=dep_br, branches=(dep_br,),customisations=self.customisations,consider_former_tasks=False)
                 for dep_br in dep_br_list
             ]
+        if self.consider_former_tasks:
+            return reqs
         return []
 
+
     def create_branch_map(self):
+        self.GetVersions()
         branches = {}
-        histProducerFile_map = HistProducerFileTask.req(self,branch=-1, branches=()).create_branch_map()
+        histProducerFile_map = HistProducerFileTask.req(self,branch=-1, branches=(),consider_former_tasks=False).create_branch_map()
         all_samples = {}
         samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
         for n_branch, (sample_name, prod_br, var, need_cache)  in histProducerFile_map.items():
@@ -239,8 +271,26 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
 
+    def GetVersions(self):
+        if self.consider_former_tasks:
+            SetTaskVersion(AnaTupleTask,self.version)
+            # print("anaTupleTask version is ", get_param_value(AnaTupleTask,'version'))
+            SetTaskVersion(DataMergeTask,get_param_value(AnaTupleTask,'version'))
+            # print("DataMergeTask version is ", get_param_value(DataMergeTask,'version'))
+            SetTaskVersion(AnaCacheTupleTask,get_param_value(AnaTupleTask,'version'))
+            # print("AnaCacheTupleTask version is ", get_param_value(AnaCacheTupleTask,'version'))
+            SetTaskVersion(DataCacheMergeTask,get_param_value(AnaTupleTask,'version'))
+            # print("DataCacheMergeTask version is ", get_param_value(DataCacheMergeTask,'version'))
+            SetTaskVersion(HistProducerFileTask,self.version)
+            # print("HistProducerFileTask version is ", get_param_value(HistProducerFileTask,'version'))
+            SetTaskVersion(HistProducerSampleTask,get_param_value(HistProducerFileTask,'version'))
+            # print("HistProducerSampleTask version is ", get_param_value(HistProducerSampleTask,'version'))
+        SetTaskVersion(MergeTask,get_param_value(HistProducerFileTask,'version'))
+        # print("MergeTask version is ", get_param_value(MergeTask,'version'))
+
+
     def workflow_requires(self):
-        histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations,use_FileTask=False).create_branch_map()
+        histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations,consider_former_tasks=False).create_branch_map()
         all_samples = {}
         branches = {}
         for br_idx, (smpl_name, idx_list, var) in histProducerSample_map.items():
@@ -251,18 +301,19 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         n=0
         for var in all_samples.keys():
             workflow_dict[var] = {
-                n: HistProducerSampleTask.req(self, branches=tuple((idx,) for idx in all_samples[var]))
+                n: HistProducerSampleTask.req(self, branches=tuple((idx,) for idx in all_samples[var]),consider_former_tasks=False)
             }
             n+=1
         return workflow_dict
 
     def requires(self):
         var, branches_idx = self.branch_data
-        deps = [HistProducerSampleTask.req(self, max_runtime=HistProducerSampleTask.max_runtime._default, branch=prod_br,customisations=self.customisations,use_FileTask=False) for prod_br in branches_idx ]
+        deps = [HistProducerSampleTask.req(self, max_runtime=HistProducerSampleTask.max_runtime._default, branch=prod_br,customisations=self.customisations,consider_former_tasks=False) for prod_br in branches_idx ]
         return deps
 
     def create_branch_map(self):
-        histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations).create_branch_map()
+        self.GetVersions()
+        histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations,consider_former_tasks=False).create_branch_map()
         all_samples = {}
         branches = {}
         for br_idx, (smpl_name, idx_list, var) in histProducerSample_map.items():

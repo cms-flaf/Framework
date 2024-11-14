@@ -63,7 +63,7 @@ def load_parameters(*sources, keys_to_ignore=None):
 def apply_customisations(config_dict, customisations):
     if customisations is None or len(customisations) == 0: return
     if type(customisations) == str:
-        customisations = customisations.split(',')
+        customisations = customisations.split(';')
     if type(customisations) != list:
         raise RuntimeError(f'Invalid type of customisations: {type(customisations)}')
     for customisation in customisations:

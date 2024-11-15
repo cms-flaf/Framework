@@ -235,7 +235,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
     if not isData:
         # save gen leptons matched to reco leptons
         for lep in [1, 2]:
-            name = f"lep{lep}_genLep"
+            name = f"lep{lep}_gen"
             # MatchGenLepton returns index of in genLetpons collection if match exists
             dfw.Define(f"lep{lep}_genMatchIdx", f" HwwCandidate.leg_type.size() >= {lep} ? MatchGenLepton(HwwCandidate.leg_p4.at({lep - 1}), genLeptons, 0.4) : -1")
             dfw.Define(f"{name}_p4", f"return {name}_idx == -1 ? LorentzVectorM() : LorentzVectorM(genLeptons.at({name}_idx).visibleP4());")

@@ -57,8 +57,6 @@ def GetWeight(channel, cat):
     total_weight = '*'.join(weights_to_apply)
     for lep_index in [1,2]:
         total_weight = f"{total_weight} * {GetLepWeight(lep_index)}"
-    print("Debugging our GetWeight, whats this shiz look like?")
-    print(total_weight)
     return total_weight
 
 def GetLepWeight(lep_index):

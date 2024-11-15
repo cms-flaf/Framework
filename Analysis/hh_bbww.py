@@ -20,7 +20,9 @@ def createKeyFilterDict(global_cfg_dict):
                 #print(ch, reg, cat, filter_str)
                 #print()
                 #filter_base = f" ({ch} && {triggers[ch]} && {reg} && {cat})"
-                filter_base = f" ({ch} && {reg} && {cat})"
+
+                #Need to get the channel ID from config dict
+                filter_base = f" ((channelId == {global_cfg_dict['channelDefinition'][ch]}) && {reg} && {cat})"
                 filter_str = f"(" + filter_base
                 #print(ch, reg, cat, filter_str)
                 #print()
@@ -53,7 +55,14 @@ def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False):
 def GetWeight(channel, cat):
     weights_to_apply = ["weight_MC_Lumi_pu"]
     total_weight = '*'.join(weights_to_apply)
+    for lep_index in [1,2]:
+        total_weight = f"{total_weight} * {GetLepWeight(lep_index)}"
     return total_weight
+
+def GetLepWeight(lep_index):
+    weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? weight_lep{lep_index}_MuonID_SF_TightID_TrkCentral * weight_lep{lep_index}_MuonID_SF_LoosePFIsoCentral : 1.0)"
+    weight_Ele = f"(lep{lep_index}_type == static_cast<int>(Leg::e) ? 1.0 : 1.0)"
+    return f"{weight_Mu} * {weight_Ele}"
 
 
 def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_samples_list, scales, unc_to_not_consider_boosted, wantNegativeContributions=False):
@@ -79,14 +88,17 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("channelId", f"(lep1_type*10) + lep2_type")
         for channel in self.config['channelSelection']:
             ch_value = self.config['channelDefinition'][channel]
-            self.df = self.df.Define(f"{channel}", f"channelId=={ch_value}")
+            #self.df = self.df.Define(f"{channel}", f"channelId=={ch_value}")
 
     def defineLeptonPreselection(self):
-        self.df = self.df.Define("lep1_tight", "(lep1_type == 1 && lep1_pt > 25) || (lep1_type == 2 && lep1_pt > 15)") #Dummy values, EleGt25 and MuGt15
-        self.df = self.df.Define("lep2_tight", "(lep2_type == 1 && lep2_pt > 25) || (lep2_type == 2 && lep2_pt > 15)") #Dummy values, EleGt25 and MuGt15
+        # self.df = self.df.Define("lep1_tight", "(lep1_type == 1 && lep1_pt > 25) || (lep1_type == 2 && lep1_pt > 15)") #Dummy values, EleGt25 and MuGt15
+        # self.df = self.df.Define("lep2_tight", "(lep2_type == 1 && lep2_pt > 25) || (lep2_type == 2 && lep2_pt > 15)") #Dummy values, EleGt25 and MuGt15
 
-        self.df = self.df.Define(f"lepton_preselection", "(lep1_tight)")
-        self.df = self.df.Filter(f"lepton_preselection")
+        # self.df = self.df.Define(f"lepton_preselection", "(lep1_tight)")
+        # self.df = self.df.Filter(f"lepton_preselection")
+
+        self.df = self.df.Define("passed_singleIsoMu", "HLT_singleIsoMu && ((lep1_type == 2 && lep1_HasMatching_singleIsoMu) || (lep2_type == 2 && lep2_HasMatching_singleIsoMu))")
+        self.df = self.df.Filter(f"passed_singleIsoMu")
 
     def defineJetSelections(self):
         self.df = self.df.Define("jet1_isvalid", "centralJet_pt.size() > 0")
@@ -101,7 +113,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineQCDRegions(self):
         self.df = self.df.Define("OS", "(lep2_type < 1) || (lep1_charge*lep2_charge < 0)")
-        self.df = self.df.Define("Iso", f"( (lep1_type == 1 && lep1_Electron_mvaIso_WP90) || (lep1_type == 2 && lep1_Muon_pfRelIso04_all < 0.4) ) && (lep2_type < 1 || ( (lep2_type == 1 && lep2_Electron_mvaIso_WP90) || (lep2_type == 2 && lep2_Muon_pfRelIso04_all < 0.4) ))")
+        self.df = self.df.Define("Iso", f"( (lep1_type == 1 && lep1_Electron_mvaIso_WP90) || (lep1_type == 2 && lep1_Muon_pfIsoId >=2) ) && (lep2_type < 1 || ( (lep2_type == 1 && lep2_Electron_mvaIso_WP90) || (lep2_type == 2 && lep2_Muon_pfIsoId >= 2) ))") #Ask if this is supposed to be lep*_Muon_pfIsoId
         self.df = self.df.Define("OS_Iso", f"OS && Iso") 
 
 
@@ -117,12 +129,13 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineTriggers(self):
         for ch in self.config['channelSelection']:
-            for trg in self.config['triggers'][ch].split(' || '):
-                if trg not in self.df.GetColumnNames():
-                    print(f"{trg} not present in colNames")
-                    self.df = self.df.Define(trg, "1")
-        print("Sad")
-        print(self.config)
+            for trg in self.config['triggers'][ch]:
+                trg_name = 'HLT_'+trg
+                if trg_name not in self.df.GetColumnNames():
+                    print(f"{trg_name} not present in colNames")
+                    self.df = self.df.Define(trg_name, "1")
+
+
         singleTau_th_dict = self.config['singleTau_th']
         #singleMu_th_dict = self.config['singleMu_th']
         #singleEle_th_dict = self.config['singleEle_th']

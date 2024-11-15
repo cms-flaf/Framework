@@ -84,8 +84,6 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
             histograms[(key_1, key_2)] = []
         for dataframe in dataframes:
             if furtherCut != '' : key_cut += f' && {furtherCut}'
-            #print(key_cut)
-            #print(dataframe.Count().GetValue())
             dataframe_new = dataframe.Filter(key_cut)
             #print(dataframe_new.Count().GetValue())
             #final_string_weight = analysis.ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = f"final_weight_0_{ch}_{cat}_{reg}") if sample_type!='data' else "1"

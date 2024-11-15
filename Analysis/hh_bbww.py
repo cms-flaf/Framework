@@ -20,7 +20,9 @@ def createKeyFilterDict(global_cfg_dict):
                 #print(ch, reg, cat, filter_str)
                 #print()
                 #filter_base = f" ({ch} && {triggers[ch]} && {reg} && {cat})"
-                filter_base = f" ({ch} && {reg} && {cat})"
+
+                #Need to get the channel ID from config dict
+                filter_base = f" ((channelId == {global_cfg_dict['channelDefinition'][ch]}) && {reg} && {cat})"
                 filter_str = f"(" + filter_base
                 #print(ch, reg, cat, filter_str)
                 #print()
@@ -53,7 +55,16 @@ def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False):
 def GetWeight(channel, cat):
     weights_to_apply = ["weight_MC_Lumi_pu"]
     total_weight = '*'.join(weights_to_apply)
+    for lep_index in [1,2]:
+        total_weight = f"{total_weight} * {GetLepWeight(lep_index)}"
+    print("Debugging our GetWeight, whats this shiz look like?")
+    print(total_weight)
     return total_weight
+
+def GetLepWeight(lep_index):
+    weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? weight_lep{lep_index}_MuonID_SF_TightID_TrkCentral * weight_lep{lep_index}_MuonID_SF_LoosePFIsoCentral : 1.0)"
+    weight_Ele = f"(lep{lep_index}_type == static_cast<int>(Leg::e) ? 1.0 : 1.0)"
+    return f"{weight_Mu} * {weight_Ele}"
 
 
 def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_samples_list, scales, unc_to_not_consider_boosted, wantNegativeContributions=False):
@@ -79,7 +90,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("channelId", f"(lep1_type*10) + lep2_type")
         for channel in self.config['channelSelection']:
             ch_value = self.config['channelDefinition'][channel]
-            self.df = self.df.Define(f"{channel}", f"channelId=={ch_value}")
+            #self.df = self.df.Define(f"{channel}", f"channelId=={ch_value}")
 
     def defineLeptonPreselection(self):
         # self.df = self.df.Define("lep1_tight", "(lep1_type == 1 && lep1_pt > 25) || (lep1_type == 2 && lep1_pt > 15)") #Dummy values, EleGt25 and MuGt15

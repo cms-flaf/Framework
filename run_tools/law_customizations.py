@@ -33,8 +33,8 @@ class Task(law.Task):
     Base task that we use to force a version parameter on all inheriting tasks, and that provides
     some convenience methods to create local file and directory targets at the default data path.
     """
-
     version = luigi.Parameter()
+    prefer_params_cli = [ 'version' ]
     period = luigi.Parameter()
     customisations =luigi.Parameter(default="")
     consider_former_tasks = luigi.BoolParameter(default=True)

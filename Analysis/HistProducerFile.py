@@ -17,7 +17,7 @@ import importlib
 
 #Import correct analysis
 #from Analysis.hh_bbtautau import *
-import Analysis.hh_bbww as analysis
+#import Analysis.hh_bbww as analysis
 
 def createCacheQuantities(dfWrapped_cache, cache_map_name):
     df_cache = dfWrapped_cache.df
@@ -156,6 +156,9 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, inF
 if __name__ == "__main__":
     import argparse
     import yaml
+
+    analysis = importlib.import_module('Analysis.hh_bbww')
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--inFile', required=True, type=str)
     parser.add_argument('--cacheFile', required=False, type=str, default = '')

@@ -89,6 +89,13 @@ diMuon:
       online_obj:
         cut: TrigObj_id == 13 && (TrigObj_filterBits&16)!=0
       doMatching: False
+    - offline_obj:
+        type: Muon
+        cut:  v_ops::pt(Muon_p4) > 10
+      online_obj:
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&16)!=0
+      doMatching: False
+
 
 EMu:
   channels:
@@ -162,3 +169,4 @@ MuE:
 #       online_obj:
 #         cut: TrigObj_id == 1 && (TrigObj_filterBits&16)!=0
 #       doMatching: False
+

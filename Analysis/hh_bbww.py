@@ -62,6 +62,12 @@ def GetWeight(channel, cat):
 def GetLepWeight(lep_index):
     weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? weight_lep{lep_index}_MuonID_SF_TightID_TrkCentral * weight_lep{lep_index}_MuonID_SF_LoosePFIsoCentral : 1.0)"
     weight_Ele = f"(lep{lep_index}_type == static_cast<int>(Leg::e) ? 1.0 : 1.0)"
+
+    #High pT Muon SF
+    weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? weight_lep{lep_index}_HighPt_MuonID_SF_HighPtIDCentral * weight_lep{lep_index}_HighPt_MuonID_SF_RecoCentral * weight_lep{lep_index}_HighPt_MuonID_SF_TightIDCentral : 1.0)"
+
+    #No Muon SF
+    #weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? 1.0 : 1.0)"
     return f"{weight_Mu} * {weight_Ele}"
 
 

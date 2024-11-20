@@ -22,11 +22,20 @@ if __name__ == "__main__":
     import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument('--inFile', required=True)
+    # parser.add_argument('--sigCfg', required=True)
+    # parser.add_argument('--bckgCfg', required=True)
     #parser.add_argument('--remove-files', required=False, type=bool, default=False)
     args = parser.parse_args()
 
 #print(all_histnames.keys())
 inFile = ROOT.TFile.Open(args.inFile, "READ")
+
+# with open(args.sigConfig, 'r') as f:
+#     sig_cfg_dict = yaml.safe_load(f)
+
+# with open(args.bckgConfig, 'r') as f:
+#     bckg_cfg_dict = yaml.safe_load(f)
+# all_samples = sig_cfg_dict.keys()+bckg_cfg_dict.keys()
 # channels =[str(key.GetName()) for key in inFile.GetListOfKeys()]
 channel='eTau'
 qcdReg = "OS_Iso"

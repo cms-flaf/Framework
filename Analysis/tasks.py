@@ -174,26 +174,23 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         for br_idx, (sample_name, dep_br_list, var) in self.branch_map.items():
             branch_set.update(dep_br_list)
         branches = tuple(branch_set)
-        deps = { "HistProducerFileTask": HistProducerFileTask.req(self, branches=branches,customisations=self.customisations, consider_former_tasks=False) }
-        if self.consider_former_tasks:
-            return deps
-        return {  }
+        deps = { "HistProducerFileTask": HistProducerFileTask.req(self, branches=branches,customisations=self.customisations) }
+        return deps
+
 
     def requires(self):
         sample_name, dep_br_list, var = self.branch_data
         reqs = [
                 HistProducerFileTask.req(self, max_runtime=HistProducerFileTask.max_runtime._default,
-                                                 branch=dep_br, branches=(dep_br,),customisations=self.customisations,consider_former_tasks=False)
+                                                 branch=dep_br, branches=(dep_br,),customisations=self.customisations)
                 for dep_br in dep_br_list
             ]
-        if self.consider_former_tasks:
-            return reqs
-        return []
+        return reqs
 
 
     def create_branch_map(self):
         branches = {}
-        histProducerFile_map = HistProducerFileTask.req(self,branch=-1, branches=(),consider_former_tasks=False).create_branch_map()
+        histProducerFile_map = HistProducerFileTask.req(self,branch=-1, branches=()).create_branch_map()
         all_samples = {}
         samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
         for n_branch, (sample_name, prod_br, var, need_cache)  in histProducerFile_map.items():
@@ -231,7 +228,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
 
     def workflow_requires(self):
-        histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations,consider_former_tasks=False).create_branch_map()
+        histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations).create_branch_map()
         all_samples = {}
         branches = {}
         for br_idx, (smpl_name, idx_list, var) in histProducerSample_map.items():
@@ -242,18 +239,18 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         n=0
         for var in all_samples.keys():
             workflow_dict[var] = {
-                n: HistProducerSampleTask.req(self, branches=tuple((idx,) for idx in all_samples[var]),consider_former_tasks=False)
+                n: HistProducerSampleTask.req(self, branches=tuple((idx,) for idx in all_samples[var]))
             }
             n+=1
         return workflow_dict
 
     def requires(self):
         var, branches_idx = self.branch_data
-        deps = [HistProducerSampleTask.req(self, max_runtime=HistProducerSampleTask.max_runtime._default, branch=prod_br,customisations=self.customisations,consider_former_tasks=False) for prod_br in branches_idx ]
+        deps = [HistProducerSampleTask.req(self, max_runtime=HistProducerSampleTask.max_runtime._default, branch=prod_br,customisations=self.customisations) for prod_br in branches_idx ]
         return deps
 
     def create_branch_map(self):
-        histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations,consider_former_tasks=False).create_branch_map()
+        histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations).create_branch_map()
         all_samples = {}
         branches = {}
         for br_idx, (smpl_name, idx_list, var) in histProducerSample_map.items():

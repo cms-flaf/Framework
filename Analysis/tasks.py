@@ -296,7 +296,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
         for sample_name in self.samples.keys():
             if sample_name not in samples_to_consider: continue
-            output_path_hist_prod_sample = os.path.join(self.version, self.period, split_dir, var, f'{sample_name}.root')
+            output_path_hist_prod_sample = os.path.join(self.version, self.period, 'split', var, f'{sample_name}.root')
             all_inputs.append((self.remote_target(output_path_hist_prod_sample, fs=self.fs_histograms),sample_name))
         all_datasets=[]
         all_outputs_merged = []

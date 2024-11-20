@@ -224,13 +224,13 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 all_samples[var] = []
             all_samples[var].append(br_idx)
         workflow_dict = {}
-        n=0
+
+        new_branchset = set()
         for var in all_samples.keys():
-            workflow_dict[var] = {
-                n: HistProducerSampleTask.req(self, branches=tuple((idx,) for idx in all_samples[var]))
-            }
-            n+=1
-        return workflow_dict
+            new_branchset.update(all_samples[var])
+
+        return { "histproducersample": HistProducerSampleTask.req(self, branches=list(new_branchset)) }
+        # return workflow_dict
 
     def requires(self):
         var, branches_idx = self.branch_data

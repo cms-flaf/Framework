@@ -301,7 +301,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         all_datasets=[]
         all_outputs_merged = []
 
-        outdir_histograms = os.path.join(self.version, self.period, merge_dir, var, 'tmp')
+        outdir_histograms = os.path.join(self.version, self.period, 'merged', var, 'tmp')
 
         with contextlib.ExitStack() as stack:
             local_inputs = []

@@ -231,7 +231,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineLeptonPreselection(self): # needs channel def
         if self.period == 'Run2_2016' or self.period == 'Run2_2016_HIPM':
-            self.df = self.df.Define("eleEta2016", "if(eE) {return (abs(tau1_eta) < 2 && abs(tau2_eta)<2); } if(eTau) {return (abs(tau1_eta) < 2); } return true;")
+            self.df = self.df.Define("eleEta2016", "if(eE) {return (abs(tau1_eta) < 2 && abs(tau2_eta)<2); } if(eTau||eMu) {return (abs(tau1_eta) < 2); } return true;")
         else:
             self.df = self.df.Define("eleEta2016", "return true;")
         self.df = self.df.Define("muon1_tightId", "if(muTau || muMu) {return (tau1_Muon_tightId && tau1_Muon_pfRelIso04_all < 0.15); } return true;")
@@ -251,9 +251,9 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("OS", "tau1_charge*tau2_charge < 0")
         self.df = self.df.Define("SS", "!OS")
 
-        self.df = self.df.Define("Iso", f"((tauTau || eTau || muTau) && (tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value} )) || ((muMu||eMu) && (tau2_Muon_pfRelIso04_all < 0.15)) || (eE && tau2_Electron_pfRelIso03_all < 0.15 )")
+        self.df = self.df.Define("Iso", f"(((tauTau || eTau || muTau) && (tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value} )) || ((muMu||eMu) && (tau2_Muon_pfRelIso04_all < 0.15)) || (eE && tau2_Electron_pfRelIso03_all < 0.15 ))")
 
-        self.df = self.df.Define("AntiIso", f"((tauTau || eTau || muTau) && (tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value} && tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet < {Utilities.WorkingPointsTauVSjet.Medium.value})) || ((muMu||eMu) && (tau2_Muon_pfRelIso04_all >= 0.15 && tau2_Muon_pfRelIso04_all < 0.3) ) || (eE && (tau2_Electron_pfRelIso03_all >= 0.15 && tau2_Electron_mvaNoIso_WP80 ))")
+        self.df = self.df.Define("AntiIso", f"(((tauTau || eTau || muTau) && (tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value} && tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet < {Utilities.WorkingPointsTauVSjet.Medium.value})) || ((muMu||eMu) && (tau2_Muon_pfRelIso04_all >= 0.15 && tau2_Muon_pfRelIso04_all < 0.3) ) || (eE && (tau2_Electron_pfRelIso03_all < 0.3 && tau2_Electron_pfRelIso03_all >= 0.15 && tau2_Electron_mvaNoIso_WP80 )))")
 
         self.df = self.df.Define("OS_Iso", f"lepton_preselection && OS && Iso")
         self.df = self.df.Define("SS_Iso", f"lepton_preselection && SS && Iso")

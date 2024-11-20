@@ -144,12 +144,13 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_type = self.samples[sample_name]['sampleType'] if sample_name != 'data' else 'data'
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
         print(f'output file is {self.output().path}')
+        compute_unc_histograms = customisation_dict['compute_unc_histograms']=='True' if 'compute_unc_histograms' in customisation_dict.keys() else self.global_params.get('compute_unc_histograms', False)
         with input_file.localize("r") as local_input, self.output().localize("w") as local_output:
             HistProducerFile_cmd = [ 'python3', HistProducerFile,
                                     '--inFile', local_input.path, '--outFileName',local_output.path,
                                     '--dataset', sample_name, '--uncConfig', unc_config,
                                     '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type, '--globalConfig', global_config, '--var', var, '--period', self.period, '--region', region, '--channels', channels]
-            if (var=='bbtautau_mass' or var == 'kinFit_m') and self.global_params['compute_unc_histograms'] and signal_channels and region=="SR": # temporary patch, just for current analysis. Next iteration: var and signal channels and region will be removed
+            if compute_unc_histograms:
                 HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
             if deepTauVersion!="2p1":
                 HistProducerFile_cmd.extend([ '--deepTauVersion', deepTauVersion])
@@ -281,7 +282,9 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         uncNames = ['Central']
         unc_cfg_dict = load_unc_config(unc_config)
         uncs_to_exclude = self.global_params['uncs_to_exclude'][self.period]
-        if (var=='bbtautau_mass' or var == 'kinFit_m') and self.global_params['compute_unc_histograms'] and signal_channels and region=="SR": # temporary patch, just for current analysis. Next iteration: var and signal channels and region will be removed
+
+        compute_unc_histograms = customisation_dict['compute_unc_histograms']=='True' if 'compute_unc_histograms' in customisation_dict.keys() else self.global_params.get('compute_unc_histograms', False)
+        if compute_unc_histograms:
             for uncName in list(unc_cfg_dict['norm'].keys())+unc_cfg_dict['shape']:
                 if uncName in uncs_to_exclude: continue
                 uncNames.append(uncName)

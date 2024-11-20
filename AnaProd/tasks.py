@@ -171,9 +171,11 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         thread.start()
         anaCache_remote = self.input()[0]
         customisation_dict = getCustomisationSplit(self.customisations)
+        # print(customisation_dict)
         channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
-        store_noncentral = customisation_dict['store_noncentral'] if 'store_noncentral' in customisation_dict.keys() else self.global_params.get('store_noncentral', False)
-        compute_unc_variations = customisation_dict['compute_unc_variations'] if 'compute_unc_variations' in customisation_dict.keys() else self.global_params.get('compute_unc_variations', False)
+        store_noncentral = customisation_dict['store_noncentral']=='True' if 'store_noncentral' in customisation_dict.keys() else self.global_params.get('store_noncentral', False)
+        # print(store_noncentral)
+        compute_unc_variations = customisation_dict['compute_unc_variations']=='True' if 'compute_unc_variations' in customisation_dict.keys() else self.global_params.get('compute_unc_variations', False)
         deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
         try:
             job_home, remove_job_home = self.law_job_home()

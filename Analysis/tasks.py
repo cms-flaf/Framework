@@ -276,8 +276,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         customisation_dict = getCustomisationSplit(self.customisations)
-        channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']['signal']
-        signal_channels = CheckLists(channels.split(','),self.global_params['channelSelection']['signal'])
+        channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
         deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
         region = customisation_dict['region'] if 'region' in customisation_dict.keys() else self.global_params['region_default']
         uncNames = ['Central']

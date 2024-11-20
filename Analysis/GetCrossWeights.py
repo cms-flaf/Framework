@@ -41,18 +41,18 @@ ROOT.gInterpreter.Declare(
     }
     float getCorrectSingleLepWeight(const float& lep1_pt, const float& lep1_eta, const bool& lep1_matching, const float& lep1_weight,const float& lep2_pt, const float& lep2_eta, const bool& lep2_matching, const float& lep2_weight){
         if(lep1_pt > lep2_pt){
-            return lep1_matching? lep1_weight : 0.f;
+            return lep1_matching? lep1_weight : 1.f;
         }
         else if(lep1_pt == lep2_pt){
             if(abs(lep1_eta) < abs(lep2_eta)){
-                return lep1_matching? lep1_weight : 0.f;
+                return lep1_matching? lep1_weight : 1.f;
             }
             else if(abs(lep1_eta) > abs(lep2_eta)){
-                return lep2_matching? lep2_weight : 0.f;
+                return lep2_matching? lep2_weight : 1.f;
             }
         }
         else{
-            return lep2_matching? lep2_weight : 0.f;
+            return lep2_matching? lep2_weight : 1.f;
         }
     throw std::invalid_argument("ERROR: no suitable single lepton candidate");
 
@@ -104,14 +104,14 @@ def defineTriggerWeightsErrors(dfBuilder):
 
 
     for scale in ['Up', 'Down']:
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_ditau_DM0{scale}_rel", f"if (HLT_ditau && Legacy_region) {{return (weight_tau1_TrgSF_ditau_DM0{scale}_rel*weight_tau2_TrgSF_ditau_DM0{scale}_rel); }}return 0.f;")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_ditau_DM1{scale}_rel", f"if (HLT_ditau && Legacy_region) {{return (weight_tau1_TrgSF_ditau_DM1{scale}_rel*weight_tau2_TrgSF_ditau_DM1{scale}_rel); }}return 0.f;")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_ditau_3Prong{scale}_rel", f"if (HLT_ditau && Legacy_region) {{return (weight_tau1_TrgSF_ditau_3Prong{scale}_rel*weight_tau2_TrgSF_ditau_3Prong{scale}_rel); }}return 0.f;")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleTau_{scale}_rel", f"if (HLT_singleTau && SingleTau_region && !Legacy_region) {{return (weight_tau1_TrgSF_singleTau{scale}_rel*weight_tau1_TrgSF_singleTau{scale}_rel) ;}} return 0.f;")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_MET{scale}_rel", f"if(HLT_MET && !(SingleTau_region) && !(Legacy_region)) {{return weight_TrgSF_MET{scale}_rel;}} return 0.f;")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleEle{scale}_rel", f"if (HLT_singleEle && SingleEle_region) {{return (weight_tau1_TrgSF_singleEle{scale}_rel*weight_tau2_TrgSF_singleEle{scale}_rel);}} return 0.f;")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleMu{scale}_rel", f"if (HLT_singleMu && SingleMu_region) {{return (weight_tau1_TrgSF_singleMu{scale}_rel*weight_tau2_TrgSF_singleMu{scale}_rel);}} return 0.f;")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_eMu{scale}_rel", f"if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau1_TrgSF_singleEleCentral!=1.f) {{return (weight_tau1_TrgSF_singleEle{scale}_rel*weight_tau2_TrgSF_singleMu{scale}_rel);}} return 0.f;")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_ditau_DM0{scale}_rel", f"if (HLT_ditau && Legacy_region) {{return (weight_tau1_TrgSF_ditau_DM0{scale}_rel*weight_tau2_TrgSF_ditau_DM0{scale}_rel); }}return 1.f;")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_ditau_DM1{scale}_rel", f"if (HLT_ditau && Legacy_region) {{return (weight_tau1_TrgSF_ditau_DM1{scale}_rel*weight_tau2_TrgSF_ditau_DM1{scale}_rel); }}return 1.f;")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_ditau_3Prong{scale}_rel", f"if (HLT_ditau && Legacy_region) {{return (weight_tau1_TrgSF_ditau_3Prong{scale}_rel*weight_tau2_TrgSF_ditau_3Prong{scale}_rel); }}return 1.f;")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleTau_{scale}_rel", f"if (HLT_singleTau && SingleTau_region && !Legacy_region) {{return (weight_tau1_TrgSF_singleTau{scale}_rel*weight_tau1_TrgSF_singleTau{scale}_rel) ;}} return 1.f;")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_MET{scale}_rel", f"if(HLT_MET && !(SingleTau_region) && !(Legacy_region)) {{return weight_TrgSF_MET{scale}_rel;}} return 1.f;")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleEle{scale}_rel", f"if (HLT_singleEle && SingleEle_region) {{return (weight_tau1_TrgSF_singleEle{scale}_rel*weight_tau2_TrgSF_singleEle{scale}_rel);}} return 1.f;")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleMu{scale}_rel", f"if (HLT_singleMu && SingleMu_region) {{return (weight_tau1_TrgSF_singleMu{scale}_rel*weight_tau2_TrgSF_singleMu{scale}_rel);}} return 1.f;")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_eMu{scale}_rel", f"if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau1_TrgSF_singleEleCentral!=1.f) {{return (weight_tau1_TrgSF_singleEle{scale}_rel*weight_tau2_TrgSF_singleMu{scale}_rel);}} return 1.f;")
 
     Eff_SL_mu_Data_Err = "(eff_data_tau2_Trg_singleMuUp-eff_data_tau1_Trg_singleMuCentral)"
     Eff_SL_mu_MC_Err = "(eff_MC_tau2_Trg_singleMuUp-eff_MC_tau1_Trg_singleMuCentral)"
@@ -146,23 +146,23 @@ def defineTriggerWeightsErrors(dfBuilder):
     if dfBuilder.period == 'Run2_2016' or dfBuilder.period == 'Run2_2016_HIPM':
         dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_mu_Up", " 1.f ")
         dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_mu_Down", " 1.f ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_mu_Up", "if ((HLT_singleMu) && Legacy_region ) {return weight_tau1_TrgSF_singleMuUp_rel*weight_tau1_TrgSF_singleMuCentral;} return 0.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_mu_Down", "if ((HLT_singleMu) && Legacy_region ) {return weight_tau1_TrgSF_singleMuUp_rel*weight_tau1_TrgSF_singleMuCentral;} return 0.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_mu_Up", "if ((HLT_singleMu) && Legacy_region ) {return weight_tau1_TrgSF_singleMuUp_rel*weight_tau1_TrgSF_singleMuCentral;} return 1.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_mu_Down", "if ((HLT_singleMu) && Legacy_region ) {return weight_tau1_TrgSF_singleMuUp_rel*weight_tau1_TrgSF_singleMuCentral;} return 1.f; ")
         dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mu_Up", " 1.f; ")
         dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mu_Down", " 1.f; ")
         dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mutau_tau_Up", "  1.f; ")
         dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mutau_tau_Down", "  1.f; ")
     else:
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_mu_Up", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau + trigSF_cross_mu_err;} return 0.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_mu_Down", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau - trigSF_cross_mu_err;} return 0.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_mu_Up", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau + trigSF_cross_mu_err;} return 1.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_mu_Down", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau - trigSF_cross_mu_err;} return 1.f; ")
 
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_mu_Up", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau + trigSF_SL_mu_err;} return 0.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_mu_Down", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau - trigSF_SL_mu_err;} return 0.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_mu_Up", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau + trigSF_SL_mu_err;} return 1.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_mu_Down", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau - trigSF_SL_mu_err;} return 1.f; ")
 
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mu_Up", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau + trigSF_mu_err;} return 0.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mu_Down", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau - trigSF_mu_err;} return 0.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mutau_tau_Up", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau + trigSF_err_dm_mutau;} return 0.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mutau_tau_Down", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau - trigSF_err_dm_mutau;} return 0.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mu_Up", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau + trigSF_mu_err;} return 1.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mu_Down", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau - trigSF_mu_err;} return 1.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mutau_tau_Up", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau + trigSF_err_dm_mutau;} return 1.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mutau_tau_Down", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau - trigSF_err_dm_mutau;} return 1.f; ")
 
 
     # must pass Crossetau_region - Tau leg
@@ -206,40 +206,42 @@ def defineTriggerWeightsErrors(dfBuilder):
     if dfBuilder.period == 'Run2_2016' or dfBuilder.period == 'Run2_2016_HIPM':
         dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_ele_Up", " 1.f ")
         dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_ele_Down", " 1.f ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_ele_Up", "if ((HLT_singleEle) && Legacy_region ) {return weight_tau1_TrgSF_singleEleUp_rel*weight_tau1_TrgSF_singleEleCentral;} return 0.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_ele_Down", "if ((HLT_singleEle) && Legacy_region ) {return weight_tau1_TrgSF_singleEleUp_rel*weight_tau1_TrgSF_singleEleCentral;} return 0.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_ele_Up", "if ((HLT_singleEle) && Legacy_region ) {return weight_tau1_TrgSF_singleEleUp_rel*weight_tau1_TrgSF_singleEleCentral;} return 1.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_ele_Down", "if ((HLT_singleEle) && Legacy_region ) {return weight_tau1_TrgSF_singleEleUp_rel*weight_tau1_TrgSF_singleEleCentral;} return 1.f; ")
         dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_ele_Up", " 1.f; ")
         dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_ele_Down", " 1.f; ")
         dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_etau_tau_Up", "  1.f; ")
         dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_etau_tau_Down", "  1.f; ")
     else:
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_ele_Up", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau + trigSF_cross_ele_err;} return 0.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_ele_Down", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau - trigSF_cross_ele_err;} return 0.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_ele_Up", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau + trigSF_cross_ele_err;} return 1.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_ele_Down", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau - trigSF_cross_ele_err;} return 1.f; ")
 
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_ele_Up", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau + trigSF_SL_ele_err;} return 0.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_ele_Down", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau - trigSF_SL_ele_err;} return 0.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_ele_Up", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau + trigSF_SL_ele_err;} return 1.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_ele_Down", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau - trigSF_SL_ele_err;} return 1.f; ")
 
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_ele_Up", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau + trigSF_ele_err;} return 0.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_ele_Down", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau - trigSF_ele_err;} return 0.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_etau_tau_Up", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau + trigSF_err_dm_etau;} return 0.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_etau_tau_Down", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau - trigSF_err_dm_etau;} return 0.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_ele_Up", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau + trigSF_ele_err;} return 1.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_ele_Down", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau - trigSF_ele_err;} return 1.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_etau_tau_Up", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau + trigSF_err_dm_etau;} return 1.f; ")
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_etau_tau_Down", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau - trigSF_err_dm_etau;} return 1.f; ")
 
 def defineTriggerWeights(dfBuilder): # needs application region def
 
     # *********************** tauTau ***********************
-    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_diTau", "if (HLT_ditau && Legacy_region) {return (weight_tau1_TrgSF_ditau_3ProngCentral*weight_tau1_TrgSF_ditau_DM0Central*weight_tau1_TrgSF_ditau_DM1Central*weight_tau2_TrgSF_ditau_3ProngCentral*weight_tau2_TrgSF_ditau_DM0Central*weight_tau2_TrgSF_ditau_DM1Central); }return 0.f;")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_diTau", "if (HLT_ditau && Legacy_region) {return (weight_tau1_TrgSF_ditau_3ProngCentral*weight_tau1_TrgSF_ditau_DM0Central*weight_tau1_TrgSF_ditau_DM1Central*weight_tau2_TrgSF_ditau_3ProngCentral*weight_tau2_TrgSF_ditau_DM0Central*weight_tau2_TrgSF_ditau_DM1Central); }return 1.f;")
     # *********************** singleTau ***********************
-    # dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleTau", "if (HLT_singleTau && SingleTau_region && !Legacy_region) {return (weight_tau1_TrgSF_singleTauCentral*weight_tau2_TrgSF_singleTauCentral) ;} return 0.f;")
-    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleTau", "if (HLT_singleTau && SingleTau_region && !Legacy_region) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleTau, weight_tau1_TrgSF_singleTauCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleTau, weight_tau2_TrgSF_singleTauCentral); } return 0.f;")
+    # dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleTau", "if (HLT_singleTau && SingleTau_region && !Legacy_region) {return (weight_tau1_TrgSF_singleTauCentral*weight_tau2_TrgSF_singleTauCentral) ;} return 1.f;")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleTau", "if (HLT_singleTau && SingleTau_region && !(Legacy_region)) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleTau, weight_tau1_TrgSF_singleTauCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleTau, weight_tau2_TrgSF_singleTauCentral); } return 1.f;")
     # *********************** MET ***********************
-    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_MET", "if (HLT_MET && !(SingleTau_region) && !(Legacy_region)) { return (weight_TrgSF_METCentral) ;} return 0.f;")
-    # *********************** singleEle ***********************x
-    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleEle", "if (HLT_singleEle && SingleEle_region) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleEle, weight_tau1_TrgSF_singleEleCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleEle, weight_tau2_TrgSF_singleEleCentral) ;} return 0.f;")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_MET", "if (HLT_MET && !(SingleTau_region) && !(Legacy_region)) { return (weight_TrgSF_METCentral) ;} return 1.f;")
+    # *********************** singleEle ***********************
+    # dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleEle", "if (HLT_singleEle && SingleEle_region) {return weight_tau1_TrgSF_singleEleCentral*weight_tau2_TrgSF_singleEleCentral ;} return 1.f;")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleEle", "if (HLT_singleEle && SingleEle_region) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleEle, weight_tau1_TrgSF_singleEleCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleEle, weight_tau2_TrgSF_singleEleCentral) ;} return 1.f;")
     # *********************** singleMu ***********************
-    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleMu", "if (HLT_singleMu && SingleMu_region) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleMu, weight_tau1_TrgSF_singleMuCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleMu, weight_tau2_TrgSF_singleMuCentral) ;} return 0.f;")
+    # dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleMu", "if (HLT_singleMu && SingleMu_region) {return weight_tau1_TrgSF_singleMuCentral*weight_tau2_TrgSF_singleMuCentral ;} return 1.f;")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleMu", "if (HLT_singleMu && SingleMu_region) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleMu, weight_tau1_TrgSF_singleMuCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleMu, weight_tau2_TrgSF_singleMuCentral) ;} return 1.f;")
     # *********************** singleLepPerEMu ***********************
-    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_eMu", "if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau1_TrgSF_singleEleCentral!=1.f) {return (weight_tau1_TrgSF_singleEleCentral*weight_tau2_TrgSF_singleMuCentral);} return 0.f;")
-    #dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_muE", f"if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau2_TrgSF_singleEleCentral!=1.f) return (weight_tau2_TrgSF_singleEleCentral*weight_tau1_TrgSF_singleMuCentral); return 0.f;")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_eMu", "if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau1_TrgSF_singleEleCentral!=1.f) {return (weight_tau1_TrgSF_singleEleCentral*weight_tau2_TrgSF_singleMuCentral);} return 1.f;")
+    #dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_muE", f"if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau2_TrgSF_singleEleCentral!=1.f) return (weight_tau2_TrgSF_singleEleCentral*weight_tau1_TrgSF_singleMuCentral); return 1.f;")
 
 
     # *********************** muTau ***********************
@@ -263,9 +265,9 @@ def defineTriggerWeights(dfBuilder): # needs application region def
 
     dfBuilder.df = dfBuilder.df.Define(f"Eff_Data_mutau", Eff_Data_expression_mu)
     dfBuilder.df = dfBuilder.df.Define(f"Eff_MC_mutau", Eff_MC_expression_mu)
-    weight_muTau_expression = "if ( (HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return static_cast<float>(Eff_Data_mutau/Eff_MC_mutau);} return 0.f;"
+    weight_muTau_expression = "if ( (HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return static_cast<float>(Eff_Data_mutau/Eff_MC_mutau);} return 1.f;"
     if dfBuilder.period == 'Run2_2016' or dfBuilder.period == 'Run2_2016_HIPM':
-        weight_muTau_expression = "if (HLT_singleMu && SingleMu_region) {return (weight_tau1_TrgSF_singleMuCentral ) ;} return 0.f; "
+        weight_muTau_expression = "if (HLT_singleMu && SingleMu_region) {return (weight_tau1_TrgSF_singleMuCentral ) ;} return 1.f; "
     dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_muTau", weight_muTau_expression)
 
 
@@ -291,17 +293,17 @@ def defineTriggerWeights(dfBuilder): # needs application region def
 
     dfBuilder.df = dfBuilder.df.Define(f"Eff_Data_etau", Eff_Data_expression_ele)
     dfBuilder.df = dfBuilder.df.Define(f"Eff_MC_etau", Eff_MC_expression_ele)
-    weight_eleTau_expression = "if ( (HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return static_cast<float>(Eff_Data_etau/Eff_MC_etau);} return 0.f;"
+    weight_eleTau_expression = "if ( (HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return static_cast<float>(Eff_Data_etau/Eff_MC_etau);} return 1.f;"
     if dfBuilder.period == 'Run2_2016' or dfBuilder.period == 'Run2_2016_HIPM':
-        weight_eleTau_expression = "if (HLT_singleEle && SingleEle_region) {return (weight_tau1_TrgSF_singleEleCentral ) ;} return 0.f; "
+        weight_eleTau_expression = "if (HLT_singleEle && SingleEle_region) {return (weight_tau1_TrgSF_singleEleCentral ) ;} return 1.f; "
     dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_eTau", weight_eleTau_expression)
 
 
 
 def defineTotalTriggerWeight(dfBuilder):
-    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_tauTau", """if (HLT_ditau && Legacy_region) { return weight_HLT_diTau; }if (HLT_singleTau && SingleTau_region && !Legacy_region){ return weight_HLT_singleTau; } if (HLT_MET && !(SingleTau_region) && !(Legacy_region)){ return weight_HLT_MET ; }return 0.f;""")
-    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_muTau", """if ((HLT_singleMu || HLT_mutau) && Legacy_region) { return weight_HLT_muTau; }if (HLT_singleTau && SingleTau_region && !Legacy_region){ return weight_HLT_singleTau; } if (HLT_MET && !(SingleTau_region) && !(Legacy_region)){ return weight_HLT_MET ; }return 0.f;""")
-    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_eTau", """if ((HLT_singleEle || HLT_etau) && Legacy_region) { return weight_HLT_eTau; }if (HLT_singleTau && SingleTau_region && !Legacy_region){ return weight_HLT_singleTau; } if (HLT_MET && !(SingleTau_region) && !(Legacy_region)){ return weight_HLT_MET ; }return 0.f;""")
-    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_eE", "if (HLT_singleEle && SingleEle_region) {return weight_HLT_singleEle ;} return 0.f;")
-    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_muMu", "if (HLT_singleMu && SingleMu_region) {return weight_HLT_singleMu ;} return 0.f;")
-    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_eMu", "if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau1_TrgSF_singleEleCentral!=1.f) {return (weight_tau1_TrgSF_singleEleCentral*weight_tau2_TrgSF_singleMuCentral);} return 0.f;")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_tauTau", """if (HLT_ditau && Legacy_region) { return weight_HLT_diTau; }if (HLT_singleTau && SingleTau_region && !Legacy_region){ return weight_HLT_singleTau; } if (HLT_MET && !(SingleTau_region) && !(Legacy_region)){ return weight_HLT_MET ; }return 1.f;""")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_muTau", """if ((HLT_singleMu || HLT_mutau) && Legacy_region) { return weight_HLT_muTau; }if (HLT_singleTau && SingleTau_region && !Legacy_region){ return weight_HLT_singleTau; } if (HLT_MET && !(SingleTau_region) && !(Legacy_region)){ return weight_HLT_MET ; }return 1.f;""")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_eTau", """if ((HLT_singleEle || HLT_etau) && Legacy_region) { return weight_HLT_eTau; }if (HLT_singleTau && SingleTau_region && !Legacy_region){ return weight_HLT_singleTau; } if (HLT_MET && !(SingleTau_region) && !(Legacy_region)){ return weight_HLT_MET ; }return 1.f;""")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_eE", "if (HLT_singleEle && SingleEle_region) {return weight_HLT_singleEle ;} return 1.f;")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_muMu", "if (HLT_singleMu && SingleMu_region) {return weight_HLT_singleMu ;} return 1.f;")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_eMu", "if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau1_TrgSF_singleEleCentral!=1.f) {return (weight_tau1_TrgSF_singleEleCentral*weight_tau2_TrgSF_singleMuCentral);} return 1.f;")

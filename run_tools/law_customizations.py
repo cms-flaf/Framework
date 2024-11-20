@@ -37,7 +37,6 @@ class Task(law.Task):
     prefer_params_cli = [ 'version' ]
     period = luigi.Parameter()
     customisations =luigi.Parameter(default="")
-    consider_former_tasks = luigi.BoolParameter(default=True)
     test = luigi.BoolParameter(default=False)
 
     def __init__(self, *args, **kwargs):

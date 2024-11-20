@@ -304,13 +304,14 @@ if __name__ == "__main__":
             print(f"ERRORE: {sample_histname} non è un istogramma")
         obj.SetDirectory(0)
         k_factor = 1
-        if sample_name=='TTTo2L2Nu':
-            k_factor =  ((1 - 0.665) * (1 - 0.665))/( (1 - 0.6741) * (1 - 0.6741))
-        if sample_name == 'TTToSemiLeptonic':
-            k_factor = ( 0.665 * (1-0.665) )/( 0.6741 * (1-0.6741) )
-        if sample_name == 'TTToHadronic':
-            k_factor = (0.665 * 0.665)/(0.6741 * 0.6741)
-        obj.Scale(k_factor)
+        # if sample_name=='TTTo2L2Nu':
+        #     k_factor =  ((1 - 0.665) * (1 - 0.665))/( (1 - 0.6741) * (1 - 0.6741))
+        # if sample_name == 'TTToSemiLeptonic':
+        #     k_factor = ( 0.665 * (1-0.665) )/( 0.6741 * (1-0.6741) )
+        # if sample_name == 'TTToHadronic':
+        #     k_factor = (0.665 * 0.665)/(0.6741 * 0.6741)
+        # obj.Scale(k_factor)
+
         if sample_plot_name not in hists_to_plot_unbinned.keys():
             hists_to_plot_unbinned[sample_plot_name] = obj
         else:

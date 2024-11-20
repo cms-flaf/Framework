@@ -70,7 +70,7 @@ def GetWeight(channel, cat, boosted_categories):
         }
 
     weights_to_apply.extend(ID_weights_dict[channel])
-    weights_to_apply.extend([f"weight_trg_{channel}"])
+    weights_to_apply.extend(trg_weights_dict[channel])
     if cat not in boosted_categories:
          weights_to_apply.extend(["weight_Jet_PUJetID_Central_b1_2", "weight_Jet_PUJetID_Central_b2_2"])
     else:
@@ -231,7 +231,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineLeptonPreselection(self): # needs channel def
         if self.period == 'Run2_2016' or self.period == 'Run2_2016_HIPM':
-            self.df = self.df.Define("eleEta2016", "if(eE) {return (abs(tau1_eta) < 2 && abs(tau2_eta)<2); } return true;")
+            self.df = self.df.Define("eleEta2016", "if(eE) {return (abs(tau1_eta) < 2 && abs(tau2_eta)<2); } if(eTau) {return (abs(tau1_eta) < 2); } return true;")
         else:
             self.df = self.df.Define("eleEta2016", "return true;")
         self.df = self.df.Define("muon1_tightId", "if(muTau || muMu) {return (tau1_Muon_tightId && tau1_Muon_pfRelIso04_all < 0.15); } return true;")

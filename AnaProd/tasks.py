@@ -123,7 +123,6 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 4)
 
     def create_branch_map(self):
-        AnaCacheTask_version,InputFileTask_version=self.GetVersions()
         input_file_task_complete = InputFileTask.req(self, branches=()).complete()
         if not input_file_task_complete:
             self.cache_branch_map = False
@@ -136,7 +135,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branch_idx = 0
         branches = {}
         for sample_id, sample_name in self.iter_samples():
-            input_file_list = InputFileTask.req(self, branch=sample_id, branches=(sample_id,), version=InputFileTask_version).output().path
+            input_file_list = InputFileTask.req(self, branch=sample_id, branches=(sample_id,)).output().path
             input_files = InputFileTask.load_input_files(input_file_list, sample_name)
             for input_file in input_files:
                 branches[branch_idx] = (sample_id, sample_name, self.samples[sample_name]['sampleType'],
@@ -153,7 +152,6 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                  "inputFile": InputFileTask.req(self, branches=branches) }
 
     def requires(self):
-        AnaCacheTask_version,InputFileTask_version=self.GetVersions()
         sample_id, sample_name, sample_type, input_file = self.branch_data
         return [ AnaCacheTask.req(self, branch=sample_id, max_runtime=AnaCacheTask.max_runtime._default, branches=()) ]
 

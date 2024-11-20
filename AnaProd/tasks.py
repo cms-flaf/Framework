@@ -11,7 +11,7 @@ import yaml
 from RunKit.run_tools import ps_call, natural_sort
 from RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
 from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
-from Common.Utilities import SerializeObjectToString,checkLists
+from Common.Utilities import SerializeObjectToString
 from AnaProd.anaCacheProducer import addAnaCaches
 
 
@@ -171,8 +171,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         thread.start()
         anaCache_remote = self.input()[0]
         customisation_dict = getCustomisationSplit(self.customisations)
-        channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']#['signal']
-        # signal_channels = CheckLists(channels.split(','),self.global_params['channelSelection']['signal'])
+        channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
         deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
         try:
             job_home, remove_job_home = self.law_job_home()

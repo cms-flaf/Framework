@@ -133,8 +133,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_name, prod_br, var, need_cache = self.branch_data
         input_file = self.input()[0]
         customisation_dict = getCustomisationSplit(self.customisations)
-        channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']['signal']
-        signal_channels = CheckLists(channels.split(','),self.global_params['channelSelection']['signal'])
+        channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
         deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
         region = customisation_dict['region'] if 'region' in customisation_dict.keys() else self.global_params['region_default']
 

@@ -233,7 +233,7 @@ if __name__ == "__main__":
         bckg_sample_type = bckg_cfg_dict[sample_name]['sampleType']
         bckg_sample_name = bckg_sample_type if bckg_sample_type in global_cfg_dict['sample_types_to_merge'] else sample_name
         if bckg_sample_name in all_samples_types.keys():
-            # print(f"{bckg_sample_name} already in all_samples_types, not including it")
+            # print(f"{bcxkg_sample_name} already in all_samples_types, not including it")
             continue
         all_samples_types[bckg_sample_name] = {}
         all_samples_types[bckg_sample_name]['type']= bckg_sample_type

@@ -788,27 +788,27 @@ WtoLNu_madgraphMLM_ext1:
   crossSection: WtoLNu_NNLO_QCD+NLO_EW
   generator: madgraphMLM
   miniAOD: /WtoLNu-4Jets_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/MINIAODSIM
-WtoLNu_MLNu-0to120_HT-40To100_madgraph:
+WtoLNu_MLNu_0to120_HT_40To100_madgraph:
   sampleType: W
   crossSection: WtoLNu_MLNu-0to120_HT-40To100_madgraph
   generator: madgraphMLM
   miniAOD: /WtoLNu-4Jets_MLNu-0to120_HT-40to100_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6-v3/MINIAODSIM
-WtoLNu_MLNu-0to120_HT-100To400_madgraph:
+WtoLNu_MLNu_0to120_HT_100To400_madgraph:
   sampleType: W
   crossSection: WtoLNu_MLNu-0to120_HT-100To400_madgraph
   generator: madgraphMLM
   miniAOD: /WtoLNu-4Jets_MLNu-0to120_HT-100to400_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6-v3/MINIAODSIM
-WtoLNu_MLNu-0to120_HT-400To800_madgraph:
+WtoLNu_MLNu_0to120_HT_400To800_madgraph:
   sampleType: W
   crossSection: WtoLNu_MLNu-0to120_HT-400To800_madgraph
   generator: madgraphMLM
   miniAOD: /WtoLNu-4Jets_MLNu-0to120_HT-400to800_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6-v3/MINIAODSIM
-WtoLNu_MLNu-0to120_HT-800To1500_madgraph:
+WtoLNu_MLNu_0to120_HT_800To1500_madgraph:
   sampleType: W
   crossSection: WtoLNu_MLNu-0to120_HT-800To1500_madgraph
   generator: madgraphMLM
   miniAOD: /WtoLNu-4Jets_MLNu-0to120_HT-800to1500_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6-v2/MINIAODSIM
-WtoLNu_MLNu-0to120_HT-1500To2500_madgraph:
+WtoLNu_MLNu_0to120_HT_1500To2500_madgraph:
   sampleType: W
   crossSection: WtoLNu_MLNu-0to120_HT-1500To2500_madgraph
   generator: madgraphMLM

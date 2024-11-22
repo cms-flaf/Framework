@@ -25,7 +25,7 @@ def SelectBTagShapeSF(df,weight_name):
     return df
 
 def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snapshotOptions,range, evtIds,
-                   store_noncentral, compute_unc_variations, uncertainties, anaTupleDef):
+                   store_noncentral, compute_unc_variations, uncertainties, anaTupleDef,channels):
     start_time = datetime.datetime.now()
     compression_settings = snapshotOptions.fCompressionAlgorithm * 100 + snapshotOptions.fCompressionLevel
     period = setup.global_params["era"]
@@ -92,7 +92,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
         if len(suffix) and not store_noncentral: continue
         dfw = Utilities.DataFrameWrapper(df_empty, anaTupleDef.getDefaultColumnsToSave(isData))
 
-        anaTupleDef.addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal, setup.global_params)
+        anaTupleDef.addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal, setup.global_params,channels)
 
         if setup.global_params['nano_version'] == 'v12':
             dfw.DefineAndAppend("weight_L1PreFiring_Central","L1PreFiringWeight_Nom")
@@ -165,6 +165,7 @@ if __name__ == "__main__":
                         default=f"{os.environ['ANALYSIS_PATH']}/config/pdg_name_type_charge.txt")
     parser.add_argument('--compressionLevel', type=int, default=4)
     parser.add_argument('--compressionAlgo', type=str, default="ZLIB")
+    parser.add_argument('--channels', type=str, default="eTau,muTau,tauTau")
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
 
@@ -176,6 +177,7 @@ if __name__ == "__main__":
     setup = Setup.getGlobal(os.environ['ANALYSIS_PATH'], args.period, args.customisations)
     with open(args.anaCache, 'r') as f:
         anaCache = yaml.safe_load(f)
+    channels = args.channels.split(',')
 
     anaTupleDef = Utilities.load_module(args.anaTupleDef)
     if os.path.isdir(args.outDir):
@@ -189,4 +191,4 @@ if __name__ == "__main__":
     snapshotOptions.fCompressionLevel = args.compressionLevel
     createAnatuple(args.inFile, args.treeName, args.outDir, setup, args.sample, anaCache, snapshotOptions,
                    args.nEvents, args.evtIds, args.store_noncentral, args.compute_unc_variations,
-                   args.uncertainties.split(","), anaTupleDef)
+                   args.uncertainties.split(","), anaTupleDef,channels)

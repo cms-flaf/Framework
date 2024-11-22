@@ -1,0 +1,12 @@
+for eTau, res2b_cat3_masswindow and kinFit_m the errors on QCD are 0.0421311215515085,0.004976970205148888
+for muTau, res2b_cat3_masswindow and kinFit_m the errors on QCD are 0.0011414999477474851,0.003257520440297345
+for tauTau, res2b_cat3_masswindow and kinFit_m the errors on QCD are 0.07225776708262784,0.011031052948014057
+
+
+for eTau, res1b_cat3_masswindow and kinFit_m the errors on QCD are 0.004840832311097064,0.0024421759868510605
+for muTau, res1b_cat3_masswindow and kinFit_m the errors on QCD are 0.0051828358274559625,0.001414818326425183
+for tauTau, res1b_cat3_masswindow and kinFit_m the errors on QCD are 0.021042022492051775,0.0033064636810213317
+
+for eTau, baseline_masswindow and kinFit_m the errors on QCD are 0.003382579229981518,0.0008400554104166352
+for muTau, baseline_masswindow and kinFit_m the errors on QCD are 0.0029444915737650195,0.000626383978269949
+for tauTau, baseline_masswindow and kinFit_m the errors on QCD are 0.007229391684982035,0.0011309816567692727

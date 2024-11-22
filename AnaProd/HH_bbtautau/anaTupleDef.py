@@ -80,7 +80,7 @@ def getDefaultColumnsToSave(isData):
         colToSave.extend(['Pileup_nTrueInt'])
     return colToSave
 
-def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal, global_params):
+def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal, global_params, channels):
     dfw.Apply(CommonBaseline.SelectRecoP4, syst_name, global_params["nano_version"])
     dfw.Apply(AnaBaseline.RecoHttCandidateSelection, global_params)
     dfw.Apply(AnaBaseline.RecoJetSelection, global_params["era"])
@@ -139,7 +139,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
     dfw.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
     dfw.Define( f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
     dfw.DefineAndAppend("channelId","static_cast<int>(HttCandidate.channel())")
-    channel_to_select = " || ".join(f"HttCandidate.channel()==Channel::{ch}" for ch in global_params["channelSelection"])
+    channel_to_select = " || ".join(f"HttCandidate.channel()==Channel::{ch}" for ch in channels)#global_params["channelSelection"])
     dfw.Filter(channel_to_select, "select channels")
     fatjet_obs = []
     fatjet_obs.extend(FatJetObservables)

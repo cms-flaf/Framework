@@ -84,21 +84,15 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
         if dfWrapped_central.df.Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
         print("finished defining central quantities")
         snapshotOptions.fLazy=False
-        #print(file_keys)
         for uncName in unc_cfg_dict['shape']:
-            print(uncName)
             for scale in scales:
-                print(scale)
                 treeName = f"Events_{uncName}{scale}"
-                #print(treeName)
                 treeName_noDiff = f"{treeName}_noDiff"
                 if treeName_noDiff in file_keys:
-                    print(treeName_noDiff)
                     df_noDiff = ROOT.RDataFrame(treeName_noDiff, inFileName)
-                    print(df_noDiff.Count().GetValue())
-                    #print(df_noDiff.GetColumnNames())
                     dfWrapped_noDiff = Utilities.DataFrameBuilderBase(df_noDiff)
                     dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
+                    dfWrapped_noDiff.AddMissingColumns(colNames, colTypes)
                     dfW_noDiff = Utilities.DataFrameWrapper(dfWrapped_noDiff.df,defaultColToSave)
                     applyLegacyVariables(dfW_noDiff,global_cfg_dict, False)
                     varToSave = Utilities.ListToVector(dfW_noDiff.colToSave)
@@ -106,12 +100,10 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     dfW_noDiff.df.Snapshot(treeName_noDiff, f'{outFileName}_{uncName}{scale}_noDiff.root', varToSave, snapshotOptions)
                 treeName_Valid = f"{treeName}_Valid"
                 if treeName_Valid in file_keys:
-                    print(treeName_Valid)
                     df_Valid = ROOT.RDataFrame(treeName_Valid, inFileName)
-                    print(df_Valid.Count().GetValue())
-                    #print(df_Valid.GetColumnNames())
                     dfWrapped_Valid = Utilities.DataFrameBuilderBase(df_Valid)
                     dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
+                    dfWrapped_Valid.AddMissingColumns(colNames, colTypes)
                     dfW_Valid = Utilities.DataFrameWrapper(dfWrapped_Valid.df,defaultColToSave)
                     applyLegacyVariables(dfW_Valid,global_cfg_dict, False)
                     varToSave = Utilities.ListToVector(dfW_Valid.colToSave)
@@ -119,10 +111,9 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     dfW_Valid.df.Snapshot(treeName_Valid, f'{outFileName}_{uncName}{scale}_Valid.root', varToSave, snapshotOptions)
                 treeName_nonValid = f"{treeName}_nonValid"
                 if treeName_nonValid in file_keys:
-                    print(treeName_nonValid)
                     df_nonValid = ROOT.RDataFrame(treeName_nonValid, inFileName)
-                    print(df_nonValid.Count().GetValue())
                     dfWrapped_nonValid = Utilities.DataFrameBuilderBase(df_nonValid)
+                    dfWrapped_nonValid.AddMissingColumns(colNames, colTypes)
                     dfW_nonValid = Utilities.DataFrameWrapper(dfWrapped_nonValid.df,defaultColToSave)
                     applyLegacyVariables(dfW_nonValid,global_cfg_dict, False)
                     varToSave = Utilities.ListToVector(dfW_nonValid.colToSave)
@@ -133,7 +124,7 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
     if snapshotOptions.fLazy == True:
         print("going to rungraph")
         ROOT.RDF.RunGraphs(snaps)
-    print(all_files)
+    # print(all_files)
     return all_files
 
 
@@ -168,13 +159,13 @@ if __name__ == "__main__":
     startTime = time.time()
 
     outFileNameFinal = f'{args.outFileName}'
-    print(outFileNameFinal)
-    print(args.outFileName.split('.')[0])
+    # print(outFileNameFinal)
+    # print(args.outFileName.split('.')[0])
     try:
         all_files = createAnaCacheTuple(args.inFileName, args.outFileName.split('.')[0], unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion)
         hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
         hadd_str += ' '.join(f for f in all_files)
-        print(hadd_str)
+        # print(hadd_str)
         if len(all_files) > 1:
             ps_call([hadd_str], True)
         else:

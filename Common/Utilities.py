@@ -120,7 +120,6 @@ class DataFrameWrapper:
 
 class DataFrameBuilderBase:
     def CreateColumnTypes(self):
-        #colNames = [str(c) for c in self.df.GetColumnNames() if 'kinFit_result' not in str(c)]
         colNames = [str(c) for c in self.df.GetColumnNames()]#if 'kinFit_result' not in str(c)]
         entryIndexIdx = colNames.index("entryIndex")
         runIdx = colNames.index("run")
@@ -131,8 +130,6 @@ class DataFrameBuilderBase:
         colNames[eventIdx], colNames[2] = colNames[2], colNames[eventIdx]
         colNames[lumiIdx], colNames[3] = colNames[3], colNames[lumiIdx]
         self.colNames = colNames
-        #if "kinFit_result" in self.colNames:
-        #    self.colNames.remove("kinFit_result")
         self.colTypes = [str(self.df.GetColumnType(c)) for c in self.colNames]
 
     def __init__(self, df):
@@ -154,8 +151,10 @@ class DataFrameBuilderBase:
             self.df = self.df.Define(f"{var_name_forDelta}", f"""analysis::FromDelta({var_name},
                                      analysis::GetEntriesMap()[std::make_tuple(entryIndex, run, event, luminosityBlock)]->GetValue<{self.colTypes[var_idx]}>({central_col_idx}) )""")
             var_list.append(f"{var_name_forDelta}")
+
+    def AddMissingColumns(self,central_columns,central_col_types):
         for central_col_idx,central_col in enumerate(central_columns):
-            if central_col in var_list or central_col in self.colNames: continue
+            if central_col in self.df.GetColumnNames(): continue
             self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[std::make_tuple(entryIndex, run, event, luminosityBlock)]->GetValue<{central_col_types[central_col_idx]}>({central_col_idx})""")
 
     def AddCacheColumns(self,cache_cols,cache_col_types):

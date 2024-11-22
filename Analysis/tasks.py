@@ -2,24 +2,13 @@ import law
 import os
 import yaml
 import contextlib
+import luigi
 
 from RunKit.run_tools import ps_call
 from RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
-from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param
+from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param,get_param_value
 from AnaProd.tasks import AnaTupleTask, DataMergeTask, AnaCacheTupleTask, DataCacheMergeTask
 
-unc_2018 = ['JES_BBEC1_2018', 'JES_Absolute_2018', 'JES_EC2_2018', 'JES_HF_2018', 'JES_RelativeSample_2018' ]
-unc_2017 = ['JES_BBEC1_2017', 'JES_Absolute_2017', 'JES_EC2_2017', 'JES_HF_2017', 'JES_RelativeSample_2017' ]
-unc_2016preVFP = ['JES_BBEC1_2016preVFP', 'JES_Absolute_2016preVFP', 'JES_EC2_2016preVFP', 'JES_HF_2016preVFP', 'JES_RelativeSample_2016preVFP' ]
-unc_2016postVFP = ['JES_BBEC1_2016postVFP', 'JES_Absolute_2016postVFP', 'JES_EC2_2016postVFP', 'JES_HF_2016postVFP', 'JES_RelativeSample_2016postVFP' ]
-
-#This gets overwritten by the global config
-uncs_to_exclude = {
-    'Run2_2018': unc_2017+ unc_2016preVFP + unc_2016postVFP,
-    'Run2_2017': unc_2018+ unc_2016preVFP + unc_2016postVFP,
-    'Run2_2016': unc_2017+ unc_2018 + unc_2016preVFP,
-    'Run2_2016_HIPM':unc_2017+ unc_2018 + unc_2016postVFP,
-    }
 
 unc_cfg_dict = None
 def load_unc_config(unc_cfg):
@@ -27,6 +16,7 @@ def load_unc_config(unc_cfg):
     with open(unc_cfg, 'r') as f:
         unc_cfg_dict = yaml.safe_load(f)
     return unc_cfg_dict
+
 
 def getYear(period):
     year_dict = {
@@ -59,6 +49,21 @@ def GetSamples(samples, backgrounds, signals=['GluGluToRadion','GluGluToBulkGrav
         if sample_type in signals or sample_name in backgrounds:
             samples_to_consider.append(sample_name)
     return samples_to_consider
+
+def getCustomisationSplit(customisations):
+    customisation_dict = {}
+    if customisations is None or len(customisations) == 0: return {}
+    if type(customisations) == str:
+        customisations = customisations.split(';')
+    if type(customisations) != list:
+        raise RuntimeError(f'Invalid type of customisations: {type(customisations)}')
+    for customisation in customisations:
+        substrings = customisation.split('=')
+        if len(substrings) != 2 :
+            raise RuntimeError("len of substring is not 2!")
+        customisation_dict[substrings[0]] = substrings[1]
+    return customisation_dict
+
 
 class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
@@ -93,17 +98,13 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_name, prod_br, var, need_cache = self.branch_data
         deps = []
         if sample_name =='data':
-            deps.append(DataMergeTask.req(self, max_runtime=DataMergeTask.max_runtime._default, branch=prod_br,
-                                          branches=(prod_br,)))
+            deps.append(DataMergeTask.req(self, max_runtime=DataMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
             if need_cache:
-                deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default,
-                                                   branch=prod_br, branches=(prod_br,)))
+                deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
         else:
-            deps.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br,
-                                         branches=(prod_br,)))
+            deps.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
             if need_cache:
-                deps.append(AnaCacheTupleTask.req(self, max_runtime=AnaCacheTupleTask.max_runtime._default,
-                                                  branch=prod_br, branches=(prod_br,)))
+                deps.append(AnaCacheTupleTask.req(self, max_runtime=AnaCacheTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
         return deps
 
     def create_branch_map(self):
@@ -125,12 +126,19 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def output(self):
         sample_name, prod_br, var, need_cache = self.branch_data
         outFileName = os.path.basename(self.input()[0].path)
-        output_path = os.path.join(self.version, self.period, 'prod', var, f'{sample_name}_{outFileName}')
+        prod_dir = 'prod'
+        output_path = os.path.join(self.version, self.period, prod_dir, var, f'{sample_name}_{outFileName}')
         return self.remote_target(output_path,  fs=self.fs_histograms)
 
     def run(self):
         sample_name, prod_br, var, need_cache = self.branch_data
         input_file = self.input()[0]
+        customisation_dict = getCustomisationSplit(self.customisations)
+        channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
+        deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
+        region = customisation_dict['region'] if 'region' in customisation_dict.keys() else self.global_params['region_default']
+
+
         print(f'input file is {input_file.path}')
         #global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
         global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
@@ -138,26 +146,26 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_type = self.samples[sample_name]['sampleType'] if sample_name != 'data' else 'data'
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
         print(f'output file is {self.output().path}')
+        compute_unc_histograms = customisation_dict['compute_unc_histograms']=='True' if 'compute_unc_histograms' in customisation_dict.keys() else self.global_params.get('compute_unc_histograms', False)
         with input_file.localize("r") as local_input, self.output().localize("w") as local_output:
-            print(local_output.path)
-
             HistProducerFile_cmd = [ 'python3', HistProducerFile,
                                     '--inFile', local_input.path, '--outFileName',local_output.path,
                                     '--dataset', sample_name, '--uncConfig', unc_config,
-                                    '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type,
-                                    '--globalConfig', global_config, '--var', var, '--period', self.period  ]
-            if self.global_params['compute_unc_histograms'] or var == 'kinFit_m':
+                                    '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type, '--globalConfig', global_config, '--var', var, '--period', self.period, '--region', region, '--channels', channels]
+            if compute_unc_histograms:
                 HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
-            if 'deepTau2p5' in self.version.split('_'):
-                print("deepTau2p5 in use")
-                HistProducerFile_cmd.extend([ '--deepTauVersion', 'v2p5'])
+            if deepTauVersion!="2p1":
+                HistProducerFile_cmd.extend([ '--deepTauVersion', deepTauVersion])
             if need_cache:
                 anaCache_file = self.input()[1]
+                print(anaCache_file)
                 with anaCache_file.localize("r") as local_anacache:
                     HistProducerFile_cmd.extend(['--cacheFile', local_anacache.path])
                     ps_call(HistProducerFile_cmd, verbose=1)
             else:
                 ps_call(HistProducerFile_cmd, verbose=1)
+
+
 
 class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
@@ -168,15 +176,19 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         for br_idx, (sample_name, dep_br_list, var) in self.branch_map.items():
             branch_set.update(dep_br_list)
         branches = tuple(branch_set)
-        return { "HistProducerFileTask": HistProducerFileTask.req(self, branches=branches) }
+        deps = { "HistProducerFileTask": HistProducerFileTask.req(self, branches=branches,customisations=self.customisations) }
+        return deps
+
 
     def requires(self):
         sample_name, dep_br_list, var = self.branch_data
-        return [
-            HistProducerFileTask.req(self, max_runtime=HistProducerFileTask.max_runtime._default,
-                                                 branch=dep_br, branches=(dep_br,))
-            for dep_br in dep_br_list
-        ]
+        reqs = [
+                HistProducerFileTask.req(self, max_runtime=HistProducerFileTask.max_runtime._default,
+                                                 branch=dep_br, branches=(dep_br,),customisations=self.customisations)
+                for dep_br in dep_br_list
+            ]
+        return reqs
+
 
     def create_branch_map(self):
         branches = {}
@@ -199,7 +211,8 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         sample_name, idx_list, var  = self.branch_data
-        output_path = os.path.join(self.version, self.period, 'split', var, f'{sample_name}.root')
+        split_dir = 'split'
+        output_path = os.path.join(self.version, self.period, split_dir, var, f'{sample_name}.root')
         return self.remote_target(output_path,  fs=self.fs_histograms)
 
     def run(self):
@@ -212,11 +225,12 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 HistProducerSample_cmd.extend(local_inputs)
                 ps_call(HistProducerSample_cmd,verbose=1)
 
+
 class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
 
     def workflow_requires(self):
-        histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=()).create_branch_map()
+        histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations).create_branch_map()
         all_samples = {}
         branches = {}
         for br_idx, (smpl_name, idx_list, var) in histProducerSample_map.items():
@@ -234,11 +248,11 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def requires(self):
         var, branches_idx = self.branch_data
-        deps = [HistProducerSampleTask.req(self, max_runtime=HistProducerSampleTask.max_runtime._default, branch=prod_br) for prod_br in branches_idx ]
+        deps = [HistProducerSampleTask.req(self, max_runtime=HistProducerSampleTask.max_runtime._default, branch=prod_br,customisations=self.customisations) for prod_br in branches_idx ]
         return deps
 
     def create_branch_map(self):
-        histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=()).create_branch_map()
+        histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations).create_branch_map()
         all_samples = {}
         branches = {}
         for br_idx, (smpl_name, idx_list, var) in histProducerSample_map.items():
@@ -254,7 +268,8 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self):
         var, branches_idx = self.branch_data
-        output_path = os.path.join(self.version, self.period, 'merged', var, f'{var}.root')
+        merge_dir = 'merged'
+        output_path = os.path.join(self.version, self.period, merge_dir, var, f'{var}.root')
         return self.remote_target(output_path,  fs=self.fs_histograms)
 
     def run(self):
@@ -263,28 +278,32 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         #global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
         global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
+        customisation_dict = getCustomisationSplit(self.customisations)
+        channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
+        deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
+        region = customisation_dict['region'] if 'region' in customisation_dict.keys() else self.global_params['region_default']
         uncNames = ['Central']
         unc_cfg_dict = load_unc_config(unc_config)
         uncs_to_exclude = self.global_params['uncs_to_exclude'][self.period]
-        print(uncs_to_exclude)
-        if self.global_params['compute_unc_histograms']:
+
+        compute_unc_histograms = customisation_dict['compute_unc_histograms']=='True' if 'compute_unc_histograms' in customisation_dict.keys() else self.global_params.get('compute_unc_histograms', False)
+        if compute_unc_histograms:
             for uncName in list(unc_cfg_dict['norm'].keys())+unc_cfg_dict['shape']:
                 if uncName in uncs_to_exclude: continue
                 uncNames.append(uncName)
+        print(uncNames)
         MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger.py')
         HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
         RenameHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'renameHists.py')
 
+
         output_path_hist_prod_sample_data = os.path.join(self.version, self.period, 'split', var, f'data.root')
         all_inputs = [(self.remote_target(output_path_hist_prod_sample_data, fs=self.fs_histograms),'data')]
         samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
-        print(samples_to_consider)
         for sample_name in self.samples.keys():
             if sample_name not in samples_to_consider: continue
-            print(sample_name)
             output_path_hist_prod_sample = os.path.join(self.version, self.period, 'split', var, f'{sample_name}.root')
             all_inputs.append((self.remote_target(output_path_hist_prod_sample, fs=self.fs_histograms),sample_name))
-        print(all_inputs)
         all_datasets=[]
         all_outputs_merged = []
 
@@ -295,31 +314,41 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             for inp, smpl in all_inputs:
                 local_inputs.append(stack.enter_context(inp.localize('r')).path)
                 all_datasets.append(smpl)
-            for uncName in uncNames:
-                final_histname = f'all_histograms_{var}_{uncName}.root'
-                tmp_outfile_merge = os.path.join(outdir_histograms,final_histname)
-                tmp_outfile_merge_remote = self.remote_target(tmp_outfile_merge, fs=self.fs_histograms)
-                all_outputs_merged.append(tmp_outfile_merge_remote)
-                dataset_names = ','.join(smpl for smpl in all_datasets)
-                with tmp_outfile_merge_remote.localize("w") as tmp_outfile_merge_unc:
-                    MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config]#, '--remove-files', 'True']
+            dataset_names = ','.join(smpl for smpl in all_datasets)
+
+            if len(uncNames)==1:
+                with self.output().localize("w") as outFile:
+                    MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config, '--channels',channels]#, '--remove-files', 'True']
                     MergerProducer_cmd.extend(local_inputs)
                     ps_call(MergerProducer_cmd,verbose=1)
-        all_uncertainties_string = ','.join(unc for unc in uncNames)
-        tmp_outFile = self.remote_target( os.path.join(outdir_histograms,f'all_histograms_{var}_hadded.root'), fs=self.fs_histograms)
-        print(all_outputs_merged)
-        with contextlib.ExitStack() as stack:
-            local_merged_files = []
-            for infile_merged in all_outputs_merged:
-                local_merged_files.append(stack.enter_context(infile_merged.localize('r')).path)
-            with tmp_outFile.localize("w") as tmpFile:
-                HaddMergedHistsProducer_cmd = ['python3', HaddMergedHistsProducer,'--outFile', tmpFile.path, '--var', var]
-                HaddMergedHistsProducer_cmd.extend(local_merged_files)
-                ps_call(HaddMergedHistsProducer_cmd,verbose=1)
-        with tmp_outFile.localize("r") as tmpFile, self.output().localize("w") as outFile:
-            print("Doing the rename hist producer")
-            print(RenameHistsProducer)
-            RenameHistsProducer_cmd = ['python3', RenameHistsProducer,'--inFile', tmpFile.path, '--outFile', outFile.path, '--var', var, '--year', getYear(self.period)]
-            ps_call(RenameHistsProducer_cmd,verbose=1)
-
+            else:
+                for uncName in uncNames:
+                    print(uncName)
+                    final_histname = f'all_histograms_{var}_{uncName}.root'
+                    tmp_outfile_merge = os.path.join(outdir_histograms,final_histname)
+                    print(tmp_outfile_merge)
+                    tmp_outfile_merge_remote = self.remote_target(tmp_outfile_merge, fs=self.fs_histograms)
+                    with tmp_outfile_merge_remote.localize("w") as tmp_outfile_merge_unc:
+                        MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config,'--channels',channels]#, '--remove-files', 'True']
+                        MergerProducer_cmd.extend(local_inputs)
+                        print(MergerProducer_cmd)
+                        ps_call(MergerProducer_cmd,verbose=1)
+                    all_outputs_merged.append(tmp_outfile_merge)
+                    print(all_outputs_merged)
+        if len(uncNames) > 1:
+            all_uncertainties_string = ','.join(unc for unc in uncNames)
+            tmp_outFile = self.remote_target( os.path.join(outdir_histograms,f'all_histograms_{var}_hadded.root'), fs=self.fs_histograms)
+            print(all_outputs_merged)
+            with contextlib.ExitStack() as stack:
+                local_merged_files = []
+                for infile_merged in all_outputs_merged:
+                    tmp_outfile_merge_remote = self.remote_target(infile_merged, fs=self.fs_histograms)
+                    local_merged_files.append(stack.enter_context(tmp_outfile_merge_remote.localize('r')).path)
+                with tmp_outFile.localize("w") as tmpFile:
+                    HaddMergedHistsProducer_cmd = ['python3', HaddMergedHistsProducer,'--outFile', tmpFile.path, '--var', var]
+                    HaddMergedHistsProducer_cmd.extend(local_merged_files)
+                    ps_call(HaddMergedHistsProducer_cmd,verbose=1)
+            with tmp_outFile.localize("r") as tmpFile, self.output().localize("w") as outFile:
+                RenameHistsProducer_cmd = ['python3', RenameHistsProducer,'--inFile', tmpFile.path, '--outFile', outFile.path, '--var', var, '--year', getYear(self.period)]
+                ps_call(RenameHistsProducer_cmd,verbose=1)
 

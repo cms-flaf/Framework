@@ -1555,15 +1555,6 @@ ST_s-channel_4f_hadronicDecays:
   generator: amcatnlo
   crossSection: ST_s-channel_had
 
-ST_tW_antitop_5f_InclusiveDecays:
-  sampleType: ST
-  generator: powheg
-  crossSection: ST_tW
-ST_tW_top_5f_InclusiveDecays:
-  sampleType: ST
-  generator: powheg
-  crossSection: ST_tW
-
 
 DYJetsToLL_M-10to50-amcatnloFXFX:
   sampleType: DY

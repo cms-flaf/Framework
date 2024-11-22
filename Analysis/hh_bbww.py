@@ -6,7 +6,7 @@ from Analysis.HistHelper import *
 from Common.Utilities import *
 
 
-def createKeyFilterDict(global_cfg_dict):
+def createKeyFilterDict(global_cfg_dict, year):
     reg_dict = {}
     filter_str = ""
     channels_to_consider = global_cfg_dict['channels_to_consider']
@@ -40,7 +40,7 @@ def createKeyFilterDict(global_cfg_dict):
 
     return reg_dict
 
-def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False):
+def GetBTagWeight(global_cfg_dict,cat,applyBtag=False):
     #This does not just apply btag, but it replaces the existing weight with a new weight! So dumb!!!
     btag_weight = "1"
     btagshape_weight = "1"
@@ -52,7 +52,7 @@ def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False):
     #return f'{btag_weight}*{btagshape_weight}'
 
 
-def GetWeight(channel, cat):
+def GetWeight(channel, cat, boosted_categories):
     weights_to_apply = ["weight_MC_Lumi_pu"]
     total_weight = '*'.join(weights_to_apply)
     for lep_index in [1,2]:

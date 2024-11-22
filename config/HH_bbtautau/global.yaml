@@ -1,5 +1,5 @@
 anaTupleDef: AnaProd/HH_bbtautau/anaTupleDef.py
-analysis_import: Analysis.hh_bbww
+analysis_import: Analysis.hh_bbtautau
 signal_types:
   - GluGluToRadion
   - GluGluToBulkGraviton

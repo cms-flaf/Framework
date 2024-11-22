@@ -177,8 +177,10 @@ if __name__ == "__main__":
 
     categories = list(global_cfg_dict['categories'])
     QCDregions = list(global_cfg_dict['QCDRegions'])
+    #Controlregions = list(global_cfg_dict['ControlRegions']) #Later maybe we want to separate Controls from QCDs
     channels = list(global_cfg_dict['channels_to_consider'])
     signals = list(global_cfg_dict['signal_types'])
+    print("Signals ", signals)
     unc_to_not_consider_boosted = list(global_cfg_dict['unc_to_not_consider_boosted'])
     sample_types_to_merge = list(global_cfg_dict['sample_types_to_merge'])
     scales = list(global_cfg_dict['scales'])
@@ -214,8 +216,16 @@ if __name__ == "__main__":
             continue
         getHistDict(args.var,all_histograms, inFileRoot,channels, QCDregions, categories, args.uncSource,sample_name,sample_types_to_merge)
         #print(all_histograms)
+        signal_check = False
+        for signal_name in signals:
+            if sample_name.startswith(signal_name):
+                signal_check = True
         if sample_name == 'data':
             all_samples_types['data'] = ['data']
+        elif signal_check: 
+            all_samples_types[sample_name] = ['signal']
+            if 'signal' not in all_samples_types.keys(): all_samples_types['signal'] = []
+            all_samples_types['signal'].append(sample_name)
         else:
             sample_type=sample_cfg_dict[sample_name]['sampleType']
             sample_key = sample_type if sample_type in sample_types_to_merge else sample_name

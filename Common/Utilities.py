@@ -92,16 +92,6 @@ def generate_enum_class(cls):
     enum_string += "};"
     return enum_string
 
-def checkLists(list1, list2):
-    if len(list1) != len(list2):
-        print(f"lists have different length: {list1} and {list2}")
-        return False
-    for item in list1:
-        if item not in list2:
-            print(f"{item} in {list1} but not in {list2}")
-            return False
-    return True
-
 class DataFrameWrapper:
     def __init__(self, df, defaultColToSave=[]):
         self.df = df

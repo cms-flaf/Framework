@@ -61,7 +61,7 @@ singleMu:
   legs:
     - offline_obj:
         type: Muon
-        cut:  v_ops::pt(Muon_p4) > 29 && abs(v_ops::eta(Muon_p4)) < 2.1
+        cut:  v_ops::pt(Muon_p4) > 29 #&& abs(v_ops::eta(Muon_p4)) < 2.1
       online_obj:
         cut: TrigObj_id == 13 && ((TrigObj_filterBits&8)!=0 || (TrigObj_filterBits&2)!=0)
       doMatching: True
@@ -74,7 +74,7 @@ mutau:
   legs:
     - offline_obj:
         type: Muon
-        cut: v_ops::pt(Muon_p4) > 22 #&& abs(v_ops::eta(Muon_p4)) < 2.1
+        cut: v_ops::pt(Muon_p4) > 22 && abs(v_ops::eta(Muon_p4)) < 2.1
       online_obj:
         cut: TrigObj_id==13 && ((TrigObj_filterBits&64)!=0 || (TrigObj_filterBits&4)!=0 )
       doMatching: True

@@ -56,20 +56,28 @@ def GetWeight(channel, cat):
     weights_to_apply = ["weight_MC_Lumi_pu"]
     total_weight = '*'.join(weights_to_apply)
     for lep_index in [1,2]:
-        total_weight = f"{total_weight} * {GetLepWeight(lep_index)}"
+        total_weight = f"{total_weight} * {GetLepWeight(lep_index)} * {GetTriggerWeight()}"
     return total_weight
 
 def GetLepWeight(lep_index):
-    weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? weight_lep{lep_index}_MuonID_SF_TightID_TrkCentral * weight_lep{lep_index}_MuonID_SF_LoosePFIsoCentral : 1.0)"
     weight_Ele = f"(lep{lep_index}_type == static_cast<int>(Leg::e) ? 1.0 : 1.0)"
 
+    #Medium pT Muon SF
+    weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? weight_lep{lep_index}_MuonID_SF_TightID_TrkCentral * weight_lep{lep_index}_MuonID_SF_LoosePFIsoCentral : 1.0)"
+
     #High pT Muon SF
-    weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? weight_lep{lep_index}_HighPt_MuonID_SF_HighPtIDCentral * weight_lep{lep_index}_HighPt_MuonID_SF_RecoCentral * weight_lep{lep_index}_HighPt_MuonID_SF_TightIDCentral : 1.0)"
+    #weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? weight_lep{lep_index}_HighPt_MuonID_SF_HighPtIDCentral * weight_lep{lep_index}_HighPt_MuonID_SF_RecoCentral * weight_lep{lep_index}_HighPt_MuonID_SF_TightIDCentral : 1.0)"
 
     #No Muon SF
     #weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? 1.0 : 1.0)"
+
     return f"{weight_Mu} * {weight_Ele}"
 
+
+def GetTriggerWeight():
+    weight_MuTrg = f"(lep1_type == static_cast<int>(Leg::mu) ? weight_lep1_TrgSF_singleIsoMu_Central : 1.0)"
+
+    return f"{weight_MuTrg}"
 
 def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_samples_list, scales, unc_to_not_consider_boosted, wantNegativeContributions=False):
     return
@@ -123,6 +131,12 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("OS_Iso", f"OS && Iso") 
 
 
+    def defineControlRegions(self):
+        #Define Single Muon Control Region (W Region) -- Require Muon + High MT (>50)
+        #Define Double Muon Control Region (Z Region) -- Require lep1 lep2 are opposite sign muons, and combined mass is within 10GeV of 91
+
+        self.df = self.df.Define("Z_Region", f"(lep1_type == 2 && lep2_type == 2) && (abs(diLep_p4.mass - 91) < 10)")
+        print("Doing something! defineControlRegions")
 
     def selectTrigger(self, trigger):
         self.df = self.df.Filter(trigger)
@@ -159,12 +173,26 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
 
 
+def defineAllP4(df):
+    df = df.Define(f"SelectedFatJet_idx", f"CreateIndexes(SelectedFatJet_pt.size())")
+    df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")
+    for idx in [0,1]:
+        df = Utilities.defineP4(df, f"lep{idx+1}")
+    for met_var in ['DeepMETResolutionTune', 'DeepMETResponseTune']:
+        df = df.Define(f"{met_var}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({met_var}_pt,0.,{met_var}_phi,0.)")
+
+    df = df.Define(f"diLep_p4", f"(lep1+lep2)")
+    return df
+
+
+
 def PrepareDfForHistograms(dfForHistograms):
-    #dfForHistograms.df = defineAllP4(dfForHistograms.df)
+    dfForHistograms.df = defineAllP4(dfForHistograms.df)
     dfForHistograms.defineChannels()
     dfForHistograms.defineLeptonPreselection()
     dfForHistograms.defineJetSelections()
     dfForHistograms.defineQCDRegions()
+    dfForHistograms.defineControlRegions()
     #dfForHistograms.defineBoostedVariables()
     dfForHistograms.defineCategories()
     #dfForHistograms.defineTriggers()

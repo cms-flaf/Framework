@@ -245,10 +245,11 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineTriggers(self):
         for ch in self.config['channelSelection']:
-            for trg in self.config['triggers'][ch].split(' || '):
-                if trg not in self.df.GetColumnNames():
-                    print(f"{trg} not present in colNames")
-                    self.df = self.df.Define(trg, "1")
+            for trg in self.config['triggers'][ch]:
+                trg_name = 'HLT_'+trg
+                if trg_name not in self.df.GetColumnNames():
+                    print(f"{trg_name} not present in colNames")
+                    self.df = self.df.Define(trg_name, "1")
         singleTau_th_dict = self.config['singleTau_th']
         #singleMu_th_dict = self.config['singleMu_th']
         #singleEle_th_dict = self.config['singleEle_th']

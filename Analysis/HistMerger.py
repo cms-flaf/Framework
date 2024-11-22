@@ -13,8 +13,6 @@ from Analysis.HistHelper import *
 from Analysis.QCD_estimation import *
 
 import importlib
-which_ana = ((args.globalConfig['analysis_config_area']).lower()
-analysis = importlib.import_module(f'Analysis.{which_ana}')
 
 def checkFile(inFileRoot, channels, qcdRegions, categories, var):
     keys_channels = [str(key.GetName()) for key in inFileRoot.GetListOfKeys()]
@@ -170,6 +168,10 @@ if __name__ == "__main__":
     with open(args.globalConfig, 'r') as f:
         global_cfg_dict = yaml.safe_load(f)
 
+
+    analysis_import = (global_cfg_dict['analysis_import'])
+    analysis = importlib.import_module(f'{analysis_import}')
+    
     all_samples_list = args.datasetFile.split(',')
     all_samples_types = {}
     all_samples_names = {}

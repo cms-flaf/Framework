@@ -7,6 +7,52 @@ from Analysis.GetCrossWeights import *
 from Common.Utilities import *
 
 
+WorkingPointsParticleNet = {
+        "Run2_2018":{
+            "Loose":0.9172,
+            "Medium":0.9734,
+            "Tight":0.988
+        },
+        "Run2_2017":{
+            "Loose":0.9105,
+            "Medium":0.9714,
+            "Tight":0.987
+        },
+        "Run2_2016":{
+            "Loose":0.9137,
+            "Medium":0.9735,
+            "Tight":0.9883
+        },
+        "Run2_2016_HIPM":{
+            "Loose":0.9088,
+            "Medium":0.9737,
+            "Tight":0.9883
+        },
+    }
+WorkingPointsDeepFlav = {
+        "Run2_2018":{
+            "Loose":0.049,
+            "Medium":0.2783,
+            "Tight":0.71
+        },
+        "Run2_2017":{
+            "Loose":0.0532,
+            "Medium":0.304,
+            "Tight":0.7476
+        },
+        "Run2_2016_HIPM":{
+            "Loose":0.0508,
+            "Medium":0.2598,
+            "Tight":0.6502
+        },
+        "Run2_2016":{
+            "Loose":0.048,
+            "Medium":0.2489,
+            "Tight":0.6377
+        },
+    }
+
+
 def createKeyFilterDict(global_cfg_dict, year):
     reg_dict = {}
     filter_str = ""
@@ -44,9 +90,6 @@ def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = 'fin
             btagshape_weight = "weight_bTagShape_Central"
     return f'{finalWeight_name}*{btag_weight}*{btagshape_weight}'
 
-# missing weights:
-# muon1: "weight_tau1_HighPt_MuonID_SF_RecoCentral", "weight_tau1_HighPt_MuonID_SF_TightIDCentral", "weight_tau1_MuonID_SF_RecoCentral", "weight_tau1_MuonID_SF_TightID_TrkCentral", "weight_tau1_MuonID_SF_TightRelIsoCentral",
-# muon2: "weight_tau2_HighPt_MuonID_SF_RecoCentral", "weight_tau2_HighPt_MuonID_SF_TightIDCentral", "weight_tau2_MuonID_SF_RecoCentral", "weight_tau2_MuonID_SF_TightID_TrkCentral", "weight_tau2_MuonID_SF_TightRelIsoCentral",
 
 
 def GetWeight(channel, cat, boosted_categories):
@@ -82,8 +125,6 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineBoostedVariables(self): # needs p4 def
         FatJetObservables = self.config['FatJetObservables']
-        #print(f"fatJetOBservables are {FatJetObservables}")
-        # for next iteration:
         particleNet_MD_JetTagger = "SelectedFatJet_particleNetMD_Xbb/(SelectedFatJet_particleNetMD_QCD + SelectedFatJet_particleNetMD_Xbb)"
         if "SelectedFatJet_particleNetMD_Xbb" not in self.df.GetColumnNames() and "SelectedFatJet_particleNetLegacy_Xbb" in self.df.GetColumnNames():
             particleNet_MD_JetTagger = "SelectedFatJet_particleNetLegacy_Xbb/ (SelectedFatJet_particleNetLegacy_Xbb + SelectedFatJet_particleNetLegacy_QCD)"
@@ -107,7 +148,6 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                 #print(fatJetVar)
 
     def definePNetSFs(self):
-        #print(f"defining PNet weights")
         self.df= self.df.Define("weight_pNet_Central", f"""getSFPNet(SelectedFatJet_p4_boosted.Pt(), "{self.period}", "Central", "{self.pNetWPstring}",{self.whichType})""")
         self.df= self.df.Define("weight_pNet_Up", f"""getSFPNet(SelectedFatJet_p4_boosted.Pt(), "{self.period}", "Up", "{self.pNetWPstring}",{self.whichType})""")
         self.df= self.df.Define("weight_pNet_Up_rel", f"""weight_pNet_Up/weight_pNet_Central""")
@@ -125,7 +165,6 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         singleEle_th_dict = self.config['singleEle_th']
         legacy_region_definition= "( ( eTau && (SingleEle_region  || CrossEleTau_region) ) || ( muTau && (SingleMu_region  || CrossMuTau_region) ) || ( tauTau && ( diTau_region ) ) || ( eE && (SingleEle_region)) || (eMu && ( SingleEle_region || SingleMu_region ) ) || (muMu && (SingleMu_region)) )"
         #legacy_region_definition= "( ( eTau && (SingleEle_region ) ) || ( muTau && (SingleMu_region ) ) || ( tauTau && ( diTau_region ) ) || ( eE && (SingleEle_region)) || (eMu && ( SingleEle_region || SingleMu_region ) ) || (muMu && (SingleMu_region)) )"
-        #print(legacy_region_definition)
         for reg_name, reg_exp in self.config['application_regions'].items():
             self.df = self.df.Define(reg_name, reg_exp.format(tau_th=singleTau_th_dict[self.period], ele_th=singleEle_th_dict[self.period], mu_th=singleMu_th_dict[self.period]))
         self.df = self.df.Define("Legacy_region", legacy_region_definition)
@@ -175,8 +214,6 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
     def GetTauIDTotalWeight(self):
         prod_central_1 = "weight_tau1_TauID_SF_Medium_genuineElectron_barrelCentral * weight_tau1_TauID_SF_Medium_genuineElectron_endcapsCentral * weight_tau1_TauID_SF_Medium_genuineMuon_eta0p4to0p8Central * weight_tau1_TauID_SF_Medium_genuineMuon_eta0p8to1p2Central * weight_tau1_TauID_SF_Medium_genuineMuon_eta1p2to1p7Central * weight_tau1_TauID_SF_Medium_genuineMuon_etaGt1p7Central * weight_tau1_TauID_SF_Medium_genuineMuon_etaLt0p4Central * weight_tau1_TauID_SF_Medium_stat1_dm0Central * weight_tau1_TauID_SF_Medium_stat1_dm10Central * weight_tau1_TauID_SF_Medium_stat1_dm11Central * weight_tau1_TauID_SF_Medium_stat1_dm1Central * weight_tau1_TauID_SF_Medium_stat2_dm0Central * weight_tau1_TauID_SF_Medium_stat2_dm10Central * weight_tau1_TauID_SF_Medium_stat2_dm11Central * weight_tau1_TauID_SF_Medium_stat2_dm1Central * weight_tau1_TauID_SF_Medium_stat_highpT_bin1Central * weight_tau1_TauID_SF_Medium_stat_highpT_bin2Central * weight_tau1_TauID_SF_Medium_syst_allerasCentral * weight_tau1_TauID_SF_Medium_syst_highpTCentral * weight_tau1_TauID_SF_Medium_syst_highpT_bin1Central * weight_tau1_TauID_SF_Medium_syst_highpT_bin2Central * weight_tau1_TauID_SF_Medium_syst_highpT_extrapCentral * weight_tau1_TauID_SF_Medium_syst_yearCentral * weight_tau1_TauID_SF_Medium_syst_year_dm0Central * weight_tau1_TauID_SF_Medium_syst_year_dm10Central * weight_tau1_TauID_SF_Medium_syst_year_dm11Central * weight_tau1_TauID_SF_Medium_syst_year_dm1Central "
         prod_central_2 = "weight_tau2_TauID_SF_Medium_genuineElectron_barrelCentral * weight_tau2_TauID_SF_Medium_genuineElectron_endcapsCentral * weight_tau2_TauID_SF_Medium_genuineMuon_eta0p4to0p8Central * weight_tau2_TauID_SF_Medium_genuineMuon_eta0p8to1p2Central * weight_tau2_TauID_SF_Medium_genuineMuon_eta1p2to1p7Central * weight_tau2_TauID_SF_Medium_genuineMuon_etaGt1p7Central * weight_tau2_TauID_SF_Medium_genuineMuon_etaLt0p4Central * weight_tau2_TauID_SF_Medium_stat1_dm0Central * weight_tau2_TauID_SF_Medium_stat1_dm10Central * weight_tau2_TauID_SF_Medium_stat1_dm11Central * weight_tau2_TauID_SF_Medium_stat1_dm1Central * weight_tau2_TauID_SF_Medium_stat2_dm0Central * weight_tau2_TauID_SF_Medium_stat2_dm10Central * weight_tau2_TauID_SF_Medium_stat2_dm11Central * weight_tau2_TauID_SF_Medium_stat2_dm1Central * weight_tau2_TauID_SF_Medium_stat_highpT_bin1Central * weight_tau2_TauID_SF_Medium_stat_highpT_bin2Central * weight_tau2_TauID_SF_Medium_syst_allerasCentral * weight_tau2_TauID_SF_Medium_syst_highpTCentral * weight_tau2_TauID_SF_Medium_syst_highpT_bin1Central * weight_tau2_TauID_SF_Medium_syst_highpT_bin2Central * weight_tau2_TauID_SF_Medium_syst_highpT_extrapCentral * weight_tau2_TauID_SF_Medium_syst_yearCentral * weight_tau2_TauID_SF_Medium_syst_year_dm0Central * weight_tau2_TauID_SF_Medium_syst_year_dm10Central * weight_tau2_TauID_SF_Medium_syst_year_dm11Central * weight_tau2_TauID_SF_Medium_syst_year_dm1Central "
-        # print(prod_central_1)
-        # print(prod_central_2)
         if "weight_tau1_TauID_SF_Medium_Central" not in self.df.GetColumnNames():
             self.df = self.df.Define("weight_tau1_TauID_SF_Medium_Central", prod_central_1)
         if "weight_tau2_TauID_SF_Medium_Central" not in self.df.GetColumnNames():
@@ -212,22 +249,6 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         if "weight_L1PreFiring_Muon_SystDown_rel" not in self.df.GetColumnNames():
             self.df = self.df.Define("weight_L1PreFiring_Muon_SystDown_rel","weight_L1PreFiring_Muon_SystDown/weight_L1PreFiring_Muon_Central")
 
-    # def defineLeptonPreselection(self): # needs channel def
-    #     self.df = self.df.Define("muon1_tightId", "if(muTau || muMu) {return (tau1_Muon_tightId && tau1_Muon_pfRelIso04_all < 0.15); } return true;")
-    #     print(self.df.Count().GetValue())
-    #     self.df = self.df.Define("muon2_tightId", "if(muMu || eMu) {return (tau2_Muon_tightId && tau2_Muon_pfRelIso04_all < 0.3);} return true;")
-    #     print(self.df.Count().GetValue())
-    #     self.df = self.df.Define("firstele_mvaIso", "if(eMu || eE){return tau1_Electron_mvaIso_WP80==1 && tau1_Electron_pfRelIso03_all < 0.15 ; } return true; ")
-    #     print(self.df.Count().GetValue())
-    #     self.df = self.df.Define("tau1_iso_medium", f"if(tauTau) return (tau1_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value}); return true;")
-    #     if f"tau1_gen_kind" not in self.df.GetColumnNames():
-    #         self.df=self.df.Define("tau1_gen_kind", "if(isData) return 5; return 0;")
-    #     if f"tau2_gen_kind" not in self.df.GetColumnNames():
-    #         self.df=self.df.Define("tau2_gen_kind", "if(isData) return 5; return 0;")
-    #     self.df = self.df.Define("tau_true", f"""(tau1_gen_kind==5 && tau2_gen_kind==5)""")
-    #     self.df = self.df.Define(f"lepton_preselection", "tau1_iso_medium && muon1_tightId && muon2_tightId && firstele_mvaIso")
-    #     self.df = self.df.Filter(f"lepton_preselection")
-    #     #print(f" after lepton preselection {self.df.Count().GetValue()}")
 
     def defineLeptonPreselection(self): # needs channel def
         if self.period == 'Run2_2016' or self.period == 'Run2_2016_HIPM':
@@ -251,7 +272,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("OS", "tau1_charge*tau2_charge < 0")
         self.df = self.df.Define("SS", "!OS")
 
-        self.df = self.df.Define("Iso", f"(((tauTau || eTau || muTau) && (tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value} )) || ((muMu||eMu) && (tau2_Muon_pfRelIso04_all < 0.15)) || (eE && tau2_Electron_pfRelIso03_all < 0.15 ))")
+        self.df = self.df.Define("Iso", f"(((tauTau || eTau || muTau) && (tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.Medium.value} )) || ((muMu||eMu) && (tau2_Muon_pfRelIso04_all < 0.15)) || (eE && tau2_Electron_pfRelIso03_all < 0.15 && tau2_Electron_mvaNoIso_WP80))")
 
         self.df = self.df.Define("AntiIso", f"(((tauTau || eTau || muTau) && (tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value} && tau2_idDeepTau{self.deepTauYear()}{self.deepTauVersion}VSjet < {Utilities.WorkingPointsTauVSjet.Medium.value})) || ((muMu||eMu) && (tau2_Muon_pfRelIso04_all >= 0.15 && tau2_Muon_pfRelIso04_all < 0.3) ) || (eE && (tau2_Electron_pfRelIso03_all < 0.3 && tau2_Electron_pfRelIso03_all >= 0.15 && tau2_Electron_mvaNoIso_WP80 )))")
 

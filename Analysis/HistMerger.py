@@ -25,13 +25,13 @@ def checkFile(inFileRoot, channels, qcdRegions, categories, var):
     for channel in channels:
         dir_0 = inFileRoot.Get(channel)
         keys_qcdRegions = [str(key.GetName()) for key in dir_0.GetListOfKeys()]
-        if not Utilities.checkLists(keys_qcdRegions, QCDregions):
+        if not all(element in keys_qcdRegions for element in QCDregions):
             print("check list not worked for QCDregions")
             return False
         for qcdRegion in QCDregions:
             dir_1 = dir_0.Get(qcdRegion)
             keys_categories = [str(key.GetName()) for key in dir_1.GetListOfKeys()]
-            if not Utilities.checkLists(keys_categories, categories):
+            if not all(element in keys_categories for element in categories):
                     print("check list not worked for categories")
                     return False
             for cat in categories:

@@ -10,9 +10,24 @@ import yaml
 
 from RunKit.run_tools import ps_call, natural_sort
 from RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
-from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param
+from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
 from Common.Utilities import SerializeObjectToString
 from AnaProd.anaCacheProducer import addAnaCaches
+
+
+def getCustomisationSplit(customisations):
+    customisation_dict = {}
+    if customisations is None or len(customisations) == 0: return {}
+    if type(customisations) == str:
+        customisations = customisations.split(';')
+    if type(customisations) != list:
+        raise RuntimeError(f'Invalid type of customisations: {type(customisations)}')
+    for customisation in customisations:
+        substrings = customisation.split('=')
+        if len(substrings) != 2 :
+            raise RuntimeError("len of substring is not 2!")
+        customisation_dict[substrings[0]] = substrings[1]
+    return customisation_dict
 
 class InputFileTask(Task, law.LocalWorkflow):
     def __init__(self, *args, **kwargs):
@@ -155,6 +170,13 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         thread = threading.Thread(target=update_kinit_thread)
         thread.start()
         anaCache_remote = self.input()[0]
+        customisation_dict = getCustomisationSplit(self.customisations)
+        # print(customisation_dict)
+        channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
+        store_noncentral = customisation_dict['store_noncentral']=='True' if 'store_noncentral' in customisation_dict.keys() else self.global_params.get('store_noncentral', False)
+        # print(store_noncentral)
+        compute_unc_variations = customisation_dict['compute_unc_variations']=='True' if 'compute_unc_variations' in customisation_dict.keys() else self.global_params.get('compute_unc_variations', False)
+        deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
         try:
             job_home, remove_job_home = self.law_job_home()
             print(f"sample_id = {sample_id}\nsample_name = {sample_name}\nsample_type = {sample_type}\n"
@@ -166,12 +188,12 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             with input_file.localize("r") as local_input, anaCache_remote.localize("r") as anaCache_input:
                 anatuple_cmd = [ 'python3', producer_anatuples, '--period', self.period,
                                  '--inFile', local_input.path, '--outDir', outdir_anatuples, '--sample', sample_name,
-                                 '--anaTupleDef', anaTupleDef, '--anaCache', anaCache_input.path ]
-                if len(self.customisations) > 0:
-                    anatuple_cmd.extend([ '--customisations', self.customisations ])
-                if self.global_params.get('compute_unc_variations', False):
+                                 '--anaTupleDef', anaTupleDef, '--anaCache', anaCache_input.path, '--channels', channels ]
+                if deepTauVersion!="":
+                    anatuple_cmd.extend([ '--customisations', f"deepTauVersion={deepTauVersion}" ])
+                if compute_unc_variations:
                     anatuple_cmd.append('--compute-unc-variations')
-                if self.global_params.get('store_noncentral', False):
+                if store_noncentral:
                     anatuple_cmd.append('--store-noncentral')
                 centralFileName = os.path.basename(local_input.path)
                 if self.test:
@@ -218,7 +240,7 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def requires(self):
         return [
-            AnaTupleTask.req(self, max_runtime=AnaCacheTask.max_runtime._default, branch=prod_br, branches=(prod_br,))
+            AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,))
             for prod_br in self.branch_data
         ]
 
@@ -270,7 +292,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def output(self):
         sample_name, sample_type = self.branch_data
         outFileName = os.path.basename(self.input()[0].path)
-        outDir = os.path.join('anaCacheTuple', self.period, sample_name, self.version)
+        outDir = os.path.join('anaCacheTuples', self.period, sample_name, self.version)
         finalFile = os.path.join(outDir, outFileName)
         return self.remote_target(finalFile, fs=self.fs_anaCacheTuple)
 
@@ -284,13 +306,15 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         try:
             job_home, remove_job_home = self.law_job_home()
             input_file = self.input()[0]
-
+            print(f"considering sample {sample_name}, {sample_type} and file {input_file.path}")
+            customisation_dict = getCustomisationSplit(self.customisations)
+            deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else ""
             with input_file.localize("r") as local_input, self.output().localize("w") as outFile:
                 anaCacheTupleProducer_cmd = ['python3', producer_anacachetuples,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config, '--globalConfig', global_config]
                 if self.global_params['store_noncentral'] and sample_type != 'data':
                     anaCacheTupleProducer_cmd.extend(['--compute_unc_variations', 'True'])
-                if 'deepTau2p5' in self.version.split('_'):
-                    anaCacheTupleProducer_cmd.extend([ '--deepTauVersion', 'v2p5'])
+                if deepTauVersion!="":
+                    anaCacheTupleProducer_cmd.extend([ '--deepTauVersion', deepTauVersion])
                 ps_call(anaCacheTupleProducer_cmd, env=self.cmssw_env, verbose=1)
             print(f"finished to produce anacachetuple")
 

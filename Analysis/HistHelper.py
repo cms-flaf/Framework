@@ -33,18 +33,22 @@ def createVoidHist(outFileName, hist_cfg_dict):
 
 
 def createInvMass(df):
-    particleNet_mass = 'particleNet_mass' if 'SelectedFatJet_particleNet_mass_boosted' in df.GetColumnNames() else 'particleNetLegacy_mass'
+
     df = df.Define("tautau_m_vis", "static_cast<float>((tau1_p4+tau2_p4).M())")
-    df = df.Define("bb_m_vis", f"""
-                   if (!boosted){{
-                       return static_cast<float>((b1_p4+b2_p4).M());
-                       }}
-                    return static_cast<float>(SelectedFatJet_{particleNet_mass}_boosted);""")
-    df = df.Define("bbtautau_mass", """
-                   if (!boosted){
-                       return static_cast<float>((b1_p4+b2_p4+tau1_p4+tau2_p4).M());
-                       }
-                    return static_cast<float>((SelectedFatJet_p4_boosted+tau1_p4+tau2_p4).M());""")
+    particleNet_mass = 'particleNet_mass' if 'SelectedFatJet_particleNet_mass_boosted' in df.GetColumnNames() else 'particleNetLegacy_mass'
+    df = df.Define("bb_m_vis_pnet", f"""
+                   return static_cast<float>(SelectedFatJet_{particleNet_mass}_boosted);
+                   """)
+    df = df.Define("bb_m_vis_softdrop", f"""
+                   return static_cast<float>(SelectedFatJet_msoftdrop_boosted);
+                   """)
+    df = df.Define("bb_m_vis_fj", f"""
+                   return static_cast<float>(SelectedFatJet_mass_boosted);
+                    """)
+
+    df = df.Define("bb_m_vis", f""" if(b1_pt < 0. || b2_pt < 0.) return 0.f; return static_cast<float>((b1_p4+b2_p4).M());""")
+    df = df.Define("bbtautau_mass_boosted", """return static_cast<float>((SelectedFatJet_p4_boosted+tau1_p4+tau2_p4).M());""")
+    df = df.Define("bbtautau_mass", """if(b1_pt < 0. || b2_pt < 0.) return 0.f; return static_cast<float>((b1_p4+b2_p4+tau1_p4+tau2_p4).M());""")
     df = df.Define("dR_tautau", 'ROOT::Math::VectorUtil::DeltaR(tau1_p4, tau2_p4)')
     df = df.Define("dR_bb", 'ROOT::Math::VectorUtil::DeltaR(b1_p4, b2_p4)')
     for tau_idx in [1,2]:

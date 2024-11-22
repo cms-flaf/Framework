@@ -53,9 +53,12 @@ class Triggers():
                     for cut_idx, online_cut in enumerate(cuts):
                         preCondition = online_cut.get('preCondition', 'true')
                         cut_var_name =  f'{leg_dict_offline["type"]}_onlineCut_{leg_id+1}_{path}_{cut_idx}'
-                        df = df.Define(cut_var_name, f"!({preCondition}) || ({preCondition}) && ({online_cut['cut']})")
+                        df = df.Define(cut_var_name, f"!({preCondition}) || (({preCondition}) && ({online_cut['cut']}))")
+                        #print(cut_var_name)
+                        #print(f"!({preCondition}) || (({preCondition}) && ({online_cut['cut']}))")
                         cut_vars.append(cut_var_name)
                     df = df.Define(var_name_online, ' && '.join(cut_vars))
+                    #print(' && '.join(cut_vars))
                     matching_var = f'{leg_dict_offline["type"]}_Matching_{leg_id+1}_{path}'
 
                     df = df.Define(matching_var, f"""FindMatchingSet( {type_name_offline}_{var_name_offline}_sel,{var_name_online},{leg_dict_offline["type"]}_p4, TrigObj_p4,{self.deltaR_matching} )""")

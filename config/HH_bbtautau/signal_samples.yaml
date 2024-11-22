@@ -1,0 +1,251 @@
+
+GluGluToRadionToHHTo2B2Tau_M-250:
+  sampleType: GluGluToRadion
+  mass: 250
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-260:
+  sampleType: GluGluToRadion
+  mass: 260
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-270:
+  sampleType: GluGluToRadion
+  mass: 270
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-280:
+  sampleType: GluGluToRadion
+  mass: 280
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-300:
+  sampleType: GluGluToRadion
+  mass: 300
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-320:
+  sampleType: GluGluToRadion
+  mass: 320
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-350:
+  sampleType: GluGluToRadion
+  mass: 350
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-400:
+  sampleType: GluGluToRadion
+  mass: 400
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-450:
+  sampleType: GluGluToRadion
+  mass: 450
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-500:
+  sampleType: GluGluToRadion
+  mass: 500
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-550:
+  sampleType: GluGluToRadion
+  mass: 550
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-600:
+  sampleType: GluGluToRadion
+  mass: 600
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-650:
+  sampleType: GluGluToRadion
+  mass: 650
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-700:
+  sampleType: GluGluToRadion
+  mass: 700
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-750:
+  sampleType: GluGluToRadion
+  mass: 750
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-800:
+  sampleType: GluGluToRadion
+  mass: 800
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-850:
+  sampleType: GluGluToRadion
+  mass: 850
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-900:
+  sampleType: GluGluToRadion
+  mass: 900
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-1000:
+  sampleType: GluGluToRadion
+  mass: 1000
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-1250:
+  sampleType: GluGluToRadion
+  mass: 1250
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-1500:
+  sampleType: GluGluToRadion
+  mass: 1500
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-1750:
+  sampleType: GluGluToRadion
+  mass: 1750
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-2000:
+  sampleType: GluGluToRadion
+  mass: 2000
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-2500:
+  sampleType: GluGluToRadion
+  mass: 2500
+  spin: 0
+  crossSection: 1pb
+GluGluToRadionToHHTo2B2Tau_M-3000:
+  sampleType: GluGluToRadion
+  mass: 3000
+  spin: 0
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-250:
+  sampleType: GluGluToBulkGraviton
+  mass: 250
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-260:
+  sampleType: GluGluToBulkGraviton
+  mass: 260
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-270:
+  sampleType: GluGluToBulkGraviton
+  mass: 270
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-280:
+  sampleType: GluGluToBulkGraviton
+  mass: 280
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-300:
+  sampleType: GluGluToBulkGraviton
+  mass: 300
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-320:
+  sampleType: GluGluToBulkGraviton
+  mass: 320
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-350:
+  sampleType: GluGluToBulkGraviton
+  mass: 350
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-400:
+  sampleType: GluGluToBulkGraviton
+  mass: 400
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-450:
+  sampleType: GluGluToBulkGraviton
+  mass: 450
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-500:
+  sampleType: GluGluToBulkGraviton
+  mass: 500
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-550:
+  sampleType: GluGluToBulkGraviton
+  mass: 550
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-600:
+  sampleType: GluGluToBulkGraviton
+  mass: 600
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-650:
+  sampleType: GluGluToBulkGraviton
+  mass: 650
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-700:
+  sampleType: GluGluToBulkGraviton
+  mass: 700
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-750:
+  sampleType: GluGluToBulkGraviton
+  mass: 750
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-800:
+  sampleType: GluGluToBulkGraviton
+  mass: 800
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-850:
+  sampleType: GluGluToBulkGraviton
+  mass: 850
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-900:
+  sampleType: GluGluToBulkGraviton
+  mass: 900
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-1000:
+  sampleType: GluGluToBulkGraviton
+  mass: 1000
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-1250:
+  sampleType: GluGluToBulkGraviton
+  mass: 1250
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-1500:
+  sampleType: GluGluToBulkGraviton
+  mass: 1500
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-1750:
+  sampleType: GluGluToBulkGraviton
+  mass: 1750
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-2000:
+  sampleType: GluGluToBulkGraviton
+  mass: 2000
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-2500:
+  sampleType: GluGluToBulkGraviton
+  mass: 2500
+  spin: 2
+  crossSection: 1pb
+GluGluToBulkGravitonToHHTo2B2Tau_M-3000:
+  sampleType: GluGluToBulkGraviton
+  mass: 3000
+  spin: 2
+  crossSection: 1pb

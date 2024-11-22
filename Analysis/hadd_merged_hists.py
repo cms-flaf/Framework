@@ -32,7 +32,3 @@ if __name__ == "__main__":
         ps_call([hadd_str], True)
     else:
         shutil.copy(all_files[0],args.outFile)
-    #if os.path.exists(outFileNameFinal) and args.remove_files:
-    #    for histFile in all_files[var]:
-    #        if histFile == outFileNameFinal: continue
-    #        os.remove(histFile)

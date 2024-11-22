@@ -367,7 +367,7 @@ def PrepareDfForHistograms(dfForHistograms):
     return dfForHistograms
   
   
-  def defineAllP4(df):
+def defineAllP4(df):
     df = df.Define(f"SelectedFatJet_idx", f"CreateIndexes(SelectedFatJet_pt.size())")
     df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")
     for idx in [0,1]:

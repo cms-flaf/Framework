@@ -1,4 +1,5 @@
 anaTupleDef: AnaProd/HH_bbWW/anaTupleDef.py
+analysis_import: Analysis.hh_bbww
 signal_types:
   - GluGluToRadion
   - GluGlutoRadion
@@ -7,7 +8,7 @@ corrections:
   - mu
   - trg
   #- ele
-  #- pu
+  - pu
 
 #This is for Analysis Selection
 channelSelection:
@@ -39,8 +40,18 @@ categories:
   - res1b
   - res2b
 
+region_default: SR
+
 QCDRegions:
   - OS_Iso
+  #- Z_Region
+
+boosted_categories: []
+
+
+#Later maybe we will separate Control Regions from the dict "QCDRegions"
+#ControlRegions:
+#  - Z_Region
 
 
 # triggers:
@@ -100,6 +111,8 @@ samples_to_skip_hist:
   - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-650
   - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-700
   - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-800
+
+var_only_boosted: []
 
 unc_to_not_consider_boosted: []
 

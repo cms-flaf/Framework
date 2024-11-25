@@ -121,6 +121,7 @@ def GetBTagWeightDict(var,all_histograms, categories, boosted_categories, booste
                 ch, reg, cat = key_1
                 uncName,scale = key_2
                 key_tuple_num = ((ch, reg, 'btag_shape'), key_2)
+                key_tuple_num = ((ch, reg, 'inclusive'), key_2) #This is quick bbww fix, not for pushing!
                 key_tuple_den = ((ch, reg, 'inclusive'), key_2)
                 ratio_num_hist = all_histograms[sample_type][key_tuple_num] if key_tuple_num in all_histograms[sample_type].keys() else None
                 ratio_den_hist = all_histograms[sample_type][key_tuple_den] if key_tuple_den in all_histograms[sample_type].keys() else None
@@ -153,6 +154,7 @@ if __name__ == "__main__":
     parser.add_argument('--datasetFile', required=True, type=str)
     parser.add_argument('--var', required=True, type=str)
     parser.add_argument('--sampleConfig', required=True, type=str)
+    parser.add_argument('--run3sampleConfig', required=False, type=str, default=None)
     parser.add_argument('--globalConfig', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
@@ -165,9 +167,12 @@ if __name__ == "__main__":
         unc_cfg_dict = yaml.safe_load(f)
     with open(args.sampleConfig, 'r') as f:
         sample_cfg_dict = yaml.safe_load(f)
+    if args.run3sampleConfig != None: #Run2 did not need a second samples yaml due to only being bbtautau supported
+        with open(args.run3sampleConfig, 'r') as f:
+            run3sample_cfg_dict = yaml.safe_load(f)
+            sample_cfg_dict.update(run3sample_cfg_dict)
     with open(args.globalConfig, 'r') as f:
         global_cfg_dict = yaml.safe_load(f)
-
 
     analysis_import = (global_cfg_dict['analysis_import'])
     analysis = importlib.import_module(f'{analysis_import}')
@@ -190,7 +195,6 @@ if __name__ == "__main__":
     # print(channels)
 
     signals = list(global_cfg_dict['signal_types'])
-    print("Signals ", signals)
     unc_to_not_consider_boosted = list(global_cfg_dict['unc_to_not_consider_boosted'])
     boosted_variables = list(global_cfg_dict['var_only_boosted'])
 
@@ -234,6 +238,7 @@ if __name__ == "__main__":
             inFileRoot.Close()
             continue
 
+
         sample_type= 'data' if sample_name == 'data' else sample_cfg_dict[sample_name]['sampleType']
         getHistDict(args.var,all_histograms, inFileRoot,channels, QCDregions, all_categories, args.uncSource,sample_name,sample_type,sample_types_to_merge)
         # print(all_histograms.keys())
@@ -241,11 +246,7 @@ if __name__ == "__main__":
 
         if sample_name == 'data':
             all_samples_types['data'] = ['data']
-        elif signal_check: 
-            all_samples_types[sample_name] = ['signal']
-            if 'signal' not in all_samples_types.keys(): all_samples_types['signal'] = []
-            all_samples_types['signal'].append(sample_name)
-        else:
+        else:      
             sample_key = sample_type if sample_type in sample_types_to_merge else sample_name
             if sample_name not in ignore_samples:
                 if sample_key not in all_samples_types.keys(): all_samples_types[sample_key] = []

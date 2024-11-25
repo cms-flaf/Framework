@@ -113,9 +113,15 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineQCDRegions(self):
         self.df = self.df.Define("OS", "(lep2_type < 1) || (lep1_charge*lep2_charge < 0)")
-        self.df = self.df.Define("Iso", f"( (lep1_type == 1 && lep1_Electron_mvaIso_WP90) || (lep1_type == 2 && lep1_Muon_pfIsoId >=2) ) && (lep2_type < 1 || ( (lep2_type == 1 && lep2_Electron_mvaIso_WP90) || (lep2_type == 2 && lep2_Muon_pfIsoId >= 2) ))") #Ask if this is supposed to be lep*_Muon_pfIsoId
-        self.df = self.df.Define("OS_Iso", f"OS && Iso") 
+        self.df = self.df.Define("SS", "!OS")
 
+        self.df = self.df.Define("Iso", f"( (lep1_type == 1 && lep1_Electron_mvaIso_WP90) || (lep1_type == 2 && lep1_Muon_pfIsoId >=2) ) && (lep2_type < 1 || ( (lep2_type == 1 && lep2_Electron_mvaIso_WP90) || (lep2_type == 2 && lep2_Muon_pfIsoId >= 2) ))") #Ask if this is supposed to be lep*_Muon_pfIsoId
+        self.df = self.df.Define("AntiIso", f"!Iso") #This is probably not correct, but required for QCD_Estimation.py
+
+        self.df = self.df.Define("OS_Iso", f"OS && Iso") 
+        self.df = self.df.Define("SS_Iso", f"SS && Iso")
+        self.df = self.df.Define("OS_AntiIso", f"OS && AntiIso")
+        self.df = self.df.Define("SS_AntiIso", f"SS && AntiIso")
 
 
     def selectTrigger(self, trigger):

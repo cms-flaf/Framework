@@ -284,7 +284,11 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         customisation_dict = getCustomisationSplit(self.customisations)
         channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
-        deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
+        #Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
+        channels = ','.join(channels)
+        #bbww does not use a deepTauVersion
+        deepTauVersion = ''
+        if self.global_params['analysis_config_area'] == 'HH_bbtautau': deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
         region = customisation_dict['region'] if 'region' in customisation_dict.keys() else self.global_params['region_default']
         uncNames = ['Central']
         unc_cfg_dict = load_unc_config(unc_config)
@@ -324,6 +328,11 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 with self.output().localize("w") as outFile:
                     MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config, '--channels',channels]#, '--remove-files', 'True']
                     MergerProducer_cmd.extend(local_inputs)
+                    #Check if run3, Run2 did not have split signal/background configs
+                    if self.period.split('_')[0] != "Run2":
+                        run3sampleYaml = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], self.period, f'samples.yaml')
+                        MergerProducer_cmd.append('--run3sampleConfig')
+                        MergerProducer_cmd.append(run3sampleYaml)
                     ps_call(MergerProducer_cmd,verbose=1)
             else:
                 for uncName in uncNames:
@@ -335,6 +344,11 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     with tmp_outfile_merge_remote.localize("w") as tmp_outfile_merge_unc:
                         MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config,'--channels',channels]#, '--remove-files', 'True']
                         MergerProducer_cmd.extend(local_inputs)
+                        #Check if run3, Run2 did not have split signal/background configs
+                        if self.period.split('_')[0] != "Run2":
+                            run3sampleYaml = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], self.period, f'samples.yaml')
+                            MergerProducer_cmd.append('--run3sampleConfig')
+                            MergerProducer_cmd.append(run3sampleYaml)
                         print(MergerProducer_cmd)
                         ps_call(MergerProducer_cmd,verbose=1)
                     all_outputs_merged.append(tmp_outfile_merge)

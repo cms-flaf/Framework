@@ -44,6 +44,9 @@ region_default: SR
 
 QCDRegions:
   - OS_Iso
+  - SS_Iso
+  - OS_AntiIso
+  - SS_AntiIso
   #- Z_Region
 
 boosted_categories: []
@@ -101,7 +104,7 @@ samples_to_skip_hist:
   - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-270
   - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-280
   - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-3000
-  #- GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-300
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-300
   - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-350
   - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-4000
   - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-450

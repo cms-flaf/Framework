@@ -1,4 +1,5 @@
 anaTupleDef: AnaProd/HH_bbtautau/anaTupleDef.py
+analysis_import: Analysis.hh_bbtautau
 signal_types:
   - GluGluToRadion
   - GluGluToBulkGraviton
@@ -33,37 +34,76 @@ corrections:
   - ele
   - puJetID
   - pu
-deepTauVersion: 2p1
+
 channelSelection:
-  - eTau
-  - muTau
-  - eE
-  - eMu
-  - muMu
-  - tauTau
+    - eTau
+    - muTau
+    - tauTau
+    - eE
+    - eMu
+    - muMu
+
+met_type: "MET"
+deepTauVersion: 2p1
+region: SR
+channels: ""
 QCDRegions:
   - OS_Iso
   - SS_Iso
   - OS_AntiIso
   - SS_AntiIso
+boosted_categories:
+  # - boosted_cat2
+  # - boosted_cat3
+  # - boosted_masswindow
+  # - boosted_cat2_masswindow
+  - boosted_cat3_masswindow
 categories:
-  - res1b
-  - res2b
   - inclusive
-  - boosted
   - btag_shape
   - baseline
+  - boosted_baseline
+  - boosted_baseline_cat3
+  #- boosted_baseline_masswindow
+  #- boosted_baseline_cat3_masswindow
+  # - res0b_inclusive
+  # - res1b_inclusive
+  # - res2b_inclusive
+  # - boosted
+  # - res0b_cat2
+  # - res1b_cat2
+  # - res2b_cat2
+  # - res2b_cat3
+  # - res1b_cat3
+  # - res0b_cat3
+  - inclusive_masswindow
+  - btag_shape_masswindow
+  - baseline_masswindow
+  # - res0b_inclusive_masswindow
+  # - res1b_inclusive_masswindow
+  # - res2b_inclusive_masswindow
+  # - res0b_cat2_masswindow
+  # - res1b_cat2_masswindow
+  # - res2b_cat2_masswindow
+  - res2b_cat3_masswindow
+  - res1b_cat3_masswindow
+  - res0b_cat3_masswindow
+
+
 storeExtraJets: False
 deepTauYears:
   v2p1: 2017
   v2p5: 2018
 
-
-
-channels_to_consider:
+all_channels:
+  - eTau
   - muTau
   - muMu
   - tauTau
+  - eE
+  - eMu
+
+
 gen_channels:
   eTau:
     - 3
@@ -93,43 +133,115 @@ triggers:
   muMu: HLT_singleMu || HLT_MET
 
 hist_triggers:
-  eTau:  ((HLT_singleEle && SingleEle_region) || (HLT_singleTau && SingleTau_region) || (HLT_MET && MET_region ))
-  #eTau:  (((HLT_singleEle || HLT_etau ) && (SingleEle_region || CrossEleTau_region) )|| (HLT_singleTau && SingleTau_region)  || (HLT_MET && MET_region ))
-  muTau: ((HLT_singleMu && SingleMu_region) || (HLT_singleTau && SingleTau_region) || (HLT_MET && MET_region ))
-  #muTau: (((HLT_singleMu || HLT_mutau ) && (SingleMu_region || CrossMuTau_region) ) || (HLT_singleTau && SingleTau_region)  || (HLT_MET && MET_region ))
-  tauTau: ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && MET_region ) )
-  eE: (HLT_singleEle && SingleEle_region)
-  eMu: ((HLT_singleEle && SingleEle_region) || (HLT_singleMu && SingleMu_region))
-  muMu: (HLT_singleMu && SingleMu_region)
+  #eTau:  ((HLT_singleEle && SingleEle_region) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
+  eTau:
+    default: ( ( (HLT_singleEle || HLT_etau ) && Legacy_region ) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
+    Run2_2016 :  ( ( (HLT_singleEle && SingleEle_region) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) )))
+    Run2_2016_HIPM :  ( ( (HLT_singleEle && SingleEle_region) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) )))
+  #muTau: ((HLT_singleMu && SingleMu_region) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
+  muTau:
+    default: (( (HLT_singleMu || HLT_mutau ) && Legacy_region ) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
+  tauTau:
+    default: ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ) )
+  eE:
+    default: (HLT_singleEle && SingleEle_region)
+  eMu:
+    default: ((HLT_singleEle && SingleEle_region) || (HLT_singleMu && SingleMu_region))
+  muMu:
+    default: (HLT_singleMu && SingleMu_region)
+
+
+
+# https://github.com/LLRCMS/KLUBAnalysis/blob/10821fdc58f6bdb68b0142740f05b8c9f6e23bf9/config/selectionCfg_MuTau_UL18.cfg
+# https://github.com/LLRCMS/KLUBAnalysis/blob/10821fdc58f6bdb68b0142740f05b8c9f6e23bf9/config/selectionCfg_TauTau_UL18.cfg
+# https://github.com/LLRCMS/KLUBAnalysis/blob/10821fdc58f6bdb68b0142740f05b8c9f6e23bf9/test/skimNtuple_HHbtag.cpp#L5199
 
 application_regions:
-  HLT_singleMu:
-    region_name: SingleMu_region
-    region_cut: ((tau1_pt > 26 && abs(tau1_eta) < 2.4) ||  (tau2_pt > 26 && abs(tau2_eta) < 2.4))
-  HLT_mutau:
-    region_name: CrossMuTau_region
-    region_cut: (tau1_pt > 22 && abs(tau1_eta) < 2.1 && tau2_pt > 32 && abs(tau2_eta) < 2.1)
-  HLT_singleEle:
-    region_name: SingleEle_region
-    region_cut: ((tau1_pt > 33 && abs(tau1_eta) < 2.5) || (tau2_pt > 33 && abs(tau2_eta) < 2.5))
-  HLT_etau:
-    region_name: CrossEleTau_region
-    region_cut: (tau1_pt > 25 && abs(tau1_eta) < 2.1 && tau2_pt > 35 && abs(tau2_eta) < 2.1)
-  HLT_ditau:
-    region_name: Legacy_region
-    region_cut: (tau1_pt > 40 && tau2_pt > 40)
-  HLT_singleTau:
-    region_name: SingleTau_region
-    region_cut: (((tau1_pt >= {tau_th} && abs(tau1_eta) < 2.1) || (tau2_pt >= {tau_th} && abs(tau2_eta) < 2.1)) )
-  HLT_MET:
-    region_name: MET_region
-    region_cut: (!(Legacy_region) && !(SingleTau_region))
+  SingleMu_region: ((tau1_pt > {mu_th}  && abs(tau1_eta) < 2.4) ||  (tau2_pt > {mu_th}  && abs(tau2_eta) < 2.4))
+  CrossMuTau_region: (tau1_pt > 22 && abs(tau1_eta) < 2.1 && tau2_pt > 32 && abs(tau2_eta) < 2.1)
+  SingleEle_region: ((tau1_pt > {ele_th}  && abs(tau1_eta) < 2.5) || (tau2_pt > {ele_th}  && abs(tau2_eta) < 2.5))
+  CrossEleTau_region: (tau1_pt > 25 && abs(tau1_eta) < 2.1 && tau2_pt > 35 && abs(tau2_eta) < 2.1)
+  diTau_region: (tau1_pt > 40 && abs(tau1_eta) < 2.1 && tau2_pt > 40 && abs(tau2_eta) < 2.1)
+  SingleTau_region: (((tau1_pt > {tau_th} && abs(tau1_eta) < 2.1) || (tau2_pt > {tau_th} && abs(tau2_eta) < 2.1)) )
+  #MET_region: (!(Legacy_region) && !(SingleTau_region))
+
+category_definition:
+  # w/o mass window
+
+  boosted_baseline: "(SelectedFatJet_p4[fatJet_sel].size()>0)"
+  inclusive:  "!(boosted_baseline)"
+  btag_shape: "!(boosted_baseline)"
+  baseline: "return true;"
+  res0b_inclusive: "nSelBtag == 0"
+  res1b_inclusive: "nSelBtag == 1"
+  res2b_inclusive: "nSelBtag == 2"
+  boosted: "SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={pNetWP}].size()>0"
+  res0b_cat2:  "!boosted_baseline && nSelBtag == 0 "
+  res1b_cat2:  "!boosted_baseline && nSelBtag == 1 "
+  res2b_cat2:  "!boosted_baseline && nSelBtag == 2 "
+  boosted_cat2: "SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={pNetWP}].size()>0 "
+  res2b_cat3:  "nSelBtag == 2"
+  boosted_baseline_cat3:  "!(res2b_cat3) && (boosted_baseline)"
+  boosted_cat3:  "!(res2b_cat3) && boosted" #(SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={pNetWP}].size()>0) && {region}_boosted"
+  res1b_cat3:  "!(res2b_cat3) && !(boosted_baseline_cat3) && nSelBtag == 1"
+  res0b_cat3:  "!(res2b_cat3) && !(boosted_baseline_cat3) && nSelBtag == 0"
+
+
+
+  # w/ mass window
+  boosted_baseline: "(SelectedFatJet_p4[fatJet_sel].size()>0)"
+  inclusive_masswindow:  "!(boosted_baseline) && {region}"
+  btag_shape_masswindow:  "!(boosted_baseline) && {region}"
+  baseline_masswindow: "return {region};"
+  res0b_inclusive_masswindow: "nSelBtag == 0 && {region}"
+  res1b_inclusive_masswindow: "nSelBtag == 1 && {region}"
+  res2b_inclusive_masswindow: "nSelBtag == 2 && {region}"
+
+  boosted_baseline_masswindow: "(SelectedFatJet_p4[fatJet_sel].size()>0) && {region}_boosted"
+  boosted_masswindow: "SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={pNetWP}].size()>0 && {region}_boosted"
+  res0b_cat2_masswindow:  "!boosted_baseline && nSelBtag == 0 && {region}"
+  res1b_cat2_masswindow:  "!boosted_baseline && nSelBtag == 1 && {region}"
+  res2b_cat2_masswindow:  "!boosted_baseline && nSelBtag == 2 && {region}"
+  boosted_cat2_masswindow: "SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={pNetWP}].size()>0 && {region}_boosted"
+
+  res2b_cat3_masswindow:  "nSelBtag == 2 && {region}"
+  boosted_baseline_cat3_masswindow:  "!(res2b_cat3_masswindow) && (boosted_baseline)"
+  boosted_cat3_masswindow:  "!(res2b_cat3_masswindow) && boosted_masswindow" #(SelectedFatJet_p4[fatJet_sel && SelectedFatJet_particleNet_MD_JetTagger>={pNetWP}].size()>0) && {region}_boosted"
+  res1b_cat3_masswindow:  "!(res2b_cat3_masswindow) && !(boosted_baseline_cat3) && nSelBtag == 1 && {region}"
+  res0b_cat3_masswindow:  "!(res2b_cat3_masswindow) && !(boosted_baseline_cat3) && nSelBtag == 0 && {region}"
+
+
+
+
+singleMu_th:
+  "Run2_2016": 26
+  "Run2_2016_HIPM": 26
+  "Run2_2017": 29
+  "Run2_2018": 26
+
+singleEle_th:
+  "Run2_2016": 26
+  "Run2_2016_HIPM": 26
+  "Run2_2017": 33
+  "Run2_2018": 33
 
 singleTau_th:
   "Run2_2016": 130
   "Run2_2016_HIPM": 130
   "Run2_2017": 190
   "Run2_2018": 190
+
+eTau_th:
+  "Run2_2016":
+  "Run2_2016_HIPM":
+  "Run2_2017":
+  "Run2_2018":
+
+muTau_th:
+  "Run2_2016":
+  "Run2_2016_HIPM":
+  "Run2_2017":
+  "Run2_2018":
 
 btag_wps:
   res2b: Medium
@@ -138,17 +250,36 @@ btag_wps:
 
 mass_cut_limits:
   bb_m_vis:
-    - 40
-    - 270
+    boosted:
+      - 30
+      - 450
+    other:
+      - 40
+      - 270
   tautau_m_vis:
-    - 20
-    - 130
+      - 15
+      - 130
 
 scales:
   - Up
   - Down
 
-
+TTCR_mass_limits:
+  eTau:
+    - 15
+    - 130
+  muTau:
+    - 15
+    - 130
+  muMu:
+    - 70
+    - 100
+  tauTau:
+    - 15
+    - 130
+  eE:
+    - 70
+    - 100
 # preVFP == APV == HIPM
 unc_2018:
   - JES_BBEC1_2018
@@ -157,19 +288,19 @@ unc_2018:
   - JES_HF_2018
   - JES_RelativeSample_2018
 unc_2017:
-  -JES_BBEC1_2017
+  - JES_BBEC1_2017
   - JES_Absolute_2017
   - JES_EC2_2017
   - JES_HF_2017
   - JES_RelativeSample_2017
 unc_2016preVFP:
-  -JES_BBEC1_2016preVFP
+  - JES_BBEC1_2016preVFP
   - JES_Absolute_2016preVFP
   - JES_EC2_2016preVFP
   - JES_HF_2016preVFP
   - JES_RelativeSample_2016preVFP
 unc_2016postVFP:
-  -JES_BBEC1_2016postVFP
+  - JES_BBEC1_2016postVFP
   - JES_Absolute_2016postVFP
   - JES_EC2_2016postVFP
   - JES_HF_2016postVFP
@@ -286,6 +417,46 @@ FatJetObservables :
   - phi
   - mass
 
+var_only_boosted:
+  - SelectedFatJet_area_boosted
+  - SelectedFatJet_btagCSVV2_boosted
+  - SelectedFatJet_btagDDBvLV2_boosted
+  - SelectedFatJet_btagDeepB_boosted
+  - SelectedFatJet_btagHbb_boosted
+  - SelectedFatJet_deepTagMD_HbbvsQCD_boosted
+  - SelectedFatJet_deepTagMD_ZHbbvsQCD_boosted
+  - SelectedFatJet_deepTagMD_ZbbvsQCD_boosted
+  - SelectedFatJet_deepTagMD_bbvsLight_boosted
+  - SelectedFatJet_deepTag_H_boosted
+  - SelectedFatJet_jetId_boosted
+  - SelectedFatJet_msoftdrop_boosted
+  - SelectedFatJet_nBHadrons_boosted
+  - SelectedFatJet_nCHadrons_boosted
+  - SelectedFatJet_nConstituents_boosted
+  - SelectedFatJet_rawFactor_boosted
+  - SelectedFatJet_particleNetMD_QCD_boosted
+  - SelectedFatJet_particleNetMD_Xbb_boosted
+  - SelectedFatJet_particleNet_HbbvsQCD_boosted
+  - SelectedFatJet_particleNet_mass_boosted
+  - SelectedFatJet_particleNet_QCD_boosted
+  - SelectedFatJet_particleNet_XbbVsQCD_boosted
+  - SelectedFatJet_particleNetLegacy_QCD_boosted
+  - SelectedFatJet_particleNetLegacy_Xbb_boosted
+  - SelectedFatJet_particleNetLegacy_mass_boosted
+  - SelectedFatJet_particleNetWithMass_QCD_boosted
+  - SelectedFatJet_particleNetWithMass_HbbvsQCD_boosted
+  - SelectedFatJet_particleNet_massCorr_boosted
+  - SelectedFatJet_p4_boosted
+  - SelectedFatJet_pt_boosted
+  - SelectedFatJet_eta_boosted
+  - SelectedFatJet_phi_boosted
+  - SelectedFatJet_mass_boosted
+  - SelectedFatJet_particleNetLegacy_mass_boosted
+  - SelectedFatJet_mass_boosted
+  - SelectedFatJet_msoftdrop_boosted
+  - bb_m_vis_softdrop
+  - bb_m_vis_pnet
+  - bb_m_vis_fj
 
 unc_to_not_consider_boosted:
   - PUJetID

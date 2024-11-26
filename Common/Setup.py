@@ -63,7 +63,7 @@ def load_parameters(*sources, keys_to_ignore=None):
 def apply_customisations(config_dict, customisations):
     if customisations is None or len(customisations) == 0: return
     if type(customisations) == str:
-        customisations = customisations.split(',')
+        customisations = customisations.split(';')
     if type(customisations) != list:
         raise RuntimeError(f'Invalid type of customisations: {type(customisations)}')
     for customisation in customisations:
@@ -77,6 +77,11 @@ def apply_customisations(config_dict, customisations):
             cfg_entry = cfg_entry[key]
         entry_type = type(cfg_entry[key_entries[-1]])
         cfg_entry[key_entries[-1]] = entry_type(value)
+        #     if key in config_dict.keys():
+        #         cfg_entry = cfg_entry[key]
+        # if key_entries[-1] in config_dict.keys():
+        #     entry_type = type(cfg_entry[key_entries[-1]])
+        #     cfg_entry[key_entries[-1]] = entry_type(value)
 
 class Setup:
     _global_instances = {}
@@ -91,6 +96,7 @@ class Setup:
         self.analysis_config_area= os.path.join(ana_path, user_config['analysis_config_area'])
         ana_global_config_path = os.path.join(self.analysis_config_area, 'global.yaml')
         ana_sample_config_path = os.path.join(self.analysis_config_area, period, 'samples.yaml')
+        weights_config_path = os.path.join(ana_path, 'config', period, 'weights.yaml')
 
         with open(sample_config_path, 'r') as f:
             sample_config = yaml.safe_load(f)
@@ -106,6 +112,11 @@ class Setup:
                 ana_global_config = yaml.safe_load(f)
         else:
             ana_global_config = {}
+
+        with open(weights_config_path, 'r') as f:
+            weights_config = yaml.safe_load(f)
+
+        self.weights_config = weights_config
 
         self.global_params = load_parameters(user_config, ana_sample_config.get('GLOBAL', {}),
                                              ana_global_config, sample_config.get('GLOBAL', {}))

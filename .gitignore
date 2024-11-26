@@ -4,6 +4,7 @@ __pycache__
 /output
 /soft
 /test
+/utilities
 /.vscode
 /site
 /config/user_custom.yaml

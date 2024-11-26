@@ -1,0 +1,15 @@
+lumi_text:
+  text: "137.61 fb^{-1} (13 TeV)"
+  pos_ref: inner_right_top
+  pos: [ 0.,  -0.035 ]
+  text_size: 0.035
+  font: 42
+  align: right_bottom
+
+channel_text:
+  'eTau': 'bb#tau_{e}#tau_{h}'
+  'muTau': 'bb#tau_{#mu}#tau_{h}'
+  'tauTau': 'bb#tau_{h}#tau_{h}'
+  'muMu': 'bb#tau_{#mu}#tau_{#mu}'
+  'eMu': 'bb#tau_{e}#tau_{#mu}'
+  'eE': 'bb#tau_{e}#tau_{e}'

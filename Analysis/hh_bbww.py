@@ -6,7 +6,7 @@ from Analysis.HistHelper import *
 from Common.Utilities import *
 
 
-def createKeyFilterDict(global_cfg_dict):
+def createKeyFilterDict(global_cfg_dict, year):
     reg_dict = {}
     filter_str = ""
     channels_to_consider = global_cfg_dict['channels_to_consider']
@@ -40,7 +40,7 @@ def createKeyFilterDict(global_cfg_dict):
 
     return reg_dict
 
-def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False):
+def GetBTagWeight(global_cfg_dict,cat,applyBtag=False):
     #This does not just apply btag, but it replaces the existing weight with a new weight! So dumb!!!
     btag_weight = "1"
     btagshape_weight = "1"
@@ -52,7 +52,7 @@ def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False):
     #return f'{btag_weight}*{btagshape_weight}'
 
 
-def GetWeight(channel, cat):
+def GetWeight(channel, cat, boosted_categories):
     weights_to_apply = ["weight_MC_Lumi_pu"]
     total_weight = '*'.join(weights_to_apply)
     for lep_index in [1,2]:
@@ -127,9 +127,15 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineQCDRegions(self):
         self.df = self.df.Define("OS", "(lep2_type < 1) || (lep1_charge*lep2_charge < 0)")
-        self.df = self.df.Define("Iso", f"( (lep1_type == 1 && lep1_Electron_mvaIso_WP90) || (lep1_type == 2 && lep1_Muon_pfIsoId >=2) ) && (lep2_type < 1 || ( (lep2_type == 1 && lep2_Electron_mvaIso_WP90) || (lep2_type == 2 && lep2_Muon_pfIsoId >= 2) ))") #Ask if this is supposed to be lep*_Muon_pfIsoId
-        self.df = self.df.Define("OS_Iso", f"OS && Iso") 
+        self.df = self.df.Define("SS", "!OS")
 
+        self.df = self.df.Define("Iso", f"( (lep1_type == 1 && lep1_Electron_mvaIso_WP90) || (lep1_type == 2 && lep1_Muon_pfIsoId >=2) ) && (lep2_type < 1 || ( (lep2_type == 1 && lep2_Electron_mvaIso_WP90) || (lep2_type == 2 && lep2_Muon_pfIsoId >= 2) ))") #Ask if this is supposed to be lep*_Muon_pfIsoId
+        self.df = self.df.Define("AntiIso", f"!Iso") #This is probably not correct, but required for QCD_Estimation.py
+
+        self.df = self.df.Define("OS_Iso", f"OS && Iso") 
+        self.df = self.df.Define("SS_Iso", f"SS && Iso")
+        self.df = self.df.Define("OS_AntiIso", f"OS && AntiIso")
+        self.df = self.df.Define("SS_AntiIso", f"SS && AntiIso")
 
     def defineControlRegions(self):
         #Define Single Muon Control Region (W Region) -- Require Muon + High MT (>50)

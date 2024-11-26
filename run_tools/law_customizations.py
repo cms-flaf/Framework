@@ -18,16 +18,23 @@ def copy_param(ref_param, new_default):
   return param
 
 def get_param_value(cls, param_name):
-    param = getattr(cls, param_name)
-    return param.task_value(cls.__name__, param_name)
+    try:
+        param = getattr(cls, param_name)
+        return param.task_value(cls.__name__, param_name)
+    except:
+        return None
+
+# def get_param_value(cls, param_name):
+#     param = getattr(cls, param_name)
+#     return param.task_value(cls.__name__, param_name)
 
 class Task(law.Task):
     """
     Base task that we use to force a version parameter on all inheriting tasks, and that provides
     some convenience methods to create local file and directory targets at the default data path.
     """
-
     version = luigi.Parameter()
+    prefer_params_cli = [ 'version' ]
     period = luigi.Parameter()
     customisations =luigi.Parameter(default="")
     test = luigi.BoolParameter(default=False)
@@ -120,7 +127,7 @@ class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
     max_runtime = law.DurationParameter(default=12.0, unit="h", significant=False,
                                         description="maximum runtime, default unit is hours")
     n_cpus = luigi.IntParameter(default=1, description="number of cpus")
-    poll_interval = copy_param(law.htcondor.HTCondorWorkflow.poll_interval, 5)
+    poll_interval = copy_param(law.htcondor.HTCondorWorkflow.poll_interval, 2)
     transfer_logs = luigi.BoolParameter(default=True, significant=False,
                                         description="transfer job logs to the output directory")
 

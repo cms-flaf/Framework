@@ -9,6 +9,7 @@ if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
 import Common.Utilities as Utilities
+import Common.Setup as Setup
 from Analysis.HistHelper import *
 from Analysis.QCD_estimation import *
 
@@ -121,7 +122,6 @@ def GetBTagWeightDict(var,all_histograms, categories, boosted_categories, booste
                 ch, reg, cat = key_1
                 uncName,scale = key_2
                 key_tuple_num = ((ch, reg, 'btag_shape'), key_2)
-                key_tuple_num = ((ch, reg, 'inclusive'), key_2) #This is quick bbww fix, not for pushing!
                 key_tuple_den = ((ch, reg, 'inclusive'), key_2)
                 ratio_num_hist = all_histograms[sample_type][key_tuple_num] if key_tuple_num in all_histograms[sample_type].keys() else None
                 ratio_den_hist = all_histograms[sample_type][key_tuple_den] if key_tuple_den in all_histograms[sample_type].keys() else None
@@ -148,31 +148,28 @@ if __name__ == "__main__":
     import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument('inputFile', nargs='+', type=str)
-    #parser.add_argument('datasetFile', nargs='+', type=str)
     parser.add_argument('--outFile', required=True, type=str)
     parser.add_argument('--year', required=True, type=str)
     parser.add_argument('--datasetFile', required=True, type=str)
     parser.add_argument('--var', required=True, type=str)
-    parser.add_argument('--sampleConfig', required=True, type=str)
-    parser.add_argument('--run3sampleConfig', required=False, type=str, default=None)
-    parser.add_argument('--globalConfig', required=True, type=str)
-    parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
     parser.add_argument('--region', required=False, type=str,default='SR')
     parser.add_argument('--channels', required=False, type=str,default='eTau,muTau,tauTau')
+    parser.add_argument('--apply-btag-shape-weights', required=False, type=str, default=False)
+    parser.add_argument('--ana_path', required=True, type=str)
+    parser.add_argument('--period', required=True, type=str)
 
     args = parser.parse_args()
     startTime = time.time()
-    with open(args.uncConfig, 'r') as f:
-        unc_cfg_dict = yaml.safe_load(f)
-    with open(args.sampleConfig, 'r') as f:
-        sample_cfg_dict = yaml.safe_load(f)
-    if args.run3sampleConfig != None: #Run2 did not need a second samples yaml due to only being bbtautau supported
-        with open(args.run3sampleConfig, 'r') as f:
-            run3sample_cfg_dict = yaml.safe_load(f)
-            sample_cfg_dict.update(run3sample_cfg_dict)
-    with open(args.globalConfig, 'r') as f:
-        global_cfg_dict = yaml.safe_load(f)
+
+    #Konstantin doesn't want to load yamls all separately, instead we will load the analysis args and use Setup class
+    setup = Setup.Setup(args.ana_path, args.period)
+    print(f"Setup dict {setup.samples}")
+
+    unc_cfg_dict = setup.weights_config
+    sample_cfg_dict = setup.samples
+    global_cfg_dict = setup.global_params
+
 
     analysis_import = (global_cfg_dict['analysis_import'])
     analysis = importlib.import_module(f'{analysis_import}')
@@ -258,7 +255,10 @@ if __name__ == "__main__":
     #     print(key, all_samples_types[key])
 
     MergeHistogramsPerType(all_histograms)
-    all_histograms_1D=GetBTagWeightDict(args.var,all_histograms, categories, boosted_categories, boosted_variables)
+    if args.apply_btag_shape_weights == True:
+        all_histograms_1D=GetBTagWeightDict(args.var,all_histograms, categories, boosted_categories, boosted_variables)
+    else:
+        all_histograms_1D = all_histograms
     # print(all_histograms_1D)
 
     # for key in all_histograms_1D.keys():

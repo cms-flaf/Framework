@@ -326,13 +326,12 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
             if len(uncNames)==1:
                 with self.output().localize("w") as outFile:
-                    MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config, '--channels',channels]#, '--remove-files', 'True']
+                    #MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config, '--channels',channels, '--apply-btag-shape-weights', applyBTagShapeWeight]#, '--remove-files', 'True']
+                    MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--channels',channels, '--ana_path', self.ana_path(), '--period', self.period]#, '--remove-files', 'True']
                     MergerProducer_cmd.extend(local_inputs)
-                    #Check if run3, Run2 did not have split signal/background configs
-                    if self.period.split('_')[0] != "Run2":
-                        run3sampleYaml = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], self.period, f'samples.yaml')
-                        MergerProducer_cmd.append('--run3sampleConfig')
-                        MergerProducer_cmd.append(run3sampleYaml)
+                    if 'btagShape' in self.global_params['corrections']:
+                        MergerProducer_cmd.append('--apply-btag-shape-weights')
+                        MergerProducer_cmd.append('True')
                     ps_call(MergerProducer_cmd,verbose=1)
             else:
                 for uncName in uncNames:
@@ -342,13 +341,12 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     print(tmp_outfile_merge)
                     tmp_outfile_merge_remote = self.remote_target(tmp_outfile_merge, fs=self.fs_histograms)
                     with tmp_outfile_merge_remote.localize("w") as tmp_outfile_merge_unc:
-                        MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config,'--channels',channels]#, '--remove-files', 'True']
+                        #MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config,'--channels',channels, '--apply-btag-shape-weights', applyBTagShapeWeight]#, '--remove-files', 'True']
+                        MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--channels',channels, '--ana_path', self.ana_path(), '--period', self.period]#, '--remove-files', 'True']
                         MergerProducer_cmd.extend(local_inputs)
-                        #Check if run3, Run2 did not have split signal/background configs
-                        if self.period.split('_')[0] != "Run2":
-                            run3sampleYaml = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], self.period, f'samples.yaml')
-                            MergerProducer_cmd.append('--run3sampleConfig')
-                            MergerProducer_cmd.append(run3sampleYaml)
+                        if 'btagShape' in self.global_params['corrections']:
+                            MergerProducer_cmd.append('--apply-btag-shape-weights')
+                            MergerProducer_cmd.append('True')
                         print(MergerProducer_cmd)
                         ps_call(MergerProducer_cmd,verbose=1)
                     all_outputs_merged.append(tmp_outfile_merge)

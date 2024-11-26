@@ -9,11 +9,11 @@ if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
 import Common.Utilities as Utilities
+import Common.Setup as Setup
 from Analysis.HistHelper import *
 from Analysis.QCD_estimation import *
-from Analysis.hh_bbtautau import *
 
-
+import importlib
 
 def checkFile(inFileRoot, channels, qcdRegions, categories, var):
     keys_channels = [str(key.GetName()) for key in inFileRoot.GetListOfKeys()]
@@ -117,6 +117,7 @@ def GetBTagWeightDict(var,all_histograms, categories, boosted_categories, booste
         all_histograms_1D[sample_type] = {}
         for key_name,histogram in all_histograms[sample_type].items():
             (key_1, key_2) = key_name
+
             if var not in boosted_variables:
                 ch, reg, cat = key_1
                 uncName,scale = key_2
@@ -135,6 +136,7 @@ def GetBTagWeightDict(var,all_histograms, categories, boosted_categories, booste
                 histogram.Scale(ratio)
             else:
                 print(f"for var {var} no ratio is considered and the histogram is directly saved")
+
             all_histograms_1D[sample_type][key_name] = histogram
             # print(sample_type, key_name, histogram.Integral(0, histogram.GetNbinsX()+1))
     return all_histograms_1D
@@ -146,27 +148,32 @@ if __name__ == "__main__":
     import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument('inputFile', nargs='+', type=str)
-    #parser.add_argument('datasetFile', nargs='+', type=str)
     parser.add_argument('--outFile', required=True, type=str)
     parser.add_argument('--year', required=True, type=str)
     parser.add_argument('--datasetFile', required=True, type=str)
     parser.add_argument('--var', required=True, type=str)
-    parser.add_argument('--sampleConfig', required=True, type=str)
-    parser.add_argument('--globalConfig', required=True, type=str)
-    parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
     parser.add_argument('--region', required=False, type=str,default='SR')
     parser.add_argument('--channels', required=False, type=str,default='eTau,muTau,tauTau')
+    parser.add_argument('--apply-btag-shape-weights', required=False, type=str, default=False)
+    parser.add_argument('--ana_path', required=True, type=str)
+    parser.add_argument('--period', required=True, type=str)
 
     args = parser.parse_args()
     startTime = time.time()
-    with open(args.uncConfig, 'r') as f:
-        unc_cfg_dict = yaml.safe_load(f)
-    with open(args.sampleConfig, 'r') as f:
-        sample_cfg_dict = yaml.safe_load(f)
-    with open(args.globalConfig, 'r') as f:
-        global_cfg_dict = yaml.safe_load(f)
 
+    #Konstantin doesn't want to load yamls all separately, instead we will load the analysis args and use Setup class
+    setup = Setup.Setup(args.ana_path, args.period)
+    print(f"Setup dict {setup.samples}")
+
+    unc_cfg_dict = setup.weights_config
+    sample_cfg_dict = setup.samples
+    global_cfg_dict = setup.global_params
+
+
+    analysis_import = (global_cfg_dict['analysis_import'])
+    analysis = importlib.import_module(f'{analysis_import}')
+    
     all_samples_list = args.datasetFile.split(',')
     all_samples_types = {}
     all_samples_names = {}
@@ -178,6 +185,7 @@ if __name__ == "__main__":
     categories = list(global_cfg_dict['categories'])
     boosted_categories = list(global_cfg_dict['boosted_categories'])
     QCDregions = list(global_cfg_dict['QCDRegions'])
+    #Controlregions = list(global_cfg_dict['ControlRegions']) #Later maybe we want to separate Controls from QCDs
     global_cfg_dict['channels_to_consider']=args.channels.split(',')
 
     channels = global_cfg_dict['channels_to_consider']
@@ -208,6 +216,13 @@ if __name__ == "__main__":
             continue
             #raise RuntimeError(f"{inFileName} removed")
         #print(sample_name)
+
+        #Sometimes we do not want to stack all samples (signal)
+        if 'samples_to_skip_hist' in global_cfg_dict.keys():
+            #Add this key check to avoid breaking bbtautau
+            if sample_name in global_cfg_dict['samples_to_skip_hist']:
+                continue
+
         inFileRoot = ROOT.TFile.Open(inFileName, "READ")
         if inFileRoot.IsZombie():
             inFileRoot.Close()
@@ -219,13 +234,16 @@ if __name__ == "__main__":
             ignore_samples.append(sample_name)
             inFileRoot.Close()
             continue
+
+
         sample_type= 'data' if sample_name == 'data' else sample_cfg_dict[sample_name]['sampleType']
         getHistDict(args.var,all_histograms, inFileRoot,channels, QCDregions, all_categories, args.uncSource,sample_name,sample_type,sample_types_to_merge)
         # print(all_histograms.keys())
         inFileRoot.Close()
+
         if sample_name == 'data':
             all_samples_types['data'] = ['data']
-        else:
+        else:      
             sample_key = sample_type if sample_type in sample_types_to_merge else sample_name
             if sample_name not in ignore_samples:
                 if sample_key not in all_samples_types.keys(): all_samples_types[sample_key] = []
@@ -237,9 +255,11 @@ if __name__ == "__main__":
     #     print(key, all_samples_types[key])
 
     MergeHistogramsPerType(all_histograms)
-    all_histograms_1D=GetBTagWeightDict(args.var,all_histograms, categories, boosted_categories, boosted_variables)
+    if args.apply_btag_shape_weights == True:
+        all_histograms_1D=GetBTagWeightDict(args.var,all_histograms, categories, boosted_categories, boosted_variables)
+    else:
+        all_histograms_1D = all_histograms
     # print(all_histograms_1D)
-
 
     # for key in all_histograms_1D.keys():
     #     print(key)
@@ -266,7 +286,7 @@ if __name__ == "__main__":
             #if qcdRegion != 'OS_Iso': continue
             dirStruct = (channel,qcdRegion, cat)
             dir_name = '/'.join(dirStruct)
-            dir_ptr = mkdir(outFile,dir_name)
+            dir_ptr = Utilities.mkdir(outFile,dir_name)
             hist = all_histograms_1D[sample_type][key]
             #print(sample_type, key, hist.GetEntries())
             hist_name =  sample_type

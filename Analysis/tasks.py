@@ -9,6 +9,7 @@ from RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
 from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param,get_param_value
 from AnaProd.tasks import AnaTupleTask, DataMergeTask, AnaCacheTupleTask, DataCacheMergeTask
 
+
 unc_cfg_dict = None
 def load_unc_config(unc_cfg):
     global unc_cfg_dict
@@ -134,12 +135,17 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         input_file = self.input()[0]
         customisation_dict = getCustomisationSplit(self.customisations)
         channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
-        deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
+        #Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
+        channels = ','.join(channels)
+        #bbww does not use a deepTauVersion
+        deepTauVersion = ''
+        if self.global_params['analysis_config_area'] == 'HH_bbtautau': deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
         region = customisation_dict['region'] if 'region' in customisation_dict.keys() else self.global_params['region_default']
 
 
         print(f'input file is {input_file.path}')
-        global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
+        #global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
+        global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         sample_type = self.samples[sample_name]['sampleType'] if sample_name != 'data' else 'data'
         HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
@@ -152,7 +158,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                                     '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type, '--globalConfig', global_config, '--var', var, '--period', self.period, '--region', region, '--channels', channels]
             if compute_unc_histograms:
                 HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
-            if deepTauVersion!="2p1":
+            if (deepTauVersion!="2p1") and (deepTauVersion!=''):
                 HistProducerFile_cmd.extend([ '--deepTauVersion', deepTauVersion])
             if need_cache:
                 anaCache_file = self.input()[1]
@@ -236,13 +242,13 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 all_samples[var] = []
             all_samples[var].append(br_idx)
         workflow_dict = {}
-        n=0
+
+        new_branchset = set()
         for var in all_samples.keys():
-            workflow_dict[var] = {
-                n: HistProducerSampleTask.req(self, branches=tuple((idx,) for idx in all_samples[var]))
-            }
-            n+=1
-        return workflow_dict
+            new_branchset.update(all_samples[var])
+
+        return { "histproducersample": HistProducerSampleTask.req(self, branches=list(new_branchset)) }
+        # return workflow_dict
 
     def requires(self):
         var, branches_idx = self.branch_data
@@ -273,11 +279,16 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def run(self):
         var, branches_idx = self.branch_data
         sample_config = os.path.join(self.ana_path(), 'config',self.period, f'samples.yaml')
-        global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
+        #global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
+        global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         customisation_dict = getCustomisationSplit(self.customisations)
         channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
-        deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
+        #Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
+        channels = ','.join(channels)
+        #bbww does not use a deepTauVersion
+        deepTauVersion = ''
+        if self.global_params['analysis_config_area'] == 'HH_bbtautau': deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
         region = customisation_dict['region'] if 'region' in customisation_dict.keys() else self.global_params['region_default']
         uncNames = ['Central']
         unc_cfg_dict = load_unc_config(unc_config)
@@ -315,8 +326,12 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
             if len(uncNames)==1:
                 with self.output().localize("w") as outFile:
-                    MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config, '--channels',channels]#, '--remove-files', 'True']
+                    #MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config, '--channels',channels, '--apply-btag-shape-weights', applyBTagShapeWeight]#, '--remove-files', 'True']
+                    MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--channels',channels, '--ana_path', self.ana_path(), '--period', self.period]#, '--remove-files', 'True']
                     MergerProducer_cmd.extend(local_inputs)
+                    if 'btagShape' in self.global_params['corrections']:
+                        MergerProducer_cmd.append('--apply-btag-shape-weights')
+                        MergerProducer_cmd.append('True')
                     ps_call(MergerProducer_cmd,verbose=1)
             else:
                 for uncName in uncNames:
@@ -326,8 +341,12 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     print(tmp_outfile_merge)
                     tmp_outfile_merge_remote = self.remote_target(tmp_outfile_merge, fs=self.fs_histograms)
                     with tmp_outfile_merge_remote.localize("w") as tmp_outfile_merge_unc:
-                        MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config,'--channels',channels]#, '--remove-files', 'True']
+                        #MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config,'--channels',channels, '--apply-btag-shape-weights', applyBTagShapeWeight]#, '--remove-files', 'True']
+                        MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--channels',channels, '--ana_path', self.ana_path(), '--period', self.period]#, '--remove-files', 'True']
                         MergerProducer_cmd.extend(local_inputs)
+                        if 'btagShape' in self.global_params['corrections']:
+                            MergerProducer_cmd.append('--apply-btag-shape-weights')
+                            MergerProducer_cmd.append('True')
                         print(MergerProducer_cmd)
                         ps_call(MergerProducer_cmd,verbose=1)
                     all_outputs_merged.append(tmp_outfile_merge)
@@ -348,3 +367,4 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             with tmp_outFile.localize("r") as tmpFile, self.output().localize("w") as outFile:
                 RenameHistsProducer_cmd = ['python3', RenameHistsProducer,'--inFile', tmpFile.path, '--outFile', outFile.path, '--var', var, '--year', getYear(self.period)]
                 ps_call(RenameHistsProducer_cmd,verbose=1)
+

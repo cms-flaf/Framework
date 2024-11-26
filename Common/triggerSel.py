@@ -45,6 +45,7 @@ class Triggers():
                 else:
                     print(f'{channel}Candidate')
                     df = df.Define(f'{type_name_offline}_{var_name_offline}_sel', f'{channel}Candidate.isLeg({type_name_offline}_idx, {self.dict_legtypes[type_name_offline]}) && ({var_name_offline})')
+
                     leg_dict_online= leg_tuple["online_obj"]
                     var_name_online =  f'{leg_dict_offline["type"]}_onlineCut_{leg_id+1}_{path}'
                     cut_vars = []

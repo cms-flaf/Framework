@@ -234,6 +234,11 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
             LegVar(f'seedingJet_{var}', f"Jet_p4.at(tau{leg_idx+1}_recoJetMatchIdx).{var}()",
                    var_type='float', var_cond=f"tau{leg_idx+1}_recoJetMatchIdx>=0", default='-1.f')
 
+        #Save the lep* p4 and index directly to avoid using HwwCandidate in SF LUTs
+        dfw.Define( f"tau{leg_idx+1}_p4", f"HttCandidate.leg_type.size() > {leg_idx} ? HttCandidate.leg_p4.at({leg_idx}) : LorentzVectorM()")
+        dfw.Define( f"tau{leg_idx+1}_index", f"HttCandidate.leg_type.size() > {leg_idx} ? HttCandidate.leg_index.at({leg_idx}) : -1")
+        dfw.Define( f"tau{leg_idx+1}_type", f"HttCandidate.leg_type.size() > {leg_idx} ? static_cast<int>(HttCandidate.leg_type.at({leg_idx})) : -1")
+
         dfw.Define(f"b{leg_idx+1}_idx", f"Hbb_isValid ? HbbCandidate->leg_index[{leg_idx}] : -1")
         if global_params["era"].startswith("Run2"):
             dfw.DefineAndAppend(f"b{leg_idx+1}_ptRes",f"Hbb_isValid ? static_cast<float>(Jet_ptRes.at(HbbCandidate->leg_index[{leg_idx}])) : 0.f")

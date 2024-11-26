@@ -147,14 +147,15 @@ if __name__ == "__main__":
     parser.add_argument('--wantQCD', required=False, type=bool, default=False)
     parser.add_argument('--wantLogScale', required=False, type=str, default="")
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
-    parser.add_argument('--year', required=False, type=str,default='2018')
+    parser.add_argument('--year', required=False, type=str,default='Run2_2018')
     parser.add_argument('--rebin', required=False, type=bool,default=False)
+    parser.add_argument('--analysis', required=False, type=str, default="")
 
     args = parser.parse_args()
 
-    page_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/cms_stacked.yaml")
-    page_cfg_custom = os.path.join(os.environ['ANALYSIS_PATH'],f'config/plot/Run2_{args.year}.yaml') # to be fixed!!
-    hist_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/histograms.yaml")
+    page_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", args.analysis, "plot/cms_stacked.yaml")
+    page_cfg_custom = os.path.join(os.environ['ANALYSIS_PATH'],f'config', args.analysis, f'plot/{args.year}.yaml') # to be fixed!!
+    hist_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", args.analysis, "plot/histograms.yaml")
 
     #### config opening ####
     with open(hist_cfg, 'r') as f:
@@ -162,7 +163,8 @@ if __name__ == "__main__":
 
     with open(page_cfg_custom, 'r') as f:
         page_cfg_custom_dict = yaml.safe_load(f)
-    inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config/plot/inputs.yaml")
+    inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", args.analysis, "plot/inputs.yaml")
+    print(inputs_cfg)
     with open(inputs_cfg, 'r') as f:
         inputs_cfg_dict = yaml.safe_load(f)
     # if args.category == 'boosted':

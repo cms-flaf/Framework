@@ -1,10 +1,129 @@
 anaTupleDef: AnaProd/HH_bbWW/anaTupleDef.py
+analysis_import: Analysis.hh_bbww
 signal_types:
   - GluGluToRadion
+  - GluGlutoRadion
   - GluGluToBulkGraviton
-corrections: []
+corrections: 
+  - mu
+  - trg
+  #- ele
+  - pu
+
+#This is for Analysis Selection
 channelSelection:
-  - eE
-  - eMu
+  #- e
+  - mu
+  #- eE
+  #- eMu
   - muMu
+
+#This is for Histogram Making
+channels_to_consider:
+  #- e
+  - mu
+  #- eE
+  #- eMu
+  - muMu
+
+channelDefinition:
+  e: 10 #Second lepton doesn't exist
+  mu: 20
+  eE: 11
+  eMu: 12
+  muMu: 22
+
+categories:
+  - inclusive
+  - boosted
+  - baseline
+  - res1b
+  - res2b
+
+region_default: SR
+
+QCDRegions:
+  - OS_Iso
+  - SS_Iso
+  - OS_AntiIso
+  - SS_AntiIso
+  #- Z_Region
+
+boosted_categories: []
+
+
+#Later maybe we will separate Control Regions from the dict "QCDRegions"
+#ControlRegions:
+#  - Z_Region
+
+
+# triggers:
+#   e:  HLT_singleEleWpTight
+#   mu: HLT_singleIsoMu
+#   eE: HLT_singleEleWpTight || diElec
+#   eMu: HLT_singleIsoMu || HLT_singleEleWpTight || EMu || MuE
+#   muMu: HLT_singleIsoMu || diMuon
+
+
+triggers:
+  e: [singleEleWpTight]
+  mu: [singleIsoMu]
+  eE: [singleEleWpTight, diElec]
+  eMu: [singleIsoMu]
+  muMu: [singleIsoMu]
+
+
+
+
+application_regions:
+  HLT_singleEleWpTight:
+    region_name: SingleE_region
+    region_cut: (true)
+  HLT_singleIsoMu:
+    region_name: SingleMu_region
+    region_cut: (true)
+
+sample_types_to_merge:
+  - DY
+  - TT
+  - W
+  - ST
+  - TTX
+  - VV
+
+samples_to_skip_hist:
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-1000
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-1200
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-1400
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-1600
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-1800
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-2000
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-2500
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-250
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-260
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-270
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-280
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-3000
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-300
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-350
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-4000
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-450
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-5000
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-550
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-600
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-650
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-700
+  - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-800
+
+var_only_boosted: []
+
+unc_to_not_consider_boosted: []
+
+uncs_to_exclude:
+  Run3_2022: []
+  Run3_2022EE: []
+
 storeExtraJets: False
+scales: []
+  #- Up
+  #- Down

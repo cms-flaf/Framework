@@ -150,7 +150,6 @@ DYto2L_M_50_amcatnloFXFX_ext1:
   miniAOD: /DYto2L-2Jets_MLL-50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6_ext2-v2/MINIAODSIM
 
 
-
 DYto2L_M_50_madgraphMLM:
   sampleType: DY
   crossSectionStitch: DYto2L_M-50_madgraphMLM

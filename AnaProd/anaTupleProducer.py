@@ -108,8 +108,18 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
                 dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystDown_rel", "L1PreFiringWeight_Muon_SystDn/L1PreFiringWeight_Muon_Nom")
                 dfw.DefineAndAppend("weight_L1PreFiring_Muon_SystUp_rel", "L1PreFiringWeight_Muon_SystUp/L1PreFiringWeight_Muon_Nom")
         if not isData:
+
+            triggers_to_use = set()
+            for channel in setup.global_params['channels_to_consider']:
+                trigger_list = setup.global_params.get('triggers', {}).get(channel, [])
+                for trigger in trigger_list:
+                    if trigger not in trigger_class.trigger_dict.keys():
+                        raise RuntimeError(f"Trigger does not exist in triggers.yaml, {trigger}")
+                    triggers_to_use.add(trigger)
+
+
             weight_branches = dfw.Apply(corrections.getNormalisationCorrections, setup.global_params,
-                                        setup.samples, sample_name, lepton_legs,trigger_class.trigger_dict.keys() if trigger_class else [],
+                                        setup.samples, sample_name, lepton_legs,triggers_to_use,
                                         return_variations=is_central and compute_unc_variations, isCentral=is_central,
                                         ana_cache=anaCache)
             puIDbranches = ["weight_Jet_PUJetID_Central_tmp", "weight_Jet_PUJetID_effUp_rel_tmp", "weight_Jet_PUJetID_effDown_rel_tmp"]

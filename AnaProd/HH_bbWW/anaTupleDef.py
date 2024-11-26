@@ -6,9 +6,11 @@ loadTF = False
 loadHHBtag = False
 lepton_legs = [ "lep1", "lep2" ]
 
-Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all","Muon_tightId","Muon_highPtId","Muon_miniPFRelIso_all"]
+
+Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all","Muon_tightId","Muon_highPtId","Muon_miniPFRelIso_all", "Muon_pfIsoId"]
 
 Electron_observables = ["Electron_mvaNoIso_WP80", "Electron_mvaIso_WP80", "Electron_pfRelIso03_all","Electron_miniPFRelIso_all","Electron_mvaIso","Electron_mvaNoIso"]
+
 
 JetObservables = ["PNetRegPtRawCorr", "PNetRegPtRawCorrNeutrino", "PNetRegPtRawRes",
                   "btagDeepFlavB", "btagDeepFlavCvB", "btagDeepFlavCvL", "btagDeepFlavQG",
@@ -111,6 +113,11 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
             LegVar(ele_obs, f"{ele_obs}.at(HwwCandidate.leg_index.at({leg_idx}))",
                    var_cond=f"HwwCandidate.leg_type.at({leg_idx}) == Leg::e", default='-1')
 
+
+        #Save the lep* p4 and index directly to avoid using HwwCandidate in SF LUTs
+        dfw.Define( f"lep{leg_idx+1}_p4", f"HwwCandidate.leg_type.size() > {leg_idx} ? HwwCandidate.leg_p4.at({leg_idx}) : LorentzVectorM()")
+        dfw.Define( f"lep{leg_idx+1}_index", f"HwwCandidate.leg_type.size() > {leg_idx} ? HwwCandidate.leg_index.at({leg_idx}) : -1")
+
     #save all pre selcted muons
     for var in PtEtaPhiM:
         dfw.DefineAndAppend(f"SelectedMuon_{var}", f"v_ops::{var}(Muon_p4[Muon_presel])")
@@ -121,6 +128,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         dfw.DefineAndAppend(f"SelectedElectron_{var}", f"v_ops::{var}(Electron_p4[Electron_presel])")
     for ele_obs in Electron_observables:
         dfw.DefineAndAppend(f"Selected{ele_obs}" , f"{ele_obs}[Electron_presel]")
+
 
     #save information for fatjets
     fatjet_obs = []

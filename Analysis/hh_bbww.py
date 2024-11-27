@@ -63,10 +63,10 @@ def GetLepWeight(lep_index):
     weight_Ele = f"(lep{lep_index}_type == static_cast<int>(Leg::e) ? 1.0 : 1.0)"
 
     #Medium pT Muon SF
-    weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? weight_lep{lep_index}_MuonID_SF_TightID_TrkCentral * weight_lep{lep_index}_MuonID_SF_LoosePFIsoCentral : 1.0)"
+    #weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? weight_lep{lep_index}_MuonID_SF_TightID_TrkCentral * weight_lep{lep_index}_MuonID_SF_LoosePFIsoCentral : 1.0)"
 
     #High pT Muon SF
-    #weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? weight_lep{lep_index}_HighPt_MuonID_SF_HighPtIDCentral * weight_lep{lep_index}_HighPt_MuonID_SF_RecoCentral * weight_lep{lep_index}_HighPt_MuonID_SF_TightIDCentral : 1.0)"
+    weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? weight_lep{lep_index}_HighPt_MuonID_SF_HighPtIDCentral * weight_lep{lep_index}_HighPt_MuonID_SF_RecoCentral * weight_lep{lep_index}_HighPt_MuonID_SF_TightIDCentral : 1.0)"
 
     #No Muon SF
     #weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? 1.0 : 1.0)"
@@ -141,8 +141,15 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         #Define Single Muon Control Region (W Region) -- Require Muon + High MT (>50)
         #Define Double Muon Control Region (Z Region) -- Require lep1 lep2 are opposite sign muons, and combined mass is within 10GeV of 91
 
-        self.df = self.df.Define("Z_Region", f"(lep1_type == 2 && lep2_type == 2) && (abs(diLep_p4.mass - 91) < 10)")
+        self.df = self.df.Define("Z_Region", f"(lep1_type == 2 && lep2_type == 2) && (abs(diLep_p4.mass() - 91) < 10)")
+        self.df = self.df.Define("diLep_mass", f"(lep1_type == 2 && lep2_type == 2) ? diLep_p4.mass() : 0.0")
         print("Doing something! defineControlRegions")
+
+
+    def calculateMT(self):
+        self.df = self.df.Define("MT_lep1", f"(lep1_type > 0) ? Calculate_MT(lep1_p4, PuppiMET_p4) : 0.0")
+        self.df = self.df.Define("MT_lep2", f"(lep2_type > 0) ? Calculate_MT(lep1_p4, PuppiMET_p4) : 0.0")
+        self.df = self.df.Define("MT_tot", f"(lep1_type > 0 && lep2_type > 0) ? Calculate_TotalMT(lep1_p4, lep2_p4, DeepMETResolutionTune_p4) : 0.0")
 
     def selectTrigger(self, trigger):
         self.df = self.df.Filter(trigger)
@@ -184,10 +191,10 @@ def defineAllP4(df):
     df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")
     for idx in [0,1]:
         df = Utilities.defineP4(df, f"lep{idx+1}")
-    for met_var in ['DeepMETResolutionTune', 'DeepMETResponseTune']:
+    for met_var in ['DeepMETResolutionTune', 'DeepMETResponseTune', 'PuppiMET']:
         df = df.Define(f"{met_var}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({met_var}_pt,0.,{met_var}_phi,0.)")
 
-    df = df.Define(f"diLep_p4", f"(lep1+lep2)")
+    df = df.Define(f"diLep_p4", f"(lep1_p4+lep2_p4)")
     return df
 
 
@@ -204,4 +211,5 @@ def PrepareDfForHistograms(dfForHistograms):
     #dfForHistograms.defineTriggers()
     #dfForHistograms.redefineWeights()
     #dfForHistograms.df = createInvMass(dfForHistograms.df)
+    dfForHistograms.calculateMT()
     return dfForHistograms

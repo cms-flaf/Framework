@@ -43,11 +43,11 @@ def createSkim(inFile, outFile, period, sample, X_mass, node_index, mpv, config,
     df = Baseline.RecoHttCandidateSelection(df, config["GLOBAL"])
     df = Baseline.RecoJetSelection(df)
 
-    df = df.Define('genChannel', 'genHLepCandidate->channel()')
+    df = df.Define('genChannel', 'genHttCandidate->channel()')
     df = df.Define('recoChannel', 'HttCandidate.channel()')
 
     df = df.Filter("genChannel == recoChannel", "SameGenRecoChannels")
-    df = df.Filter("GenRecoMatching(*genHLepCandidate, HttCandidate, 0.2)", "SameGenRecoHTT")
+    df = df.Filter("GenRecoMatching(*genHttCandidate, HttCandidate, 0.2)", "SameGenRecoHTT")
     # df = Baseline.RequestOnlyResolvedRecoJets(df)
 
     df = Baseline.GenRecoJetMatching(df)

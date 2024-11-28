@@ -82,7 +82,7 @@ def getDefaultColumnsToSave(isData):
 
 def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal, global_params, channels):
     dfw.Apply(CommonBaseline.SelectRecoP4, syst_name, global_params["nano_version"])
-    dfw.Apply(AnaBaseline.RecoHLepCandidateSelection, global_params)
+    dfw.Apply(AnaBaseline.RecoHttCandidateSelection, global_params)
     dfw.Apply(AnaBaseline.RecoJetSelection, global_params["era"])
     dfw.Apply(AnaBaseline.ThirdLeptonVeto)
     dfw.Apply(AnaBaseline.DefineHbbCand, global_params["met_type"])
@@ -102,9 +102,9 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
             dfw.DefineAndAppend("nJetFromGenHbb", "Jet_p4[Jet_fromGenHbb && Jet_bCand].size()")
 
             for gen_idx in range(2):
-                dfw.DefineAndAppend(f"genLepton{gen_idx+1}_legType", f"static_cast<int>(genHLepCandidate->leg_type[{gen_idx}])")
+                dfw.DefineAndAppend(f"genLepton{gen_idx+1}_legType", f"static_cast<int>(genHttCandidate->leg_type[{gen_idx}])")
                 for var in [ 'pt', 'eta', 'phi', 'mass' ]:
-                    dfw.DefineAndAppend(f"genLepton{gen_idx+1}_{var}", f"static_cast<float>(genHLepCandidate->leg_p4[{gen_idx}].{var}())")
+                    dfw.DefineAndAppend(f"genLepton{gen_idx+1}_{var}", f"static_cast<float>(genHttCandidate->leg_p4[{gen_idx}].{var}())")
 
     dfw.DefineAndAppend(f"nBJets", f"Jet_p4[Jet_bCand].size()")
     if global_params["storeExtraJets"]:
@@ -125,22 +125,21 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
     dfw.DefineAndAppend(f"met_phi_nano", f"static_cast<float>({pf_str}_p4_nano.phi())")
     dfw.DefineAndAppend("met_pt", f"static_cast<float>({pf_str}_p4.pt())")
     dfw.DefineAndAppend("met_phi", f"static_cast<float>({pf_str}_p4.phi())")
-    dfw.DefineAndAppend("metnomu_pt_nano", f"static_cast<float>(GetMetNoMu(HLepCandidate, {pf_str}_p4_nano).pt())")
-    dfw.DefineAndAppend("metnomu_phi_nano", f"static_cast<float>(GetMetNoMu(HLepCandidate, {pf_str}_p4_nano).phi())")
-    dfw.DefineAndAppend("metnomu_pt", f"static_cast<float>(GetMetNoMu(HLepCandidate, {pf_str}_p4).pt())")
-    dfw.DefineAndAppend("metnomu_phi", f"static_cast<float>(GetMetNoMu(HLepCandidate, {pf_str}_p4).phi())")
+    dfw.DefineAndAppend("metnomu_pt_nano", f"static_cast<float>(GetMetNoMu(HttCandidate, {pf_str}_p4_nano).pt())")
+    dfw.DefineAndAppend("metnomu_phi_nano", f"static_cast<float>(GetMetNoMu(HttCandidate, {pf_str}_p4_nano).phi())")
+    dfw.DefineAndAppend("metnomu_pt", f"static_cast<float>(GetMetNoMu(HttCandidate, {pf_str}_p4).pt())")
+    dfw.DefineAndAppend("metnomu_phi", f"static_cast<float>(GetMetNoMu(HttCandidate, {pf_str}_p4).phi())")
     for var in ["covXX", "covXY", "covYY"]:
         dfw.DefineAndAppend(f"met_{var}", f"static_cast<float>({pf_str}_{var})")
 
     if trigger_class is not None:
-        channel = f'Htt'#{global_params["analysis_config_area"][-2:].lower()}'
-        hltBranches = dfw.Apply(trigger_class.ApplyTriggers, lepton_legs,channel, isData, isSignal)
+        hltBranches = dfw.Apply(trigger_class.ApplyTriggers, lepton_legs, isData, isSignal)
         dfw.colToSave.extend(hltBranches)
     dfw.Define(f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
     dfw.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
     dfw.Define( f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
-    dfw.DefineAndAppend("channelId","static_cast<int>(HLepCandidate.channel())")
-    channel_to_select = " || ".join(f"HLepCandidate.channel()==Channel::{ch}" for ch in channels)#global_params["channelSelection"])
+    dfw.DefineAndAppend("channelId","static_cast<int>(HttCandidate.channel())")
+    channel_to_select = " || ".join(f"HttCandidate.channel()==Channel::{ch}" for ch in channels)#global_params["channelSelection"])
     dfw.Filter(channel_to_select, "select channels")
     fatjet_obs = []
     fatjet_obs.extend(FatJetObservables)
@@ -148,7 +147,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         dfw.Define(f"FatJet_genJet_idx", f" FindMatching(FatJet_p4[FatJet_bbCand],GenJetAK8_p4,0.3)")
         fatjet_obs.extend(JetObservablesMC)
         if isSignal:
-            dfw.DefineAndAppend("genchannelId","static_cast<int>(genHLepCandidate->channel())")
+            dfw.DefineAndAppend("genchannelId","static_cast<int>(genHttCandidate->channel())")
     dfw.DefineAndAppend(f"SelectedFatJet_pt", f"v_ops::pt(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_eta", f"v_ops::eta(FatJet_p4[FatJet_bbCand])")
     dfw.DefineAndAppend(f"SelectedFatJet_phi", f"v_ops::phi(FatJet_p4[FatJet_bbCand])")
@@ -186,34 +185,34 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         def LegVar(var_name, var_expr, var_type=None, var_cond=None, check_leg_type=True, default=0):
             cond = var_cond
             if check_leg_type:
-                type_cond = f"HLepCandidate.leg_type[{leg_idx}] != Leg::none"
+                type_cond = f"HttCandidate.leg_type[{leg_idx}] != Leg::none"
                 cond = f"{type_cond} && ({cond})" if cond else type_cond
             define_expr = f'static_cast<{var_type}>({var_expr})' if var_type else var_expr
             if cond:
                 define_expr = f'{cond} ? ({define_expr}) : {default}'
             dfw.DefineAndAppend( f"tau{leg_idx+1}_{var_name}", define_expr)
 
-        LegVar('legType', f"HLepCandidate.leg_type[{leg_idx}]", var_type='int', check_leg_type=False)
+        LegVar('legType', f"HttCandidate.leg_type[{leg_idx}]", var_type='int', check_leg_type=False)
         for var in [ 'pt', 'eta', 'phi', 'mass' ]:
-            LegVar(var, f'HLepCandidate.leg_p4[{leg_idx}].{var}()', var_type='float', default='-1.f')
-        LegVar('charge', f'HLepCandidate.leg_charge[{leg_idx}]', var_type='int')
+            LegVar(var, f'HttCandidate.leg_p4[{leg_idx}].{var}()', var_type='float', default='-1.f')
+        LegVar('charge', f'HttCandidate.leg_charge[{leg_idx}]', var_type='int')
 
-        dfw.Define(f"tau{leg_idx+1}_recoJetMatchIdx", f"""HLepCandidate.leg_type[{leg_idx}] != Leg::none
-                                                          ? FindMatching(HLepCandidate.leg_p4[{leg_idx}], Jet_p4, 0.3)
+        dfw.Define(f"tau{leg_idx+1}_recoJetMatchIdx", f"""HttCandidate.leg_type[{leg_idx}] != Leg::none
+                                                          ? FindMatching(HttCandidate.leg_p4[{leg_idx}], Jet_p4, 0.3)
                                                           : -1""")
-        LegVar('iso', f"HLepCandidate.leg_rawIso.at({leg_idx})")
+        LegVar('iso', f"HttCandidate.leg_rawIso.at({leg_idx})")
         for deepTauScore in deepTauScores:
-            LegVar(deepTauScore, f"Tau_{deepTauScore}.at(HLepCandidate.leg_index[{leg_idx}])",
-                   var_cond=f"HLepCandidate.leg_type[{leg_idx}] == Leg::tau", default='-1.f')
+            LegVar(deepTauScore, f"Tau_{deepTauScore}.at(HttCandidate.leg_index[{leg_idx}])",
+                   var_cond=f"HttCandidate.leg_type[{leg_idx}] == Leg::tau", default='-1.f')
         for muon_obs in Muon_observables:
-            LegVar(muon_obs, f"{muon_obs}.at(HLepCandidate.leg_index[{leg_idx}])",
-                   var_cond=f"HLepCandidate.leg_type[{leg_idx}] == Leg::mu", default='-1')
+            LegVar(muon_obs, f"{muon_obs}.at(HttCandidate.leg_index[{leg_idx}])",
+                   var_cond=f"HttCandidate.leg_type[{leg_idx}] == Leg::mu", default='-1')
         for ele_obs in Electron_observables:
-            LegVar(ele_obs, f"{ele_obs}.at(HLepCandidate.leg_index[{leg_idx}])",
-                   var_cond=f"HLepCandidate.leg_type[{leg_idx}] == Leg::e", default='-1')
+            LegVar(ele_obs, f"{ele_obs}.at(HttCandidate.leg_index[{leg_idx}])",
+                   var_cond=f"HttCandidate.leg_type[{leg_idx}] == Leg::e", default='-1')
         if not isData:
             dfw.Define(f"tau{leg_idx+1}_genMatchIdx",
-                       f"HLepCandidate.leg_type[{leg_idx}] != Leg::none ? HLepCandidate.leg_genMatchIdx[{leg_idx}] : -1")
+                       f"HttCandidate.leg_type[{leg_idx}] != Leg::none ? HttCandidate.leg_genMatchIdx[{leg_idx}] : -1")
             LegVar('gen_kind', f'genLeptons.at(tau{leg_idx+1}_genMatchIdx).kind()',
                    var_type='int', var_cond=f"tau{leg_idx+1}_genMatchIdx>=0",
                    default='static_cast<int>(GenLeptonMatch::NoMatch)')
@@ -236,9 +235,9 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
                    var_type='float', var_cond=f"tau{leg_idx+1}_recoJetMatchIdx>=0", default='-1.f')
 
         #Save the lep* p4 and index directly to avoid using HwwCandidate in SF LUTs
-        dfw.Define( f"tau{leg_idx+1}_p4", f"HLepCandidate.leg_type.size() > {leg_idx} ? HLepCandidate.leg_p4.at({leg_idx}) : LorentzVectorM()")
-        dfw.Define( f"tau{leg_idx+1}_index", f"HLepCandidate.leg_type.size() > {leg_idx} ? HLepCandidate.leg_index.at({leg_idx}) : -1")
-        dfw.Define( f"tau{leg_idx+1}_type", f"HLepCandidate.leg_type.size() > {leg_idx} ? static_cast<int>(HLepCandidate.leg_type.at({leg_idx})) : -1")
+        dfw.Define( f"tau{leg_idx+1}_p4", f"HttCandidate.leg_type.size() > {leg_idx} ? HttCandidate.leg_p4.at({leg_idx}) : LorentzVectorM()")
+        dfw.Define( f"tau{leg_idx+1}_index", f"HttCandidate.leg_type.size() > {leg_idx} ? HttCandidate.leg_index.at({leg_idx}) : -1")
+        dfw.Define( f"tau{leg_idx+1}_type", f"HttCandidate.leg_type.size() > {leg_idx} ? static_cast<int>(HttCandidate.leg_type.at({leg_idx})) : -1")
 
         dfw.Define(f"b{leg_idx+1}_idx", f"Hbb_isValid ? HbbCandidate->leg_index[{leg_idx}] : -1")
         if global_params["era"].startswith("Run2"):

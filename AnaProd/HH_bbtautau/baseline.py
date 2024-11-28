@@ -21,8 +21,8 @@ def getChannelLegs(channel):
     return legs
 
 def PassGenAcceptance(df):
-    df = df.Filter("genHLepCandidate.get() != nullptr", "genHLepCandidate present")
-    return df.Filter("PassGenAcceptance(*genHLepCandidate)", "genHLepCandidate Acceptance")
+    df = df.Filter("genHttCandidate.get() != nullptr", "genHttCandidate present")
+    return df.Filter("PassGenAcceptance(*genHttCandidate)", "genHttCandidate Acceptance")
 
 def GenJetSelection(df):
     df = df.Define("GenJet_B1","GenJet_pt > 20 && abs(GenJet_eta) < 2.5 && GenJet_Hbb")
@@ -31,13 +31,13 @@ def GenJetSelection(df):
 
 def GenJetHttOverlapRemoval(df):
     for var in ["GenJet", "GenJetAK8"]:
-        df = df.Define(f"{var}_B2", f"RemoveOverlaps({var}_p4, {var}_B1,{{{{genHLepCandidate->leg_p4[0], genHLepCandidate->leg_p4[1]}},}}, 2, 0.5)" )
-    return df.Filter("GenJet_idx[GenJet_B2].size()==2 || (GenJetAK8_idx[GenJetAK8_B2].size()==1 && genHbb_isBoosted)", "No overlap between genJets and genHLepCandidates")
+        df = df.Define(f"{var}_B2", f"RemoveOverlaps({var}_p4, {var}_B1,{{{{genHttCandidate->leg_p4[0], genHttCandidate->leg_p4[1]}},}}, 2, 0.5)" )
+    return df.Filter("GenJet_idx[GenJet_B2].size()==2 || (GenJetAK8_idx[GenJetAK8_B2].size()==1 && genHbb_isBoosted)", "No overlap between genJets and genHttCandidates")
 
 def RequestOnlyResolvedGenJets(df):
     return df.Filter("GenJet_idx[GenJet_B2].size()==2", "Resolved topology")
 
-def RecoHLepCandidateSelection(df, config):
+def RecoHttCandidateSelection(df, config):
     df = df.Define("Electron_B0", f"""
         v_ops::pt(Electron_p4) > 10 && abs(v_ops::eta(Electron_p4)) < 2.5 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045  """) # && (Electron_mvaIso_WP90 || (Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all < 0.5))
 
@@ -108,18 +108,18 @@ def RecoHLepCandidateSelection(df, config):
     stringfilter = " || ".join(cand_filters)
     df = df.Filter(" || ".join(cand_filters), "Reco Baseline 2")
     cand_list_str = ', '.join([ '&' + c for c in cand_columns])
-    return df.Define('HLepCandidate', f'GetBestHTTCandidate<2>({{ {cand_list_str} }}, event)')
+    return df.Define('HttCandidate', f'GetBestHTTCandidate<2>({{ {cand_list_str} }}, event)')
 
 def ThirdLeptonVeto(df):
     df = df.Define("Electron_vetoSel",
                    f"""v_ops::pt(Electron_p4) > 10 && abs(v_ops::eta(Electron_p4)) < 2.5 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045
                       && ( Electron_mvaIso_WP90 == true )
-                     && (HLepCandidate.isLeg(Electron_idx, Leg::e)== false)""") # || ( Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all<0.3) --> removed
+                     && (HttCandidate.isLeg(Electron_idx, Leg::e)== false)""") # || ( Electron_mvaNoIso_WP90 && Electron_pfRelIso03_all<0.3) --> removed
     df = df.Filter("Electron_idx[Electron_vetoSel].size() == 0", "No extra electrons")
     df = df.Define("Muon_vetoSel",
                    f"""v_ops::pt(Muon_p4) > 10 && abs(v_ops::eta(Muon_p4)) < 2.4 && abs(Muon_dz) < 0.2 && abs(Muon_dxy) < 0.045
                       && ( Muon_mediumId || Muon_tightId ) && Muon_pfRelIso04_all<0.3
-                      && (HLepCandidate.isLeg(Muon_idx, Leg::mu) == false)""")
+                      && (HttCandidate.isLeg(Muon_idx, Leg::mu) == false)""")
     df = df.Filter("Muon_idx[Muon_vetoSel].size() == 0", "No extra muons")
     return df
 
@@ -127,14 +127,14 @@ def RecoJetSelection(df, era):
     jet_puID_cut = "&& (Jet_puId>0 || v_ops::pt(Jet_p4)>50)" if era.startswith("Run2") else ""
     df = df.Define("Jet_bIncl", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 2.5 && ( Jet_jetId & 2 ) {jet_puID_cut}")
     df = df.Define("FatJet_bbIncl", "FatJet_msoftdrop > 30 && abs(v_ops::eta(FatJet_p4)) < 2.5")
-    df = df.Define("Jet_bCand", "RemoveOverlaps(Jet_p4, Jet_bIncl,{{HLepCandidate.leg_p4[0], HLepCandidate.leg_p4[1]},}, 2, 0.5)")
-    df = df.Define("FatJet_bbCand", "RemoveOverlaps(FatJet_p4, FatJet_bbIncl, {{HLepCandidate.leg_p4[0], HLepCandidate.leg_p4[1]},}, 2, 0.5)")
+    df = df.Define("Jet_bCand", "RemoveOverlaps(Jet_p4, Jet_bIncl,{{HttCandidate.leg_p4[0], HttCandidate.leg_p4[1]},}, 2, 0.5)")
+    df = df.Define("FatJet_bbCand", "RemoveOverlaps(FatJet_p4, FatJet_bbIncl, {{HttCandidate.leg_p4[0], HttCandidate.leg_p4[1]},}, 2, 0.5)")
     return df
 
 def ExtraRecoJetSelection(df, era):
     jet_puID_cut = "&& (Jet_puId>0 || v_ops::pt(Jet_p4)>50)" if era.startswith("Run2") else ""
     df = df.Define("ExtraJet_B0", f"v_ops::pt(Jet_p4)>20 && abs(v_ops::eta(Jet_p4)) < 5 && ( Jet_jetId & 2 ) {jet_puID_cut}")
-    df = df.Define(f"ObjectsToRemoveOverlap", "if(Hbb_isValid){return std::vector<RVecLV>({{HLepCandidate.leg_p4[0], HLepCandidate.leg_p4[1],HbbCandidate->leg_p4[0],HbbCandidate->leg_p4[1]}}); } return std::vector<RVecLV>({{HLepCandidate.leg_p4[0], HLepCandidate.leg_p4[1]}})")
+    df = df.Define(f"ObjectsToRemoveOverlap", "if(Hbb_isValid){return std::vector<RVecLV>({{HttCandidate.leg_p4[0], HttCandidate.leg_p4[1],HbbCandidate->leg_p4[0],HbbCandidate->leg_p4[1]}}); } return std::vector<RVecLV>({{HttCandidate.leg_p4[0], HttCandidate.leg_p4[1]}})")
     df = df.Define(f"ExtraJet_B1", """ RemoveOverlaps(Jet_p4, ExtraJet_B0,ObjectsToRemoveOverlap, 2, 0.5)""")
     return df
 
@@ -148,6 +148,6 @@ def GenRecoJetMatching(df):
     return df.Filter("Jet_genJetIdx_matched[Jet_genMatched].size()>=2", "Two different gen-reco jet matches at least")
 
 def DefineHbbCand(df, met_type):
-    df = df.Define("Jet_HHBtagScore", f"if(HLepCandidate.channel()==Channel::eTau || HLepCandidate.channel()==Channel::muTau || HLepCandidate.channel()==Channel::tauTau) return GetHHBtagScore(Jet_bCand, Jet_idx, Jet_p4,Jet_btagDeepFlavB, {met_type}_pt,  {met_type}_phi, HLepCandidate, period, event); return Jet_btagDeepFlavB;")
+    df = df.Define("Jet_HHBtagScore", f"if(HttCandidate.channel()==Channel::eTau || HttCandidate.channel()==Channel::muTau || HttCandidate.channel()==Channel::tauTau) return GetHHBtagScore(Jet_bCand, Jet_idx, Jet_p4,Jet_btagDeepFlavB, {met_type}_pt,  {met_type}_phi, HttCandidate, period, event); return Jet_btagDeepFlavB;")
     df = df.Define("HbbCandidate", "GetHbbCandidate(Jet_HHBtagScore, Jet_bCand, Jet_p4, Jet_idx)")
     return df

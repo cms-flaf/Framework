@@ -102,8 +102,6 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
             dataframe_new = dataframe_new.Filter(f"{cat}")
             if cat.startswith('btag_shape'):
                 final_string_weight = f"final_weight_0_{ch}_{cat}_{reg}"
-            # print(ch, cat, reg)
-            # dataframe_new.Define("final_weight", final_string_weight).Display({f"event","final_weight",f"weight_trg_{ch}",f"weight_HLT_{ch}",f"weight_HLT_singleTau","weight_HLT_MET"}).Print()
             histograms[(key_1, key_2)].append(dataframe_new.Define("final_weight", final_string_weight).Define("weight_for_hists", f"{weight_name}").Histo1D(GetModel(hist_cfg_dict, var), var, "weight_for_hists"))
     return histograms
 

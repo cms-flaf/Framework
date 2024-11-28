@@ -17,8 +17,6 @@ from Analysis.hh_bbtautau import *
 
 def checkFile(inFileRoot, channels, qcdRegions, categories, var):
     keys_channels = [str(key.GetName()) for key in inFileRoot.GetListOfKeys()]
-    # if not (Utilities.checkLists(keys_channel, channels)):
-    #     print("check list not worked for channels")
     for channel in channels:
         if channel not in keys_channels:
             return False

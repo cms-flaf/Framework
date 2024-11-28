@@ -147,7 +147,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('inputFile', nargs='+', type=str)
     parser.add_argument('--outFile', required=True, type=str)
-    parser.add_argument('--year', required=True, type=str)
     parser.add_argument('--datasetFile', required=True, type=str)
     parser.add_argument('--var', required=True, type=str)
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
@@ -162,7 +161,7 @@ if __name__ == "__main__":
 
     #Konstantin doesn't want to load yamls all separately, instead we will load the analysis args and use Setup class
     setup = Setup.Setup(args.ana_path, args.period)
-    print(f"Setup dict {setup.samples}")
+    # print(f"Setup dict {setup.samples}")
 
     unc_cfg_dict = setup.weights_config
     sample_cfg_dict = setup.samples
@@ -171,7 +170,7 @@ if __name__ == "__main__":
 
     analysis_import = (global_cfg_dict['analysis_import'])
     analysis = importlib.import_module(f'{analysis_import}')
-    
+
     all_samples_list = args.datasetFile.split(',')
     all_samples_types = {}
     all_samples_names = {}
@@ -209,18 +208,10 @@ if __name__ == "__main__":
         raise RuntimeError(f"all_infiles have len {len(all_infiles)} and all_samples_list have len {len(all_samples_list)}")
     ignore_samples = []
     for (inFileName, sample_name) in zip(all_infiles, all_samples_list):
+        print(inFileName)
         if not os.path.exists(inFileName):
             print(f"{inFileName} does not exist")
             continue
-            #raise RuntimeError(f"{inFileName} removed")
-        #print(sample_name)
-
-        #Sometimes we do not want to stack all samples (signal)
-        if 'samples_to_skip_hist' in global_cfg_dict.keys():
-            #Add this key check to avoid breaking bbtautau
-            if sample_name in global_cfg_dict['samples_to_skip_hist']:
-                continue
-
         inFileRoot = ROOT.TFile.Open(inFileName, "READ")
         if inFileRoot.IsZombie():
             inFileRoot.Close()
@@ -241,7 +232,7 @@ if __name__ == "__main__":
 
         if sample_name == 'data':
             all_samples_types['data'] = ['data']
-        else:      
+        else:
             sample_key = sample_type if sample_type in sample_types_to_merge else sample_name
             if sample_name not in ignore_samples:
                 if sample_key not in all_samples_types.keys(): all_samples_types[sample_key] = []
@@ -257,21 +248,7 @@ if __name__ == "__main__":
         all_histograms_1D=GetBTagWeightDict(args.var,all_histograms, categories, boosted_categories, boosted_variables)
     else:
         all_histograms_1D = all_histograms
-    # print(all_histograms_1D)
-
-    # for key in all_histograms_1D.keys():
-    #     print(key)
-
-    #     for subdict,hito in all_histograms_1D[key].items():
-    #         print(subdict)
-    #         histo = hito.Clone()
-    #         # hito = all_histograms_1D[key]
-    #         print(f"integral is {histo.Integral(0,histo.GetNbinsX())}")
-
     fixNegativeContributions = False
-    # if args.var != 'kinFit_m':
-        # fixNegativeContributions=True
-    # print(args.var, all_histograms_1D, channels, all_categories, args.uncSource, all_samples_types.keys(), scales)
     error_on_qcdnorm,error_on_qcdnorm_varied = AddQCDInHistDict(args.var, all_histograms_1D, channels, all_categories, args.uncSource, all_samples_types.keys(), scales, wantNegativeContributions=False)
 
     outFile = ROOT.TFile(args.outFile, "RECREATE")

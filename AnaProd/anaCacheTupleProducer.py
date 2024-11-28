@@ -37,10 +37,11 @@ def applyLegacyVariables(dfw, global_cfg_dict, is_central=True):
     for channel in channels :
         ch_value = global_cfg_dict['channelDefinition'][channel]
         dfw.df = dfw.df.Define(f"{channel}", f"channelId=={ch_value}")
-        trigger_list = global_cfg_dict['triggers'][channel].split(' || ')
+        trigger_list = global_cfg_dict['triggers'][channel]
         for trigger in trigger_list:
-            if trigger not in dfw.df.GetColumnNames():
-                dfw.df = dfw.df.Define(trigger, "1")
+            trigger_name = 'HLT_'+trigger
+            if trigger_name not in dfw.df.GetColumnNames():
+                dfw.df = dfw.df.Define(trigger_name, "1")
     #entryvalid_stri = '((b1_pt > 0) & (b2_pt > 0)) & ('
     entryvalid_stri = '('
     entryvalid_stri += ' || '.join(f'({ch} & {global_cfg_dict["triggers"][ch]})' for ch in channels)

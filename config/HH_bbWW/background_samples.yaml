@@ -1,0 +1,81 @@
+############## WJetsToLNu ##############
+WtoLNu_amcatnloFXFX:
+  sampleType: W
+
+
+############## TT ##############
+TT:
+  sampleType: TT
+TTTo2L2Nu:
+  sampleType: TT
+TTTo4Q:
+  sampleType: TT
+TTToLNu2Q:
+  sampleType: TT
+
+
+############## DY ##############
+DYto2L_M-10to50_amcatnloFXFX:
+  sampleType: DY
+DYto2L_M-50_amcatnloFXFX:
+  sampleType: DY
+
+############## EWK ##############
+
+
+############## single Higgs ##############
+
+
+############## VH non-inclusive ##############
+
+
+############## VV inclusive ##############
+WW:
+  sampleType: VV
+WZ:
+  sampleType: VV
+ZZ:
+  sampleType: VV
+
+
+############## VVV inclusive ##############
+
+
+############## ST #############
+ST_s-channel_antitop_4f_leptonDecays:
+  sampleType: ST
+ST_s-channel_top_4f_leptonDecays:
+  sampleType: ST
+ST_t-channel_antitop_4f_InclusiveDecays:
+  sampleType: ST
+ST_t-channel_top_4f_InclusiveDecay:
+  sampleType: ST
+ST_tW_antitop_2L2Nu:
+  sampleType: ST
+ST_tW_antitop_4Q:
+  sampleType: ST
+ST_tW_antitop_LNu2Q:
+  sampleType: ST
+ST_tW_top_2L2Nu:
+  sampleType: ST
+ST_tW_top_4Q:
+  sampleType: ST
+ST_tW_top_LNu2Q:
+  sampleType: ST
+
+############## TTX inclusive ##############
+TTWW:
+  sampleType: TTX
+TTWH:
+  sampleType: TTX
+TTZH:
+  sampleType: TTX
+TTZToQQ:
+  sampleType: TTX
+TTZZ:
+  sampleType: TTX
+
+
+############## ttH ##############
+
+

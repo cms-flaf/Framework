@@ -96,6 +96,7 @@ class Setup:
         self.analysis_config_area= os.path.join(ana_path, user_config['analysis_config_area'])
         ana_global_config_path = os.path.join(self.analysis_config_area, 'global.yaml')
         ana_sample_config_path = os.path.join(self.analysis_config_area, period, 'samples.yaml')
+        weights_config_path = os.path.join(ana_path, 'config', period, 'weights.yaml')
 
         with open(sample_config_path, 'r') as f:
             sample_config = yaml.safe_load(f)
@@ -112,6 +113,11 @@ class Setup:
         else:
             ana_global_config = {}
 
+        with open(weights_config_path, 'r') as f:
+            weights_config = yaml.safe_load(f)
+
+        self.weights_config = weights_config
+
         self.global_params = load_parameters(user_config, ana_sample_config.get('GLOBAL', {}),
                                              ana_global_config, sample_config.get('GLOBAL', {}))
         apply_customisations(self.global_params, customisations)
@@ -125,7 +131,7 @@ class Setup:
 
         self.fs_dict = {}
 
-        self.hist_config_path = os.path.join(self.ana_path, 'config', 'plot', 'histograms.yaml')
+        self.hist_config_path = os.path.join(self.analysis_config_area, 'plot','histograms.yaml')
         self.hists_ = None
 
         self.background_config_path = os.path.join(self.analysis_config_area, 'background_samples.yaml')

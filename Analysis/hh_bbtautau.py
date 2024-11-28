@@ -80,7 +80,7 @@ def createKeyFilterDict(global_cfg_dict, year):
     return reg_dict
 
 
-def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = 'final_weight_0'):
+def GetBTagWeight(global_cfg_dict,cat,applyBtag=False):
     btag_weight = "1"
     btagshape_weight = "1"
     if applyBtag:
@@ -88,7 +88,7 @@ def ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = 'fin
     else:
         if cat not in global_cfg_dict['boosted_categories'] and not cat.startswith("baseline"):
             btagshape_weight = "weight_bTagShape_Central"
-    return f'{finalWeight_name}*{btag_weight}*{btagshape_weight}'
+    return f'{btag_weight}*{btagshape_weight}'
 
 
 
@@ -146,6 +146,14 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                                     SelectedFatJet_{fatJetVar}_boosted_vec[SelectedFatJet_idxOrdered[0]];
                                    """)
                 #print(fatJetVar)
+
+    def defineTriggers(self):
+        for ch in self.config['channelSelection']:
+            for trg in self.config['triggers'][ch]:
+                trg_name = 'HLT_'+trg
+                if trg_name not in self.df.GetColumnNames():
+                    print(f"{trg_name} not present in colNames")
+                    self.df = self.df.Define(trg_name, "1")
 
     def definePNetSFs(self):
         self.df= self.df.Define("weight_pNet_Central", f"""getSFPNet(SelectedFatJet_p4_boosted.Pt(), "{self.period}", "Central", "{self.pNetWPstring}",{self.whichType})""")
@@ -343,6 +351,27 @@ def PrepareDfForHistograms(dfForHistograms):
     #print(dfForHistograms.df.GetColumnNames())
     dfForHistograms.defineCRs()
     dfForHistograms.defineCategories()
+    dfForHistograms.defineTriggers()
+    dfForHistograms.redefineWeights()
+    dfForHistograms.df = createInvMass(dfForHistograms.df)
     dfForHistograms.defineQCDRegions()
     # dfForHistograms.addNewCols()
     return dfForHistograms
+  
+  
+def defineAllP4(df):
+    df = df.Define(f"SelectedFatJet_idx", f"CreateIndexes(SelectedFatJet_pt.size())")
+    df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")
+    for idx in [0,1]:
+        df = Utilities.defineP4(df, f"tau{idx+1}")
+        df = Utilities.defineP4(df, f"b{idx+1}")
+    for met_var in ['met','metnomu']:
+        df = df.Define(f"{met_var}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({met_var}_pt,0.,{met_var}_phi,0.)")
+        for leg_idx in [0,1]:
+            df = df.Define(f"deltaPhi_{met_var}_tau{leg_idx+1}",f"ROOT::Math::VectorUtil::DeltaPhi({met_var}_p4,tau{leg_idx+1}_p4)")
+            df = df.Define(f"deltaPhi_{met_var}_b{leg_idx+1}",f"ROOT::Math::VectorUtil::DeltaPhi({met_var}_p4,b{leg_idx+1}_p4)")
+    df = df.Define(f"met_nano_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(met_pt_nano,0.,met_phi_nano,0.)")
+    df = df.Define(f"pt_ll", "(tau1_p4+tau2_p4).Pt()")
+    df = df.Define(f"pt_bb", "(b1_p4+b2_p4).Pt()")
+    return df
+

@@ -134,7 +134,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
 
     if trigger_class is not None:
         channel = f'Htt'#{global_params["analysis_config_area"][-2:].lower()}'
-        hltBranches = dfw.Apply(trigger_class.ApplyTriggers, lepton_legs, isData, isSignal)
+        hltBranches = dfw.Apply(trigger_class.ApplyTriggers, lepton_legs,channel, isData, isSignal)
         dfw.colToSave.extend(hltBranches)
     dfw.Define(f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
     dfw.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")

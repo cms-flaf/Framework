@@ -6,9 +6,9 @@ class Triggers():
         with open(triggerFile, "r") as stream:
             self.trigger_dict= yaml.safe_load(stream)
         self.deltaR_matching = deltaR_matching
+        print(self.trigger_dict)
 
     def ApplyTriggers(self, df, offline_lepton_legs, channel, isData = False, isSignal=False, default=0):
-
         hltBranches = []
         matchedObjectsBranches= []
         for path, path_dict in self.trigger_dict.items():

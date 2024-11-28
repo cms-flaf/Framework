@@ -76,12 +76,12 @@ if __name__ == "__main__":
     df = Baseline.CreateRecoP4(df_initial, 'nano', setup.global_params["nano_version"])
     df = Baseline.SelectRecoP4(df, 'nano', setup.global_params["nano_version"])
     df = Baseline.DefineGenObjects(df,isData=False, isHH=True)
-    df = df.Define("genchannelId","static_cast<int>(genHttCandidate->channel())")
+    df = df.Define("genchannelId","static_cast<int>(genHLepCandidate->channel())")
 
     for pfreliso_th in [0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.2, 0.21, 0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29, 0.3, 0.31, 0.32, 0.33, 0.34, 0.35]:
         print(f"using pfreliso th {pfreliso_th}")
-        df = AnaBaseline.RecoHttCandidateSelection_ForEfficiency(df, setup.global_params, pfreliso_th)
-        df = df.Define("recochannelId","static_cast<int>(HttCandidate.channel())")
+        df = AnaBaseline.RecoHLepCandidateSelection_ForEfficiency(df, setup.global_params, pfreliso_th)
+        df = df.Define("recochannelId","static_cast<int>(HLepCandidate.channel())")
         df_den = df.Filter("recochannelId==22 || recochannelId==23")
         print(f"events in reco channels containing a muon are: {df_den.Count().GetValue()}")
         df_num = df_den.Filter("genchannelId==recochannelId").Count().GetValue()

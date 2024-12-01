@@ -164,8 +164,8 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineApplicationRegions(self):
         for ch in self.config['channels_to_consider']:
-            for trg in self.config['triggers'][ch].split(' || '):
-                if trg not in self.df.GetColumnNames():
+            for trg in self.config['triggers'][ch]:
+                if f"HLT_{trg}" not in self.df.GetColumnNames():
                     print(f"{trg} not present in colNames")
                     self.df = self.df.Define(trg, "1")
         singleTau_th_dict = self.config['singleTau_th']
@@ -333,8 +333,8 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         # print(f"isCentral = {self.isCentral}")
 
 def PrepareDfForHistograms(dfForHistograms):
-    # if dfForHistograms.isCentral:
     dfForHistograms.df = defineAllP4(dfForHistograms.df)
+    dfForHistograms.defineTriggers()
     dfForHistograms.defineBoostedVariables()
     dfForHistograms.redefinePUJetIDWeights()
     dfForHistograms.df = createInvMass(dfForHistograms.df)
@@ -343,22 +343,17 @@ def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.defineApplicationRegions()
     if not dfForHistograms.isData:
         dfForHistograms.definePNetSFs()
-        # dfForHistograms.GetTauIDTotalWeight()
         defineTriggerWeights(dfForHistograms)
         if dfForHistograms.wantTriggerSFErrors and dfForHistograms.isCentral:
             defineTriggerWeightsErrors(dfForHistograms)
         defineTotalTriggerWeight(dfForHistograms)
-    #print(dfForHistograms.df.GetColumnNames())
     dfForHistograms.defineCRs()
     dfForHistograms.defineCategories()
-    dfForHistograms.defineTriggers()
-    dfForHistograms.redefineWeights()
-    dfForHistograms.df = createInvMass(dfForHistograms.df)
     dfForHistograms.defineQCDRegions()
-    # dfForHistograms.addNewCols()
     return dfForHistograms
-  
-  
+
+
+
 def defineAllP4(df):
     df = df.Define(f"SelectedFatJet_idx", f"CreateIndexes(SelectedFatJet_pt.size())")
     df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")

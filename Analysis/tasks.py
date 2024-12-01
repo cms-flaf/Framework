@@ -136,10 +136,12 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         customisation_dict = getCustomisationSplit(self.customisations)
         channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
         #Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
-        # channels = ','.join(channels)
+        if type(channels) == list:
+            channels = ','.join(channels)
         #bbww does not use a deepTauVersion
         deepTauVersion = ''
-        if self.global_params['analysis_config_area'] == 'HH_bbtautau': deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
+        isbbtt = 'HH_bbtautau' in self.global_params['analysis_config_area'].split('/')
+        if isbbtt: deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
         region = customisation_dict['region'] if 'region' in customisation_dict.keys() else self.global_params['region_default']
 
 
@@ -285,9 +287,12 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         customisation_dict = getCustomisationSplit(self.customisations)
         channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
         #Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
+        if type(channels) == list:
+            channels = ','.join(channels)
         #bbww does not use a deepTauVersion
         deepTauVersion = ''
-        if self.global_params['analysis_config_area'] == 'HH_bbtautau': deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
+        isbbtt = 'HH_bbtautau' in self.global_params['analysis_config_area'].split('/')
+        if isbbtt: deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
         region = customisation_dict['region'] if 'region' in customisation_dict.keys() else self.global_params['region_default']
         customisation_dict['apply_btag_shape_weights']=='True' if 'apply_btag_shape_weights' in customisation_dict.keys() else self.global_params.get('apply_btag_shape_weights', False)
         uncNames = ['Central']
@@ -337,7 +342,6 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     print(uncName)
                     final_histname = f'all_histograms_{var}_{uncName}.root'
                     tmp_outfile_merge = os.path.join(outdir_histograms,final_histname)
-                    print(tmp_outfile_merge)
                     tmp_outfile_merge_remote = self.remote_target(tmp_outfile_merge, fs=self.fs_histograms)
                     with tmp_outfile_merge_remote.localize("w") as tmp_outfile_merge_unc:
                         #MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config,'--channels',channels, '--apply-btag-shape-weights', applyBTagShapeWeight]#, '--remove-files', 'True']
@@ -346,14 +350,12 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                         if 'btagShape' in self.global_params['corrections']:
                             MergerProducer_cmd.append('--apply-btag-shape-weights')
                             MergerProducer_cmd.append('True')
-                        print(MergerProducer_cmd)
+                        # print(MergerProducer_cmd)
                         ps_call(MergerProducer_cmd,verbose=1)
                     all_outputs_merged.append(tmp_outfile_merge)
-                    print(all_outputs_merged)
         if len(uncNames) > 1:
             all_uncertainties_string = ','.join(unc for unc in uncNames)
             tmp_outFile = self.remote_target( os.path.join(outdir_histograms,f'all_histograms_{var}_hadded.root'), fs=self.fs_histograms)
-            print(all_outputs_merged)
             with contextlib.ExitStack() as stack:
                 local_merged_files = []
                 for infile_merged in all_outputs_merged:

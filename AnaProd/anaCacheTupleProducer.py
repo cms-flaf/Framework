@@ -140,6 +140,7 @@ if __name__ == "__main__":
     parser.add_argument('--compressionLevel', type=int, default=4)
     parser.add_argument('--compressionAlgo', type=str, default="ZLIB")
     parser.add_argument('--deepTauVersion', type=str, default="v2p1")
+    parser.add_argument('--channels', type=str, default="eTau,muTau,tauTau")
     args = parser.parse_args()
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
@@ -157,7 +158,8 @@ if __name__ == "__main__":
         global_cfg_dict = yaml.safe_load(f)
 
     startTime = time.time()
-
+    channels = args.channels.split(',') if type(args.channels) == str else args.channels
+    global_cfg_dict['channelSelection'] = channels
     outFileNameFinal = f'{args.outFileName}'
     # print(outFileNameFinal)
     # print(args.outFileName.split('.')[0])

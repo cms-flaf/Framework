@@ -69,7 +69,6 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
     df = df.Define("entryIndex", "static_cast<int>(rdfentry_)")
     is_data = 'true' if isData else 'false'
     df = df.Define("isData", is_data)
-
     df = Baseline.CreateRecoP4(df, nano_version=setup.global_params['nano_version'])
     df = Baseline.DefineGenObjects(df, isData=isData, isHH=isHH)
 
@@ -186,7 +185,7 @@ if __name__ == "__main__":
     setup = Setup.getGlobal(os.environ['ANALYSIS_PATH'], args.period, args.customisations)
     with open(args.anaCache, 'r') as f:
         anaCache = yaml.safe_load(f)
-    channels = args.channels.split(',')
+    channels = args.channels.split(',') if type(args.channels) == str else args.channels
 
     anaTupleDef = Utilities.load_module(args.anaTupleDef)
     if os.path.isdir(args.outDir):

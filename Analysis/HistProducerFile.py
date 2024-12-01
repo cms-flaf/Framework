@@ -208,12 +208,12 @@ if __name__ == "__main__":
     df_empty = False
     inFile_root = ROOT.TFile.Open(args.inFile,"READ")
     inFile_keys = [k.GetName() for k in inFile_root.GetListOfKeys()]
+    # print(inFile_keys)
     if 'Events' not in inFile_keys:
         key_not_exist = True
     inFile_root.Close()
     if not key_not_exist and ROOT.RDataFrame('Events',args.inFile).Count().GetValue() == 0:
         df_empty = True
-
     isData = args.dataset=='data'
     scales = global_cfg_dict['scales']
     categories = global_cfg_dict['categories']
@@ -232,14 +232,15 @@ if __name__ == "__main__":
     if args.sampleType in global_cfg_dict['signal_types']:
         datasetType = 0
     # print(f"datasetType is {datasetType}")
-
+    # print()
     create_new_hist = key_not_exist or df_empty
     all_dataframes = {}
     all_dataframes_shape = {}
     all_histograms = {}
     compute_rel_weights_not_data = args.compute_rel_weights and args.dataset!='data'
     if not create_new_hist:
-        args.deepTauVersion = "PlaceHolder"
+        if args.deepTauVersion == "":
+            args.deepTauVersion = "PlaceHolder"
         #Put kwargset into config later
         kwargset = {}
         if analysis_import == "Analysis.hh_bbww":

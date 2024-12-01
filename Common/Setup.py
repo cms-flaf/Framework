@@ -131,7 +131,8 @@ class Setup:
 
         self.fs_dict = {}
 
-        self.hist_config_path = os.path.join(self.analysis_config_area, 'plot','histograms.yaml')
+        self.hist_config_path = os.path.join(ana_path, 'config', 'plot','histograms.yaml')
+        # self.hist_config_path = os.path.join(self.analysis_config_area, 'plot','histograms.yaml')
         self.hists_ = None
 
         self.background_config_path = os.path.join(self.analysis_config_area, 'background_samples.yaml')

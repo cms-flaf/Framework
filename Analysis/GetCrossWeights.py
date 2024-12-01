@@ -227,20 +227,20 @@ def defineTriggerWeightsErrors(dfBuilder):
 def defineTriggerWeights(dfBuilder): # needs application region def
 
     # *********************** tauTau ***********************
-    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_diTau", "if (HLT_ditau && Legacy_region) {return (weight_tau1_TrgSF_ditau_3ProngCentral*weight_tau1_TrgSF_ditau_DM0Central*weight_tau1_TrgSF_ditau_DM1Central*weight_tau2_TrgSF_ditau_3ProngCentral*weight_tau2_TrgSF_ditau_DM0Central*weight_tau2_TrgSF_ditau_DM1Central); }return 1.f;")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_diTau", "if (HLT_ditau && tauTau && Legacy_region) {return (weight_tau1_TrgSF_ditau_3ProngCentral*weight_tau1_TrgSF_ditau_DM0Central*weight_tau1_TrgSF_ditau_DM1Central*weight_tau2_TrgSF_ditau_3ProngCentral*weight_tau2_TrgSF_ditau_DM0Central*weight_tau2_TrgSF_ditau_DM1Central); }return 1.f;")
     # *********************** singleTau ***********************
     # dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleTau", "if (HLT_singleTau && SingleTau_region && !Legacy_region) {return (weight_tau1_TrgSF_singleTauCentral*weight_tau2_TrgSF_singleTauCentral) ;} return 1.f;")
-    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleTau", "if (HLT_singleTau && SingleTau_region && !(Legacy_region)) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleTau, weight_tau1_TrgSF_singleTauCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleTau, weight_tau2_TrgSF_singleTauCentral); } return 1.f;")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleTau", "if (HLT_singleTau && (tauTau || eTau || muTau ) && SingleTau_region && !(Legacy_region)) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleTau, weight_tau1_TrgSF_singleTauCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleTau, weight_tau2_TrgSF_singleTauCentral); } return 1.f;")
     # *********************** MET ***********************
-    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_MET", "if (HLT_MET && !(SingleTau_region) && !(Legacy_region)) { return (weight_TrgSF_METCentral) ;} return 1.f;")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_MET", "if (HLT_MET && (tauTau || eTau || muTau ) && !(SingleTau_region) && !(Legacy_region)) { return (weight_TrgSF_METCentral) ;} return 1.f;")
     # *********************** singleEle ***********************
     # dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleEle", "if (HLT_singleEle && SingleEle_region) {return weight_tau1_TrgSF_singleEleCentral*weight_tau2_TrgSF_singleEleCentral ;} return 1.f;")
-    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleEle", "if (HLT_singleEle && SingleEle_region) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleEle, weight_tau1_TrgSF_singleEleCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleEle, weight_tau2_TrgSF_singleEleCentral) ;} return 1.f;")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleEle", "if (HLT_singleEle && SingleEle_region && eE) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleEle, weight_tau1_TrgSF_singleEleCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleEle, weight_tau2_TrgSF_singleEleCentral) ;} return 1.f;")
     # *********************** singleMu ***********************
     # dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleMu", "if (HLT_singleMu && SingleMu_region) {return weight_tau1_TrgSF_singleMuCentral*weight_tau2_TrgSF_singleMuCentral ;} return 1.f;")
-    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleMu", "if (HLT_singleMu && SingleMu_region) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleMu, weight_tau1_TrgSF_singleMuCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleMu, weight_tau2_TrgSF_singleMuCentral) ;} return 1.f;")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleMu", "if (HLT_singleMu && SingleMu_region && muMu) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleMu, weight_tau1_TrgSF_singleMuCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleMu, weight_tau2_TrgSF_singleMuCentral) ;} return 1.f;")
     # *********************** singleLepPerEMu ***********************
-    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_eMu", "if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau1_TrgSF_singleEleCentral!=1.f) {return (weight_tau1_TrgSF_singleEleCentral*weight_tau2_TrgSF_singleMuCentral);} return 1.f;")
+    dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_eMu", "if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau1_TrgSF_singleEleCentral!=1.f && eMu) {return (weight_tau1_TrgSF_singleEleCentral*weight_tau2_TrgSF_singleMuCentral);} return 1.f;")
     #dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_muE", f"if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau2_TrgSF_singleEleCentral!=1.f) return (weight_tau2_TrgSF_singleEleCentral*weight_tau1_TrgSF_singleMuCentral); return 1.f;")
 
 

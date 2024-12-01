@@ -87,30 +87,22 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
 
         if var in boosted_variables and uncName in unc_to_not_consider_boosted: continue
         total_weight_expression = analysis.GetWeight(ch,cat,boosted_categories) if sample_type!='data' else "1"
-        # if not isCentral:
-        #     print(f"total weight expression = {total_weight_expression}")
 
         weight_name = "final_weight"
         if not isCentral:
             if type(unc_cfg_dict)==dict:
                 if uncName in unc_cfg_dict.keys() and 'expression' in unc_cfg_dict[uncName].keys():
                     weight_name = unc_cfg_dict[uncName]['expression'].format(scale=scale)
-            # print(f" weight name = {weight_name}")
         if (key_1, key_2) not in histograms.keys():
             histograms[(key_1, key_2)] = []
 
         for dataframe in dataframes:
             if furtherCut != '' : key_cut += f' && {furtherCut}'
             dataframe_new = dataframe.Filter(key_cut)
-
-            #print(dataframe_new.Count().GetValue())
-            #final_string_weight = analysis.ApplyBTagWeight(global_cfg_dict,cat,applyBtag=False, finalWeight_name = f"final_weight_0_{ch}_{cat}_{reg}") if sample_type!='data' else "1"
             btag_weight = analysis.GetBTagWeight(global_cfg_dict,cat,applyBtag=False) if sample_type!='data' else "1"
             total_weight_expression = "*".join([total_weight_expression,btag_weight])
-            dataframe_new = dataframe_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}")
+            # dataframe_new = dataframe_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}") # no need to define it twice
             dataframe_new = dataframe_new.Filter(f"{cat}")
-            if cat == 'btag_shape': #This should be absorbed into ApplyBTagWeight func
-                final_string_weight = f"final_weight_0_{ch}_{cat}_{reg}"
             histograms[(key_1, key_2)].append(dataframe_new.Define("final_weight", total_weight_expression).Define("weight_for_hists", f"{weight_name}").Histo1D(GetModel(hist_cfg_dict, var), var, "weight_for_hists"))
     return histograms
 
@@ -216,12 +208,12 @@ if __name__ == "__main__":
     df_empty = False
     inFile_root = ROOT.TFile.Open(args.inFile,"READ")
     inFile_keys = [k.GetName() for k in inFile_root.GetListOfKeys()]
+    # print(inFile_keys)
     if 'Events' not in inFile_keys:
         key_not_exist = True
     inFile_root.Close()
     if not key_not_exist and ROOT.RDataFrame('Events',args.inFile).Count().GetValue() == 0:
         df_empty = True
-
     isData = args.dataset=='data'
     scales = global_cfg_dict['scales']
     categories = global_cfg_dict['categories']
@@ -240,14 +232,15 @@ if __name__ == "__main__":
     if args.sampleType in global_cfg_dict['signal_types']:
         datasetType = 0
     # print(f"datasetType is {datasetType}")
-
+    # print()
     create_new_hist = key_not_exist or df_empty
     all_dataframes = {}
     all_dataframes_shape = {}
     all_histograms = {}
     compute_rel_weights_not_data = args.compute_rel_weights and args.dataset!='data'
     if not create_new_hist:
-        args.deepTauVersion = "PlaceHolder"
+        if args.deepTauVersion == "":
+            args.deepTauVersion = "PlaceHolder"
         #Put kwargset into config later
         kwargset = {}
         if analysis_import == "Analysis.hh_bbww":

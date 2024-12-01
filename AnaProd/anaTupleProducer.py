@@ -63,7 +63,6 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
     df = df.Define("sample_type", f"static_cast<int>(SampleType::{sample_config['sampleType']})")
     df = df.Define("sample_name", f"static_cast<int>({zlib.crc32(sample_name.encode())})")
     isSignal = sample_config['sampleType'] in setup.global_params['signal_types']
-    print("isSignal? ", isSignal)
     df = df.Define("period", f"static_cast<int>(Period::{period})")
     df = df.Define("X_mass", f"static_cast<int>({mass})")
     df = df.Define("X_spin", f"static_cast<int>({spin})")
@@ -110,7 +109,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
         if not isData:
 
             triggers_to_use = set()
-            for channel in setup.global_params['channels_to_consider']:
+            for channel in channels:
                 trigger_list = setup.global_params.get('triggers', {}).get(channel, [])
                 for trigger in trigger_list:
                     if trigger not in trigger_class.trigger_dict.keys():

@@ -80,7 +80,7 @@ def getDefaultColumnsToSave(isData):
     return colToSave
 
 
-def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal, global_params):
+def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal, global_params, channels):
     print(f"Adding variables for {syst_name}")
     dfw.Apply(CommonBaseline.SelectRecoP4, syst_name, global_params["nano_version"])
     dfw.Apply(AnaBaseline.RecoHWWCandidateSelection)

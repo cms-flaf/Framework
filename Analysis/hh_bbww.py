@@ -107,13 +107,8 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
             #self.df = self.df.Define(f"{channel}", f"channelId=={ch_value}")
 
     def defineLeptonPreselection(self):
-        self.df = self.df.Define("lep1_tight", "(lep1_type == 1) || (lep1_type == 2 && lep1_Muon_tightId)")
-        self.df = self.df.Define("lep2_tight", "(lep2_type > 0) ? (lep2_type == 1) || (lep2_type == 2 && lep2_Muon_tightId) : true")
-
-
-        self.df = self.df.Define(f"lepton_preselection", "(lep1_tight && lep2_tight)")
-        self.df = self.df.Filter(f"lepton_preselection")
-
+        #Later we will defined some lepton selections
+        
         self.df = self.df.Define("passed_singleIsoMu", "HLT_singleIsoMu && (lep1_type == 2 && lep1_HasMatching_singleIsoMu)")
         self.df = self.df.Filter(f"passed_singleIsoMu")
 

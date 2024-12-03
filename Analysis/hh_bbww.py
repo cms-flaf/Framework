@@ -108,7 +108,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineLeptonPreselection(self):
         #Later we will defined some lepton selections
-        
+
         self.df = self.df.Define("passed_singleIsoMu", "HLT_singleIsoMu && (lep1_type == 2 && lep1_HasMatching_singleIsoMu)")
         self.df = self.df.Filter(f"passed_singleIsoMu")
 
@@ -127,7 +127,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("OS", "(lep2_type < 1) || (lep1_charge*lep2_charge < 0)")
         self.df = self.df.Define("SS", "!OS")
 
-        self.df = self.df.Define("Iso", f"( (lep1_type == 1 && lep1_Electron_mvaIso_WP80) || (lep1_type == 2 && lep1_Muon_pfIsoId >= {MuonPfIsoID_WP.Loose}) ) && (lep2_type < 1 || ( (lep2_type == 1 && lep2_Electron_mvaIso_WP80) || (lep2_type == 2 && lep2_Muon_pfIsoId >= {MuonPfIsoID_WP.Loose}) ))") #Ask if this is supposed to be lep*_Muon_pfIsoId
+        self.df = self.df.Define("Iso", f"( (lep1_type == 1 && lep1_Electron_mvaIso_WP80) || (lep1_type == 2 && lep1_Muon_pfIsoId >= {MuonPfIsoID_WP.Loose.value}) ) && (lep2_type < 1 || ( (lep2_type == 1 && lep2_Electron_mvaIso_WP80) || (lep2_type == 2 && lep2_Muon_pfIsoId >= {MuonPfIsoID_WP.Loose.value}) ))") #Ask if this is supposed to be lep*_Muon_pfIsoId
         self.df = self.df.Define("AntiIso", f"!Iso") #This is probably not correct, but required for QCD_Estimation.py
 
         self.df = self.df.Define("OS_Iso", f"OS && Iso") 

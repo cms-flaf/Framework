@@ -107,8 +107,8 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
             #self.df = self.df.Define(f"{channel}", f"channelId=={ch_value}")
 
     def defineLeptonPreselection(self):
-        self.df = self.df.Define("lep1_tight", "(lep1_type == 1 && lep1_pt > 25) || (lep1_type == 2 && lep1_pt > 26 && lep1_Muon_tightId)") #Dummy values, EleGt25 and MuGt15
-        self.df = self.df.Define("lep2_tight", "(lep2_type > 0) ? (lep2_type == 1 && lep2_pt > 25) || (lep2_type == 2 && lep2_pt > 26 && lep2_Muon_tightId) : true") #Dummy values, EleGt25 and MuGt15
+        self.df = self.df.Define("lep1_tight", "(lep1_type == 1) || (lep1_type == 2 && lep1_Muon_tightId)")
+        self.df = self.df.Define("lep2_tight", "(lep2_type > 0) ? (lep2_type == 1) || (lep2_type == 2 && lep2_Muon_tightId) : true")
 
 
         self.df = self.df.Define(f"lepton_preselection", "(lep1_tight && lep2_tight)")
@@ -132,7 +132,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("OS", "(lep2_type < 1) || (lep1_charge*lep2_charge < 0)")
         self.df = self.df.Define("SS", "!OS")
 
-        self.df = self.df.Define("Iso", f"( (lep1_type == 1 && lep1_Electron_mvaIso_WP80) || (lep1_type == 2 && lep1_Muon_pfIsoId >=3) ) && (lep2_type < 1 || ( (lep2_type == 1 && lep2_Electron_mvaIso_WP80) || (lep2_type == 2 && lep2_Muon_pfIsoId >= 3) ))") #Ask if this is supposed to be lep*_Muon_pfIsoId
+        self.df = self.df.Define("Iso", f"( (lep1_type == 1 && lep1_Electron_mvaIso_WP80) || (lep1_type == 2 && lep1_Muon_pfIsoId >= {MuonPfIsoID_WP.Loose}) ) && (lep2_type < 1 || ( (lep2_type == 1 && lep2_Electron_mvaIso_WP80) || (lep2_type == 2 && lep2_Muon_pfIsoId >= {MuonPfIsoID_WP.Loose}) ))") #Ask if this is supposed to be lep*_Muon_pfIsoId
         self.df = self.df.Define("AntiIso", f"!Iso") #This is probably not correct, but required for QCD_Estimation.py
 
         self.df = self.df.Define("OS_Iso", f"OS && Iso") 

@@ -63,10 +63,10 @@ def GetLepWeight(lep_index):
     weight_Ele = f"(lep{lep_index}_type == static_cast<int>(Leg::e) ? 1.0 : 1.0)"
 
     #Medium pT Muon SF
-    #weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? weight_lep{lep_index}_MuonID_SF_TightID_TrkCentral * weight_lep{lep_index}_MuonID_SF_LoosePFIsoCentral : 1.0)"
+    weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? weight_lep{lep_index}_MuonID_SF_TightID_TrkCentral * weight_lep{lep_index}_MuonID_SF_LoosePFIsoCentral : 1.0)"
 
     #High pT Muon SF
-    weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? weight_lep{lep_index}_HighPt_MuonID_SF_HighPtIDCentral * weight_lep{lep_index}_HighPt_MuonID_SF_RecoCentral * weight_lep{lep_index}_HighPt_MuonID_SF_TightIDCentral : 1.0)"
+    #weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? weight_lep{lep_index}_HighPt_MuonID_SF_HighPtIDCentral * weight_lep{lep_index}_HighPt_MuonID_SF_RecoCentral * weight_lep{lep_index}_HighPt_MuonID_SF_TightIDCentral : 1.0)"
 
     #No Muon SF
     #weight_Mu = f"(lep{lep_index}_type == static_cast<int>(Leg::mu) ? 1.0 : 1.0)"
@@ -93,9 +93,10 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         #self.df = self.df.Define("nSelBtag", f"int(centralJet_btagPNetB >= {self.bTagWP}) + int(centralJet_btagPNetB >= {self.bTagWP})")
         #self.df = self.df.Define("boosted", "nSelectedFatJet > 0")
         self.df = self.df.Define("boosted", "SelectedFatJet_pt.size() > 0")
-        self.df = self.df.Define("res1b", f"!boosted && nSelBtag == 1")
-        self.df = self.df.Define("res2b", f"!boosted && nSelBtag == 2")
-        self.df = self.df.Define("inclusive", f"!boosted")
+        self.df = self.df.Define("resolved", "!boosted && centralJet_pt.size() >= 2")
+        self.df = self.df.Define("res1b", f"!boosted && resolved && nSelBtag == 1")
+        self.df = self.df.Define("res2b", f"!boosted && resolved && nSelBtag == 2")
+        self.df = self.df.Define("inclusive", f"!boosted && resolved")
         self.df = self.df.Define("baseline",f"return true;")
 
     def defineChannels(self):
@@ -105,13 +106,14 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
             #self.df = self.df.Define(f"{channel}", f"channelId=={ch_value}")
 
     def defineLeptonPreselection(self):
-        # self.df = self.df.Define("lep1_tight", "(lep1_type == 1 && lep1_pt > 25) || (lep1_type == 2 && lep1_pt > 15)") #Dummy values, EleGt25 and MuGt15
-        # self.df = self.df.Define("lep2_tight", "(lep2_type == 1 && lep2_pt > 25) || (lep2_type == 2 && lep2_pt > 15)") #Dummy values, EleGt25 and MuGt15
+        self.df = self.df.Define("lep1_tight", "(lep1_type == 1 && lep1_pt > 25) || (lep1_type == 2 && lep1_pt > 26 && lep1_Muon_tightId)") #Dummy values, EleGt25 and MuGt15
+        self.df = self.df.Define("lep2_tight", "(lep2_type > 0) ? (lep2_type == 1 && lep2_pt > 25) || (lep2_type == 2 && lep2_pt > 26 && lep2_Muon_tightId) : true") #Dummy values, EleGt25 and MuGt15
 
-        # self.df = self.df.Define(f"lepton_preselection", "(lep1_tight)")
-        # self.df = self.df.Filter(f"lepton_preselection")
 
-        self.df = self.df.Define("passed_singleIsoMu", "HLT_singleIsoMu && ((lep1_type == 2 && lep1_HasMatching_singleIsoMu) || (lep2_type == 2 && lep2_HasMatching_singleIsoMu))")
+        self.df = self.df.Define(f"lepton_preselection", "(lep1_tight && lep2_tight)")
+        self.df = self.df.Filter(f"lepton_preselection")
+
+        self.df = self.df.Define("passed_singleIsoMu", "HLT_singleIsoMu && (lep1_type == 2 && lep1_HasMatching_singleIsoMu)")
         self.df = self.df.Filter(f"passed_singleIsoMu")
 
     def defineJetSelections(self):
@@ -129,7 +131,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("OS", "(lep2_type < 1) || (lep1_charge*lep2_charge < 0)")
         self.df = self.df.Define("SS", "!OS")
 
-        self.df = self.df.Define("Iso", f"( (lep1_type == 1 && lep1_Electron_mvaIso_WP90) || (lep1_type == 2 && lep1_Muon_pfIsoId >=2) ) && (lep2_type < 1 || ( (lep2_type == 1 && lep2_Electron_mvaIso_WP90) || (lep2_type == 2 && lep2_Muon_pfIsoId >= 2) ))") #Ask if this is supposed to be lep*_Muon_pfIsoId
+        self.df = self.df.Define("Iso", f"( (lep1_type == 1 && lep1_Electron_mvaIso_WP80) || (lep1_type == 2 && lep1_Muon_pfIsoId >=3) ) && (lep2_type < 1 || ( (lep2_type == 1 && lep2_Electron_mvaIso_WP80) || (lep2_type == 2 && lep2_Muon_pfIsoId >= 3) ))") #Ask if this is supposed to be lep*_Muon_pfIsoId
         self.df = self.df.Define("AntiIso", f"!Iso") #This is probably not correct, but required for QCD_Estimation.py
 
         self.df = self.df.Define("OS_Iso", f"OS && Iso") 
@@ -143,7 +145,6 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
         self.df = self.df.Define("Z_Region", f"(lep1_type == 2 && lep2_type == 2) && (abs(diLep_p4.mass() - 91) < 10)")
         self.df = self.df.Define("diLep_mass", f"(lep1_type == 2 && lep2_type == 2) ? diLep_p4.mass() : 0.0")
-        print("Doing something! defineControlRegions")
 
 
     def calculateMT(self):

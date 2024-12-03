@@ -56,7 +56,8 @@ def GetWeight(channel, cat, boosted_categories):
     weights_to_apply = ["weight_MC_Lumi_pu"]
     total_weight = '*'.join(weights_to_apply)
     for lep_index in [1,2]:
-        total_weight = f"{total_weight} * {GetLepWeight(lep_index)} * {GetTriggerWeight()}"
+        total_weight = f"{total_weight} * {GetLepWeight(lep_index)}"
+    total_weight = f"{total_weight} * {GetTriggerWeight()}"
     return total_weight
 
 def GetLepWeight(lep_index):

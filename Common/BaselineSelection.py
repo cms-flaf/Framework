@@ -22,10 +22,12 @@ def Initialize(loadTF=False, loadHHBtag=False):
         header_path_Gen ="include/BaselineGenSelection.h"
         header_path_Reco ="include/BaselineRecoSelection.h"
         header_path_HHbTag ="include/HHbTagScores.h"
+        header_path_AnalysisMath = "include/AnalysisMath.h"
         ROOT.gInterpreter.Declare(f'#include "{header_path_RootExt}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_GenLepton}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Gen}"')
         ROOT.gInterpreter.Declare(f'#include "{header_path_Reco}"')
+        #ROOT.gInterpreter.Declare(f'#include "{header_path_AnalysisMath}"')
         for wpcl in [WorkingPointsTauVSe,WorkingPointsTauVSmu,WorkingPointsTauVSjet,WorkingPointsbTag, WorkingPointsMuonID]:
             ROOT.gInterpreter.Declare(f'{generate_enum_class(wpcl)}')
         if(loadTF):

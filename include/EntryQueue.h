@@ -18,7 +18,7 @@ public:
 
 public:
   explicit EntryQueue(size_t max_size, size_t max_entries = std::numeric_limits<size_t>::max())
-    : max_size_(max_size), max_entries_(max_entries), n_entries_(0), all_done_(false)
+    : max_size_(max_size), max_entries_(max_entries), n_entries_(0), input_available_(true), output_needed_(true)
   {
   }
 
@@ -26,9 +26,9 @@ public:
   {
     {
       Lock lock(mutex_);
-      if(n_entries_ >= max_entries_)
+      cond_var_.wait(lock, [&] { return queue_.size() < max_size_ || n_entries_ >= max_entries_ || !output_needed_; });
+      if(n_entries_ >= max_entries_ || !output_needed_)
         return false;
-      cond_var_.wait(lock, [&] { return queue_.size() < max_size_; });
       queue_.push(entry);
       ++n_entries_;
     }
@@ -41,7 +41,7 @@ public:
     bool entry_is_valid = false;;
     {
       Lock lock(mutex_);
-      cond_var_.wait(lock, [&] { return queue_.size() || all_done_; });
+      cond_var_.wait(lock, [&] { return queue_.size() || !input_available_; });
       if(!queue_.empty()) {
         entry = queue_.front();
         entry_is_valid = true;
@@ -52,11 +52,20 @@ public:
     return entry_is_valid;
   }
 
-  void SetAllDone(bool value = true)
+  void SetInputAvailable(bool value)
   {
     {
       Lock lock(mutex_);
-      all_done_ = value;
+      input_available_ = value;
+    }
+    cond_var_.notify_all();
+  }
+
+  void SetOutputNeeded(bool value)
+  {
+    {
+      Lock lock(mutex_);
+      output_needed_ = value;
     }
     cond_var_.notify_all();
   }
@@ -65,7 +74,7 @@ private:
   Queue queue_;
   const size_t max_size_, max_entries_;
   size_t n_entries_;
-  bool all_done_;
+  bool input_available_, output_needed_;
   Mutex mutex_;
   CondVar cond_var_;
 };

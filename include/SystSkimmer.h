@@ -15,11 +15,10 @@
 using RVecF = ROOT::VecOps::RVec<float>;
 using RVecI = ROOT::VecOps::RVec<int>;
 using RVecUC = ROOT::VecOps::RVec<unsigned char>;
-using RVecS = ROOT::VecOps::RVec<short>;
-//using RVecD = ROOT::VecOps::RVec<double>;
 
 namespace analysis {
-typedef std::variant<int,float,bool, unsigned long,unsigned long long,long,unsigned int, unsigned char, RVecI, RVecF, RVecUC, RVecS > MultiType;
+typedef std::variant<int,float,bool, unsigned long,unsigned long long,long,unsigned int, unsigned char, RVecI, RVecF,RVecUC> MultiType;
+
 struct Entry {
   std::vector<MultiType> var_values;
 
@@ -70,9 +69,7 @@ struct TupleMaker {
       }
       std::cout << "TupleMaker::processIn: starting foreach." << std::endl;
       try {
-        std::cout << "Line number 74." << std::endl;
         ROOT::RDF::RNode df = df_node;
-        std::cout << "Line 76" << std::endl;
         df.Foreach([&](const std::shared_ptr<Entry>& entry)  {
           if(!queue.Push(entry)) {
             throw StopLoop();
@@ -86,6 +83,10 @@ struct TupleMaker {
       queue.SetInputAvailable(false);
     });
   }
+
+
+
+
 
   ROOT::RDF::RNode processOut(ROOT::RDF::RNode df_out)
   {
@@ -127,10 +128,8 @@ struct TupleMaker {
 
   void join()
   {
-    if(thread) {
-      queue.SetOutputNeeded(false);
+    if(thread)
       thread->join();
-    }
   }
 
   ROOT::RDataFrame df_in;

@@ -85,26 +85,26 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     branch_set_cache.add(br)
         reqs = {}
         if len(branch_set) > 0:
-            reqs['anaTuple'] = AnaTupleTask.req(self, branches=tuple(branch_set))
+            reqs['anaTuple'] = AnaTupleTask.req(self, branches=tuple(branch_set),customisations=self.customisations)
         if len(branch_set_cache) > 0:
-            reqs['anaCacheTuple'] = AnaCacheTupleTask.req(self, branches=tuple(branch_set_cache))
+            reqs['anaCacheTuple'] = AnaCacheTupleTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
         if need_data:
-            reqs['dataMergeTuple'] = DataMergeTask.req(self, branches=())
+            reqs['dataMergeTuple'] = DataMergeTask.req(self, branches=(),customisations=self.customisations)
         if need_data_cache:
-            reqs['dataCacheMergeTuple'] = DataCacheMergeTask.req(self, branches=())
+            reqs['dataCacheMergeTuple'] = DataCacheMergeTask.req(self, branches=(),customisations=self.customisations)
         return reqs
 
     def requires(self):
         sample_name, prod_br, var, need_cache = self.branch_data
         deps = []
         if sample_name =='data':
-            deps.append(DataMergeTask.req(self, max_runtime=DataMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
+            deps.append(DataMergeTask.req(self, max_runtime=DataMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
             if need_cache:
-                deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
+                deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
         else:
-            deps.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
+            deps.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
             if need_cache:
-                deps.append(AnaCacheTupleTask.req(self, max_runtime=AnaCacheTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
+                deps.append(AnaCacheTupleTask.req(self, max_runtime=AnaCacheTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
         return deps
 
     def create_branch_map(self):

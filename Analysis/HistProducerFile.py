@@ -115,9 +115,9 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, fil
         treeName_noDiff = f"{treeName}_noDiff"
         if treeName_noDiff in file_keys:
             # print(treeName_noDiff)
-            dfWrapped_noDiff = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_noDiff, inFile),global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
+            dfWrapped_noDiff = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_noDiff, inFile),global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
             if hasCache:
-                dfWrapped_cache_noDiff = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_noDiff,inFileCache),global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
+                dfWrapped_cache_noDiff = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_noDiff,inFileCache),global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
                 AddCacheColumnsInDf(dfWrapped_noDiff, dfWrapped_cache_noDiff,f"cache_map_{uncName}{scale}_noDiff")
             dfWrapped_noDiff.AddMissingColumns(colNames, colTypes)
             dfWrapped_noDiff = analysis.PrepareDfForHistograms(dfWrapped_noDiff)
@@ -125,9 +125,9 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, fil
         treeName_Valid = f"{treeName}_Valid"
         if treeName_Valid in file_keys:
             # print(treeName_Valid)
-            dfWrapped_Valid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_Valid, inFile),global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium", pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
+            dfWrapped_Valid = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_Valid, inFile),global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium", pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
             if hasCache:
-                dfWrapped_cache_Valid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_Valid,inFileCache), global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
+                dfWrapped_cache_Valid = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_Valid,inFileCache), global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
                 AddCacheColumnsInDf(dfWrapped_Valid, dfWrapped_cache_Valid,f"cache_map_{uncName}{scale}_Valid")
             dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
             dfWrapped_Valid = analysis.PrepareDfForHistograms(dfWrapped_Valid)
@@ -136,9 +136,9 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, fil
         treeName_nonValid = f"{treeName}_nonValid"
         if treeName_nonValid in file_keys:
             # print(treeName_nonValid)
-            dfWrapped_nonValid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_nonValid, inFile),global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
+            dfWrapped_nonValid = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_nonValid, inFile),global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
             if hasCache:
-                dfWrapped_cache_nonValid = DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_nonValid,inFileCache), global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
+                dfWrapped_cache_nonValid = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_nonValid,inFileCache), global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
                 AddCacheColumnsInDf(dfWrapped_nonValid, dfWrapped_cache_nonValid, f"cache_map_{uncName}{scale}_nonValid")
             dfWrapped_nonValid.AddMissingColumns(colNames, colTypes)
             dfWrapped_nonValid = analysis.PrepareDfForHistograms(dfWrapped_nonValid)
@@ -225,10 +225,10 @@ if __name__ == "__main__":
     if (args.var.startswith('b1') or args.var.startswith('b2')):
         all_categories = categories
     datasetType = 3
-    # if args.sampleType == 'TT':
-    #     datasetType = 1
-    # if args.sampleType == 'DY':
-    #     datasetType = 2
+    if args.sampleType == 'TT':
+        datasetType = 1
+    if args.sampleType == 'DY':
+        datasetType = 2
     if args.sampleType in global_cfg_dict['signal_types']:
         datasetType = 0
     # print(f"datasetType is {datasetType}")
@@ -270,7 +270,7 @@ if __name__ == "__main__":
         hasCache= args.cacheFile != ''
         if hasCache:
             dfWrapped_cache_central = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.cacheFile),global_cfg_dict, args.period, **kwargset)
-            #dfWrapped_cache_central = DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.cacheFile),global_cfg_dict, args.period, deepTauVersion=args.deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose",region=args.region,isData=isData,isCentral=True, wantTriggerSFErrors=compute_rel_weights_not_data,whichType=datasetType)
+            #dfWrapped_cache_central = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.cacheFile),global_cfg_dict, args.period, deepTauVersion=args.deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose",region=args.region,isData=isData,isCentral=True, wantTriggerSFErrors=compute_rel_weights_not_data,whichType=datasetType)
 
             AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache_central, "cache_map_Central")
 

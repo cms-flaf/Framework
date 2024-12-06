@@ -161,6 +161,11 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_id, sample_name, sample_type, input_file = self.branch_data
         output_name = os.path.basename(input_file.path)
         output_path = os.path.join('anaTuples', self.version, self.period, sample_name, output_name)
+
+        customisation_dict = getCustomisationSplit(self.customisations)
+        deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
+        if '2p5' in deepTauVersion:
+            return self.remote_target(output_path, fs=self.fs_anaTuple2p5)
         return self.remote_target(output_path, fs=self.fs_anaTuple)
 
     def run(self):
@@ -173,8 +178,9 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         customisation_dict = getCustomisationSplit(self.customisations)
         # print(customisation_dict)
         channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
-        print(channels)
-        # channels = ','.join(channels)
+        #Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
+        if type(channels) == list:
+            channels = ','.join(channels)
         store_noncentral = customisation_dict['store_noncentral']=='True' if 'store_noncentral' in customisation_dict.keys() else self.global_params.get('store_noncentral', False)
         # print(store_noncentral)
         compute_unc_variations = customisation_dict['compute_unc_variations']=='True' if 'compute_unc_variations' in customisation_dict.keys() else self.global_params.get('compute_unc_variations', False)
@@ -256,7 +262,12 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self, force_pre_output=False):
         outFileName = 'nanoHTT_0.root'
+        customisation_dict = getCustomisationSplit(self.customisations)
+        deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
+        print(deepTauVersion)
         output_path = os.path.join('anaTuples', self.version, self.period, 'data', outFileName)
+        if '2p5' in deepTauVersion:
+            return self.remote_target(output_path, fs=self.fs_anaTuple2p5)
         return self.remote_target(output_path, fs=self.fs_anaTuple)
 
     def run(self):
@@ -294,9 +305,10 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def output(self):
         sample_name, sample_type = self.branch_data
         outFileName = os.path.basename(self.input()[0].path)
-        outDir = os.path.join('anaCacheTuples', self.period, sample_name, self.version)
-        finalFile = os.path.join(outDir, outFileName)
-        return self.remote_target(finalFile, fs=self.fs_anaCacheTuple)
+        # outDir = os.path.join('anaCacheTuples', self.period, sample_name, self.version)
+        # finalFile = os.path.join(outDir, outFileName)
+        output_path = os.path.join('anaCacheTuples', self.version, self.period, sample_name, outFileName)
+        return self.remote_target(output_path, fs=self.fs_anaCacheTuple)
 
     def run(self):
         sample_name, sample_type = self.branch_data
@@ -304,6 +316,11 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         producer_anacachetuples = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheTupleProducer.py')
         global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
         thread = threading.Thread(target=update_kinit_thread)
+        customisation_dict = getCustomisationSplit(self.customisations)
+        channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
+        #Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
+        if type(channels) == list:
+            channels = ','.join(channels)
         thread.start()
         try:
             job_home, remove_job_home = self.law_job_home()
@@ -312,7 +329,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             customisation_dict = getCustomisationSplit(self.customisations)
             deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else ""
             with input_file.localize("r") as local_input, self.output().localize("w") as outFile:
-                anaCacheTupleProducer_cmd = ['python3', producer_anacachetuples,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config, '--globalConfig', global_config]
+                anaCacheTupleProducer_cmd = ['python3', producer_anacachetuples,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config, '--globalConfig', global_config, '--channels', channels ]
                 if self.global_params['store_noncentral'] and sample_type != 'data':
                     anaCacheTupleProducer_cmd.extend(['--compute_unc_variations', 'True'])
                 if deepTauVersion!="":

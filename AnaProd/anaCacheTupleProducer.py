@@ -52,7 +52,7 @@ def applyLegacyVariables(dfw, global_cfg_dict, is_central=True):
     entryvalid_stri += ' || '.join(f'({ch} & {trg_strings[ch]})' for ch in channels)
     entryvalid_stri += ')'
     # print(entryvalid_stri)
-    dfw.DefineAndAppend("entry_valid","return true;")
+    dfw.DefineAndAppend("entry_valid",entryvalid_stri)
     MT2Branches = dfw.Apply(LegacyVariables.GetMT2)
     dfw.colToSave.extend(MT2Branches)
     KinFitBranches = dfw.Apply(LegacyVariables.GetKinFit)

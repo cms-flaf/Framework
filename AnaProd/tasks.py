@@ -368,7 +368,7 @@ class DataCacheMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self, force_pre_output=False):
         outFileName = 'nanoHTT_0.root'
-        output_path = os.path.join('anaCacheTuple', self.period, 'data',self.version, outFileName)
+        output_path = os.path.join('anaCacheTuples', self.period, 'data',self.version, outFileName)
         return self.remote_target(output_path, fs=self.fs_anaCacheTuple)
 
     def run(self):

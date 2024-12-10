@@ -4,7 +4,7 @@ signal_types:
   - GluGluToRadion
   - GluGlutoRadion
   - GluGluToBulkGraviton
-corrections: 
+corrections:
   - mu
   - trg
   #- ele

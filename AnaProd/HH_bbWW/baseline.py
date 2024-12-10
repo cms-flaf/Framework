@@ -22,7 +22,7 @@ def getChannelLegs(channel):
 
 def RecoHWWCandidateSelection(df):
     df = df.Define("Electron_presel", """
-        v_ops::pt(Electron_p4) > 5 && abs(v_ops::eta(Electron_p4)) < 2.5 && abs(Electron_dz) < 0.1 && abs(Electron_dxy) < 0.05 && Electron_sip3d <= 8 && Electron_miniPFRelIso_all < 0.4 && Electron_mvaIso_WP90""")
+        v_ops::pt(Electron_p4) > 10 && abs(v_ops::eta(Electron_p4)) < 2.5 && abs(Electron_dz) < 0.1 && abs(Electron_dxy) < 0.05 && Electron_sip3d <= 8 && Electron_miniPFRelIso_all < 0.4 && Electron_mvaIso_WP90""")
 
     #Lower the muon pt threshold to 5 to check for potential improvement, done while adding low pt tight ID SF
     df = df.Define("Muon_presel", """

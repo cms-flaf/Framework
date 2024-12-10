@@ -307,7 +307,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         outFileName = os.path.basename(self.input()[0].path)
         # outDir = os.path.join('anaCacheTuples', self.period, sample_name, self.version)
         # finalFile = os.path.join(outDir, outFileName)
-        output_path = os.path.join('anaCacheTuples', self.version, self.period, sample_name, outFileName)
+        output_path = os.path.join('anaCacheTuples', self.period, sample_name,self.version, outFileName)#self.version, self.period, sample_name, outFileName)
         return self.remote_target(output_path, fs=self.fs_anaCacheTuple)
 
     def run(self):

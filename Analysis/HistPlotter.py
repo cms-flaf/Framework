@@ -164,7 +164,6 @@ if __name__ == "__main__":
     with open(page_cfg_custom, 'r') as f:
         page_cfg_custom_dict = yaml.safe_load(f)
     inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", args.analysis, "plot/inputs.yaml")
-    print(inputs_cfg)
     with open(inputs_cfg, 'r') as f:
         inputs_cfg_dict = yaml.safe_load(f)
     # if args.category == 'boosted':

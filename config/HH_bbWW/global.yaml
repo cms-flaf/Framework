@@ -4,27 +4,28 @@ signal_types:
   - GluGluToRadion
   - GluGlutoRadion
   - GluGluToBulkGraviton
-corrections: 
-  - mu
-  - trg
-  #- ele
-  - pu
+corrections:
+  #- mu
+  #- trg
+  - ele
+  - eleES
+  #- pu
 
 #This is for Analysis Selection
 channelSelection:
-  #- e
-  - mu
+  - e
+  #- mu
   #- eE
   #- eMu
-  - muMu
+  #- muMu
 
 #This is for Histogram Making
 channels_to_consider:
-  #- e
-  - mu
-  #- eE
+  - e
+  #- mu
+ # - eE
   #- eMu
-  - muMu
+  #- muMu
 
 channelDefinition:
   e: 10 #Second lepton doesn't exist
@@ -127,3 +128,4 @@ storeExtraJets: False
 scales: []
   #- Up
   #- Down
+deepTauVersion: 2p1

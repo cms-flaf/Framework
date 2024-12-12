@@ -5,27 +5,27 @@ signal_types:
   - GluGlutoRadion
   - GluGluToBulkGraviton
 corrections:
-  #- mu
-  #- trg
+  - mu
+  - trg
   - ele
   - eleES
-  #- pu
+  - pu
 
 #This is for Analysis Selection
 channelSelection:
   - e
-  #- mu
-  #- eE
-  #- eMu
-  #- muMu
+  - mu
+  - eE
+  - eMu
+  - muMu
 
 #This is for Histogram Making
 channels_to_consider:
   - e
-  #- mu
- # - eE
-  #- eMu
-  #- muMu
+  - mu
+  - eE
+  - eMu
+  - muMu
 
 channelDefinition:
   e: 10 #Second lepton doesn't exist
@@ -129,3 +129,4 @@ scales: []
   #- Up
   #- Down
 deepTauVersion: 2p1
+met_type: "PFMET"

@@ -110,7 +110,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
         if not isData:
 
             triggers_to_use = set()
-            for channel in setup.global_params['channels_to_consider']:
+            for channel in setup.global_params['channelSelection']:
                 trigger_list = setup.global_params.get('triggers', {}).get(channel, [])
                 for trigger in trigger_list:
                     if trigger not in trigger_class.trigger_dict.keys():

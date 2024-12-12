@@ -8,6 +8,8 @@ GLOBAL:
   triggerFile: config/Run3_2023BPix/triggers.yaml
   use_stitching: false
   met_type: PFMET
+  lumiFile: /eos/user/c/cmsdqm/www/CAF/certification/Collisions22/Cert_Collisions2023_366442_370790_Golden.json
+
 
 TTto2L2Nu:
   crossSection: TTto2L2Nu

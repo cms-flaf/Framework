@@ -261,12 +261,12 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         for lep in [1, 2]:
             name = f"lep{lep}_gen"
             # MatchGenLepton returns index of in genLetpons collection if match exists
-            dfw.Define(f"{name}_idx", f" HwwCandidate.leg_type.size() >= {lep} ? MatchGenLepton(HwwCandidate.leg_p4.at({lep - 1}), genLeptons, 0.4) : -1")
-            dfw.Define(f"{name}_p4", f"return {name}_idx == -1 ? LorentzVectorM() : LorentzVectorM(genLeptons.at({name}_idx).visibleP4());")
-            dfw.Define(f"{name}_mother_p4", f"return {name}_idx == -1 ? LorentzVectorM() : (*genLeptons.at({name}_idx).mothers().begin())->p4;")
+            dfw.Define(f"{name}Match_Idx", f" HwwCandidate.leg_type.size() >= {lep} ? MatchGenLepton(HwwCandidate.leg_p4.at({lep - 1}), genLeptons, 0.4) : -1")
+            dfw.Define(f"{name}_p4", f"return {name}Match_Idx == -1 ? LorentzVectorM() : LorentzVectorM(genLeptons.at({name}Match_Idx).visibleP4());")
+            dfw.Define(f"{name}_mother_p4", f"return {name}Match_Idx == -1 ? LorentzVectorM() : (*genLeptons.at({name}Match_Idx).mothers().begin())->p4;")
 
-            dfw.DefineAndAppend(f"{name}_kind", f"return {name}_idx == -1 ? -1 : static_cast<int>(genLeptons.at({name}_idx).kind());")
-            dfw.DefineAndAppend(f"{name}_motherPdgId", f"return {name}_idx == -1 ? -1 : (*genLeptons.at({name}_idx).mothers().begin())->pdgId")
+            dfw.DefineAndAppend(f"{name}_kind", f"return {name}Match_Idx == -1 ? -1 : static_cast<int>(genLeptons.at({name}Match_Idx).kind());")
+            dfw.DefineAndAppend(f"{name}_motherPdgId", f"return {name}Match_Idx == -1 ? -1 : (*genLeptons.at({name}Match_Idx).mothers().begin())->pdgId")
             for var in PtEtaPhiM:
                 dfw.DefineAndAppend(f"{name}_mother_{var}", f"static_cast<float>({name}_mother_p4.{var}())")
                 dfw.DefineAndAppend(f"{name}_{var}", f"static_cast<float>({name}_p4.{var}())")

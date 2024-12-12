@@ -158,6 +158,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                                     '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type, '--globalConfig', global_config, '--var', var, '--period', self.period, '--region', region, '--channels', channels]
             if compute_unc_histograms:
                 HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
+                #HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'False'])
             if (deepTauVersion!="2p1") and (deepTauVersion!=''):
                 HistProducerFile_cmd.extend([ '--deepTauVersion', deepTauVersion])
             if need_cache:
@@ -342,7 +343,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     tmp_outfile_merge_remote = self.remote_target(tmp_outfile_merge, fs=self.fs_histograms)
                     with tmp_outfile_merge_remote.localize("w") as tmp_outfile_merge_unc:
                         #MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncName, '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config,'--channels',channels, '--apply-btag-shape-weights', applyBTagShapeWeight]#, '--remove-files', 'True']
-                        MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--channels',channels, '--ana_path', self.ana_path(), '--period', self.period]#, '--remove-files', 'True']
+                        MergerProducer_cmd = ['python3', MergerProducer,'--outFile', tmp_outfile_merge_unc.path, '--var', var, '--uncSource', uncNames[0], '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--channels',channels, '--ana_path', self.ana_path(), '--period', self.period]#, '--remove-files', 'True']
                         MergerProducer_cmd.extend(local_inputs)
                         if 'btagShape' in self.global_params['corrections']:
                             MergerProducer_cmd.append('--apply-btag-shape-weights')

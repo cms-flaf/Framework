@@ -1,2 +1,10 @@
-norm: {}
+norm:
+  MuonID_TightID:
+    expression: weight_lep1_MuonID_SF_TightID_Trk{scale}_rel * weight_lep2_MuonID_SF_TightID_Trk{scale}_rel * final_weight
+  MuonID_TightIDIso:
+    expression: weight_lep1_MuonID_SF_LoosePFIso{scale}_rel * weight_lep2_MuonID_SF_LoosePFIso{scale}_rel * final_weight
+  PileUp_Lumi_MC:
+    expression: weight_MC_Lumi_pu{scale}_rel  * final_weight
+  HLT_singleMu:
+    expression: weight_lep1_TrgSF_IsoMu24{scale}_rel * final_weight
 shape: []

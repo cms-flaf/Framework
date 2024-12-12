@@ -1,0 +1,94 @@
+- name: DY
+  title: DY
+  color: kAzure+10
+  types:
+    - DY
+# - name: TT
+#   title: t#bar{t}
+#   color: kGreen-3
+#   types:
+#     - TT
+# - name: W
+#   title: "W #rightarrow l#nu + jets"
+#   color: kYellow-7
+#   types:
+#     - W
+# - name: ST
+#   title: SingleTop
+#   color: kPink+1
+#   types:
+#     - ST
+# - name: VV
+#   title: VV
+#   color: kGreen
+#   types:
+#     - VV
+
+
+
+- name: QCD
+  title: QCD
+  color: kCyan
+  types:
+    - QCD
+
+#- name: TTX
+#  title: TTX
+#  color: kCyan
+#- name: GluGluToRadion
+#  title: GluGlu2L300
+#  color: kBlack
+#- name: GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-450
+#  title: GluGlu2L450
+#  color: kBlack
+#- name: GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-800
+#  title: GluGlu2L800
+#  color: kBlack
+
+
+
+#Pick some mass points and scale to see a shape distribution
+
+#- name: GluGluToBulkGraviton_1250
+  #title: "GluGluBulkGraviton - 1250 GeV"
+  #type: signal
+  #color: kGreen
+  #scale: 0.05
+#- name: GluGluToRadion_1250
+  #title: "GluGluRadion - 1250"
+  #type: signal
+  #color: kCyan
+#- name: GluGluToRadion_700
+  #title: "GluGluRadion - 700 GeV"
+  #type: signal
+  #color: kBlue
+- name: GluGluToRadion_450
+  title: "GluGluRadion - 450 GeV"
+  type: signal
+  color: kViolet
+  types:
+    - signal
+
+  #scale: 0.05
+#- name: VBFToBulkGraviton
+#  title: "qqHH #rightarrow bb#tau#tau BulkGraviton"
+#  type: signal
+#  color: kMagenta
+#  scale: 5
+#- name: VBFToRadion
+#  title: "qqHH #rightarrow bb#tau#tau Radion"
+#  type: signal
+#  color: kViolet+4
+#  scale: 5
+
+
+#- name: Other
+#  title: "other backgrounds"
+#  color: kRed-4
+#  types:
+#    - Other
+- name: data
+  title: "data obs"
+  type: data
+  types:
+    - data

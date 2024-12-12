@@ -17,7 +17,11 @@ def compute_eff(input_dir):
   df_notsel = ROOT.RDataFrame("EventsNotSelected", f'{input_dir}/nano_0.root')
 
   n_total_sel = df.Count()
-  n_total_notsel = df_notsel.Count()
+
+  #If EventsNotSelected is not available, the count should return 0
+  with ROOT.TFile.Open(f'{input_dir}/nano_0.root') as tmp_file:
+    n_total_notsel = df_notsel.Count() if "EventsNotSelected" in tmp_file.GetListOfKeys() else 0.
+  #n_total_notsel = df_notsel.Count()
 
   df = df.Define("Electron_sel", f"""
                  Electron_pt > 10 && abs(Electron_eta) < 2.3 && abs(Electron_dz) < 0.2 && abs(Electron_dxy) < 0.045

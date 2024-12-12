@@ -85,8 +85,10 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
     for syst_name, source_name in syst_dict.items():
         if source_name not in uncertainties and "all" not in uncertainties: continue
         is_central = syst_name in [ 'Central', 'nano' ]
+        compute_unc_variations = True
         if not is_central and not compute_unc_variations: continue
         suffix = '' if is_central else f'_{syst_name}'
+        store_noncentral = True
         if len(suffix) and not store_noncentral: continue
         dfw = Utilities.DataFrameWrapper(df_empty, anaTupleDef.getDefaultColumnsToSave(isData))
         anaTupleDef.addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal, setup.global_params, channels)

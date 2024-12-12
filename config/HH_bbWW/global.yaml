@@ -7,23 +7,24 @@ signal_types:
 corrections:
   - mu
   - trg
-  #- ele
+  - ele
+  - eleES
   - pu
 
 #This is for Analysis Selection
 channelSelection:
-  #- e
+  - e
   - mu
-  #- eE
-  #- eMu
+  - eE
+  - eMu
   - muMu
 
 #This is for Histogram Making
 channels_to_consider:
-  #- e
+  - e
   - mu
-  #- eE
-  #- eMu
+  - eE
+  - eMu
   - muMu
 
 channelDefinition:
@@ -127,3 +128,5 @@ storeExtraJets: False
 scales: []
   #- Up
   #- Down
+deepTauVersion: 2p1
+met_type: "PFMET"

@@ -24,19 +24,20 @@ def GetHistName(sample_name, sample_type, uncName, unc_scale,global_cfg_dict):
     return histName
 
 
-def RebinHisto(hist_initial, new_binning, sample, verbose=False):
+def RebinHisto(hist_initial, new_binning, sample, wantOverflow=True, verbose=False):
     new_binning_array = array.array('d', new_binning)
     new_hist = hist_initial.Rebin(len(new_binning)-1, sample, new_binning_array)
     if sample == 'data' : new_hist.SetBinErrorOption(ROOT.TH1.kPoisson)
-    n_finalbin = new_hist.GetBinContent(new_hist.GetNbinsX())
-    n_overflow = new_hist.GetBinContent(new_hist.GetNbinsX()+1)
-    new_hist.SetBinContent(new_hist.GetNbinsX(), n_finalbin+n_overflow)
-    err_finalbin = new_hist.GetBinError(new_hist.GetNbinsX())
-    err_overflow = new_hist.GetBinError(new_hist.GetNbinsX()+1)
-    if n_finalbin+n_overflow > 0:
-        new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(n_finalbin+n_overflow))
-    else:
-        new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(err_finalbin*err_finalbin+err_overflow*err_overflow))
+    if wantOverflow:
+        n_finalbin = new_hist.GetBinContent(new_hist.GetNbinsX())
+        n_overflow = new_hist.GetBinContent(new_hist.GetNbinsX()+1)
+        new_hist.SetBinContent(new_hist.GetNbinsX(), n_finalbin+n_overflow)
+        err_finalbin = new_hist.GetBinError(new_hist.GetNbinsX())
+        err_overflow = new_hist.GetBinError(new_hist.GetNbinsX()+1)
+        if n_finalbin+n_overflow > 0:
+            new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(n_finalbin+n_overflow))
+        else:
+            new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(err_finalbin*err_finalbin+err_overflow*err_overflow))
 
     if verbose:
         for nbin in range(0, len(new_binning)):
@@ -145,6 +146,7 @@ if __name__ == "__main__":
     parser.add_argument('--wantData', required=False, type=bool, default=False)
     parser.add_argument('--wantSignals', required=False, type=bool, default=False)
     parser.add_argument('--wantQCD', required=False, type=bool, default=False)
+    parser.add_argument('--wantOverflow', required=False, type=bool, default=False)
     parser.add_argument('--wantLogScale', required=False, type=str, default="")
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
     parser.add_argument('--year', required=False, type=str,default='Run2_2018')
@@ -269,6 +271,7 @@ if __name__ == "__main__":
     dir_0 = inFile_root.Get(args.channel)
     dir_0p1 = dir_0.Get(args.qcdregion)
     dir_1 = dir_0p1.Get(args.category)
+    # dir_1 = dir_0.Get(args.category)
     hist_cfg_dict[args.var]['max_y_sf'] = 1.4
     hist_cfg_dict[args.var]['use_log_y'] = False
     hist_cfg_dict[args.var]['use_log_x'] = False
@@ -320,7 +323,7 @@ if __name__ == "__main__":
     hists_to_plot_binned = {}
     for hist_key,hist_unbinned in hists_to_plot_unbinned.items():
         old_hist = hist_unbinned
-        new_hist = RebinHisto(old_hist, new_bins, hist_key)
+        new_hist = RebinHisto(old_hist, new_bins, hist_key, wantOverflow=args.wantOverflow,verbose=False)
         hists_to_plot_binned[hist_key] = new_hist if rebin_condition else old_hist
 
 

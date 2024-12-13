@@ -222,7 +222,7 @@ if __name__ == "__main__":
     all_categories = categories + boosted_categories
     if args.var in boosted_variables:
         all_categories = boosted_categories
-    if (args.var.startswith('b1') or args.var.startswith('b2')):
+    if (args.var.startswith('b1') or args.var.startswith('b2') or args.var=='kinFit_m'):
         all_categories = categories
     datasetType = 3
     if args.sampleType == 'TT':

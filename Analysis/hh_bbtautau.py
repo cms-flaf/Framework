@@ -346,7 +346,6 @@ def PrepareDfForHistograms(dfForHistograms):
         defineTriggerWeights(dfForHistograms)
         if dfForHistograms.wantTriggerSFErrors and dfForHistograms.isCentral:
             defineTriggerWeightsErrors(dfForHistograms)
-        defineTotalTriggerWeight(dfForHistograms)
     dfForHistograms.defineCRs()
     dfForHistograms.defineCategories()
     dfForHistograms.defineQCDRegions()

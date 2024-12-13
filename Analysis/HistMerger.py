@@ -46,18 +46,12 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
         name_to_use = sample_type
     if name_to_use not in all_histograms.keys():
         all_histograms[name_to_use] = {}
-        # print(f"name to use is {name_to_use}")
-        # print(all_histograms.keys())
     for channel in channels:
         dir_0 = inFileRoot.Get(channel)
-        #print(dir_0.GetListOfKeys())
         for qcdRegion in QCDregions:
             dir_1 = dir_0.Get(qcdRegion)
-            #print(dir_1.GetListOfKeys())
             for cat in all_categories:
-                # print(cat, var)
                 key_total = ((channel, qcdRegion, cat), (uncSource, 'Central'))
-                # print(key_total)
                 dir_2 = dir_1.Get(cat)
                 if uncSource == 'Central':
                     key_to_use = sample_name
@@ -128,7 +122,7 @@ def GetBTagWeightDict(var,all_histograms, categories, boosted_categories, booste
                 ratio = 0.
                 if ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1) != 0 :
                     ratio = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)/ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
-                if cat in boosted_categories or cat.startswith("inclusive") or cat.startswith("btag_shape") or cat.startswith("baseline") :
+                if cat in boosted_categories or cat.startswith("btag_shape") or cat.startswith("baseline") :
                     ratio = 1
                 #print(f"for cat {cat} setting ratio is {ratio}")
                 histogram.Scale(ratio)

@@ -16,7 +16,7 @@ def JetSavingCondition(df):
     for var in jetVar_list:
         df = df.Define(f"RecoJet_{var}", f"Take(Jet_{var}, Jet_selIdx)")
     return df
-    
+
 # genjetVar_list = ["pt","eta","phi","mass","hadronFlavour"]
 # def GenJetSavingCondition(df):
     # for genvar in genjetVar_list:

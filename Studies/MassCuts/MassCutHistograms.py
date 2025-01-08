@@ -176,6 +176,7 @@ if __name__ == "__main__":
     parser.add_argument('--cat', required=False, type=str, default='res2b')
     parser.add_argument('--mass', required=False, type=str, default='1250')
     parser.add_argument('--res', required=False, type=str, default='both')
+    parser.add_argument('--ch', required=False, type=str, default='eTau,muTau,tauTau')
     args = parser.parse_args()
 
     headers_dir = os.path.dirname(os.path.abspath(__file__))
@@ -186,55 +187,55 @@ if __name__ == "__main__":
     ROOT.gInterpreter.Declare(f'#include "include/pnetSF.h"')
     ROOT.gROOT.ProcessLine('#include "include/AnalysisTools.h"')
     inFiles = Utilities.ListToVector([
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1000/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1250/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1500/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1750/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-2000/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-250/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-2500/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-260/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-270/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-280/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-300/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-3000/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-320/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-350/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-400/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-450/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-500/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-550/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-600/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-650/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-700/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-750/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-800/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-850/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-900/nanoHTT_0.root" , f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-1000/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-1250/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-1500/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-1750/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-2000/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-250/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-2500/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-260/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-270/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-280/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-300/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-3000/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-320/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-350/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-400/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-450/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-500/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-550/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-600/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-650/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-700/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-750/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-800/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-850/nanoHTT_0.root",
-        f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-900/nanoHTT_0.root"
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1000/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1250/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1500/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-1750/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-2000/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-250/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-2500/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-260/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-270/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-280/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-300/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-3000/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-320/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-350/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-400/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-450/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-500/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-550/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-600/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-650/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-700/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-750/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-800/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-850/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-900/nanoHTT_0.root" , f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-1000/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-1250/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-1500/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-1750/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-2000/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-250/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-2500/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-260/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-270/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-280/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-300/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-3000/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-320/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-350/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-400/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-450/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-500/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-550/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-600/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-650/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-700/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-750/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-800/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-850/nanoHTT_0.root",
+        f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-900/nanoHTT_0.root"
     ])
 
 
@@ -245,12 +246,12 @@ if __name__ == "__main__":
     inFiles = []
     for mass in masses_list:
         if args.res == 'radion':
-            inFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-{mass}/nanoHTT_0.root")
+            inFiles.append(f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-{mass}/nanoHTT_0.root")
         elif args.res == 'graviton':
-            inFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-{mass}/nanoHTT_0.root")
+            inFiles.append(f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-{mass}/nanoHTT_0.root")
         else:
-            inFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-{mass}/nanoHTT_0.root")
-            inFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-{mass}/nanoHTT_0.root")
+            inFiles.append(f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToBulkGravitonToHHTo2B2Tau_M-{mass}/nanoHTT_0.root")
+            inFiles.append(f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{args.year}/GluGluToRadionToHHTo2B2Tau_M-{mass}/nanoHTT_0.root")
 
     mass_str = f"{masses_list[0]}"
     if len(masses_list) > 1:
@@ -267,6 +268,7 @@ if __name__ == "__main__":
     global_cfg_dict = {}
     with open(global_cfg_file, 'r') as f:
         global_cfg_dict = yaml.safe_load(f)
+    global_cfg_dict['channels_to_consider'] = args.ch.split(',')
 
     hist_cfg_file = '/afs/cern.ch/work/v/vdamante/FLAF/config/plot/histograms.yaml'
     hist_cfg_dict = {}
@@ -281,7 +283,7 @@ if __name__ == "__main__":
         res_str = 'grav'
     elif args.res == 'radion':
         res_str = 'rad'
-    for channel in ['eTau', 'muTau','tauTau']:
+    for channel in global_cfg_dict['channels_to_consider']:
         print(f"plotting res1b for {channel} and {args.year}")
         Plot2DMassRes1b(dfWrapped.df,hist_cfg_dict,global_cfg_dict, channel, args.year, mass_str,res_str)
         print(f"plotting res2b for {channel} and {args.year}")

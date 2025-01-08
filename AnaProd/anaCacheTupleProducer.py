@@ -34,18 +34,24 @@ def getKeyNames(root_file_name):
 
 def applyLegacyVariables(dfw, global_cfg_dict, is_central=True):
     channels = global_cfg_dict['channelSelection']
+    trg_strings = {}
     for channel in channels :
         ch_value = global_cfg_dict['channelDefinition'][channel]
         dfw.df = dfw.df.Define(f"{channel}", f"channelId=={ch_value}")
         trigger_list = global_cfg_dict['triggers'][channel]
+        trg_strings[channel] = "("
+        trg_strings[channel] += ' || '.join(f'HLT_{trg}' for trg in trigger_list)
+        trg_strings[channel] += ")"
+        # print(trg_strings[channel])
         for trigger in trigger_list:
             trigger_name = 'HLT_'+trigger
             if trigger_name not in dfw.df.GetColumnNames():
                 dfw.df = dfw.df.Define(trigger_name, "1")
     #entryvalid_stri = '((b1_pt > 0) & (b2_pt > 0)) & ('
     entryvalid_stri = '('
-    entryvalid_stri += ' || '.join(f'({ch} & {global_cfg_dict["triggers"][ch]})' for ch in channels)
+    entryvalid_stri += ' || '.join(f'({ch} & {trg_strings[ch]})' for ch in channels)
     entryvalid_stri += ')'
+    # print(entryvalid_stri)
     dfw.DefineAndAppend("entry_valid",entryvalid_stri)
     MT2Branches = dfw.Apply(LegacyVariables.GetMT2)
     dfw.colToSave.extend(MT2Branches)
@@ -140,6 +146,7 @@ if __name__ == "__main__":
     parser.add_argument('--compressionLevel', type=int, default=4)
     parser.add_argument('--compressionAlgo', type=str, default="ZLIB")
     parser.add_argument('--deepTauVersion', type=str, default="v2p1")
+    parser.add_argument('--channels', type=str, default="eTau,muTau,tauTau")
     args = parser.parse_args()
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
@@ -157,7 +164,8 @@ if __name__ == "__main__":
         global_cfg_dict = yaml.safe_load(f)
 
     startTime = time.time()
-
+    channels = args.channels.split(',') if type(args.channels) == str else args.channels
+    global_cfg_dict['channelSelection'] = channels
     outFileNameFinal = f'{args.outFileName}'
     # print(outFileNameFinal)
     # print(args.outFileName.split('.')[0])

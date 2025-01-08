@@ -345,7 +345,74 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             kInit_cond.notify_all()
             kInit_cond.release()
             thread.join()
+class DNNCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
+    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
+    def workflow_requires(self):
+        workflow_dict = {}
+        workflow_dict["anaTuple"] = {
+            br_idx: AnaTupleTask.req(self, branch=br_idx)
+            for br_idx, _ in self.branch_map.items()
+        }
+        return workflow_dict
+
+    def requires(self):
+        return [ AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default) ]
+
+    def create_branch_map(self):
+        branches = {}
+        anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).branch_map
+        for br_idx, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
+            branches[br_idx] = (sample_name, sample_type)
+        return branches
+
+    def output(self):
+        sample_name, sample_type = self.branch_data
+        outFileName = os.path.basename(self.input()[0].path)
+        outDir = os.path.join('nnCacheTuple', self.period, sample_name, self.version)
+        finalFile = os.path.join(outDir, outFileName)
+        return self.remote_target(finalFile, fs=self.fs_nnCacheTuple)
+
+    def run(self):
+        sample_name, sample_type = self.branch_data
+        unc_config = os.path.join(self.ana_path(), 'config', self.period, 'weights.yaml')
+        nn_interface_script = os.path.join(self.ana_path(), 'AnaProd', 'NNInterface.py')
+        global_config = os.path.join(self.ana_path(), 'config', 'HH_bbtautau', 'global.yaml')
+
+        thread = threading.Thread(target=update_kinit_thread)
+        thread.start()
+        try:
+            job_home, remove_job_home = self.law_job_home()
+            input_file = self.input()[0]
+            inModelDir = os.path.join(self.ana_path(), 'config','HH_bbtautau', 'nn_models')
+            #inModelDir = self.global_params.get('inModelDir', './config/HH_bbtautau/nn_models/')
+            EraName = self.samples[sample_name].get('EraName', 'e2018')
+            Mass = self.samples[sample_name].get('Mass', 400)
+            Spin = self.samples[sample_name].get('Spin', 2)
+            PairType = self.samples[sample_name].get('PairType', 2)
+
+            with input_file.localize("r") as local_input, self.output().localize("w") as outFile:
+                nn_interface_cmd = [
+                    'python3', nn_interface_script,
+                    '--inModelDir', inModelDir,
+                    '--inFile', local_input.path,
+                    '--outFileName', outFile.path,
+                    '--uncConfig', unc_config,
+                    '--globalConfig', global_config,
+                    '--EraName', EraName,
+                    '--Mass', str(Mass),
+                    '--Spin', str(Spin),
+                    '--PairType', str(PairType)
+                ]
+                ps_call(nn_interface_cmd, env=self.cmssw_env, verbose=1)
+            print(f"Finished running NNInterface.py for sample {sample_name}")
+
+        finally:
+            kInit_cond.acquire()
+            kInit_cond.notify_all()
+            kInit_cond.release()
+            thread.join()
 
 class DataCacheMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)

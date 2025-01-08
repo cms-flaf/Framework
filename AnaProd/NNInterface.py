@@ -1,10 +1,11 @@
-#python3 NNInterface.py --inModelDir ../config/HH_bbtautau/nn_models/ --inFile /eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaTuples/v11_deepTau2p1_HTT_SC/Run2_2018/GluGluToBulkGravitonToHHTo2B2Tau_M-400/nanoHTT_0.root --outputDir ../NN_root --uncConfig ../config/Run2_2018/weights.yaml --config ../config/HH_bbtautau/global.yaml --EraName e2018 --Mass 400 --Spin 2 --PairType 2
+#python3 /afs/cern.ch/work/p/prsolank/private/FLAF_8thJan/AnaProd/NNInterface.py --inModelDir /afs/cern.ch/work/p/prsolank/private/FLAF_8thJan/config/HH_bbtautau/nn_models --inFile /tmp/prsolank/luigi-tmp-416131263.root --outFileName /tmp/prsolank/luigi-tmp-862152055.root --uncConfig /afs/cern.ch/work/p/prsolank/private/FLAF_8thJan/config/Run2_2018/weights.yaml --globalConfig /afs/cern.ch/work/p/prsolank/private/FLAF_8thJan/config/HH_bbtautau/global.yaml --EraName e2018 --Mass 400 --Spin 2 --PairType 2
 
 from __future__ import annotations
 import os
 import enum
 from typing import Any, Dict
 import ROOT
+import pandas as pd
 ROOT.ROOT.EnableImplicitMT()
 import numpy as np
 import tensorflow as tf
@@ -50,7 +51,7 @@ def convert_to_numpy(event_data, EraName, Mass, Spin, PairType):
     selected_fatjet_eta = np.array(event_data["SelectedFatJet_eta"])
     selected_fatjet_phi = np.array(event_data["SelectedFatJet_phi"])
     selected_fatjet_mass = np.array(event_data["SelectedFatJet_mass"])
-
+    
     if len(selected_fatjet_pt) != 0:
         max_pt_index = np.argmax(selected_fatjet_pt)
         fatjet_pt = selected_fatjet_pt[max_pt_index]
@@ -195,9 +196,9 @@ def run_inference_on_uncertainty_trees(df_begin, inFileName, models, globalConfi
     
     print(f"NN scores saved to {output_file_name}")
 
-
 def run_inference_for_tree(tree_name, rdf, models, globalConfig, output_root_file, snapshotOptions, EraName, Mass, Spin, PairType):
     year = EraName[1:]
+
     rdf_setup = PrepareDfForDNN(DataFrameBuilderForHistograms(rdf, globalConfig, f"Run2_{year}")).df
 
     # Filter events based on boosted_baseline
@@ -219,29 +220,34 @@ def run_inference_for_tree(tree_name, rdf, models, globalConfig, output_root_fil
     ]
 
     def run_inference_and_save(rdf_filtered, tree_suffix, is_boosted_special=False):
-        df = rdf_filtered.AsNumpy(columns)
-        num_events = len(df["event"])
+
+        event_numbers_vec = rdf_filtered.AsNumpy(["event"])["event"]
+        num_events = len(event_numbers_vec)
+
         if num_events == 0:
             print(f"No events found for {tree_name}_{tree_suffix}, skipping inference.")
             return
 
+        other_columns_dict = rdf_filtered.AsNumpy(columns)
+        event_to_index = {event_num: i for i, event_num in enumerate(event_numbers_vec)}
         predictions_array = np.zeros((NNInterface.n_folds, num_events, NNInterface.n_out))
 
         for fold_index, nn_interface in enumerate(models):
             print(f'Processing Fold {fold_index} for {tree_name}_{tree_suffix}')
-            for i in range(num_events):
+            for event_num in event_numbers_vec:
+                i = event_to_index[event_num]
                 if i % 100 == 0:
-                    print(f'  Event No. {i} ({tree_name}_{tree_suffix})')
-                event_data = {col: df[col][i] for col in columns}
+                    print(f'  Event: {event_num} ({tree_name}_{tree_suffix})')
+                event_data = {col: other_columns_dict[col][i] for col in columns}
                 inputs = convert_to_numpy(event_data, EraName, Mass, Spin, PairType)
 
                 if is_boosted_special:
                     if tree_suffix == "boosted_set1":
-                        inputs["is_boosted"] = np.array([1], dtype=np.int32) # Set is_boosted to 1
+                        inputs["is_boosted"] = np.array([1], dtype=np.int32)  # Set is_boosted to 1
                         predictions = run_inference(nn_interface, inputs)
                         predictions_array[fold_index, i, :] = predictions.flatten()
                     elif tree_suffix == "boosted_set2":
-                        inputs["is_boosted"] = np.array([0], dtype=np.int32) # Set is_boosted to 0
+                        inputs["is_boosted"] = np.array([0], dtype=np.int32)  # Set is_boosted to 0
                         predictions = run_inference(nn_interface, inputs)
                         predictions_array[fold_index, i, :] = predictions.flatten()
                 else:
@@ -257,15 +263,18 @@ def run_inference_for_tree(tree_name, rdf, models, globalConfig, output_root_fil
         HH_score = np.zeros(1, dtype=float)
         TT_score = np.zeros(1, dtype=float)
         DY_score = np.zeros(1, dtype=float)
-
         tree.Branch("HH_score", HH_score, "HH_score/D")
         tree.Branch("TT_score", TT_score, "TT_score/D")
         tree.Branch("DY_score", DY_score, "DY_score/D")
+
+        event_num_branch = np.zeros(1, dtype=np.int64)  
+        tree.Branch("event", event_num_branch, "event/L")
 
         for i in range(num_events):
             HH_score[0] = mean_predictions[i, 0]
             TT_score[0] = mean_predictions[i, 1]
             DY_score[0] = mean_predictions[i, 2]
+            event_num_branch[0] = event_numbers_vec[i]  
             tree.Fill()
 
         tree.Write()
@@ -369,7 +378,6 @@ if __name__ == "__main__":
         PairType=args.PairType
     )
     
-    # Write and close the ROOT file
     output_root_file.Write()
     output_root_file.Close()
 

@@ -14,13 +14,11 @@ if __name__ == "__main__":
 
 from RunKit.run_tools import ps_call
 ROOT.EnableThreadSafety()
-#ROOT.EnableImplicitMT()
+
 import Common.LegacyVariables as LegacyVariables
 import Common.Utilities as Utilities
 defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "X_spin", "isData"]
 scales = ['Up','Down']
-#from Analysis.HistHelper import *
-#from Analysis.hh_bbtautau import *
 
 def getKeyNames(root_file_name):
     root_file = ROOT.TFile(root_file_name, "READ")
@@ -44,7 +42,6 @@ def applyLegacyVariables(dfw, global_cfg_dict, is_central=True):
             trigger_name = 'HLT_'+trigger
             if trigger_name not in dfw.df.GetColumnNames():
                 dfw.df = dfw.df.Define(trigger_name, "1")
-    #entryvalid_stri = '((b1_pt > 0) & (b2_pt > 0)) & ('
     entryvalid_stri = '('
     entryvalid_stri += ' || '.join(f'({ch} & {trg_strings[ch]})' for ch in channels)
     entryvalid_stri += ')'
@@ -142,7 +139,6 @@ if __name__ == "__main__":
     parser.add_argument('--compressionAlgo', type=str, default="ZLIB")
     parser.add_argument('--deepTauVersion', type=str, default="v2p1")
     parser.add_argument('--channels', type=str, default=None)
-    # parser.add_argument('--channels', type=str, default="eTau,muTau,tauTau")
     args = parser.parse_args()
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
@@ -162,8 +158,6 @@ if __name__ == "__main__":
     startTime = time.time()
     if args.channels:
         global_cfg_dict['channelSelection'] = args.channels.split(',') if type(args.channels) == str else args.channels
-    # channels = args.channels.split(',') if type(args.channels) == str else args.channels
-    # global_cfg_dict['channelSelection'] = channels
     outFileNameFinal = f'{args.outFileName}'
     try:
         all_files = createAnaCacheTuple(args.inFileName, args.outFileName.split('.')[0], unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion)
@@ -181,6 +175,5 @@ if __name__ == "__main__":
         df = ROOT.RDataFrame(0)
         df=df.Define("test", "return true;")
         df.Snapshot("Events", outFileNameFinal, {"test"})
-        #Utilities.create_file(outFileNameFinal)
     executionTime = (time.time() - startTime)
     print('Execution time in seconds: ' + str(executionTime))

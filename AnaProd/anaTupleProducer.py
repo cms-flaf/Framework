@@ -186,7 +186,6 @@ if __name__ == "__main__":
     with open(args.anaCache, 'r') as f:
         anaCache = yaml.safe_load(f)
 
-    # Remove default values, use the list from the config if args.channels is None.
     channels = setup.global_params["channelSelection"]
     if args.channels:
         channels = args.channels.split(',') if type(args.channels) == str else args.channels

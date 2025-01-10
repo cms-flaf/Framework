@@ -143,10 +143,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         isbbtt = 'HH_bbtautau' in self.global_params['analysis_config_area'].split('/')
         if isbbtt: deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
         region = customisation_dict['region'] if 'region' in customisation_dict.keys() else self.global_params['region_default']
-
-
         print(f'input file is {input_file.path}')
-        #global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
         global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         sample_type = self.samples[sample_name]['sampleType'] if sample_name != 'data' else 'data'
@@ -243,14 +240,12 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             if var not in all_samples:
                 all_samples[var] = []
             all_samples[var].append(br_idx)
-        workflow_dict = {}
 
         new_branchset = set()
         for var in all_samples.keys():
             new_branchset.update(all_samples[var])
 
         return { "histproducersample": HistProducerSampleTask.req(self, branches=list(new_branchset)) }
-        # return workflow_dict
 
     def requires(self):
         var, branches_idx = self.branch_data
@@ -281,7 +276,6 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def run(self):
         var, branches_idx = self.branch_data
         sample_config = os.path.join(self.ana_path(), 'config',self.period, f'samples.yaml')
-        #global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
         global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         customisation_dict = getCustomisationSplit(self.customisations)
@@ -333,7 +327,6 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
             if len(uncNames)==1:
                 with self.output().localize("w") as outFile:
-                    #MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--uncConfig', unc_config, '--sampleConfig', sample_config, '--datasetFile', dataset_names,  '--year', getYear(self.period) , '--globalConfig', global_config, '--channels',channels, '--apply-btag-shape-weights', applyBTagShapeWeight]#, '--remove-files', 'True']
                     MergerProducer_cmd = ['python3', MergerProducer,'--outFile', outFile.path, '--var', var, '--uncSource', uncNames[0], '--datasetFile', dataset_names, '--channels',channels, '--ana_path', self.ana_path(), '--period', self.period]#, '--remove-files', 'True']
                     if 'apply_btag_shape_weights' in customisation_dict.keys():
                         MergerProducer_cmd.append('--apply-btag-shape-weights', customisation_dict['apply_btag_shape_weights'])

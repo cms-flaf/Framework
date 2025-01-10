@@ -416,6 +416,7 @@ FatJetObservables :
   - mass
 
 var_only_boosted:
+  - bbtautau_mass
   - SelectedFatJet_area_boosted
   - SelectedFatJet_btagCSVV2_boosted
   - SelectedFatJet_btagDDBvLV2_boosted

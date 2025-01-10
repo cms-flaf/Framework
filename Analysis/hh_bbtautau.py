@@ -3,7 +3,8 @@ if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
 from Analysis.HistHelper import *
-from Analysis.GetCrossWeights import *
+# from Analysis.GetCrossWeights import *
+from Analysis.GetTauTauWeights import *
 from Common.Utilities import *
 
 

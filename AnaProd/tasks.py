@@ -161,11 +161,10 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_id, sample_name, sample_type, input_file = self.branch_data
         output_name = os.path.basename(input_file.path)
         output_path = os.path.join('anaTuples', self.version, self.period, sample_name, output_name)
-
-        customisation_dict = getCustomisationSplit(self.customisations)
-        deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
-        if '2p5' in deepTauVersion:
-            return self.remote_target(output_path, fs=self.fs_anaTuple2p5)
+        # customisation_dict = getCustomisationSplit(self.customisations)
+        # deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
+        # if '2p5' in deepTauVersion:
+        #     return self.remote_target(output_path, fs=self.fs_anaTuple2p5)
         return self.remote_target(output_path, fs=self.fs_anaTuple)
 
     def run(self):
@@ -262,13 +261,14 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def output(self, force_pre_output=False):
         outFileName = 'nanoHTT_0.root'
-        customisation_dict = getCustomisationSplit(self.customisations)
-        deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
-        print(deepTauVersion)
         output_path = os.path.join('anaTuples', self.version, self.period, 'data', outFileName)
-        if '2p5' in deepTauVersion:
-            return self.remote_target(output_path, fs=self.fs_anaTuple2p5)
         return self.remote_target(output_path, fs=self.fs_anaTuple)
+        # customisation_dict = getCustomisationSplit(self.customisations)
+        # deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else self.global_params['deepTauVersion']
+        # print(deepTauVersion)
+        # output_path = os.path.join('anaTuples', self.version, self.period, 'data', outFileName)
+        # if '2p5' in deepTauVersion:
+        #     return self.remote_target(output_path, fs=self.fs_anaTuple2p5)
 
     def run(self):
         producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')

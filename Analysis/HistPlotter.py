@@ -34,10 +34,11 @@ def RebinHisto(hist_initial, new_binning, sample, wantOverflow=True, verbose=Fal
         new_hist.SetBinContent(new_hist.GetNbinsX(), n_finalbin+n_overflow)
         err_finalbin = new_hist.GetBinError(new_hist.GetNbinsX())
         err_overflow = new_hist.GetBinError(new_hist.GetNbinsX()+1)
-        if n_finalbin+n_overflow > 0:
-            new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(n_finalbin+n_overflow))
-        else:
-            new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(err_finalbin*err_finalbin+err_overflow*err_overflow))
+        new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(err_finalbin*err_finalbin+err_overflow*err_overflow))
+        # if n_finalbin+n_overflow > 0:
+        #     new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(n_finalbin+n_overflow))
+        # else:
+        #     new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(err_finalbin*err_finalbin+err_overflow*err_overflow))
 
     if verbose:
         for nbin in range(0, len(new_binning)):
@@ -156,7 +157,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     page_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", args.analysis, "plot/cms_stacked.yaml")
-    page_cfg_custom = os.path.join(os.environ['ANALYSIS_PATH'],f'config', args.analysis, f'plot/Run2_{args.year}.yaml') # to be fixed!!
+    page_cfg_custom = os.path.join(os.environ['ANALYSIS_PATH'],f'config', args.analysis, f'plot/{args.year}.yaml') # to be fixed!!
+    # page_cfg_custom = os.path.join(os.environ['ANALYSIS_PATH'],f'config', args.analysis, f'plot/Run2_{args.year}.yaml') # to be fixed!!
     hist_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", args.analysis, "plot/histograms.yaml")
 
     #### config opening ####

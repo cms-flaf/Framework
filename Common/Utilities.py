@@ -56,6 +56,14 @@ class WorkingPointsMuonID(Enum):
     TightID = 6
     TrkHighPtID = 7
 
+class MuonPfIsoID_WP(Enum):
+    VeryLoose = 1
+    Loose = 2
+    Medium = 3
+    Tight = 4
+    VeryTight = 5
+    VeryVeryTight = 6
+
 deepTauVersions = {"2p1":"2017", "2p5":"2018"}
 
 def defineP4(df, name):

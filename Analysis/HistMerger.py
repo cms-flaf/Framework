@@ -177,9 +177,9 @@ if __name__ == "__main__":
     boosted_categories = list(global_cfg_dict['boosted_categories'])
     QCDregions = list(global_cfg_dict['QCDRegions'])
     #Controlregions = list(global_cfg_dict['ControlRegions']) #Later maybe we want to separate Controls from QCDs
-    global_cfg_dict['channels_to_consider']=args.channels.split(',')
+    global_cfg_dict['channelSelection']=args.channels.split(',')
 
-    channels = global_cfg_dict['channels_to_consider']
+    channels = global_cfg_dict['channelSelection']
     # print(channels)
 
     signals = list(global_cfg_dict['signal_types'])

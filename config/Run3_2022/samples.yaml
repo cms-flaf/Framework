@@ -7,6 +7,7 @@ GLOBAL:
   crossSectionsFile : config/crossSections13p6TeV.yaml
   use_stitching: false
   met_type: PFMET
+  lumiFile: /eos/user/c/cmsdqm/www/CAF/certification/Collisions22/Cert_Collisions2022_355100_362760_Golden.json
 
 ############## Data ##############
 EGamma_Run2022C:
@@ -218,7 +219,6 @@ DYto2L_M_50_amcatnloFXFX_ext1:
   generator: amcatnloFXFX
   miniAOD: /DYto2L-2Jets_MLL-50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5_ext1-v1/MINIAODSIM
   sampleType: DY
-  isReference: True
   crossSection: DY_NNLO_QCD+NLO_EW
 
 ############## DYto2L_M-50_nJ ##############

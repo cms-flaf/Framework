@@ -2,7 +2,9 @@ GLOBAL:
   triggerFile: config/HH_bbWW/Run3_2022EE/triggers.yaml
   sampleSelection:
     - drop ^.*
-    - keep ^TT.*
+    - keep TTto2L2Nu
+    - keep TTtoLNu2Q
+    - keep TTto4Q
     - keep ^ST.*
     - keep ^GluGlutoRadiontoHHto2B2Vto2B2L2Nu.*
     - keep DYto2L_M_10to50_amcatnloFXFX
@@ -16,6 +18,7 @@ GLOBAL:
     - keep ^DoubleMuon_.*
     - keep ^SingleMuon_.*
     - keep ^MuonEG_.*
+    - drop ^.*_ext[0-9]+$
   use_stitching: false
 
 

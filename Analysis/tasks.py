@@ -294,8 +294,6 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         uncs_to_exclude = self.global_params['uncs_to_exclude'][self.period]
 
         compute_unc_histograms = customisation_dict['compute_unc_histograms']=='True' if 'compute_unc_histograms' in customisation_dict.keys() else self.global_params.get('compute_unc_histograms', False)
-        if var == 'kinFit_m' or var=='bbtautau_mass':
-            compute_unc_histograms=True
         if compute_unc_histograms:
             for uncName in list(unc_cfg_dict['norm'].keys())+unc_cfg_dict['shape']:
                 if uncName in uncs_to_exclude: continue

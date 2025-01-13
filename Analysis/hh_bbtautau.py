@@ -4,6 +4,7 @@ if __name__ == "__main__":
 
 from Analysis.HistHelper import *
 from Analysis.GetCrossWeights import *
+# from Analysis.GetTauTauWeights import *
 from Common.Utilities import *
 
 
@@ -65,7 +66,6 @@ def createKeyFilterDict(global_cfg_dict, year):
     for ch in channels_to_consider:
         triggers = triggers_dict[ch]['default']
         if year in triggers_dict[ch].keys():
-            print(f"using the key {year}")
             triggers = triggers_dict[ch][year]
         for reg in qcd_regions_to_consider:
             for cat in categories_to_consider:
@@ -145,7 +145,6 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                 self.df = self.df.Define(f'SelectedFatJet_{fatJetVar}_boosted',f"""
                                     SelectedFatJet_{fatJetVar}_boosted_vec[SelectedFatJet_idxOrdered[0]];
                                    """)
-                #print(fatJetVar)
 
     def defineTriggers(self):
         for ch in self.config['channelSelection']:
@@ -164,15 +163,15 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
     def defineApplicationRegions(self):
         for ch in self.config['channels_to_consider']:
-            for trg in self.config['triggers'][ch].split(' || '):
-                if trg not in self.df.GetColumnNames():
+            for trg in self.config['triggers'][ch]:
+                if f"HLT_{trg}" not in self.df.GetColumnNames():
                     print(f"{trg} not present in colNames")
                     self.df = self.df.Define(trg, "1")
         singleTau_th_dict = self.config['singleTau_th']
         singleMu_th_dict = self.config['singleMu_th']
         singleEle_th_dict = self.config['singleEle_th']
         legacy_region_definition= "( ( eTau && (SingleEle_region  || CrossEleTau_region) ) || ( muTau && (SingleMu_region  || CrossMuTau_region) ) || ( tauTau && ( diTau_region ) ) || ( eE && (SingleEle_region)) || (eMu && ( SingleEle_region || SingleMu_region ) ) || (muMu && (SingleMu_region)) )"
-        #legacy_region_definition= "( ( eTau && (SingleEle_region ) ) || ( muTau && (SingleMu_region ) ) || ( tauTau && ( diTau_region ) ) || ( eE && (SingleEle_region)) || (eMu && ( SingleEle_region || SingleMu_region ) ) || (muMu && (SingleMu_region)) )"
+        #legacy_region_definition= "( ( eTau && (SingleEle_region ) ) || ( muTau && (SingleMu_region ) ) || ( tauTau && ( diTau_region ) ) || ( eE && (SingleEle_region)) || (eMu && ( SingleEle_region || SingleMu_region ) ) || (muMu && (SingleMu_region)) )" # if not including xtrgs
         for reg_name, reg_exp in self.config['application_regions'].items():
             self.df = self.df.Define(reg_name, reg_exp.format(tau_th=singleTau_th_dict[self.period], ele_th=singleEle_th_dict[self.period], mu_th=singleMu_th_dict[self.period]))
         self.df = self.df.Define("Legacy_region", legacy_region_definition)
@@ -219,27 +218,17 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                                             return static_cast<float>({weight}) ;
                                          return 1.f;""")
 
-    def GetTauIDTotalWeight(self):
-        prod_central_1 = "weight_tau1_TauID_SF_Medium_genuineElectron_barrelCentral * weight_tau1_TauID_SF_Medium_genuineElectron_endcapsCentral * weight_tau1_TauID_SF_Medium_genuineMuon_eta0p4to0p8Central * weight_tau1_TauID_SF_Medium_genuineMuon_eta0p8to1p2Central * weight_tau1_TauID_SF_Medium_genuineMuon_eta1p2to1p7Central * weight_tau1_TauID_SF_Medium_genuineMuon_etaGt1p7Central * weight_tau1_TauID_SF_Medium_genuineMuon_etaLt0p4Central * weight_tau1_TauID_SF_Medium_stat1_dm0Central * weight_tau1_TauID_SF_Medium_stat1_dm10Central * weight_tau1_TauID_SF_Medium_stat1_dm11Central * weight_tau1_TauID_SF_Medium_stat1_dm1Central * weight_tau1_TauID_SF_Medium_stat2_dm0Central * weight_tau1_TauID_SF_Medium_stat2_dm10Central * weight_tau1_TauID_SF_Medium_stat2_dm11Central * weight_tau1_TauID_SF_Medium_stat2_dm1Central * weight_tau1_TauID_SF_Medium_stat_highpT_bin1Central * weight_tau1_TauID_SF_Medium_stat_highpT_bin2Central * weight_tau1_TauID_SF_Medium_syst_allerasCentral * weight_tau1_TauID_SF_Medium_syst_highpTCentral * weight_tau1_TauID_SF_Medium_syst_highpT_bin1Central * weight_tau1_TauID_SF_Medium_syst_highpT_bin2Central * weight_tau1_TauID_SF_Medium_syst_highpT_extrapCentral * weight_tau1_TauID_SF_Medium_syst_yearCentral * weight_tau1_TauID_SF_Medium_syst_year_dm0Central * weight_tau1_TauID_SF_Medium_syst_year_dm10Central * weight_tau1_TauID_SF_Medium_syst_year_dm11Central * weight_tau1_TauID_SF_Medium_syst_year_dm1Central "
-        prod_central_2 = "weight_tau2_TauID_SF_Medium_genuineElectron_barrelCentral * weight_tau2_TauID_SF_Medium_genuineElectron_endcapsCentral * weight_tau2_TauID_SF_Medium_genuineMuon_eta0p4to0p8Central * weight_tau2_TauID_SF_Medium_genuineMuon_eta0p8to1p2Central * weight_tau2_TauID_SF_Medium_genuineMuon_eta1p2to1p7Central * weight_tau2_TauID_SF_Medium_genuineMuon_etaGt1p7Central * weight_tau2_TauID_SF_Medium_genuineMuon_etaLt0p4Central * weight_tau2_TauID_SF_Medium_stat1_dm0Central * weight_tau2_TauID_SF_Medium_stat1_dm10Central * weight_tau2_TauID_SF_Medium_stat1_dm11Central * weight_tau2_TauID_SF_Medium_stat1_dm1Central * weight_tau2_TauID_SF_Medium_stat2_dm0Central * weight_tau2_TauID_SF_Medium_stat2_dm10Central * weight_tau2_TauID_SF_Medium_stat2_dm11Central * weight_tau2_TauID_SF_Medium_stat2_dm1Central * weight_tau2_TauID_SF_Medium_stat_highpT_bin1Central * weight_tau2_TauID_SF_Medium_stat_highpT_bin2Central * weight_tau2_TauID_SF_Medium_syst_allerasCentral * weight_tau2_TauID_SF_Medium_syst_highpTCentral * weight_tau2_TauID_SF_Medium_syst_highpT_bin1Central * weight_tau2_TauID_SF_Medium_syst_highpT_bin2Central * weight_tau2_TauID_SF_Medium_syst_highpT_extrapCentral * weight_tau2_TauID_SF_Medium_syst_yearCentral * weight_tau2_TauID_SF_Medium_syst_year_dm0Central * weight_tau2_TauID_SF_Medium_syst_year_dm10Central * weight_tau2_TauID_SF_Medium_syst_year_dm11Central * weight_tau2_TauID_SF_Medium_syst_year_dm1Central "
-        if "weight_tau1_TauID_SF_Medium_Central" not in self.df.GetColumnNames():
-            self.df = self.df.Define("weight_tau1_TauID_SF_Medium_Central", prod_central_1)
-        if "weight_tau2_TauID_SF_Medium_Central" not in self.df.GetColumnNames():
-            self.df = self.df.Define("weight_tau2_TauID_SF_Medium_Central", prod_central_2)
-
 
     def defineCategories(self): # needs lot of stuff --> at the end
         self.df = self.df.Define("nSelBtag", f"int(b1_btagDeepFlavB >{self.bTagWP}) + int(b2_btagDeepFlavB >{self.bTagWP})")
         for category_to_def in self.config['category_definition'].keys():
             category_name = category_to_def
-            #print(self.config['category_definition'][category_to_def].format(pNetWP=self.pNetWP, region=self.region))
             self.df = self.df.Define(category_to_def, self.config['category_definition'][category_to_def].format(pNetWP=self.pNetWP, region=self.region))
 
     def defineChannels(self):
         for channel in self.config['all_channels']:
             ch_value = self.config['channelDefinition'][channel]
             self.df = self.df.Define(f"{channel}", f"channelId=={ch_value}")
-            #print(f"""for {channel} the df has {self.df.Filter(channel).Count().GetValue()} entries""")
 
     def defineL1PrefiringRelativeWeights(self):
         if "weight_L1PreFiringDown_rel" not in self.df.GetColumnNames():
@@ -273,8 +262,6 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
             self.df=self.df.Define("tau2_gen_kind", "if(isData) return 5; return 0;")
         self.df = self.df.Define("tau_true", f"""(tau1_gen_kind==5 && tau2_gen_kind==5)""")
         self.df = self.df.Define(f"lepton_preselection", "eleEta2016 && tau1_iso_medium && muon1_tightId && muon2_tightId && firstele_mvaIso")
-        #self.df = self.df.Filter(f"lepton_preselection")
-        #print(f" after lepton preselection {self.df.Count().GetValue()}")
 
     def defineQCDRegions(self):
         self.df = self.df.Define("OS", "tau1_charge*tau2_charge < 0")
@@ -295,7 +282,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
     def addNewCols(self):
         self.colNames = []
         self.colTypes = []
-        colNames = [str(c) for c in self.df.GetColumnNames()]#if 'kinFit_result' not in str(c)]
+        colNames = [str(c) for c in self.df.GetColumnNames()] #if 'kinFit_result' not in str(c)]
         cols_to_remove = []
         for colName in colNames:
             col_name_split = colName.split("_")
@@ -331,18 +318,10 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.isCentral = isCentral
         self.wantTriggerSFErrors = wantTriggerSFErrors
         self.wantScales = isCentral and wantScales
-        # print(f"deepTauVersion = {self.deepTauVersion}")
-        # print(f"period = {self.period}")
-        # print(f"bTagWPString = {self.bTagWPString}")
-        # print(f"bTagWP = {self.bTagWP}")
-        # print(f"pNetWP = {self.pNetWP}")
-        # print(f"region = {self.region}")
-        # print(f"isData = {self.isData}")
-        # print(f"isCentral = {self.isCentral}")
 
 def PrepareDfForHistograms(dfForHistograms):
-    # if dfForHistograms.isCentral:
     dfForHistograms.df = defineAllP4(dfForHistograms.df)
+    dfForHistograms.defineTriggers()
     dfForHistograms.defineBoostedVariables()
     dfForHistograms.redefinePUJetIDWeights()
     dfForHistograms.df = createInvMass(dfForHistograms.df)
@@ -351,22 +330,16 @@ def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.defineApplicationRegions()
     if not dfForHistograms.isData:
         dfForHistograms.definePNetSFs()
-        dfForHistograms.GetTauIDTotalWeight()
         defineTriggerWeights(dfForHistograms)
         if dfForHistograms.wantTriggerSFErrors and dfForHistograms.isCentral:
             defineTriggerWeightsErrors(dfForHistograms)
-        defineTotalTriggerWeight(dfForHistograms)
-    #print(dfForHistograms.df.GetColumnNames())
     dfForHistograms.defineCRs()
     dfForHistograms.defineCategories()
-    dfForHistograms.defineTriggers()
-    dfForHistograms.redefineWeights()
-    dfForHistograms.df = createInvMass(dfForHistograms.df)
     dfForHistograms.defineQCDRegions()
-    # dfForHistograms.addNewCols()
     return dfForHistograms
-  
-  
+
+
+
 def defineAllP4(df):
     df = df.Define(f"SelectedFatJet_idx", f"CreateIndexes(SelectedFatJet_pt.size())")
     df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")

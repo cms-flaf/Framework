@@ -34,10 +34,7 @@ def RebinHisto(hist_initial, new_binning, sample, wantOverflow=True, verbose=Fal
         new_hist.SetBinContent(new_hist.GetNbinsX(), n_finalbin+n_overflow)
         err_finalbin = new_hist.GetBinError(new_hist.GetNbinsX())
         err_overflow = new_hist.GetBinError(new_hist.GetNbinsX()+1)
-        if n_finalbin+n_overflow > 0:
-            new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(n_finalbin+n_overflow))
-        else:
-            new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(err_finalbin*err_finalbin+err_overflow*err_overflow))
+        new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(err_finalbin*err_finalbin+err_overflow*err_overflow))
 
     if verbose:
         for nbin in range(0, len(new_binning)):
@@ -156,7 +153,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     page_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", args.analysis, "plot/cms_stacked.yaml")
-    page_cfg_custom = os.path.join(os.environ['ANALYSIS_PATH'],f'config', args.analysis, f'plot/Run2_{args.year}.yaml') # to be fixed!!
+    page_cfg_custom = os.path.join(os.environ['ANALYSIS_PATH'],f'config', args.analysis, f'plot/{args.year}.yaml') # to be fixed!!
     hist_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", args.analysis, "plot/histograms.yaml")
 
     #### config opening ####
@@ -168,13 +165,6 @@ if __name__ == "__main__":
     inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", args.analysis, "plot/inputs.yaml")
     with open(inputs_cfg, 'r') as f:
         inputs_cfg_dict = yaml.safe_load(f)
-    # if args.category == 'boosted':
-    #     for input_dict in inputs_cfg_dict:
-    #         if input_dict['name'] == 'GluGluToBulkGraviton' or input_dict['name'] == 'GluGluToRadion':
-    #             input_dict['scale'] = 0.
-    # else:
-    #     for input_dict in inputs_cfg_dict:
-    #         input_dict['scale'] = 1
 
     index_to_remove = []
     for dicti in inputs_cfg_dict:
@@ -236,7 +226,6 @@ if __name__ == "__main__":
         bckg_sample_type = bckg_cfg_dict[sample_name]['sampleType']
         bckg_sample_name = bckg_sample_type if bckg_sample_type in global_cfg_dict['sample_types_to_merge'] else sample_name
         if bckg_sample_name in all_samples_types.keys():
-            # print(f"{bcxkg_sample_name} already in all_samples_types, not including it")
             continue
         all_samples_types[bckg_sample_name] = {}
         all_samples_types[bckg_sample_name]['type']= bckg_sample_type
@@ -271,7 +260,7 @@ if __name__ == "__main__":
     dir_0 = inFile_root.Get(args.channel)
     dir_0p1 = dir_0.Get(args.qcdregion)
     dir_1 = dir_0p1.Get(args.category)
-    # dir_1 = dir_0.Get(args.category)
+    # dir_1 = dir_0.Get(args.category) # --> uncomment if QCD regions are not included in the histograms
     hist_cfg_dict[args.var]['max_y_sf'] = 1.4
     hist_cfg_dict[args.var]['use_log_y'] = False
     hist_cfg_dict[args.var]['use_log_x'] = False
@@ -307,14 +296,6 @@ if __name__ == "__main__":
         if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
             print(f"ERRORE: {sample_histname} non è un istogramma")
         obj.SetDirectory(0)
-        # k_factor = 1
-        # if sample_name=='TTTo2L2Nu':
-        #     k_factor =  ((1 - 0.665) * (1 - 0.665))/( (1 - 0.6741) * (1 - 0.6741))
-        # if sample_name == 'TTToSemiLeptonic':
-        #     k_factor = ( 0.665 * (1-0.665) )/( 0.6741 * (1-0.6741) )
-        # if sample_name == 'TTToHadronic':
-        #     k_factor = (0.665 * 0.665)/(0.6741 * 0.6741)
-        # obj.Scale(k_factor)
 
         if sample_plot_name not in hists_to_plot_unbinned.keys():
             hists_to_plot_unbinned[sample_plot_name] = obj

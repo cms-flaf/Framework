@@ -14,18 +14,14 @@ if __name__ == "__main__":
 
 from RunKit.run_tools import ps_call
 ROOT.EnableThreadSafety()
-#ROOT.EnableImplicitMT()
+
 import Common.LegacyVariables as LegacyVariables
 import Common.Utilities as Utilities
 defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "X_spin", "isData"]
 scales = ['Up','Down']
-#from Analysis.HistHelper import *
-#from Analysis.hh_bbtautau import *
 
 def getKeyNames(root_file_name):
-    #print(root_file_name)
     root_file = ROOT.TFile(root_file_name, "READ")
-    #print(root_file.GetListOfKeys())
     key_names = [str(k.GetName()) for k in root_file.GetListOfKeys() ]
     root_file.Close()
     return key_names
@@ -42,16 +38,13 @@ def applyLegacyVariables(dfw, global_cfg_dict, is_central=True):
         trg_strings[channel] = "("
         trg_strings[channel] += ' || '.join(f'HLT_{trg}' for trg in trigger_list)
         trg_strings[channel] += ")"
-        # print(trg_strings[channel])
         for trigger in trigger_list:
             trigger_name = 'HLT_'+trigger
             if trigger_name not in dfw.df.GetColumnNames():
                 dfw.df = dfw.df.Define(trigger_name, "1")
-    #entryvalid_stri = '((b1_pt > 0) & (b2_pt > 0)) & ('
     entryvalid_stri = '('
     entryvalid_stri += ' || '.join(f'({ch} & {trg_strings[ch]})' for ch in channels)
     entryvalid_stri += ')'
-    # print(entryvalid_stri)
     dfw.DefineAndAppend("entry_valid",entryvalid_stri)
     MT2Branches = dfw.Apply(LegacyVariables.GetMT2)
     dfw.colToSave.extend(MT2Branches)
@@ -130,7 +123,6 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
     if snapshotOptions.fLazy == True:
         print("going to rungraph")
         ROOT.RDF.RunGraphs(snaps)
-    # print(all_files)
     return all_files
 
 
@@ -146,7 +138,7 @@ if __name__ == "__main__":
     parser.add_argument('--compressionLevel', type=int, default=4)
     parser.add_argument('--compressionAlgo', type=str, default="ZLIB")
     parser.add_argument('--deepTauVersion', type=str, default="v2p1")
-    parser.add_argument('--channels', type=str, default="eTau,muTau,tauTau")
+    parser.add_argument('--channels', type=str, default=None)
     args = parser.parse_args()
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
@@ -164,16 +156,13 @@ if __name__ == "__main__":
         global_cfg_dict = yaml.safe_load(f)
 
     startTime = time.time()
-    channels = args.channels.split(',') if type(args.channels) == str else args.channels
-    global_cfg_dict['channelSelection'] = channels
+    if args.channels:
+        global_cfg_dict['channelSelection'] = args.channels.split(',') if type(args.channels) == str else args.channels
     outFileNameFinal = f'{args.outFileName}'
-    # print(outFileNameFinal)
-    # print(args.outFileName.split('.')[0])
     try:
         all_files = createAnaCacheTuple(args.inFileName, args.outFileName.split('.')[0], unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion)
         hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
         hadd_str += ' '.join(f for f in all_files)
-        # print(hadd_str)
         if len(all_files) > 1:
             ps_call([hadd_str], True)
         else:
@@ -186,6 +175,5 @@ if __name__ == "__main__":
         df = ROOT.RDataFrame(0)
         df=df.Define("test", "return true;")
         df.Snapshot("Events", outFileNameFinal, {"test"})
-        #Utilities.create_file(outFileNameFinal)
     executionTime = (time.time() - startTime)
     print('Execution time in seconds: ' + str(executionTime))

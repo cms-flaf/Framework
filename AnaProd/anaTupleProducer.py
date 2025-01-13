@@ -173,7 +173,7 @@ if __name__ == "__main__":
                         default=f"{os.environ['ANALYSIS_PATH']}/config/pdg_name_type_charge.txt")
     parser.add_argument('--compressionLevel', type=int, default=4)
     parser.add_argument('--compressionAlgo', type=str, default="ZLIB")
-    parser.add_argument('--channels', type=str, default="eTau,muTau,tauTau")
+    parser.add_argument('--channels', type=str, default=None)
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
 
@@ -185,8 +185,11 @@ if __name__ == "__main__":
     setup = Setup.getGlobal(os.environ['ANALYSIS_PATH'], args.period, args.customisations)
     with open(args.anaCache, 'r') as f:
         anaCache = yaml.safe_load(f)
-    channels = args.channels.split(',') if type(args.channels) == str else args.channels
 
+    channels = setup.global_params["channelSelection"]
+    if args.channels:
+        channels = args.channels.split(',') if type(args.channels) == str else args.channels
+    print(channels)
     anaTupleDef = Utilities.load_module(args.anaTupleDef)
     if os.path.isdir(args.outDir):
         shutil.rmtree(args.outDir)

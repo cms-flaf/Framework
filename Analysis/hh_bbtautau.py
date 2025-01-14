@@ -149,7 +149,6 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                                     SelectedFatJet_{fatJetVar}_boosted_vec[SelectedFatJet_idxOrdered[0]];
                                    """)
 
-                #print(fatJetVar)
 
     def defineTriggers(self):
         for ch in self.config['channelSelection']:
@@ -327,14 +326,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.isCentral = isCentral
         self.wantTriggerSFErrors = wantTriggerSFErrors
         self.wantScales = isCentral and wantScales
-        # print(f"deepTauVersion = {self.deepTauVersion}")
-        # print(f"period = {self.period}")
-        # print(f"bTagWPString = {self.bTagWPString}")
-        # print(f"bTagWP = {self.bTagWP}")
-        # print(f"pNetWP = {self.pNetWP}")
-        # print(f"region = {self.region}")
-        # print(f"isData = {self.isData}")
-        # print(f"isCentral = {self.isCentral}")
+    
 
 def PrepareDfForDNN(dfForHistograms):
     dfForHistograms.df = defineAllP4(dfForHistograms.df)

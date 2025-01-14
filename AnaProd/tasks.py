@@ -384,7 +384,6 @@ class DNNCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             job_home, remove_job_home = self.law_job_home()
             input_file = self.input()[0]
             inModelDir = os.path.join(self.ana_path(), 'config','HH_bbtautau', 'nn_models')
-            #inModelDir = self.global_params.get('inModelDir', './config/HH_bbtautau/nn_models/')
             EraName = self.samples[sample_name].get('EraName', 'e2018')
             Mass = self.samples[sample_name].get('Mass', 400)
             Spin = self.samples[sample_name].get('Spin', 2)

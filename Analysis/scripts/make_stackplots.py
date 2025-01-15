@@ -5,6 +5,7 @@ import os
 #indir = "/eos/user/d/daebi/ANA_FOLDER_DEV/histograms/Run32022EE_27Nov24_MuonSF_PU/Run3_2022EE/merged/"
 indir = "/eos/user/d/daebi/ANA_FOLDER_DEV/histograms/Run32022_27Nov24_MuonSF_PU/Run3_2022/merged/"
 indir = "/eos/user/d/daebi/ANA_FOLDER_DEV/histograms/Run32022EE_27Nov24_MuonSF_PU/Run3_2022EE/merged/"
+indir = "/eos/user/d/daebi/ANA_FOLDER_DEV/histograms/Run3_2022EE_11Dec24/Run3_2022EE/merged/"
 
 varnames = ["lep1_pt", "lep1_eta", "lep2_pt", "lep2_eta", "bjet1_btagPNetB", "bjet2_btagPNetB"]
 varnames = ["lep1_pt", "diLep_mass", "MT_lep1", "MT_lep2", "MT_tot"]
@@ -16,7 +17,7 @@ channellist = ["mu", "muMu"]
 #plotdir = "plots_27Nov_MuonSF_PU_2022/"
 
 era = "Run3_2022EE"
-plotdir = "plots_27Nov_MuonSF_PU_2022EE/"
+plotdir = "plots_11Dec_2022EE/"
 cat = "inclusive"
 
 using_uncertainties = True #When we turn on Up/Down, the file storage changes due to renameHists.py

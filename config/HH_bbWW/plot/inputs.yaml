@@ -3,11 +3,11 @@
   color: kAzure+10
   types:
     - DY
-# - name: TT
-#   title: t#bar{t}
-#   color: kGreen-3
-#   types:
-#     - TT
+- name: TT
+  title: t#bar{t}
+  color: kGreen-3
+  types:
+    - TT
 # - name: W
 #   title: "W #rightarrow l#nu + jets"
 #   color: kYellow-7
@@ -62,8 +62,8 @@
   #title: "GluGluRadion - 700 GeV"
   #type: signal
   #color: kBlue
-- name: GluGluToRadion_450
-  title: "GluGluRadion - 450 GeV"
+- name: GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M_450
+  title: "GluGluRadion to 2L2Nu - 450 GeV"
   type: signal
   color: kViolet
   types:

@@ -26,7 +26,7 @@ ROOT.gInterpreter.Declare(
     return SF_error;
     }
 
-    float SelectCorrectEfficiency(const float& tauDM, const float& effDM0, const float& effDM1, const float& eff3Prong){
+    float SelectCorrectDM(const float& tauDM, const float& effDM0, const float& effDM1, const float& eff3Prong){
         if(tauDM == 0){
             return effDM0;
         }
@@ -80,238 +80,267 @@ def defineTriggerWeightsErrors(dfBuilder):
     passCrossMuTau = "CrossMuTau_region"
     passSingleEle = "SingleEle_region"
     passCrossEleTau = "CrossEleTau_region"
-    # must pass SingleMu_region - Mu leg
-    Eff_SL_mu_Data = "eff_data_tau1_Trg_singleMuCentral"
-    Eff_SL_mu_MC = "eff_MC_tau1_Trg_singleMuCentral"
+    if 'muTau' in dfBuilder.config['channels_to_consider']:
+        ######## MuTau #########
+        ########## Errors ##########
+        Eff_SL_mu_Data_Err = "eff_data_tau1_Trg_singleMuUp-eff_data_tau1_Trg_singleMuCentral"
+        Eff_SL_mu_MC_Err = "eff_MC_tau1_Trg_singleMuUp-eff_MC_tau1_Trg_singleMuCentral"
+        dfBuilder.df = dfBuilder.df.Define("Eff_SL_mu_Data_Err", f"""{Eff_SL_mu_Data_Err}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_SL_mu_MC_Err", f"""{Eff_SL_mu_MC_Err}""")
 
-    # must pass CrossMuTau_region - Mu leg
-    Eff_cross_mu_Data = "eff_data_tau1_Trg_mutau_muCentral"
-    Eff_cross_mu_MC = "eff_MC_tau1_Trg_mutau_muCentral"
+        Eff_cross_mu_Data_Err = "eff_data_tau1_Trg_mutau_muUp-eff_data_tau1_Trg_mutau_muCentral"
+        Eff_cross_mu_MC_Err = "eff_MC_tau1_Trg_mutau_muUp-eff_MC_tau1_Trg_mutau_muCentral"
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_mu_Data_Err", f"""{Eff_cross_mu_Data_Err}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_mu_MC_Err", f"""{Eff_cross_mu_MC_Err}""")
+
+        Err_Data_SL_mu = f"{passSingleMu} * Eff_SL_mu_Data_Err - {passCrossMuTau} * {passSingleMu} * (Eff_cross_mu_Data > Eff_SL_mu_Data) * Eff_SL_mu_Data_Err * Eff_cross_tau_mutau_Data; "
+        Err_MC_SL_mu = f"{passSingleMu} * Eff_SL_mu_MC_Err - {passCrossMuTau} * {passSingleMu} * (Eff_cross_mu_MC > Eff_SL_mu_MC) * Eff_SL_mu_MC_Err * Eff_cross_tau_mutau_MC;"
+
+        dfBuilder.df = dfBuilder.df.Define("Err_Data_SL_mu", f"""{Err_Data_SL_mu}""")
+        dfBuilder.df = dfBuilder.df.Define("Err_MC_SL_mu", f"""{Err_MC_SL_mu}""")
+
+        ######### Scale factors ########
+
+        Err_Data_expression_cross_mu =  f" - {passCrossMuTau} * {passSingleMu} * (Eff_cross_mu_Data <= Eff_SL_mu_Data) * Eff_cross_mu_Data_Err * Eff_cross_tau_mutau_Data + {passCrossMuTau} * Eff_cross_mu_Data_Err * Eff_cross_tau_mutau_Data; "
+        Err_MC_expression_cross_mu =  f" - {passCrossMuTau} * {passSingleMu} * (Eff_cross_mu_MC <= Eff_SL_mu_MC) * Eff_cross_mu_MC_Err * Eff_cross_tau_mutau_MC + {passCrossMuTau} * Eff_cross_mu_MC_Err * Eff_cross_tau_mutau_MC; "
 
 
-    # must pass CrossMuTau_region - Tau leg
-    Eff_cross_tau_Data = "eff_data_tau2_Trg_mutau_3ProngCentral*eff_data_tau2_Trg_mutau_DM0Central*eff_data_tau2_Trg_mutau_DM1Central"
-    Eff_cross_tau_MC = "eff_MC_tau2_Trg_mutau_3ProngCentral*eff_MC_tau2_Trg_mutau_DM0Central*eff_MC_tau2_Trg_mutau_DM1Central"
+        ######### tau leg #########
 
-    # ************************************
+        Eff_cross_tau_mutau_Data_Up = "SelectCorrectDM(tau2_decayMode, eff_data_tau2_Trg_mutau_DM0Up, eff_data_tau2_Trg_mutau_DM1Up, eff_data_tau2_Trg_mutau_3ProngUp)"
+        Eff_cross_tau_mutau_MC_Up = "SelectCorrectDM(tau2_decayMode, eff_MC_tau2_Trg_mutau_DM0Up, eff_MC_tau2_Trg_mutau_DM1Up, eff_MC_tau2_Trg_mutau_3ProngUp)"
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_tau_mutau_Data_Up", f"""{Eff_cross_tau_mutau_Data_Up}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_tau_mutau_MC_Up", f"""{Eff_cross_tau_mutau_MC_Up}""")
 
-    Eff_SL_ele_Data = "eff_data_tau1_Trg_singleEleCentral"
-    Eff_SL_ele_MC = "eff_MC_tau1_Trg_singleEleCentral"
+        Eff_Data_mutau_tau_Up = f"{passSingleMu} * Eff_SL_mu_Data - {passCrossMuTau} * {passSingleMu} * std::min(Eff_cross_mu_Data, Eff_SL_mu_Data) * Eff_cross_tau_mutau_Data_Up   + {passCrossMuTau} * Eff_cross_mu_Data * Eff_cross_tau_mutau_Data_Up;"
+        Eff_MC_mutau_tau_Up   = f"{passSingleMu} * Eff_SL_mu_MC   - {passCrossMuTau} * {passSingleMu} * std::min(Eff_cross_mu_MC  , Eff_SL_mu_MC)   * Eff_cross_tau_mutau_MC_Up     + {passCrossMuTau} * Eff_cross_mu_MC   * Eff_cross_tau_mutau_MC_Up;"
+        dfBuilder.df = dfBuilder.df.Define("Eff_Data_mutau_tau_Up", f"""{Eff_Data_mutau_tau_Up}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_MC_mutau_tau_Up", f"""{Eff_MC_mutau_tau_Up}""")
 
-    # must pass CrossEleTau_region - Ele leg
-    Eff_cross_ele_Data = "eff_data_tau1_Trg_etau_eleCentral"
-    Eff_cross_ele_MC = "eff_MC_tau1_Trg_etau_eleCentral"
+        Eff_cross_tau_mutau_Data_Err = "(Eff_Data_mutau_tau_Up - Eff_Data_mutau)"
+        Eff_cross_tau_mutau_MC_Err = "(Eff_MC_mutau_tau_Up - Eff_MC_mutau)"
+
+        dfBuilder.df = dfBuilder.df.Define("Err_Data_cross_mu", f"""{Err_Data_expression_cross_mu}""")
+        dfBuilder.df = dfBuilder.df.Define("Err_MC_cross_mu", f"""{Err_MC_expression_cross_mu}""")
+        Err_Data_mutau_mu = "(Err_Data_SL_mu + Err_Data_cross_mu)"
+        Err_MC_mutau_mu   = "(Err_MC_SL_mu   + Err_MC_cross_mu)"
+        dfBuilder.df = dfBuilder.df.Define("Err_Data_mutau_mu", f"""{Err_Data_mutau_mu}""")
+        dfBuilder.df = dfBuilder.df.Define("Err_MC_mutau_mu", f"""{Err_MC_mutau_mu}""")
+        if dfBuilder.period == 'Run2_2016' or dfBuilder.period == 'Run2_2016_HIPM':
+            Err_Data_ele = "Err_Data_SL_mu"
+            Err_MC_ele   = "Err_MC_SL_mu"
+
+        if dfBuilder.period == 'Run2_2016' or dfBuilder.period == 'Run2_2016_HIPM':
+            Err_Data_ele = "Err_Data_SL_mu"
+            Err_MC_ele   = "Err_MC_SL_mu"
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_tau_mutau_Data_Err", f"""{Eff_cross_tau_mutau_Data_Err}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_tau_mutau_MC_Err", f"""{Eff_cross_tau_mutau_MC_Err}""")
+        dfBuilder.df = dfBuilder.df.Define("trigSF_SL_mu_err", f"""get_scale_factor_error(Eff_Data_mutau, Eff_MC_mutau, Err_Data_SL_mu, Err_MC_SL_mu,"trigSF_SL_mu_err")""")
+        dfBuilder.df = dfBuilder.df.Define("trigSF_cross_mu_err", f"""get_scale_factor_error(Eff_Data_mutau, Eff_MC_mutau, Err_Data_cross_mu, Err_MC_cross_mu,"trigSF_cross_mu_err")""")
+        dfBuilder.df = dfBuilder.df.Define("trigSF_tau_mutau_err", f"""get_scale_factor_error(Eff_Data_mutau, Eff_MC_mutau, Eff_cross_tau_mutau_Data_Err, Eff_cross_tau_mutau_MC_Err,"trigSF_tau_mutau_err")""")
+        dfBuilder.df = dfBuilder.df.Define("trigSF_mu_err", f"""get_scale_factor_error(Eff_Data_mutau, Eff_MC_mutau, Err_Data_mutau_mu, Err_MC_mutau_mu,"trigSF_mu_err")""")
+        dfBuilder.df = dfBuilder.df.Define("muTau_trigSF_tauUp", "weight_trigSF_muTau+trigSF_tau_mutau_err") # questo ci importa
+        dfBuilder.df = dfBuilder.df.Define("muTau_trigSF_tauDown", "weight_trigSF_muTau-trigSF_tau_mutau_err") # questo ci importa
+        dfBuilder.df = dfBuilder.df.Define("trigSF_muUp", "weight_trigSF_muTau+trigSF_mu_err") # questo ci importa
+        dfBuilder.df = dfBuilder.df.Define("trigSF_muDown", "weight_trigSF_muTau-trigSF_mu_err") # questo ci importa
+        dfBuilder.df = dfBuilder.df.Define("trigSF_SL_muUp", "weight_trigSF_muTau+trigSF_SL_mu_err") # questo ci importa
+        dfBuilder.df = dfBuilder.df.Define("trigSF_SL_muDown", "weight_trigSF_muTau-trigSF_SL_mu_err") # questo ci importa
+        dfBuilder.df = dfBuilder.df.Define("trigSF_cross_muUp", "weight_trigSF_muTau+trigSF_cross_mu_err") # questo ci importa
+        dfBuilder.df = dfBuilder.df.Define("trigSF_cross_muDown", "weight_trigSF_muTau-trigSF_cross_mu_err") # questo ci importa
+        for scale in ['Up','Down']:
+            dfBuilder.df = dfBuilder.df.Define(f"trigSF_mu{scale}_rel", f"if ((HLT_singleMu || HLT_mutau) && Legacy_region ) {{return trigSF_mu{scale}/weight_trigSF_muTau;}} return 0.f; ")
+            dfBuilder.df = dfBuilder.df.Define(f"trigSF_SL_mu{scale}_rel", f"if ((HLT_singleMu || HLT_mutau) && Legacy_region ) {{return trigSF_SL_mu{scale}/weight_trigSF_muTau;}} return 0.f; ")
+            dfBuilder.df = dfBuilder.df.Define(f"trigSF_cross_mu{scale}_rel", f"if ((HLT_singleMu || HLT_mutau) && Legacy_region ) {{return trigSF_cross_mu{scale}/weight_trigSF_muTau;}} return 0.f; ")
+            dfBuilder.df = dfBuilder.df.Define(f"muTau_trigSF_tau{scale}_rel", f"if ((HLT_singleMu || HLT_mutau) && Legacy_region ) {{return muTau_trigSF_tau{scale}/weight_trigSF_muTau;}} return 0.f; ")
+
+
+    if 'eTau' in dfBuilder.config['channels_to_consider']:
+        ######## EleTau #########
+        ########## Errors ##########
+        Eff_SL_ele_Data_Err = "eff_data_tau1_Trg_singleMuUp-eff_data_tau1_Trg_singleMuCentral"
+        Eff_SL_ele_MC_Err = "eff_MC_tau1_Trg_singleMuUp-eff_MC_tau1_Trg_singleMuCentral"
+        dfBuilder.df = dfBuilder.df.Define("Eff_SL_ele_Data_Err", f"""{Eff_SL_ele_Data_Err}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_SL_ele_MC_Err", f"""{Eff_SL_ele_MC_Err}""")
+
+        Eff_cross_ele_Data_Err = "eff_data_tau1_Trg_etau_eleUp-eff_data_tau1_Trg_etau_eleCentral"
+        Eff_cross_ele_MC_Err = "eff_MC_tau1_Trg_etau_eleUp-eff_MC_tau1_Trg_etau_eleCentral"
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_ele_Data_Err", f"""{Eff_cross_ele_Data_Err}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_ele_MC_Err", f"""{Eff_cross_ele_MC_Err}""")
+
+        Err_Data_SL_ele = f"{passSingleMu} * Eff_SL_ele_Data_Err - {passCrossEleTau} * {passSingleMu} * (Eff_cross_ele_Data > Eff_SL_ele_Data) * Eff_SL_ele_Data_Err * Eff_cross_tau_etau_Data; "
+        Err_MC_SL_ele = f"{passSingleMu} * Eff_SL_ele_MC_Err - {passCrossEleTau} * {passSingleMu} * (Eff_cross_ele_MC > Eff_SL_ele_MC) * Eff_SL_ele_MC_Err * Eff_cross_tau_etau_MC;"
+
+        dfBuilder.df = dfBuilder.df.Define("Err_Data_SL_ele", f"""{Err_Data_SL_ele}""")
+        dfBuilder.df = dfBuilder.df.Define("Err_MC_SL_ele", f"""{Err_MC_SL_ele}""")
+
+        ######### Scale factors ########
+
+        Err_Data_expression_cross_ele =  f" - {passCrossEleTau} * {passSingleMu} * (Eff_cross_ele_Data <= Eff_SL_ele_Data) * Eff_cross_ele_Data_Err * Eff_cross_tau_etau_Data + {passCrossEleTau} * Eff_cross_ele_Data_Err * Eff_cross_tau_etau_Data; "
+        Err_MC_expression_cross_ele =  f" - {passCrossEleTau} * {passSingleMu} * (Eff_cross_ele_MC <= Eff_SL_ele_MC) * Eff_cross_ele_MC_Err * Eff_cross_tau_etau_MC + {passCrossEleTau} * Eff_cross_ele_MC_Err * Eff_cross_tau_etau_MC; "
+
+
+        ######### tau leg #########
+
+        Eff_cross_tau_etau_Data_Up = "SelectCorrectDM(tau2_decayMode, eff_data_tau2_Trg_etau_DM0Up, eff_data_tau2_Trg_etau_DM1Up, eff_data_tau2_Trg_etau_3ProngUp)"
+        Eff_cross_tau_etau_MC_Up = "SelectCorrectDM(tau2_decayMode, eff_MC_tau2_Trg_etau_DM0Up, eff_MC_tau2_Trg_etau_DM1Up, eff_MC_tau2_Trg_etau_3ProngUp)"
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_tau_etau_Data_Up", f"""{Eff_cross_tau_etau_Data_Up}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_tau_etau_MC_Up", f"""{Eff_cross_tau_etau_MC_Up}""")
+
+        Eff_Data_etau_tau_Up = f"{passSingleMu} * Eff_SL_ele_Data - {passCrossEleTau} * {passSingleMu} * std::min(Eff_cross_ele_Data, Eff_SL_ele_Data) * Eff_cross_tau_etau_Data_Up   + {passCrossEleTau} * Eff_cross_ele_Data * Eff_cross_tau_etau_Data_Up;"
+        Eff_MC_etau_tau_Up   = f"{passSingleMu} * Eff_SL_ele_MC   - {passCrossEleTau} * {passSingleMu} * std::min(Eff_cross_ele_MC  , Eff_SL_ele_MC)   * Eff_cross_tau_etau_MC_Up     + {passCrossEleTau} * Eff_cross_ele_MC   * Eff_cross_tau_etau_MC_Up;"
+        dfBuilder.df = dfBuilder.df.Define("Eff_Data_etau_tau_Up", f"""{Eff_Data_etau_tau_Up}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_MC_etau_tau_Up", f"""{Eff_MC_etau_tau_Up}""")
+
+        Eff_cross_tau_etau_Data_Err = "(Eff_Data_etau_tau_Up - Eff_Data_etau)"
+        Eff_cross_tau_etau_MC_Err = "(Eff_MC_etau_tau_Up - Eff_MC_etau)"
+
+        dfBuilder.df = dfBuilder.df.Define("Err_Data_cross_ele", f"""{Err_Data_expression_cross_ele}""")
+        dfBuilder.df = dfBuilder.df.Define("Err_MC_cross_ele", f"""{Err_MC_expression_cross_ele}""")
+        Err_Data_etau_ele = "(Err_Data_SL_ele + Err_Data_cross_ele)"
+        Err_MC_etau_ele   = "(Err_MC_SL_ele   + Err_MC_cross_ele)"
+        dfBuilder.df = dfBuilder.df.Define("Err_Data_etau_ele", f"""{Err_Data_etau_ele}""")
+        dfBuilder.df = dfBuilder.df.Define("Err_MC_etau_ele", f"""{Err_MC_etau_ele}""")
+        if dfBuilder.period == 'Run2_2016' or dfBuilder.period == 'Run2_2016_HIPM':
+            Err_Data_ele = "Err_Data_SL_ele"
+            Err_MC_ele   = "Err_MC_SL_ele"
+
+        if dfBuilder.period == 'Run2_2016' or dfBuilder.period == 'Run2_2016_HIPM':
+            Err_Data_ele = "Err_Data_SL_ele"
+            Err_MC_ele   = "Err_MC_SL_ele"
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_tau_etau_Data_Err", f"""{Eff_cross_tau_etau_Data_Err}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_tau_etau_MC_Err", f"""{Eff_cross_tau_etau_MC_Err}""")
+        dfBuilder.df = dfBuilder.df.Define("trigSF_SL_ele_err", f"""get_scale_factor_error(Eff_Data_etau, Eff_MC_etau, Err_Data_SL_ele, Err_MC_SL_ele,"trigSF_SL_ele_err")""")
+        dfBuilder.df = dfBuilder.df.Define("trigSF_cross_ele_err", f"""get_scale_factor_error(Eff_Data_etau, Eff_MC_etau, Err_Data_cross_ele, Err_MC_cross_ele,"trigSF_cross_ele_err")""")
+        dfBuilder.df = dfBuilder.df.Define("trigSF_tau_etau_err", f"""get_scale_factor_error(Eff_Data_etau, Eff_MC_etau, Eff_cross_tau_etau_Data_Err, Eff_cross_tau_etau_MC_Err,"trigSF_tau_etau_err")""")
+        dfBuilder.df = dfBuilder.df.Define("trigSF_ele_err", f"""get_scale_factor_error(Eff_Data_etau, Eff_MC_etau, Err_Data_etau_ele, Err_MC_etau_ele,"trigSF_ele_err")""")
+        dfBuilder.df = dfBuilder.df.Define("eTau_trigSF_tauUp", "weight_trigSF_eTau+trigSF_tau_etau_err") # questo ci importa
+        dfBuilder.df = dfBuilder.df.Define("eTau_trigSF_tauDown", "weight_trigSF_eTau-trigSF_tau_etau_err") # questo ci importa
+        dfBuilder.df = dfBuilder.df.Define("trigSF_eleUp", "weight_trigSF_eTau+trigSF_ele_err") # questo ci importa
+        dfBuilder.df = dfBuilder.df.Define("trigSF_eleDown", "weight_trigSF_eTau-trigSF_ele_err") # questo ci importa
+        dfBuilder.df = dfBuilder.df.Define("trigSF_SL_eleUp", "weight_trigSF_eTau+trigSF_SL_ele_err") # questo ci importa
+        dfBuilder.df = dfBuilder.df.Define("trigSF_SL_eleDown", "weight_trigSF_eTau-trigSF_SL_ele_err") # questo ci importa
+        dfBuilder.df = dfBuilder.df.Define("trigSF_cross_eleUp", "weight_trigSF_eTau+trigSF_cross_ele_err") # questo ci importa
+        dfBuilder.df = dfBuilder.df.Define("trigSF_cross_eleDown", "weight_trigSF_eTau-trigSF_cross_ele_err") # questo ci importa
+        for scale in ['Up','Down']:
+            dfBuilder.df = dfBuilder.df.Define(f"trigSF_ele{scale}_rel", f"if ((HLT_singleMu || HLT_etau) && Legacy_region ) {{return trigSF_ele{scale}/weight_trigSF_eTau;}} return 0.f; ")
+            dfBuilder.df = dfBuilder.df.Define(f"trigSF_SL_ele{scale}_rel", f"if ((HLT_singleMu || HLT_etau) && Legacy_region ) {{return trigSF_SL_ele{scale}/weight_trigSF_eTau;}} return 0.f; ")
+            dfBuilder.df = dfBuilder.df.Define(f"trigSF_cross_ele{scale}_rel", f"if ((HLT_singleMu || HLT_etau) && Legacy_region ) {{return trigSF_cross_ele{scale}/weight_trigSF_eTau;}} return 0.f; ")
+            dfBuilder.df = dfBuilder.df.Define(f"eTau_trigSF_tau{scale}_rel", f"if ((HLT_singleMu || HLT_etau) && Legacy_region ) {{return eTau_trigSF_tau{scale}/weight_trigSF_eTau;}} return 0.f; ")
 
 
     for scale in ['Up', 'Down']:
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_ditau_DM0{scale}_rel", f"if (HLT_ditau && Legacy_region) {{return (weight_tau1_TrgSF_ditau_DM0{scale}_rel*weight_tau2_TrgSF_ditau_DM0{scale}_rel); }}return 1.f;")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_ditau_DM1{scale}_rel", f"if (HLT_ditau && Legacy_region) {{return (weight_tau1_TrgSF_ditau_DM1{scale}_rel*weight_tau2_TrgSF_ditau_DM1{scale}_rel); }}return 1.f;")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_ditau_3Prong{scale}_rel", f"if (HLT_ditau && Legacy_region) {{return (weight_tau1_TrgSF_ditau_3Prong{scale}_rel*weight_tau2_TrgSF_ditau_3Prong{scale}_rel); }}return 1.f;")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleTau_{scale}_rel", f"if (HLT_singleTau && SingleTau_region && !Legacy_region) {{return (weight_tau1_TrgSF_singleTau{scale}_rel*weight_tau1_TrgSF_singleTau{scale}_rel) ;}} return 1.f;")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_MET{scale}_rel", f"if(HLT_MET && !(SingleTau_region) && !(Legacy_region)) {{return weight_TrgSF_MET{scale}_rel;}} return 1.f;")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleEle{scale}_rel", f"if (HLT_singleEle && SingleEle_region) {{return (weight_tau1_TrgSF_singleEle{scale}_rel*weight_tau2_TrgSF_singleEle{scale}_rel);}} return 1.f;")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleMu{scale}_rel", f"if (HLT_singleMu && SingleMu_region) {{return (weight_tau1_TrgSF_singleMu{scale}_rel*weight_tau2_TrgSF_singleMu{scale}_rel);}} return 1.f;")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_eMu{scale}_rel", f"if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau1_TrgSF_singleEleCentral!=1.f) {{return (weight_tau1_TrgSF_singleEle{scale}_rel*weight_tau2_TrgSF_singleMu{scale}_rel);}} return 1.f;")
-
-    Eff_SL_mu_Data_Err = "(eff_data_tau2_Trg_singleMuUp-eff_data_tau1_Trg_singleMuCentral)"
-    Eff_SL_mu_MC_Err = "(eff_MC_tau2_Trg_singleMuUp-eff_MC_tau1_Trg_singleMuCentral)"
-    Err_Data_SL_mu = f"{passSingleMu} * {Eff_SL_mu_Data_Err} - {passCrossMuTau} * {passSingleMu} * ({Eff_cross_mu_Data} > {Eff_SL_mu_Data}) * {Eff_SL_mu_Data_Err} * {Eff_cross_tau_Data}"
-    Err_MC_SL_mu = f"{passSingleMu} * {Eff_SL_mu_MC_Err} - {passCrossMuTau} * {passSingleMu} * ({Eff_cross_mu_MC} > {Eff_SL_mu_MC}) * {Eff_SL_mu_MC_Err} * {Eff_cross_tau_MC}"
-    dfBuilder.df = dfBuilder.df.Define(f"Err_Data_SL_mu", Err_Data_SL_mu)
-    dfBuilder.df = dfBuilder.df.Define(f"Err_MC_SL_mu", Err_MC_SL_mu)
-    dfBuilder.df = dfBuilder.df.Define("trigSF_SL_mu_err" , """get_scale_factor_error(Eff_Data_mutau, Eff_MC_mutau, Err_Data_SL_mu, Err_MC_SL_mu, "trigSF_SL_mu_err")""")
-
-    Eff_cross_mu_Data_Err = "(eff_data_tau1_Trg_mutau_muUp - eff_data_tau1_Trg_mutau_muCentral)"
-    Eff_cross_mu_MC_Err = "(eff_MC_tau1_Trg_mutau_muUp - eff_MC_tau1_Trg_mutau_muCentral)"
-    Err_Data_cross_mu = f"- {passCrossMuTau} * {passSingleMu} * ({Eff_cross_mu_Data} <= {Eff_SL_mu_Data}) * {Eff_cross_mu_Data_Err} * {Eff_cross_tau_Data} + {passCrossMuTau} * {Eff_cross_mu_Data_Err} * {Eff_cross_tau_Data};"
-    Err_MC_cross_mu = f"- {passCrossMuTau} * {passSingleMu} * ({Eff_cross_mu_MC} <= {Eff_SL_mu_MC}) * {Eff_cross_mu_MC_Err} * {Eff_cross_tau_MC} + {passCrossMuTau} * {Eff_cross_mu_MC_Err} * {Eff_cross_tau_MC};"
-    dfBuilder.df = dfBuilder.df.Define(f"Err_Data_cross_mu", Err_Data_cross_mu)
-    dfBuilder.df = dfBuilder.df.Define(f"Err_MC_cross_mu", Err_MC_cross_mu)
-    dfBuilder.df = dfBuilder.df.Define(f"trigSF_cross_mu_err", """get_scale_factor_error(Eff_Data_mutau, Eff_MC_mutau, Err_Data_cross_mu, Err_MC_cross_mu,"trigSF_cross_mu_err")""")
-
-    dfBuilder.df = dfBuilder.df.Define("Eff_Data_mutau_Up", "SelectCorrectEfficiency(tau2_decayMode, eff_data_tau2_Trg_mutau_DM0Up, eff_data_tau2_Trg_mutau_DM1Up, eff_data_tau2_Trg_mutau_3ProngUp)")
-
-    dfBuilder.df = dfBuilder.df.Define("Eff_MC_mutau_Up", "SelectCorrectEfficiency(tau2_decayMode, eff_MC_tau2_Trg_mutau_DM0Up, eff_MC_tau2_Trg_mutau_DM1Up, eff_MC_tau2_Trg_mutau_3ProngUp)")
-
-    dfBuilder.df = dfBuilder.df.Define("trigSF_err_dm_mutau", """get_scale_factor_error(Eff_Data_mutau, Eff_MC_mutau, Eff_Data_mutau_Up - Eff_Data_mutau, Eff_MC_mutau_Up - Eff_MC_mutau,"trigSF_err_dm_mutau")""")
-    Err_Data_mu = "Err_Data_SL_mu + Err_Data_cross_mu"
-    Err_MC_mu   = "Err_MC_SL_mu   + Err_MC_cross_mu"
-    if dfBuilder.period == 'Run2_2016' or dfBuilder.period == 'Run2_2016_HIPM':
-        Err_Data_mu = "Err_Data_SL_mu"
-        Err_MC_mu   = "Err_MC_SL_mu"
-    dfBuilder.df = dfBuilder.df.Define("Err_Data_mu", Err_Data_mu)
-    dfBuilder.df = dfBuilder.df.Define("Err_MC_mu", Err_MC_mu)
-    dfBuilder.df = dfBuilder.df.Define("trigSF_mu_err", """get_scale_factor_error(Eff_Data_mutau, Eff_MC_mutau, Err_Data_mu, Err_MC_mu,"trigSF_mu_err")""")
-
-    if dfBuilder.period == 'Run2_2016' or dfBuilder.period == 'Run2_2016_HIPM':
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_mu_Up", " 1.f ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_mu_Down", " 1.f ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_mu_Up", "if ((HLT_singleMu) && Legacy_region ) {return weight_tau1_TrgSF_singleMuUp_rel*weight_tau1_TrgSF_singleMuCentral;} return 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_mu_Down", "if ((HLT_singleMu) && Legacy_region ) {return weight_tau1_TrgSF_singleMuUp_rel*weight_tau1_TrgSF_singleMuCentral;} return 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mu_Up", " 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mu_Down", " 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mutau_tau_Up", "  1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mutau_tau_Down", "  1.f; ")
-    else:
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_mu_Up", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau + trigSF_cross_mu_err;} return 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_mu_Down", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau - trigSF_cross_mu_err;} return 1.f; ")
-
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_mu_Up", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau + trigSF_SL_mu_err;} return 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_mu_Down", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau - trigSF_SL_mu_err;} return 1.f; ")
-
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mu_Up", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau + trigSF_mu_err;} return 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mu_Down", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau - trigSF_mu_err;} return 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mutau_tau_Up", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau + trigSF_err_dm_mutau;} return 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_mutau_tau_Down", "if ((HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return weight_HLT_muTau - trigSF_err_dm_mutau;} return 1.f; ")
-
-
-    # must pass Crossetau_region - Tau leg
-
-    # must pass CrossEleTau_region - Tau leg
-    Eff_cross_tau_Data = "eff_data_tau2_Trg_etau_3ProngCentral*eff_data_tau2_Trg_etau_DM0Central*eff_data_tau2_Trg_etau_DM1Central"
-    Eff_cross_tau_MC = "eff_MC_tau2_Trg_etau_3ProngCentral*eff_MC_tau2_Trg_etau_DM0Central*eff_MC_tau2_Trg_etau_DM1Central"
-
-    #Eff_cross_tau_Data = "eff_data_tau2_Trg_etauCentral"
-    #Eff_cross_tau_MC = "eff_MC_tau2_Trg_etauCentral"
-    Eff_SL_ele_Data_Err = "(eff_data_tau2_Trg_singleEleUp-eff_data_tau1_Trg_singleEleCentral)"
-    Eff_SL_ele_MC_Err = "(eff_MC_tau2_Trg_singleEleUp-eff_MC_tau1_Trg_singleEleCentral)"
-    Err_Data_SL_ele = f"{passSingleEle} * {Eff_SL_ele_Data_Err} - {passCrossEleTau} * {passSingleEle} * ({Eff_cross_ele_Data} > {Eff_SL_ele_Data}) * {Eff_SL_ele_Data_Err} * {Eff_cross_tau_Data}"
-    Err_MC_SL_ele = f"{passSingleEle} * {Eff_SL_ele_MC_Err} - {passCrossEleTau} * {passSingleEle} * ({Eff_cross_ele_MC} > {Eff_SL_ele_MC}) * {Eff_SL_ele_MC_Err} * {Eff_cross_tau_MC}"
-    dfBuilder.df = dfBuilder.df.Define(f"Err_Data_SL_ele", Err_Data_SL_ele)
-    dfBuilder.df = dfBuilder.df.Define(f"Err_MC_SL_ele", Err_MC_SL_ele)
-    dfBuilder.df = dfBuilder.df.Define("trigSF_SL_ele_err" , """get_scale_factor_error(Eff_Data_etau, Eff_MC_etau, Err_Data_SL_ele, Err_MC_SL_ele, "trigSF_SL_ele_err")""")
-
-    Eff_cross_ele_Data_Err = "(eff_data_tau1_Trg_etau_eleUp - eff_data_tau1_Trg_etau_eleCentral)"
-    Eff_cross_ele_MC_Err = "(eff_MC_tau1_Trg_etau_eleUp - eff_MC_tau1_Trg_etau_eleCentral)"
-    Err_Data_cross_ele = f"- {passCrossEleTau} * {passSingleEle} * ({Eff_cross_ele_Data} <= {Eff_SL_ele_Data}) * {Eff_cross_ele_Data_Err} * {Eff_cross_tau_Data} + {passCrossEleTau} * {Eff_cross_ele_Data_Err} * {Eff_cross_tau_Data};"
-    Err_MC_cross_ele = f"- {passCrossEleTau} * {passSingleEle} * ({Eff_cross_ele_MC} <= {Eff_SL_ele_MC}) * {Eff_cross_ele_MC_Err} * {Eff_cross_tau_MC} + {passCrossEleTau} * {Eff_cross_ele_MC_Err} * {Eff_cross_tau_MC};"
-    dfBuilder.df = dfBuilder.df.Define(f"Err_Data_cross_ele", Err_Data_cross_ele)
-    dfBuilder.df = dfBuilder.df.Define(f"Err_MC_cross_ele", Err_MC_cross_ele)
-    dfBuilder.df = dfBuilder.df.Define(f"trigSF_cross_ele_err", """get_scale_factor_error(Eff_Data_etau, Eff_MC_etau, Err_Data_cross_ele, Err_MC_cross_ele,"trigSF_cross_ele_err")""")
-
-    dfBuilder.df = dfBuilder.df.Define("Eff_Data_etau_Up", "SelectCorrectEfficiency(tau2_decayMode, eff_data_tau2_Trg_etau_DM0Up, eff_data_tau2_Trg_etau_DM1Up, eff_data_tau2_Trg_etau_3ProngUp)")
-
-    dfBuilder.df = dfBuilder.df.Define("Eff_MC_etau_Up", "SelectCorrectEfficiency(tau2_decayMode, eff_MC_tau2_Trg_etau_DM0Up, eff_MC_tau2_Trg_etau_DM1Up, eff_MC_tau2_Trg_etau_3ProngUp)")
-
-    dfBuilder.df = dfBuilder.df.Define("trigSF_err_dm_etau", """get_scale_factor_error(Eff_Data_etau, Eff_MC_etau, Eff_Data_etau_Up - Eff_Data_etau, Eff_MC_etau_Up - Eff_MC_etau,"trigSF_err_dm_etau")""")
-    Err_Data_ele = "Err_Data_SL_ele + Err_Data_cross_ele"
-    Err_MC_ele   = "Err_MC_SL_ele   + Err_MC_cross_ele"
-    if dfBuilder.period == 'Run2_2016' or dfBuilder.period == 'Run2_2016_HIPM':
-        Err_Data_ele = "Err_Data_SL_ele"
-        Err_MC_ele   = "Err_MC_SL_ele"
-    dfBuilder.df = dfBuilder.df.Define("Err_Data_ele", Err_Data_ele)
-    dfBuilder.df = dfBuilder.df.Define("Err_MC_ele", Err_MC_ele)
-    dfBuilder.df = dfBuilder.df.Define("trigSF_ele_err", """get_scale_factor_error(Eff_Data_etau, Eff_MC_etau, Err_Data_ele, Err_MC_ele,"trigSF_ele_err")""")
-
-    if dfBuilder.period == 'Run2_2016' or dfBuilder.period == 'Run2_2016_HIPM':
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_ele_Up", " 1.f ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_ele_Down", " 1.f ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_ele_Up", "if ((HLT_singleEle) && Legacy_region ) {return weight_tau1_TrgSF_singleEleUp_rel*weight_tau1_TrgSF_singleEleCentral;} return 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_ele_Down", "if ((HLT_singleEle) && Legacy_region ) {return weight_tau1_TrgSF_singleEleUp_rel*weight_tau1_TrgSF_singleEleCentral;} return 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_ele_Up", " 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_ele_Down", " 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_etau_tau_Up", "  1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_etau_tau_Down", "  1.f; ")
-    else:
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_ele_Up", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau + trigSF_cross_ele_err;} return 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_cross_ele_Down", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau - trigSF_cross_ele_err;} return 1.f; ")
-
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_ele_Up", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau + trigSF_SL_ele_err;} return 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_SL_ele_Down", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau - trigSF_SL_ele_err;} return 1.f; ")
-
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_ele_Up", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau + trigSF_ele_err;} return 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_ele_Down", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau - trigSF_ele_err;} return 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_etau_tau_Up", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau + trigSF_err_dm_etau;} return 1.f; ")
-        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_etau_tau_Down", "if ((HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return weight_HLT_eTau - trigSF_err_dm_etau;} return 1.f; ")
+        ### diTau - for tauTau ###
+        dfBuilder.df = dfBuilder.df.Define(
+            f"tauTau_trigSF_tau{scale}_rel",
+            f"if (HLT_ditau && Legacy_region && tauTau) {{return (SelectCorrectDM(tau1_decayMode, weight_tau1_TrgSF_ditau_DM0{scale}_rel, weight_tau1_TrgSF_ditau_DM1{scale}_rel, weight_tau1_TrgSF_ditau_3Prong{scale}_rel)*SelectCorrectDM(tau2_decayMode, weight_tau2_TrgSF_ditau_DM0{scale}_rel, weight_tau2_TrgSF_ditau_DM1{scale}_rel, weight_tau2_TrgSF_ditau_3Prong{scale}_rel)); }}return 0.f;"
+        )
+            ### singleTau ###
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_singleTau{scale}_rel", f"""if (HLT_singleTau && (tauTau ) && SingleTau_region && !(Legacy_region)) {{return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleTau, weight_tau1_TrgSF_singleTau{scale}_rel,tau2_pt, tau2_eta, tau2_HasMatching_singleTau, weight_tau2_TrgSF_singleTau{scale}_rel); }} else if (HLT_singleTau && (eTau || muTau ) && SingleTau_region && !(Legacy_region)) {{return weight_tau2_TrgSF_singleTau{scale}_rel;}} ;return 0.f;""")
+        ### MET ###
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_MET{scale}_rel", f"if(HLT_MET && !(SingleTau_region) && !(Legacy_region)) {{return weight_TrgSF_MET{scale}_rel;}} return 0.f;")
+        #### final tau trig sf #####
+        dfBuilder.df = dfBuilder.df.Define(f"trigSF_tau{scale}_rel", f"""if (Legacy_region && eTau){{return eTau_trigSF_tau{scale}_rel;}} else if (Legacy_region && muTau){{return muTau_trigSF_tau{scale}_rel;}} else if(Legacy_region && tauTau){{return tauTau_trigSF_tau{scale}_rel;}} return 0.f;""")
+        # ### singleEle only - for eE ###
+        # dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_singleEle{scale}_rel", f"""(HLT_singleEle && SingleEle_region && eE) {{return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleEle, weight_tau1_TrgSF_singleEle{scale}_rel,tau2_pt, tau2_eta, tau2_HasMatching_singleEle, weight_tau2_TrgSF_singleEle{scale}_rel);}} return 0.f;""")
+        # dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_singleMu{scale}_rel", f"""if (HLT_singleMu && SingleMu_region && muMu) {{return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleMu, weight_tau1_TrgSF_singleMu{scale}_rel,tau2_pt, tau2_eta, tau2_HasMatching_singleMu, weight_tau2_TrgSF_singleMu{scale}_rel) ;}} return 0.f;""")
+        # dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_eMu{scale}_rel", f"""if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau1_TrgSF_singleEle{scale}_rel!=0.f && eMu) {{return (weight_tau1_TrgSF_singleEle{scale}_rel*weight_tau2_TrgSF_singleMu{scale}_rel);}} return 0.f;""")
+        # finally, comulate tau weights errors
 
 def defineTriggerWeights(dfBuilder): # needs application region def
+    passSingleMu = "SingleMu_region"
+    passCrossMuTau = "CrossMuTau_region"
+    passSingleEle = "SingleEle_region"
+    passCrossEleTau = "CrossEleTau_region"
+    if 'muTau' in dfBuilder.config['channels_to_consider']:
+        ######## MuTau ##########
+        ####### Efficiencies ######
+        Eff_SL_mu_Data = "eff_data_tau1_Trg_singleMuCentral"
+        Eff_SL_mu_MC = "eff_MC_tau1_Trg_singleMuCentral"
+        dfBuilder.df = dfBuilder.df.Define("Eff_SL_mu_Data", f"""{Eff_SL_mu_Data}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_SL_mu_MC", f"""{Eff_SL_mu_MC}""")
+
+        Eff_cross_mu_Data = "eff_data_tau1_Trg_mutau_muCentral"
+        Eff_cross_mu_MC = "eff_MC_tau1_Trg_mutau_muCentral"
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_mu_Data", f"""{Eff_cross_mu_Data}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_mu_MC", f"""{Eff_cross_mu_MC}""")
+
+        Eff_cross_tau_mutau_Data = "SelectCorrectDM(tau2_decayMode, eff_data_tau2_Trg_mutau_DM0Central, eff_data_tau2_Trg_mutau_DM1Central, eff_data_tau2_Trg_mutau_3ProngCentral)"
+        Eff_cross_tau_mutau_MC = "SelectCorrectDM(tau2_decayMode, eff_MC_tau2_Trg_mutau_DM0Central, eff_MC_tau2_Trg_mutau_DM1Central, eff_MC_tau2_Trg_mutau_3ProngCentral)"
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_tau_mutau_Data", f"""{Eff_cross_tau_mutau_Data}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_tau_mutau_MC", f"""{Eff_cross_tau_mutau_MC}""")
+
+        Eff_Data_expression_mutau = (
+                    f"{passSingleMu} * {Eff_SL_mu_Data} - {passCrossMuTau} * {passSingleMu} * std::min({Eff_cross_mu_Data}, {Eff_SL_mu_Data}) * {Eff_cross_tau_mutau_Data} + {passCrossMuTau} * {Eff_cross_mu_Data} * {Eff_cross_tau_mutau_Data};"
+                )
+        Eff_MC_expression_mutau = (
+            f"{passSingleMu} * {Eff_SL_mu_MC} - {passCrossMuTau} * {passSingleMu} * std::min({Eff_cross_mu_MC}, {Eff_SL_mu_MC}) * {Eff_cross_tau_mutau_MC} + {passCrossMuTau} * {Eff_cross_mu_MC} * {Eff_cross_tau_mutau_MC};"
+        )
+        dfBuilder.df = dfBuilder.df.Define("Eff_Data_mutau", f"""{Eff_Data_expression_mutau}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_MC_mutau", f"""{Eff_MC_expression_mutau}""")
+        weight_muTau_expression = "if ( (HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return static_cast<float>(Eff_Data_mutau/Eff_MC_mutau);} return 0.f;"
+        if dfBuilder.period == 'Run2_2016' or dfBuilder.period == 'Run2_2016_HIPM':
+            weight_muTau_expression = "if (HLT_singleMu && SingleMu_region) {return (weight_tau1_TrgSF_singleMuCentral ) ;} return 0.f; "
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_muTau", weight_muTau_expression)
+
+    if 'eTau' in dfBuilder.config['channels_to_consider']:
+        ######## EleTau ##########
+        ####### Efficiencies ######
+        Eff_SL_ele_Data = "eff_data_tau1_Trg_singleEleCentral"
+        Eff_SL_ele_MC = "eff_MC_tau1_Trg_singleEleCentral"
+        dfBuilder.df = dfBuilder.df.Define("Eff_SL_ele_Data", f"""{Eff_SL_ele_Data}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_SL_ele_MC", f"""{Eff_SL_ele_MC}""")
+
+        Eff_cross_ele_Data = "eff_data_tau1_Trg_etau_eleCentral"
+        Eff_cross_ele_MC = "eff_MC_tau1_Trg_etau_eleCentral"
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_ele_Data", f"""{Eff_cross_ele_Data}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_ele_MC", f"""{Eff_cross_ele_MC}""")
+
+        Eff_cross_tau_etau_Data = "SelectCorrectDM(tau2_decayMode, eff_data_tau2_Trg_etau_DM0Central, eff_data_tau2_Trg_etau_DM1Central, eff_data_tau2_Trg_etau_3ProngCentral)"
+        Eff_cross_tau_etau_MC = "SelectCorrectDM(tau2_decayMode, eff_MC_tau2_Trg_etau_DM0Central, eff_MC_tau2_Trg_etau_DM1Central, eff_MC_tau2_Trg_etau_3ProngCentral)"
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_tau_etau_Data", f"""{Eff_cross_tau_etau_Data}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_cross_tau_etau_MC", f"""{Eff_cross_tau_etau_MC}""")
+
+        Eff_Data_expression_etau = (
+                    f"{passSingleEle} * {Eff_SL_ele_Data} - {passCrossEleTau} * {passSingleEle} * std::min({Eff_cross_ele_Data}, {Eff_SL_ele_Data}) * {Eff_cross_tau_etau_Data} + {passCrossEleTau} * {Eff_cross_ele_Data} * {Eff_cross_tau_etau_Data};"
+                )
+        Eff_MC_expression_etau = (
+            f"{passSingleEle} * {Eff_SL_ele_MC} - {passCrossEleTau} * {passSingleEle} * std::min({Eff_cross_ele_MC}, {Eff_SL_ele_MC}) * {Eff_cross_tau_etau_MC} + {passCrossEleTau} * {Eff_cross_ele_MC} * {Eff_cross_tau_etau_MC};"
+        )
+        dfBuilder.df = dfBuilder.df.Define("Eff_Data_etau", f"""{Eff_Data_expression_etau}""")
+        dfBuilder.df = dfBuilder.df.Define("Eff_MC_etau", f"""{Eff_MC_expression_etau}""")
+        weight_eTau_expression = "if ( (HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return static_cast<float>(Eff_Data_etau/Eff_MC_etau);} return 0.f;"
+        if dfBuilder.period == 'Run2_2016' or dfBuilder.period == 'Run2_2016_HIPM':
+            weight_eTau_expression = "if (HLT_singleEle && SingleEle_region) {return (weight_tau1_TrgSF_singleEleCentral ) ;} return 0.f; "
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_eTau", weight_eTau_expression)
 
     # *********************** tauTau ***********************
     if 'tauTau' in dfBuilder.config['channels_to_consider']:
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_diTau", "if (HLT_ditau && tauTau && Legacy_region) {return (weight_tau1_TrgSF_ditau_3ProngCentral*weight_tau1_TrgSF_ditau_DM0Central*weight_tau1_TrgSF_ditau_DM1Central*weight_tau2_TrgSF_ditau_3ProngCentral*weight_tau2_TrgSF_ditau_DM0Central*weight_tau2_TrgSF_ditau_DM1Central); }return 1.f;")
+        dfBuilder.df = dfBuilder.df.Define(
+                    f"weight_trigSF_diTau",
+                    f"if (HLT_ditau && Legacy_region && tauTau) {{return (SelectCorrectDM(tau1_decayMode, weight_tau1_TrgSF_ditau_DM0Central, weight_tau1_TrgSF_ditau_DM1Central, weight_tau1_TrgSF_ditau_3ProngCentral)*SelectCorrectDM(tau2_decayMode, weight_tau2_TrgSF_ditau_DM0Central, weight_tau2_TrgSF_ditau_DM1Central, weight_tau2_TrgSF_ditau_3ProngCentral)); }}return 0.f;"
+                )
     # *********************** singleTau ***********************
-    # dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleTau", "if (HLT_singleTau && SingleTau_region && !Legacy_region) {return (weight_tau1_TrgSF_singleTauCentral*weight_tau2_TrgSF_singleTauCentral) ;} return 1.f;")
-    if 'tauTau' in dfBuilder.config['channels_to_consider'] or 'muTau' in dfBuilder.config['channels_to_consider'] or 'eTau' in dfBuilder.config['channels_to_consider']  :
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleTau", "if (HLT_singleTau && (tauTau || eTau || muTau ) && SingleTau_region && !(Legacy_region)) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleTau, weight_tau1_TrgSF_singleTauCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleTau, weight_tau2_TrgSF_singleTauCentral); } return 1.f;")
+
+    # dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_singleTau", f"if  (HLT_singleTau && (tauTau || eTau || muTau ) && SingleTau_region && !(Legacy_region)) {{return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleTau, weight_tau1_TrgSF_singleTauCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleTau, weight_tau2_TrgSF_singleTauCentral);}} return 0.f;")
+    # if 'tauTau' in dfBuilder.config['channels_to_consider'] or 'muTau' in dfBuilder.config['channels_to_consider'] or 'eTau' in dfBuilder.config['channels_to_consider']  :
+    dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_singleTau", f"""if (HLT_singleTau && (tauTau ) && SingleTau_region && !(Legacy_region)) {{return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleTau, weight_tau1_TrgSF_singleTauCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleTau, weight_tau2_TrgSF_singleTauCentral); }} else if (HLT_singleTau && (eTau || muTau ) && SingleTau_region && !(Legacy_region)) {{return weight_tau2_TrgSF_singleTauCentral;}} ;return 0.f;""")
     # *********************** MET ***********************
-    if 'tauTau' in dfBuilder.config['channels_to_consider'] or 'muTau' in dfBuilder.config['channels_to_consider'] or 'eTau' in dfBuilder.config['channels_to_consider']  :
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_MET", "if (HLT_MET && (tauTau || eTau || muTau ) && !(SingleTau_region) && !(Legacy_region)) { return (weight_TrgSF_METCentral) ;} return 1.f;")
+    # if 'tauTau' in dfBuilder.config['channels_to_consider'] or 'muTau' in dfBuilder.config['channels_to_consider'] or 'eTau' in dfBuilder.config['channels_to_consider']  :
+    dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_MET", "if (HLT_MET && (tauTau || eTau || muTau ) && !(SingleTau_region) && !(Legacy_region)) { return (weight_TrgSF_METCentral) ;} return 0.f;")
     # *********************** singleEle ***********************
-    # dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleEle", "if (HLT_singleEle && SingleEle_region) {return weight_tau1_TrgSF_singleEleCentral*weight_tau2_TrgSF_singleEleCentral ;} return 1.f;")
-    if 'eE' in dfBuilder.config['channels_to_consider']  :
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleEle", "if (HLT_singleEle && SingleEle_region && eE) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleEle, weight_tau1_TrgSF_singleEleCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleEle, weight_tau2_TrgSF_singleEleCentral) ;} return 1.f;")
+    # dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_singleEle", "if (HLT_singleEle && SingleEle_region) {return weight_tau1_TrgSF_singleEleCentral*weight_tau2_TrgSF_singleEleCentral ;} return 0.f;")
+    # if 'eE' in dfBuilder.config['channels_to_consider']  :
+    dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_singleEle", "if (HLT_singleEle && SingleEle_region && eE) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleEle, weight_tau1_TrgSF_singleEleCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleEle, weight_tau2_TrgSF_singleEleCentral) ;} return 0.f;")
     # *********************** singleMu ***********************
-    # dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleMu", "if (HLT_singleMu && SingleMu_region) {return weight_tau1_TrgSF_singleMuCentral*weight_tau2_TrgSF_singleMuCentral ;} return 1.f;")
-    if 'muMu' in dfBuilder.config['channels_to_consider']  :
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_singleMu", "if (HLT_singleMu && SingleMu_region && muMu) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleMu, weight_tau1_TrgSF_singleMuCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleMu, weight_tau2_TrgSF_singleMuCentral) ;} return 1.f;")
+    # dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_singleMu", "if (HLT_singleMu && SingleMu_region) {return weight_tau1_TrgSF_singleMuCentral*weight_tau2_TrgSF_singleMuCentral ;} return 0.f;")
+    # if 'muMu' in dfBuilder.config['channels_to_consider']  :
+    dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_singleMu", "if (HLT_singleMu && SingleMu_region && muMu) {return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleMu, weight_tau1_TrgSF_singleMuCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleMu, weight_tau2_TrgSF_singleMuCentral) ;} return 0.f;")
     # *********************** singleLepPerEMu ***********************
-    if 'eMu' in dfBuilder.config['channels_to_consider']  :
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_eMu", "if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau1_TrgSF_singleEleCentral!=1.f && eMu) {return (weight_tau1_TrgSF_singleEleCentral*weight_tau2_TrgSF_singleMuCentral);} return 1.f;")
-    #dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_muE", f"if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau2_TrgSF_singleEleCentral!=1.f) return (weight_tau2_TrgSF_singleEleCentral*weight_tau1_TrgSF_singleMuCentral); return 1.f;")
+    # if 'eMu' in dfBuilder.config['channels_to_consider']  :
+    dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_eMu", "if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau1_TrgSF_singleEleCentral!=0.f && eMu) {return (weight_tau1_TrgSF_singleEleCentral*weight_tau2_TrgSF_singleMuCentral);} return 0.f;")
+        #dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_muE", f"if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau2_TrgSF_singleEleCentral!=0.f) return (weight_tau2_TrgSF_singleEleCentral*weight_tau1_TrgSF_singleMuCentral); return 0.f;")
 
-    if 'muTau' in dfBuilder.config['channels_to_consider'] :
-
-        # *********************** muTau ***********************
-        passSingleLep = "SingleMu_region"
-        passCrossLep = "CrossMuTau_region"
-        # must pass SingleMu_region - Mu leg
-        Eff_SL_mu_Data = "eff_data_tau1_Trg_singleMuCentral"
-        Eff_SL_mu_MC = "eff_MC_tau1_Trg_singleMuCentral"
-
-        # must pass CrossMuTau_region - Mu leg
-        Eff_cross_mu_Data = "eff_data_tau1_Trg_mutau_muCentral"
-        Eff_cross_mu_MC = "eff_MC_tau1_Trg_mutau_muCentral"
-
-
-        # must pass CrossMuTau_region - Tau leg
-        Eff_cross_tau_Data = "eff_data_tau2_Trg_mutau_3ProngCentral*eff_data_tau2_Trg_mutau_DM0Central*eff_data_tau2_Trg_mutau_DM1Central"
-        Eff_cross_tau_MC = "eff_MC_tau2_Trg_mutau_3ProngCentral*eff_MC_tau2_Trg_mutau_DM0Central*eff_MC_tau2_Trg_mutau_DM1Central"
-        # efficiency expression
-        Eff_Data_expression_mu = f"{passSingleLep} * {Eff_SL_mu_Data} - {passCrossLep} * {passSingleLep} * std::min({Eff_cross_mu_Data}, {Eff_SL_mu_Data}) * {Eff_cross_tau_Data} + {passCrossLep} * {Eff_cross_mu_Data} * {Eff_cross_tau_Data};"
-        Eff_MC_expression_mu = f"{passSingleLep} * {Eff_SL_mu_MC}   - {passCrossLep} * {passSingleLep} * std::min({Eff_cross_mu_MC}  , {Eff_SL_mu_MC})   * {Eff_cross_tau_MC}   + {passCrossLep} * {Eff_cross_mu_MC} * {Eff_cross_tau_MC};"
-
-        dfBuilder.df = dfBuilder.df.Define(f"Eff_Data_mutau", Eff_Data_expression_mu)
-        dfBuilder.df = dfBuilder.df.Define(f"Eff_MC_mutau", Eff_MC_expression_mu)
-        weight_muTau_expression = "if ( (HLT_singleMu || HLT_mutau) && Legacy_region && Eff_MC_mutau!=0) {return static_cast<float>(Eff_Data_mutau/Eff_MC_mutau);} return 1.f;"
-        if dfBuilder.period == 'Run2_2016' or dfBuilder.period == 'Run2_2016_HIPM':
-            weight_muTau_expression = "if (HLT_singleMu && SingleMu_region) {return (weight_tau1_TrgSF_singleMuCentral ) ;} return 1.f; "
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_muTau", weight_muTau_expression)
-
-
-    # *********************** etau ***********************
-    if 'eTau' in dfBuilder.config['channels_to_consider'] :
-
-        passSingleLep = "SingleEle_region"
-        passCrossLep = "CrossEleTau_region"
-        # must pass SingleEle_region - Mu leg
-        Eff_SL_ele_Data = "eff_data_tau1_Trg_singleEleCentral"
-        Eff_SL_ele_MC = "eff_MC_tau1_Trg_singleEleCentral"
-
-        # must pass CrossEleTau_region - Mu leg
-        Eff_cross_ele_Data = "eff_data_tau1_Trg_etau_eleCentral"
-        Eff_cross_ele_MC = "eff_MC_tau1_Trg_etau_eleCentral"
-
-
-        # must pass CrossEleTau_region - Tau leg
-        Eff_cross_tau_Data = "eff_data_tau2_Trg_etau_3ProngCentral*eff_data_tau2_Trg_etau_DM0Central*eff_data_tau2_Trg_etau_DM1Central"
-        Eff_cross_tau_MC = "eff_MC_tau2_Trg_etau_3ProngCentral*eff_MC_tau2_Trg_etau_DM0Central*eff_MC_tau2_Trg_etau_DM1Central"
-        # efficiency expression
-        Eff_Data_expression_ele = f"{passSingleLep} * {Eff_SL_ele_Data} - {passCrossLep} * {passSingleLep} * std::min({Eff_cross_ele_Data}, {Eff_SL_ele_Data}) * {Eff_cross_tau_Data} + {passCrossLep} * {Eff_cross_ele_Data} * {Eff_cross_tau_Data};"
-        Eff_MC_expression_ele = f"{passSingleLep} * {Eff_SL_ele_MC}   - {passCrossLep} * {passSingleLep} * std::min({Eff_cross_ele_MC}  , {Eff_SL_ele_MC})   * {Eff_cross_tau_MC}   + {passCrossLep} * {Eff_cross_ele_MC} * {Eff_cross_tau_MC};"
-
-        dfBuilder.df = dfBuilder.df.Define(f"Eff_Data_etau", Eff_Data_expression_ele)
-        dfBuilder.df = dfBuilder.df.Define(f"Eff_MC_etau", Eff_MC_expression_ele)
-        weight_eleTau_expression = "if ( (HLT_singleEle || HLT_etau) && Legacy_region && Eff_MC_etau!=0) {return static_cast<float>(Eff_Data_etau/Eff_MC_etau);} return 1.f;"
-        if dfBuilder.period == 'Run2_2016' or dfBuilder.period == 'Run2_2016_HIPM':
-            weight_eleTau_expression = "if (HLT_singleEle && SingleEle_region) {return (weight_tau1_TrgSF_singleEleCentral ) ;} return 1.f; "
-        dfBuilder.df = dfBuilder.df.Define(f"weight_HLT_eTau", weight_eleTau_expression)
-
-
-
-def defineTotalTriggerWeight(dfBuilder):
-    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_tauTau", """if (HLT_ditau && Legacy_region) { return weight_HLT_diTau; }if (HLT_singleTau && SingleTau_region && !Legacy_region){ return weight_HLT_singleTau; } if (HLT_MET && !(SingleTau_region) && !(Legacy_region)){ return weight_HLT_MET ; }return 1.f;""")
-    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_muTau", """if ((HLT_singleMu || HLT_mutau) && Legacy_region) { return weight_HLT_muTau; }if (HLT_singleTau && SingleTau_region && !Legacy_region){ return weight_HLT_singleTau; } if (HLT_MET && !(SingleTau_region) && !(Legacy_region)){ return weight_HLT_MET ; }return 1.f;""")
-    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_eTau", """if ((HLT_singleEle || HLT_etau) && Legacy_region) { return weight_HLT_eTau; }if (HLT_singleTau && SingleTau_region && !Legacy_region){ return weight_HLT_singleTau; } if (HLT_MET && !(SingleTau_region) && !(Legacy_region)){ return weight_HLT_MET ; }return 1.f;""")
-    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_eE", "if (HLT_singleEle && SingleEle_region) {return weight_HLT_singleEle ;} return 1.f;")
-    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_muMu", "if (HLT_singleMu && SingleMu_region) {return weight_HLT_singleMu ;} return 1.f;")
-    dfBuilder.df = dfBuilder.df.Define(f"weight_trg_eMu", "if (((HLT_singleMu && SingleMu_region) || (HLT_singleEle && SingleEle_region)) && weight_tau1_TrgSF_singleEleCentral!=1.f) {return (weight_tau1_TrgSF_singleEleCentral*weight_tau2_TrgSF_singleMuCentral);} return 1.f;")
+def AddTriggerWeightsAndErrors(dfBuilder,WantErrors):
+    defineTriggerWeights(dfBuilder)
+    if WantErrors:
+        defineTriggerWeightsErrors(dfBuilder)

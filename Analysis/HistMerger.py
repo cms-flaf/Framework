@@ -190,7 +190,7 @@ if __name__ == "__main__":
     if args.var in boosted_variables:
         all_categories = boosted_categories
 
-    if (args.var.startswith('b1') or args.var.startswith('b2')):
+    if (args.var.startswith('b1') or args.var.startswith('b2') or args.var=='kinFit_m' or args.var=='dR_bb'):
         all_categories = categories
 
     sample_types_to_merge = list(global_cfg_dict['sample_types_to_merge'])

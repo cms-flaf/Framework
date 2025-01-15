@@ -234,6 +234,7 @@ if __name__ == "__main__":
             if bckg_sample_type in plot_types:
                 all_samples_types[bckg_sample_name]['plot'] = sample_for_plot_dict['name']
         if 'plot' not in all_samples_types[bckg_sample_name].keys():
+            # print(bckg_sample_name)
             all_samples_types[bckg_sample_name]['plot'] = 'Other'
 
     for sig_sample_name in sig_cfg_dict.keys():

@@ -91,16 +91,15 @@ def GetBTagWeight(global_cfg_dict,cat,applyBtag=False):
     return f'{btag_weight}*{btagshape_weight}'
 
 
-
 def GetWeight(channel, cat, boosted_categories):
     weights_to_apply = ["weight_MC_Lumi_pu", "weight_L1PreFiring_Central"]#,"weight_L1PreFiring_ECAL_Central", "weight_L1PreFiring_Muon_Central"]
     trg_weights_dict = {
-        'eTau':["weight_HLT_eTau", "weight_HLT_singleTau", "weight_HLT_MET"],
-        'muTau':["weight_HLT_muTau", "weight_HLT_singleTau", "weight_HLT_MET"],
-        'tauTau':["weight_HLT_diTau", "weight_HLT_singleTau", "weight_HLT_MET"],
-        'eE':["weight_HLT_singleEle"],
-        'muMu':["weight_HLT_singleMu"],
-        'eMu':["weight_HLT_eMu"]
+        'eTau':["weight_trigSF_eTau", "weight_trigSF_singleTau", "weight_trigSF_MET"],
+        'muTau':["weight_trigSF_muTau", "weight_trigSF_singleTau", "weight_trigSF_MET"],
+        'tauTau':["weight_trigSF_diTau", "weight_trigSF_singleTau", "weight_trigSF_MET"],
+        'eE':["weight_trigSF_singleEle"],
+        'muMu':["weight_trigSF_singleMu"],
+        'eMu':["weight_trigSF_eMu"]
     }
     ID_weights_dict = {
         'eTau': ["weight_tau1_EleSF_wp80iso_EleIDCentral", "weight_tau2_TauID_SF_Medium_Central"], # theorically
@@ -330,9 +329,10 @@ def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.defineApplicationRegions()
     if not dfForHistograms.isData:
         dfForHistograms.definePNetSFs()
-        defineTriggerWeights(dfForHistograms)
-        if dfForHistograms.wantTriggerSFErrors and dfForHistograms.isCentral:
-            defineTriggerWeightsErrors(dfForHistograms)
+        wantErrors = dfForHistograms.wantTriggerSFErrors and dfForHistograms.isCentral
+        # if wantErrors:
+        #     print(dfForHistograms.df.Describe())
+        AddTriggerWeightsAndErrors(dfForHistograms,wantErrors)
     dfForHistograms.defineCRs()
     dfForHistograms.defineCategories()
     dfForHistograms.defineQCDRegions()

@@ -92,6 +92,7 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
         if not isCentral:
             if type(unc_cfg_dict)==dict:
                 if uncName in unc_cfg_dict.keys() and 'expression' in unc_cfg_dict[uncName].keys():
+                    # print(uncName,unc_cfg_dict[uncName]['expression'] )
                     weight_name = unc_cfg_dict[uncName]['expression'].format(scale=scale)
         if (key_1, key_2) not in histograms.keys():
             histograms[(key_1, key_2)] = []
@@ -223,7 +224,7 @@ if __name__ == "__main__":
     all_categories = categories + boosted_categories
     if args.var in boosted_variables:
         all_categories = boosted_categories
-    if (args.var.startswith('b1') or args.var.startswith('b2') or args.var=='kinFit_m'):
+    if (args.var.startswith('b1') or args.var.startswith('b2') or args.var=='kinFit_m' or args.var=='dR_bb'):
         all_categories = categories
     datasetType = 3
     if args.sampleType == 'TT':

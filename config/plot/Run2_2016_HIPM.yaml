@@ -7,9 +7,9 @@ lumi_text:
   align: right_bottom
 
 channel_text:
-  'eTau': 'bb#tau_{e}#tau_{h}'
-  'muTau': 'bb#tau_{#mu}#tau_{h}'
+  'eTau': 'bbe#tau_{h}'
+  'muTau': 'bb#mu#tau_{h}'
   'tauTau': 'bb#tau_{h}#tau_{h}'
-  'muMu': 'bb#tau_{#mu}#tau_{#mu}'
-  'eMu': 'bb#tau_{e}#tau_{#mu}'
-  'eE': 'bb#tau_{e}#tau_{e}'
+  'muMu': 'bb#mu#mu'
+  'eMu': 'bbe#mu'
+  'eE': 'bbe'

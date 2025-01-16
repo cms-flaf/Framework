@@ -21,7 +21,7 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
     print(f"Initially Yield for data in SS AntiIso region is{key_D} is {n_data_D}")
     for sample in all_samples_list:
         if sample=='data' or 'GluGluToBulkGraviton' in sample or 'GluGluToRadion' in sample or 'VBFToBulkGraviton' in sample or 'VBFToRadion' in sample or sample=='QCD':
-            ##print(f"sample {sample} is not considered")
+            #print(f"sample {sample} is not considered")
             continue
         # print(sample)
         hist_sample = histograms[sample]

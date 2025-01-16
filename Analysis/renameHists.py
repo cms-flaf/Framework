@@ -27,6 +27,7 @@ uncReNames = {
     "bTagShape_cferr1":"CMS_btag_cferr1",
     "bTagShape_cferr2":"CMS_btag_cferr2",
     "pNet_SF":"CMS_pnet_{}", # correlated??
+    "PileUp_Lumi_MC":"CMS_pu_lumi_MC_{}",
     "PUJetID":"CMS_eff_j_PUJET_id_{}",
     "PileUp_Lumi_MC":"CMS_pileup_{}",
     "L1Prefiring":"CMS_l1_prefiring_{}",

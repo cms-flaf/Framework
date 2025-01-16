@@ -92,9 +92,8 @@ if __name__ == "__main__":
     input_files = args.input_files.split(',')
     global_params = DeserializeObjectFromString(args.global_params)
 
-    events_filelist, eventsNotSelected_filelist = create_filelists(input_files)
-
-    anaCache = computeAnaCache(events_filelist, eventsNotSelected_filelist, global_params, args.generator_name,range=args.n_events)
+    file_lists = create_filelists(input_files)
+    anaCache = computeAnaCache(file_lists, global_params, args.generator_name,range=args.n_events)
     if args.verbose > 0:
         print(json.dumps(anaCache))
 

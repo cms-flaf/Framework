@@ -80,13 +80,9 @@ struct TupleMaker {
         std::cout << "TupleMaker::processIn: exception: " << e.what() << std::endl;
         throw;
       }
-      queue.SetAllDone();
+      queue.SetInputAvailable(false);
     });
   }
-
-
-
-
 
   ROOT::RDF::RNode processOut(ROOT::RDF::RNode df_out)
   {
@@ -128,8 +124,10 @@ struct TupleMaker {
 
   void join()
   {
-    if(thread)
+    if(thread) {
+      queue.SetOutputNeeded(false);
       thread->join();
+    }
   }
 
   ROOT::RDataFrame df_in;

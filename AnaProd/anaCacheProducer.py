@@ -46,14 +46,16 @@ def computeAnaCache(events_filelist, eventsNotSelected_filelist, global_params, 
     return anaCache
 
 
-def create_filelists(input_files):
-    events_filelist = []
-    eventsNotSelected_filelist = []
+def create_filelists(input_files, keys=['Events', 'EventsNotSelected']):
+    file_lists = {}
     for input_file in input_files:
         with ROOT.TFile.Open(input_file) as tmp_file:
-            if 'Events' in tmp_file.GetListOfKeys(): events_filelist.append(input_file)
-            if 'EventsNotSelected' in tmp_file.GetListOfKeys(): eventsNotSelected_filelist.append(input_file)
-    return events_filelist, eventsNotSelected_filelist
+            for key in keys:
+                if key in tmp_file.GetListOfKeys():
+                    if key not in file_lists:
+                        file_lists[key] = []
+                    file_lists[key].append(input_file)
+    return file_lists
 
 
 def addAnaCaches(*anaCaches):

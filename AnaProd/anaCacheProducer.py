@@ -23,14 +23,8 @@ def computeAnaCache(file_lists, global_params, generator, range=None):
         sources += puWeightProducer.uncSource
 
 
-    for tree in ['Events', 'EventsNotSelected']:
-        this_filelist = None
-        if tree == 'Events': #This is probably a dumb way to pick the filelist but i'm lazy and it is 18:00 ):
-            this_filelist = events_filelist
-        if tree == 'EventsNotSelected':
-            this_filelist = eventsNotSelected_filelist
-
-        df = ROOT.RDataFrame(tree, this_filelist)
+    for tree, file_list in file_lists.items():
+        df = ROOT.RDataFrame(tree, file_list)
         if range is not None:
             df = df.Range(range)
         df, syst_names = Corrections.getGlobal().getDenominator(df, sources, generator)

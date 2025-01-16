@@ -17,8 +17,6 @@ import importlib
 
 def checkFile(inFileRoot, channels, qcdRegions, categories, var):
     keys_channels = [str(key.GetName()) for key in inFileRoot.GetListOfKeys()]
-    # if not (Utilities.checkLists(keys_channel, channels)):
-    #     print("check list not worked for channels")
     for channel in channels:
         if channel not in keys_channels:
             return False
@@ -48,18 +46,12 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
         name_to_use = sample_type
     if name_to_use not in all_histograms.keys():
         all_histograms[name_to_use] = {}
-        # print(f"name to use is {name_to_use}")
-        # print(all_histograms.keys())
     for channel in channels:
         dir_0 = inFileRoot.Get(channel)
-        #print(dir_0.GetListOfKeys())
         for qcdRegion in QCDregions:
             dir_1 = dir_0.Get(qcdRegion)
-            #print(dir_1.GetListOfKeys())
             for cat in all_categories:
-                # print(cat, var)
                 key_total = ((channel, qcdRegion, cat), (uncSource, 'Central'))
-                # print(key_total)
                 dir_2 = dir_1.Get(cat)
                 if uncSource == 'Central':
                     key_to_use = sample_name
@@ -130,7 +122,7 @@ def GetBTagWeightDict(var,all_histograms, categories, boosted_categories, booste
                 ratio = 0.
                 if ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1) != 0 :
                     ratio = ratio_num_hist.Integral(0,ratio_num_hist.GetNbinsX()+1)/ratio_den_hist.Integral(0,ratio_den_hist.GetNbinsX()+1)
-                if cat in boosted_categories or cat.startswith("inclusive") or cat.startswith("btag_shape") or cat.startswith("baseline") :
+                if cat in boosted_categories or cat.startswith("btag_shape") or cat.startswith("baseline") :
                     ratio = 1
                 #print(f"for cat {cat} setting ratio is {ratio}")
                 histogram.Scale(ratio)
@@ -149,7 +141,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('inputFile', nargs='+', type=str)
     parser.add_argument('--outFile', required=True, type=str)
-    parser.add_argument('--year', required=True, type=str)
     parser.add_argument('--datasetFile', required=True, type=str)
     parser.add_argument('--var', required=True, type=str)
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
@@ -164,7 +155,7 @@ if __name__ == "__main__":
 
     #Konstantin doesn't want to load yamls all separately, instead we will load the analysis args and use Setup class
     setup = Setup.Setup(args.ana_path, args.period)
-    print(f"Setup dict {setup.samples}")
+    # print(f"Setup dict {setup.samples}")
 
     unc_cfg_dict = setup.weights_config
     sample_cfg_dict = setup.samples
@@ -173,7 +164,7 @@ if __name__ == "__main__":
 
     analysis_import = (global_cfg_dict['analysis_import'])
     analysis = importlib.import_module(f'{analysis_import}')
-    
+
     all_samples_list = args.datasetFile.split(',')
     all_samples_types = {}
     all_samples_names = {}
@@ -211,18 +202,10 @@ if __name__ == "__main__":
         raise RuntimeError(f"all_infiles have len {len(all_infiles)} and all_samples_list have len {len(all_samples_list)}")
     ignore_samples = []
     for (inFileName, sample_name) in zip(all_infiles, all_samples_list):
+        print(inFileName)
         if not os.path.exists(inFileName):
             print(f"{inFileName} does not exist")
             continue
-            #raise RuntimeError(f"{inFileName} removed")
-        #print(sample_name)
-
-        #Sometimes we do not want to stack all samples (signal)
-        if 'samples_to_skip_hist' in global_cfg_dict.keys():
-            #Add this key check to avoid breaking bbtautau
-            if sample_name in global_cfg_dict['samples_to_skip_hist']:
-                continue
-
         inFileRoot = ROOT.TFile.Open(inFileName, "READ")
         if inFileRoot.IsZombie():
             inFileRoot.Close()
@@ -243,7 +226,7 @@ if __name__ == "__main__":
 
         if sample_name == 'data':
             all_samples_types['data'] = ['data']
-        else:      
+        else:
             sample_key = sample_type if sample_type in sample_types_to_merge else sample_name
             if sample_name not in ignore_samples:
                 if sample_key not in all_samples_types.keys(): all_samples_types[sample_key] = []
@@ -259,21 +242,7 @@ if __name__ == "__main__":
         all_histograms_1D=GetBTagWeightDict(args.var,all_histograms, categories, boosted_categories, boosted_variables)
     else:
         all_histograms_1D = all_histograms
-    # print(all_histograms_1D)
-
-    # for key in all_histograms_1D.keys():
-    #     print(key)
-
-    #     for subdict,hito in all_histograms_1D[key].items():
-    #         print(subdict)
-    #         histo = hito.Clone()
-    #         # hito = all_histograms_1D[key]
-    #         print(f"integral is {histo.Integral(0,histo.GetNbinsX())}")
-
     fixNegativeContributions = False
-    # if args.var != 'kinFit_m':
-        # fixNegativeContributions=True
-    # print(args.var, all_histograms_1D, channels, all_categories, args.uncSource, all_samples_types.keys(), scales)
     error_on_qcdnorm,error_on_qcdnorm_varied = AddQCDInHistDict(args.var, all_histograms_1D, channels, all_categories, args.uncSource, all_samples_types.keys(), scales, wantNegativeContributions=False)
 
     outFile = ROOT.TFile(args.outFile, "RECREATE")

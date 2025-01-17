@@ -20,7 +20,6 @@ def getChannelLegs(channel):
         ch_str = ch_str[len(obj_name):]
     return legs
 
-
 def RecoHWWCandidateSelection(df):
     df = df.Define("Electron_presel", """
         v_ops::pt(Electron_p4) > 5 && abs(v_ops::eta(Electron_p4)) < 2.5 && abs(Electron_dz) < 0.1 && abs(Electron_dxy) < 0.05 && Electron_sip3d <= 8 && Electron_miniPFRelIso_all < 0.4 && Electron_mvaIso_WP90""")

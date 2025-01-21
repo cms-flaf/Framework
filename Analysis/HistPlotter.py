@@ -140,8 +140,8 @@ if __name__ == "__main__":
     parser.add_argument('--channel',required=False, type=str, default = 'tauTau')
     parser.add_argument('--qcdregion',required=False, type=str, default = 'OS_Iso')
     parser.add_argument('--category',required=False, type=str, default = 'inclusive')
-    parser.add_argument('--wantData', required=False, type=bool, default=False)
-    parser.add_argument('--wantSignals', required=False, type=bool, default=False)
+    parser.add_argument('--wantData', required=False, action='store_true')
+    parser.add_argument('--wantSignals', required=False, action='store_true')
     parser.add_argument('--wantQCD', required=False, type=bool, default=False)
     parser.add_argument('--wantOverflow', required=False, type=bool, default=False)
     parser.add_argument('--wantLogScale', required=False, type=str, default="")
@@ -236,17 +236,16 @@ if __name__ == "__main__":
         if 'plot' not in all_samples_types[bckg_sample_name].keys():
             all_samples_types[bckg_sample_name]['plot'] = 'Other'
 
-    for sig_sample_name in sig_cfg_dict.keys():
+
+    for sig_sample_name in sig_cfg_dict.keys():     
         if 'sampleType' not in sig_cfg_dict[sig_sample_name].keys(): continue
         sig_sample_type = sig_cfg_dict[sig_sample_name]['sampleType']
         if sig_sample_type not in global_cfg_dict['signal_types']: continue
-        sample_mass = sig_sample_name.split("-")[-1]
-        sample_name_plot = sig_sample_type+"_"+sample_mass
         for sample_for_plot_dict in inputs_cfg_dict:
-            if sample_for_plot_dict['name']== sample_name_plot:
+            if sample_for_plot_dict['name']== sig_sample_name:
                 all_samples_types[sig_sample_name] = {
                     'type' : sig_sample_type,
-                    'plot' : sample_name_plot
+                    'plot' : sig_sample_name
                 }
 
     plotter = Plotter.Plotter(page_cfg=page_cfg, page_cfg_custom=page_cfg_custom, hist_cfg=hist_cfg_dict, inputs_cfg=inputs_cfg_dict)
@@ -261,9 +260,9 @@ if __name__ == "__main__":
     dir_0p1 = dir_0.Get(args.qcdregion)
     dir_1 = dir_0p1.Get(args.category)
     # dir_1 = dir_0.Get(args.category) # --> uncomment if QCD regions are not included in the histograms
-    hist_cfg_dict[args.var]['max_y_sf'] = 1.4
-    hist_cfg_dict[args.var]['use_log_y'] = False
-    hist_cfg_dict[args.var]['use_log_x'] = False
+    #hist_cfg_dict[args.var]['max_y_sf'] = 1.4
+    #hist_cfg_dict[args.var]['use_log_y'] = False
+    #hist_cfg_dict[args.var]['use_log_x'] = False
 
     hists_to_plot_unbinned = {}
     if args.wantLogScale == 'y':

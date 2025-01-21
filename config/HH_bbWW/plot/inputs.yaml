@@ -1,4 +1,35 @@
 - name: DY
+<<<<<<< HEAD
+  types:
+    - DY
+  title: DY
+  color: kAzure+10
+- name: TT
+  types:
+    - TT
+  title: t#bar{t}
+  color: kGreen-3
+- name: W
+  types:
+    - W
+  title: "W #rightarrow l#nu + jets"
+  color: kYellow-7
+- name: ST
+  types:
+    - ST
+  title: SingleTop
+  color: kPink+1
+- name: VV
+  types:
+    - VV
+  title: VV
+  color: kGreen
+- name: QCD
+  types:
+    - QCD
+  title: QCD
+  color: kCyan
+=======
   title: DY
   color: kAzure+10
   types:
@@ -32,6 +63,7 @@
   types:
     - QCD
 
+>>>>>>> refs/rewritten/onto
 #- name: TTX
 #  title: TTX
 #  color: kCyan

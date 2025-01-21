@@ -6,11 +6,11 @@ WtoLNu_amcatnloFXFX:
 ############## TT ##############
 TT:
   sampleType: TT
-TTTo2L2Nu:
+TTto2L2Nu:
   sampleType: TT
-TTTo4Q:
+TTto4Q:
   sampleType: TT
-TTToLNu2Q:
+TTtoLNu2Q:
   sampleType: TT
 #Sometimes the 'To' is 'to'
 #This took like 3 hours of my life away ):

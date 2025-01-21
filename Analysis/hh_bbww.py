@@ -101,8 +101,6 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("baseline",f"return true;")
 
     def defineChannels(self):
-        print("We are in define channels, but what are the column names?")
-        print(self.df.GetColumnNames())
         self.df = self.df.Define("channelId", f"(lep1_type*10) + lep2_type")
         for channel in self.config['channelSelection']:
             ch_value = self.config['channelDefinition'][channel]

@@ -1,19 +1,31 @@
 - name: DY
+  types:
+    - DY
   title: DY
   color: kAzure+10
 - name: TT
+  types:
+    - TT
   title: t#bar{t}
   color: kGreen-3
 - name: W
+  types:
+    - W
   title: "W #rightarrow l#nu + jets"
   color: kYellow-7
 - name: ST
+  types:
+    - ST
   title: SingleTop
   color: kPink+1
 - name: VV
+  types:
+    - VV
   title: VV
   color: kGreen
 - name: QCD
+  types:
+    - QCD
   title: QCD
   color: kCyan
 #- name: TTX
@@ -22,9 +34,24 @@
 #- name: GluGluToRadion
 #  title: GluGlu2L300
 #  color: kBlack
-#- name: GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-450
-#  title: GluGlu2L450
-#  color: kBlack
+- name: GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M_450
+  type: signal
+  types:
+   - GluGluToRadion_2L
+  title: GluGlu2L450
+  color: kBlack
+- name: GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M_300
+  type: signal
+  types:
+   - GluGluToRadion_2L
+  title: GluGlu2L300
+  color: kBlue
+- name: GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M_800
+  type: signal
+  types:
+   - GluGluToRadion_2L
+  title: GluGlu2L800
+  color: kRed
 #- name: GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-800
 #  title: GluGlu2L800
 #  color: kBlack
@@ -64,9 +91,12 @@
 #  scale: 5
 
 
-- name: Other
-  title: "other backgrounds"
-  color: kRed-4
+# - name: Other
+#   types: []
+#   title: "other backgrounds"
+#   color: kRed-4
 - name: data
   title: "data obs"
+  types:
+    - data
   type: data

@@ -398,10 +398,10 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return self.remote_target(finalFile, fs=self.fs_anaCacheTuple)
 
     def run(self):
+        #For now, this is only for bbWW, for the bbtautau we still use the AnaCahceTupleTask found in AanProd folder
         sample_name, sample_type = self.branch_data
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
-        producer_anacachetuples = os.path.join(self.ana_path(), 'Analysis', 'analysisCacheProducer.py')
-        #global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
+        producer_anacachetuples = os.path.join(self.ana_path(), 'Analysis', 'hh_bbWW_AnaCacheProducer.py')
         global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
         thread = threading.Thread(target=update_kinit_thread)
         thread.start()
@@ -421,7 +421,6 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if useDNNModel:
                     dnnName = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], 'DNN', 'ResHH_Classifier.keras')
                     anaCacheTupleProducer_cmd.extend([ '--dnnName', dnnName])
-                #ps_call(anaCacheTupleProducer_cmd, env=self.cmssw_env, verbose=1)
                 ps_call(anaCacheTupleProducer_cmd, verbose=1)
             print(f"finished to produce anacachetuple")
 

@@ -1,0 +1,103 @@
+########## lep1 BEGIN ##########
+lep1_type:
+  x_bins: "3|0:3"
+  x_title: lep1_type (Our first plot!)
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+lep1_phi:
+  x_bins: "50|-3.2:3.2"
+  x_title: lep1_phi
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+lep1_eta:
+  #x_bins: "50|-2.5:2.5" #For now in HistPlotter, the getNewBins() function requires integers? Dumb!
+  x_bins: [-2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5]
+  x_title: lep1_eta
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+lep1_pt:
+  x_bins: "50|0:500"
+  x_title: lep1_pt [GeV]
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+lep1_charge:
+  x_bins: "5|-2.5:2.5"
+  x_title: lep1_charge
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+
+
+########## lep2 BEGIN ##########
+lep2_type:
+  x_bins: "3|0:3"
+  x_title: lep2_type (Our first plot!)
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+lep2_phi:
+  x_bins: "50|-3.2:3.2"
+  x_title: lep2_phi
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+lep2_eta:
+  #x_bins: "50|-2.5:2.5"
+  x_bins: [-2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5]
+  x_title: lep2_eta
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+lep2_pt:
+  x_bins: "50|0:500"
+  x_title: lep2_pt [GeV]
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+lep2_charge:
+  x_bins: "5|-2.5:2.5"
+  x_title: lep2_charge
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+bjet1_btagPNetB:
+  #x_bins: "50|0.0:1.0"
+  x_bins: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  x_title: bjet1 btagPNetB
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+bjet2_btagPNetB:
+  #x_bins: "50|0.0:1.0"
+  x_bins: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  x_title: bjet2 btagPNetB
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False

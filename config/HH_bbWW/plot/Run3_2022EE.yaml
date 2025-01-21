@@ -1,0 +1,14 @@
+lumi_text:
+  text: "26.6717 fb^{-1} (13.6 TeV)"
+  pos_ref: inner_right_top
+  pos: [ 0, -0.03 ]
+  text_size: 0.035
+  font: 42
+  align: right_bottom
+
+channel_text:
+  'e': 'e'
+  'mu': '#mu'
+  'eE': 'ee'
+  'eMu': 'e #mu'
+  'muMu': '#mu #mu'

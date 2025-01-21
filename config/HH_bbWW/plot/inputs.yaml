@@ -1,4 +1,5 @@
 - name: DY
+<<<<<<< HEAD
   types:
     - DY
   title: DY
@@ -28,30 +29,50 @@
     - QCD
   title: QCD
   color: kCyan
+=======
+  title: DY
+  color: kAzure+10
+  types:
+    - DY
+- name: TT
+  title: t#bar{t}
+  color: kGreen-3
+  types:
+    - TT
+# - name: W
+#   title: "W #rightarrow l#nu + jets"
+#   color: kYellow-7
+#   types:
+#     - W
+# - name: ST
+#   title: SingleTop
+#   color: kPink+1
+#   types:
+#     - ST
+# - name: VV
+#   title: VV
+#   color: kGreen
+#   types:
+#     - VV
+
+
+
+- name: QCD
+  title: QCD
+  color: kCyan
+  types:
+    - QCD
+
+>>>>>>> refs/rewritten/onto
 #- name: TTX
 #  title: TTX
 #  color: kCyan
 #- name: GluGluToRadion
 #  title: GluGlu2L300
 #  color: kBlack
-- name: GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M_450
-  type: signal
-  types:
-   - GluGluToRadion_2L
-  title: GluGlu2L450
-  color: kBlack
-- name: GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M_300
-  type: signal
-  types:
-   - GluGluToRadion_2L
-  title: GluGlu2L300
-  color: kBlue
-- name: GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M_800
-  type: signal
-  types:
-   - GluGluToRadion_2L
-  title: GluGlu2L800
-  color: kRed
+#- name: GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-450
+#  title: GluGlu2L450
+#  color: kBlack
 #- name: GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-800
 #  title: GluGlu2L800
 #  color: kBlack
@@ -73,10 +94,12 @@
   #title: "GluGluRadion - 700 GeV"
   #type: signal
   #color: kBlue
-#- name: GluGluToRadion_450
-  #title: "GluGluRadion - 450 GeV"
-  #type: signal
-  #color: kViolet
+- name: GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M_450
+  title: "GluGluRadion to 2L2Nu - 450 GeV"
+  type: signal
+  color: kViolet
+  types:
+    - signal
 
   #scale: 0.05
 #- name: VBFToBulkGraviton
@@ -91,12 +114,13 @@
 #  scale: 5
 
 
-# - name: Other
-#   types: []
-#   title: "other backgrounds"
-#   color: kRed-4
+#- name: Other
+#  title: "other backgrounds"
+#  color: kRed-4
+#  types:
+#    - Other
 - name: data
   title: "data obs"
+  type: data
   types:
     - data
-  type: data

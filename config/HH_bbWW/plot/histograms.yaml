@@ -102,28 +102,52 @@ bjet2_btagPNetB:
   max_y_sf: 1.2
   divide_by_bin_width: False
 
-dnn_M300_Signal:
-  x_bins: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-  x_title: DNN M300 Signal
+
+########## diLep BEGIN ##########
+diLep_mass:
+  x_bins: "100|0:200"
+  x_title: diLep mass (mumu)
   y_title: Events
   use_log_y: True
-  max_y_sf: 10.0
+  max_y_sf: 1.2
   divide_by_bin_width: False
 
-
-dnn_M450_Signal:
-  x_bins: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-  x_title: DNN M450 Signal
+Lep1Jet1Jet2_mass:
+  x_bins: "50|0:1000"
+  x_title: Lep1Jet1Jet2 mass
   y_title: Events
   use_log_y: True
-  max_y_sf: 10.0
+  max_y_sf: 1.2
   divide_by_bin_width: False
 
-
-dnn_M700_Signal:
-  x_bins: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-  x_title: DNN M700 Signal
+Lep1Lep2Jet1Jet2_mass:
+  x_bins: "50|0:1000"
+  x_title: Lep1Lep2Jet1Jet2 mass
   y_title: Events
   use_log_y: True
-  max_y_sf: 10.0
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+MT_tot:
+  x_bins: "100|0:200"
+  x_title: MT tot
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+MT_lep1:
+  x_bins: "100|0:200"
+  x_title: MT lep1
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+MT_lep2:
+  x_bins: "100|0:200"
+  x_title: MT lep2
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
   divide_by_bin_width: False

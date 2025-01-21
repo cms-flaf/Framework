@@ -192,6 +192,15 @@ inline LorentzVectorM GetP4(const RVecF& pt, const RVecF& eta, const RVecF& phi,
   return LorentzVectorM(pt[idx], eta[idx], phi[idx], mass);
 }
 
+RVecLV GetP4(const RVecF& pt, const RVecF& eta, const RVecF& phi, const RVecF& mass)
+{
+  RVecLV p4;
+  p4.reserve(pt.size());
+  for (size_t idx = 0; idx < pt.size(); idx++)
+    p4.emplace_back(pt[idx], eta[idx], phi[idx], mass[idx]);
+  return p4;
+}
+
 RVecLV GetP4(const RVecF& pt, const RVecF& eta, const RVecF& phi, const RVecF& mass, const RVecS &indices)
 {
   RVecLV p4;

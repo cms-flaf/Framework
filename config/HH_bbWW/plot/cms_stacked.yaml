@@ -50,7 +50,7 @@ legend:
   font: 42
 
 ana_text:
-  text: "hh#rightarrowbb#W#W"
+  text: "hh#rightarrowbbWW"
   pos_ref: inner_left_top
   pos: [ 0.1, -0.02 ]
   text_size: 0.02

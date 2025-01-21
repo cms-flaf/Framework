@@ -157,6 +157,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                                     '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type, '--globalConfig', global_config, '--var', var, '--period', self.period, '--region', region, '--channels', channels]
             if compute_unc_histograms:
                 HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
+                #HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'False'])
             if (deepTauVersion!="2p1") and (deepTauVersion!=''):
                 HistProducerFile_cmd.extend([ '--deepTauVersion', deepTauVersion])
             if need_cache:

@@ -63,14 +63,12 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
     df = df.Define("sample_type", f"static_cast<int>(SampleType::{sample_config['sampleType']})")
     df = df.Define("sample_name", f"static_cast<int>({zlib.crc32(sample_name.encode())})")
     isSignal = sample_config['sampleType'] in setup.global_params['signal_types']
-    print("isSignal? ", isSignal)
     df = df.Define("period", f"static_cast<int>(Period::{period})")
     df = df.Define("X_mass", f"static_cast<int>({mass})")
     df = df.Define("X_spin", f"static_cast<int>({spin})")
     df = df.Define("entryIndex", "static_cast<int>(rdfentry_)")
     is_data = 'true' if isData else 'false'
     df = df.Define("isData", is_data)
-
     df = Baseline.CreateRecoP4(df, nano_version=setup.global_params['nano_version'])
     df = Baseline.DefineGenObjects(df, isData=isData, isHH=isHH)
 
@@ -91,9 +89,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
         suffix = '' if is_central else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
         dfw = Utilities.DataFrameWrapper(df_empty, anaTupleDef.getDefaultColumnsToSave(isData))
-
-        anaTupleDef.addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal, setup.global_params,channels)
-
+        anaTupleDef.addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal, setup.global_params, channels)
         if setup.global_params['nano_version'] == 'v12':
             dfw.DefineAndAppend("weight_L1PreFiring_Central","L1PreFiringWeight_Nom")
             dfw.DefineAndAppend("weight_L1PreFiring_ECAL_Central","L1PreFiringWeight_ECAL_Nom")
@@ -110,7 +106,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
         if not isData:
 
             triggers_to_use = set()
-            for channel in setup.global_params['channelSelection']:
+            for channel in channels:
                 trigger_list = setup.global_params.get('triggers', {}).get(channel, [])
                 for trigger in trigger_list:
                     if trigger not in trigger_class.trigger_dict.keys():
@@ -175,7 +171,7 @@ if __name__ == "__main__":
                         default=f"{os.environ['ANALYSIS_PATH']}/config/pdg_name_type_charge.txt")
     parser.add_argument('--compressionLevel', type=int, default=4)
     parser.add_argument('--compressionAlgo', type=str, default="ZLIB")
-    parser.add_argument('--channels', type=str, default="eTau,muTau,tauTau")
+    parser.add_argument('--channels', type=str, default=None)
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
 
@@ -187,8 +183,11 @@ if __name__ == "__main__":
     setup = Setup.getGlobal(os.environ['ANALYSIS_PATH'], args.period, args.customisations)
     with open(args.anaCache, 'r') as f:
         anaCache = yaml.safe_load(f)
-    channels = args.channels.split(',')
 
+    channels = setup.global_params["channelSelection"]
+    if args.channels:
+        channels = args.channels.split(',') if type(args.channels) == str else args.channels
+    print(channels)
     anaTupleDef = Utilities.load_module(args.anaTupleDef)
     if os.path.isdir(args.outDir):
         shutil.rmtree(args.outDir)

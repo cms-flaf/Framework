@@ -133,12 +133,13 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         dfw.DefineAndAppend(f"met_{var}", f"static_cast<float>({pf_str}_{var})")
 
     if trigger_class is not None:
-        hltBranches = dfw.Apply(trigger_class.ApplyTriggers, lepton_legs, isData, isSignal)
+        hltBranches = dfw.Apply(trigger_class.ApplyTriggers, lepton_legs, 'Htt',isData, isSignal)
         dfw.colToSave.extend(hltBranches)
     dfw.Define(f"Tau_recoJetMatchIdx", f"FindMatching(Tau_p4, Jet_p4, 0.5)")
     dfw.Define(f"Muon_recoJetMatchIdx", f"FindMatching(Muon_p4, Jet_p4, 0.5)")
     dfw.Define( f"Electron_recoJetMatchIdx", f"FindMatching(Electron_p4, Jet_p4, 0.5)")
     dfw.DefineAndAppend("channelId","static_cast<int>(HttCandidate.channel())")
+    print(channels)
     channel_to_select = " || ".join(f"HttCandidate.channel()==Channel::{ch}" for ch in channels)#global_params["channelSelection"])
     dfw.Filter(channel_to_select, "select channels")
     fatjet_obs = []

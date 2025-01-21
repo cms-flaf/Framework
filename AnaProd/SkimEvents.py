@@ -26,9 +26,10 @@ def ListToVector(list, type="string"):
 
 col_type_dict = {
   'Float_t':'float',
-  #'Double_t':'double',
+  'Double_t':'double',
   'Bool_t':'bool',
   'Int_t' :'int',
+  'Short_t': 'short',
   'ULong64_t' :'unsigned long long',
   'ULong_t' :'unsigned long',
   'Long_t' :'long',
@@ -36,7 +37,9 @@ col_type_dict = {
   'UInt_t' :'unsigned int',
   'ROOT::VecOps::RVec<float>':'ROOT::VecOps::RVec<float>',
   'ROOT::VecOps::RVec<int>':'ROOT::VecOps::RVec<int>',
-  'ROOT::VecOps::RVec<unsigned char>':'ROOT::VecOps::RVec<unsigned char>'
+  'ROOT::VecOps::RVec<unsigned char>':'ROOT::VecOps::RVec<unsigned char>',
+  'ROOT::VecOps::RVec<short>':'ROOT::VecOps::RVec<short>',
+  'ROOT::VecOps::RVec<double>':'ROOT::VecOps::RVec<double>',
   }
 def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Events',treeName_central='Events'):
   df_central = ROOT.RDataFrame(treeName_central, inputFileCentral)
@@ -77,7 +80,6 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Event
   for var_idx,var_name in enumerate(colNames):
     if var_name in colToNotToMakeDiff: continue
     condition_noDiff_list.append(f"analysis::IsSame({var_name}, _entryCentral->GetValue<{col_type_dict[col_types[var_idx]]}>({var_idx}))") # IS SAME TAKES (SHIFT, CENTRAL) !!
-
   condition_noDiff = ' && '.join(condition_noDiff_list)
   df_out_valid = df_out_valid.Define("isSame", condition_noDiff)
   df_out_valid_noDiff = df_out_valid.Filter("isSame")

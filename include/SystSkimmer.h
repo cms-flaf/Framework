@@ -18,7 +18,7 @@ using RVecUC = ROOT::VecOps::RVec<unsigned char>;
 using RVecS = ROOT::VecOps::RVec<short>;
 
 namespace analysis {
-typedef std::variant<int,float,bool, unsigned long,unsigned long long,long,unsigned int, unsigned char, RVecI, RVecF,RVecUC,RVecS> MultiType;
+typedef std::variant<int,float,bool, unsigned long,unsigned long long,long,unsigned int, unsigned char, short, RVecI, RVecF,RVecUC, RVecS> MultiType;
 
 struct Entry {
   std::vector<MultiType> var_values;
@@ -81,13 +81,9 @@ struct TupleMaker {
         std::cout << "TupleMaker::processIn: exception: " << e.what() << std::endl;
         throw;
       }
-      queue.SetAllDone();
+      queue.SetInputAvailable(false);
     });
   }
-
-
-
-
 
   ROOT::RDF::RNode processOut(ROOT::RDF::RNode df_out)
   {
@@ -129,8 +125,10 @@ struct TupleMaker {
 
   void join()
   {
-    if(thread)
+    if(thread) {
+      queue.SetOutputNeeded(false);
       thread->join();
+    }
   }
 
   ROOT::RDataFrame df_in;

@@ -24,18 +24,16 @@ def GetHistName(sample_name, sample_type, uncName, unc_scale,global_cfg_dict):
     return histName
 
 
-def RebinHisto(hist_initial, new_binning, sample, verbose=False):
+def RebinHisto(hist_initial, new_binning, sample, wantOverflow=True, verbose=False):
     new_binning_array = array.array('d', new_binning)
     new_hist = hist_initial.Rebin(len(new_binning)-1, sample, new_binning_array)
     if sample == 'data' : new_hist.SetBinErrorOption(ROOT.TH1.kPoisson)
-    n_finalbin = new_hist.GetBinContent(new_hist.GetNbinsX())
-    n_overflow = new_hist.GetBinContent(new_hist.GetNbinsX()+1)
-    new_hist.SetBinContent(new_hist.GetNbinsX(), n_finalbin+n_overflow)
-    err_finalbin = new_hist.GetBinError(new_hist.GetNbinsX())
-    err_overflow = new_hist.GetBinError(new_hist.GetNbinsX()+1)
-    if n_finalbin+n_overflow > 0:
-        new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(n_finalbin+n_overflow))
-    else:
+    if wantOverflow:
+        n_finalbin = new_hist.GetBinContent(new_hist.GetNbinsX())
+        n_overflow = new_hist.GetBinContent(new_hist.GetNbinsX()+1)
+        new_hist.SetBinContent(new_hist.GetNbinsX(), n_finalbin+n_overflow)
+        err_finalbin = new_hist.GetBinError(new_hist.GetNbinsX())
+        err_overflow = new_hist.GetBinError(new_hist.GetNbinsX()+1)
         new_hist.SetBinError(new_hist.GetNbinsX(), math.sqrt(err_finalbin*err_finalbin+err_overflow*err_overflow))
 
     if verbose:
@@ -145,6 +143,7 @@ if __name__ == "__main__":
     parser.add_argument('--wantData', required=False, type=bool, default=False)
     parser.add_argument('--wantSignals', required=False, type=bool, default=False)
     parser.add_argument('--wantQCD', required=False, type=bool, default=False)
+    parser.add_argument('--wantOverflow', required=False, type=bool, default=False)
     parser.add_argument('--wantLogScale', required=False, type=str, default="")
     parser.add_argument('--uncSource', required=False, type=str,default='Central')
     parser.add_argument('--year', required=False, type=str,default='Run2_2018')
@@ -164,16 +163,8 @@ if __name__ == "__main__":
     with open(page_cfg_custom, 'r') as f:
         page_cfg_custom_dict = yaml.safe_load(f)
     inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", args.analysis, "plot/inputs.yaml")
-    print(inputs_cfg)
     with open(inputs_cfg, 'r') as f:
         inputs_cfg_dict = yaml.safe_load(f)
-    # if args.category == 'boosted':
-    #     for input_dict in inputs_cfg_dict:
-    #         if input_dict['name'] == 'GluGluToBulkGraviton' or input_dict['name'] == 'GluGluToRadion':
-    #             input_dict['scale'] = 0.
-    # else:
-    #     for input_dict in inputs_cfg_dict:
-    #         input_dict['scale'] = 1
 
     index_to_remove = []
     for dicti in inputs_cfg_dict:
@@ -235,7 +226,6 @@ if __name__ == "__main__":
         bckg_sample_type = bckg_cfg_dict[sample_name]['sampleType']
         bckg_sample_name = bckg_sample_type if bckg_sample_type in global_cfg_dict['sample_types_to_merge'] else sample_name
         if bckg_sample_name in all_samples_types.keys():
-            # print(f"{bcxkg_sample_name} already in all_samples_types, not including it")
             continue
         all_samples_types[bckg_sample_name] = {}
         all_samples_types[bckg_sample_name]['type']= bckg_sample_type
@@ -270,6 +260,7 @@ if __name__ == "__main__":
     dir_0 = inFile_root.Get(args.channel)
     dir_0p1 = dir_0.Get(args.qcdregion)
     dir_1 = dir_0p1.Get(args.category)
+    # dir_1 = dir_0.Get(args.category) # --> uncomment if QCD regions are not included in the histograms
     hist_cfg_dict[args.var]['max_y_sf'] = 1.4
     hist_cfg_dict[args.var]['use_log_y'] = False
     hist_cfg_dict[args.var]['use_log_x'] = False
@@ -305,14 +296,6 @@ if __name__ == "__main__":
         if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
             print(f"ERRORE: {sample_histname} non è un istogramma")
         obj.SetDirectory(0)
-        k_factor = 1
-        # if sample_name=='TTTo2L2Nu':
-        #     k_factor =  ((1 - 0.665) * (1 - 0.665))/( (1 - 0.6741) * (1 - 0.6741))
-        # if sample_name == 'TTToSemiLeptonic':
-        #     k_factor = ( 0.665 * (1-0.665) )/( 0.6741 * (1-0.6741) )
-        # if sample_name == 'TTToHadronic':
-        #     k_factor = (0.665 * 0.665)/(0.6741 * 0.6741)
-        # obj.Scale(k_factor)
 
         if sample_plot_name not in hists_to_plot_unbinned.keys():
             hists_to_plot_unbinned[sample_plot_name] = obj
@@ -321,7 +304,7 @@ if __name__ == "__main__":
     hists_to_plot_binned = {}
     for hist_key,hist_unbinned in hists_to_plot_unbinned.items():
         old_hist = hist_unbinned
-        new_hist = RebinHisto(old_hist, new_bins, hist_key)
+        new_hist = RebinHisto(old_hist, new_bins, hist_key, wantOverflow=args.wantOverflow,verbose=False)
         hists_to_plot_binned[hist_key] = new_hist if rebin_condition else old_hist
 
 

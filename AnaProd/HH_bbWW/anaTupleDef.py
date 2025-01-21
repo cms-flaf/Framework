@@ -7,8 +7,12 @@ loadHHBtag = False
 lepton_legs = [ "lep1", "lep2" ]
 
 
-Muon_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all","Muon_tightId","Muon_highPtId","Muon_miniPFRelIso_all", "Muon_pfIsoId"]
-Electron_observables = ["Electron_mvaNoIso_WP80", "Electron_mvaIso_WP80", "Electron_pfRelIso03_all","Electron_miniPFRelIso_all","Electron_mvaIso","Electron_mvaNoIso"]
+Muon_int_observables = ["Muon_tightId","Muon_highPtId","Muon_pfIsoId"]
+Muon_float_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all","Muon_miniPFRelIso_all"]
+Muon_observables = Muon_int_observables + Muon_float_observables
+Electron_int_observables = ["Electron_mvaNoIso_WP80", "Electron_mvaIso_WP80"]
+Electron_float_observables = ["Electron_pfRelIso03_all","Electron_miniPFRelIso_all","Electron_mvaIso","Electron_mvaNoIso"]
+Electron_observables = Electron_int_observables + Electron_float_observables
 JetObservables = ["PNetRegPtRawCorr", "PNetRegPtRawCorrNeutrino", "PNetRegPtRawRes",
                   "btagDeepFlavB", "btagDeepFlavCvB", "btagDeepFlavCvL", "btagDeepFlavQG",
                   "btagPNetB", "btagPNetCvB", "btagPNetCvL", "btagPNetCvNotB", "btagPNetQvG"] # 2024
@@ -117,13 +121,16 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
 
     for var in PtEtaPhiM:
         dfw.DefineAndAppend(f"SelectedMuon_{var}", f"v_ops::{var}(Muon_p4[Muon_presel])")
-    for muon_obs in Muon_observables:
+    for muon_obs in Muon_float_observables:
         dfw.DefineAndAppend(f"Selected{muon_obs}" , f"RVecF({muon_obs}[Muon_presel])")
+    for muon_obs in Muon_int_observables:
+        dfw.DefineAndAppend(f"Selected{muon_obs}" , f"RVecI({muon_obs}[Muon_presel])")
     for var in PtEtaPhiM:
         dfw.DefineAndAppend(f"SelectedElectron_{var}", f"v_ops::{var}(Electron_p4[Electron_presel])")
-    for ele_obs in Electron_observables:
+    for ele_obs in Electron_float_observables:
         dfw.DefineAndAppend(f"Selected{ele_obs}" , f"RVecF({ele_obs}[Electron_presel])")
-
+    for ele_obs in Electron_int_observables:
+        dfw.DefineAndAppend(f"Selected{ele_obs}" , f"RVecI({ele_obs}[Electron_presel])")
     #save information for fatjets
     fatjet_obs = []
     fatjet_obs.extend(FatJetObservables)
@@ -202,10 +209,10 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         dfw.Define("IsTrueBjet", "GenJet_hadronFlavour == 5")
         dfw.Define("GenJet_TrueBjetTag", "FindTwoJetsClosestToMPV(125.0, GenJet_p4, IsTrueBjet)")
         dfw.DefineAndAppend("centralJet_TrueBjetTag",
-                                        """RVecF res;
+                                        """RVecI res;
                                         for (auto idx: centralJet_matchedGenJetIdx)
                                         {
-                                            res.push_back(idx == -1 ? 0.0 : static_cast<float>(GenJet_TrueBjetTag[idx]));
+                                            res.push_back(idx == -1 ? 0 : static_cast<int>(GenJet_TrueBjetTag[idx]));
                                         }
                                         return res;""")
     reco_jet_obs = []

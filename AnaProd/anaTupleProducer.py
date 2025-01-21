@@ -89,9 +89,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
         suffix = '' if is_central else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
         dfw = Utilities.DataFrameWrapper(df_empty, anaTupleDef.getDefaultColumnsToSave(isData))
-
-        anaTupleDef.addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal, setup.global_params,channels)
-
+        anaTupleDef.addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal, setup.global_params, channels)
         if setup.global_params['nano_version'] == 'v12':
             dfw.DefineAndAppend("weight_L1PreFiring_Central","L1PreFiringWeight_Nom")
             dfw.DefineAndAppend("weight_L1PreFiring_ECAL_Central","L1PreFiringWeight_ECAL_Nom")

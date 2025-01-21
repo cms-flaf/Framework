@@ -101,3 +101,29 @@ bjet2_btagPNetB:
   use_log_y: False
   max_y_sf: 1.2
   divide_by_bin_width: False
+
+dnn_M300_Signal:
+  x_bins: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  x_title: DNN M300 Signal
+  y_title: Events
+  use_log_y: True
+  max_y_sf: 10.0
+  divide_by_bin_width: False
+
+
+dnn_M450_Signal:
+  x_bins: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  x_title: DNN M450 Signal
+  y_title: Events
+  use_log_y: True
+  max_y_sf: 10.0
+  divide_by_bin_width: False
+
+
+dnn_M700_Signal:
+  x_bins: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  x_title: DNN M700 Signal
+  y_title: Events
+  use_log_y: True
+  max_y_sf: 10.0
+  divide_by_bin_width: False

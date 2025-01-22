@@ -360,6 +360,6 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     HaddMergedHistsProducer_cmd.extend(local_merged_files)
                     ps_call(HaddMergedHistsProducer_cmd,verbose=1)
             with tmp_outFile.localize("r") as tmpFile, self.output().localize("w") as outFile:
-                RenameHistsProducer_cmd = ['python3', RenameHistsProducer,'--inFile', tmpFile.path, '--outFile', outFile.path, '--var', var, '--year', getYear(self.period)]
+                RenameHistsProducer_cmd = ['python3', RenameHistsProducer,'--inFile', tmpFile.path, '--outFile', outFile.path, '--var', var, '--year', getYear(self.period), '--ana_path', self.ana_path(), '--period', self.period]
                 ps_call(RenameHistsProducer_cmd,verbose=1)
 

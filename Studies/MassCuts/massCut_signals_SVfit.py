@@ -28,7 +28,7 @@ ROOT.TColor.InvertPalette()
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
-from Studies.MassCuts.DrawPlots import plot_1D_histogram
+# from Studies.MassCuts.DrawPlots import plot_1D_histogram
 
 def createCacheQuantities(dfWrapped_cache, cache_map_name):
     df_cache = dfWrapped_cache.df
@@ -109,25 +109,25 @@ def getLabels(cat,year,channel,mass,resonance):
     title = f"{channelname} {cat_name}"
     return bins,labels,cat_name,channelname,title,spin,outFileName
 
-def PlotMass(df, hist_cfg_dict, global_cfg_dict,filter_str,cat,channel='tauTau', year='2018',mass='1250',resonance='', return_hists=False):
-    saveFile = not return_hists
-    bins,labels,cat_name,channelname,title,spin,outFileName = getLabels(cat,"all",channel,mass,res_str)
-    hist_list = []
-    total_weight_expression = GetWeight(channel,cat,global_cfg_dict['boosted_categories']) #if sample_type!='data' else "1"
-    btag_weight = GetBTagWeight(global_cfg_dict,cat,applyBtag=False)
-    total_weight_expression = "*".join([total_weight_expression,btag_weight])
+# def PlotMass(df, hist_cfg_dict, global_cfg_dict,filter_str,cat,channel='tauTau', year='2018',mass='1250',resonance='', return_hists=False):
+#     saveFile = not return_hists
+#     bins,labels,cat_name,channelname,title,spin,outFileName = getLabels(cat,"all",channel,mass,res_str)
+#     hist_list = []
+#     total_weight_expression = GetWeight(channel,cat,global_cfg_dict['boosted_categories']) #if sample_type!='data' else "1"
+#     btag_weight = GetBTagWeight(global_cfg_dict,cat,applyBtag=False)
+#     total_weight_expression = "*".join([total_weight_expression,btag_weight])
 
-    hist_bbttmass = df.Filter(filter_str).Define("final_weight", total_weight_expression).Histo1D(GetModel1D(bins),  "bbtautau_mass", "final_weight").GetValue()
-    hist_list.append(hist_bbttmass)
-    hist_bbttmass_met = df.Filter(filter_str).Define("final_weight", total_weight_expression).Histo1D(GetModel1D(bins),  "bbtautau_mass_met", "final_weight").GetValue()
-    hist_list.append(hist_bbttmass_met)
-    hist_kinFit_m = df.Filter(filter_str).Define("final_weight", total_weight_expression).Histo1D(GetModel1D(bins), "kinFit_m", "final_weight").GetValue()
-    hist_list.append(hist_kinFit_m)
-    if saveFile:
-        plot_1D_histogram(hist_list,labels, bins,title, [], outFileName, f"Run2_{year}", mass, spin)
-        print(outFileName+".pdf")
-    if return_hists:
-        return hist_list
+#     hist_bbttmass = df.Filter(filter_str).Define("final_weight", total_weight_expression).Histo1D(GetModel1D(bins),  "bbtautau_mass", "final_weight").GetValue()
+#     hist_list.append(hist_bbttmass)
+#     hist_bbttmass_met = df.Filter(filter_str).Define("final_weight", total_weight_expression).Histo1D(GetModel1D(bins),  "bbtautau_mass_met", "final_weight").GetValue()
+#     hist_list.append(hist_bbttmass_met)
+#     hist_kinFit_m = df.Filter(filter_str).Define("final_weight", total_weight_expression).Histo1D(GetModel1D(bins), "kinFit_m", "final_weight").GetValue()
+#     hist_list.append(hist_kinFit_m)
+#     if saveFile:
+#         plot_1D_histogram(hist_list,labels, bins,title, [], outFileName, f"Run2_{year}", mass, spin)
+#         print(outFileName+".pdf")
+#     if return_hists:
+#         return hist_list
 
 
 
@@ -214,7 +214,7 @@ if __name__ == "__main__":
     if args.mass == 'all':
         masses_list = [1000, 1250, 1500, 1750, 2000, 2500, 250, 260, 270, 280, 3000, 300, 320, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900]
     channels = ['eTau', 'muTau','tauTau'] if args.channels == '' else args.channels.split(',')
-    cats = ['res1b_cat3_masswindow', 'res2b_cat3_masswindow','baseline_masswindow', 'inclusive_masswindow'] if args.cat == '' else args.cat.split(',')
+    cats = ['res1b_cat3', 'res2b_cat3','baseline', 'inclusive','boosted_cat3'] if args.cat == '' else args.cat.split(',')
     inFiles = []
     inCacheFiles = []
     hists={}
@@ -265,32 +265,15 @@ if __name__ == "__main__":
 
         AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache_central, "cache_map_Central")
         dfWrapped = PrepareDfForHistograms(dfWrapped_central)
-        #print(dfWrapped.df.GetColumnNames())
-        pNetWP = dfWrapped.pNetWP
+        # print(dfWrapped.df.GetColumnNames())
 
-        # hists[year] = {}
-        # print(key_filter_dict)
-        for channel in channels:
-            # print(channel)
-            for cat in cats:
-                # print(cat)
-                filter_str = key_filter_dict[(channel, 'OS_Iso', cat)]
-                #print(filter_str)
-                if (channel,cat) not in hists.keys():
-                    hists[(channel,cat)] = {}
-                hists[(channel,cat)][year] = PlotMass(dfWrapped.df,hist_cfg_dict,global_cfg_dict, filter_str,cat,channel, args.year, mass,res_str, return_hists=True)
-
-    # print(hists)
-    for channel in channels:
-        # print(channel)
-        for cat in cats:
-            hist_cat_list = hists[(channel,cat)][years_list[0]]
-            for year_idx in (1, len(years_list)-1):
-                hist_cat_list_2 = hists[(channel,cat)][years_list[year_idx]]
-                for hist1,hist2 in zip(hist_cat_list,hist_cat_list_2):
-                    hist1.Add(hist2)
-            bins,labels,cat_name,channelname,title,spin,outFileName = getLabels(cat,"all",channel,mass,res_str)
-
-            plot_1D_histogram(hist_cat_list, labels, bins,title, [], outFileName, "Run2_all", mass, spin)
-            print(outFileName+".pdf")
-            # plot_1D_histogram(hist_cat_list,labels, bbtautau_mass_bins,f"{channelnames[channel]} {cat_name}", [], outFileName, f"Run2_{year}", mass, spin)
+        if args.cat == 'res2b':
+            GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "res2b_cat3", "res2b_cat2",],0.99)
+        if args.cat == 'res1b':
+            GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], ['res1b'],0.99) #["res1b_cat3", "res1b_cat2"]
+        if args.cat == 'inclusive':
+            GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "inclusive", "baseline"],0.99)
+        if args.cat == 'boosted':
+            GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "boosted"],0.99)
+            #GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "boosted_cat3"],0.99)
+            #GetIntervalsSimultaneously.GetMassCut(dfWrapped,global_cfg_dict,['eTau','muTau','tauTau'], [ "boosted_cat3", "boosted"],0.99)

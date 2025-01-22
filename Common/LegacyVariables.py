@@ -28,6 +28,8 @@ def Initialize():
     tau2_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(tau2_pt,tau2_eta,tau2_phi,tau2_mass)"
     b1_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(b1_pt,b1_eta,b1_phi,b1_mass)"
     b2_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(b2_pt,b2_eta,b2_phi,b2_mass)"
+    subjet1_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(SelectedFatJet_SubJet1_pt,SelectedFatJet_SubJet1_eta,SelectedFatJet_SubJet1_phi,SelectedFatJet_SubJet1_mass)"
+    subjet2_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(SelectedFatJet_SubJet2_pt,SelectedFatJet_SubJet2_eta,SelectedFatJet_SubJet2_phi,SelectedFatJet_SubJet2_mass)"
     MET_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(met_pt, 0., met_phi, 0.)"
     initialized = True
 

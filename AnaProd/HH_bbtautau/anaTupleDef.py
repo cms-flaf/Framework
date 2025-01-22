@@ -69,7 +69,7 @@ particleNetLegacy_QCD YES
 
 FatJetObservablesMC = ["hadronFlavour","partonFlavour"]
 
-SubJetObservables = ["btagDeepB", "eta", "mass", "phi", "pt", "rawFactor"]
+SubJetObservables = ["btagDeepB", "eta", "mass", "phi", "pt", "rawFactor","ptRes"]
 SubJetObservablesMC = ["hadronFlavour","partonFlavour"]
 
 defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "X_spin", "isData","PuppiMET_pt", "PuppiMET_phi", "nJet","DeepMETResolutionTune_pt", "DeepMETResolutionTune_phi","DeepMETResponseTune_pt", "DeepMETResponseTune_phi","PV_npvs"]
@@ -90,6 +90,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
     dfw.Apply(AnaBaseline.ExtraRecoJetSelection, global_params["era"])
     if global_params["era"].startswith("Run2"):
         dfw.Apply(Corrections.getGlobal().jet.getEnergyResolution)
+        # dfw.Apply(Corrections.getGlobal().fatjet.getEnergyResolution)
+        # dfw.Apply(Corrections.getGlobal().fatjet.getSubJetEnergyResolution)
         dfw.Apply(Corrections.getGlobal().btag.getWPid)
     jet_obs = []
     jet_obs.extend(JetObservables)
@@ -100,7 +102,6 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         if isSignal:
             dfw.Define(f"Jet_fromGenHbb", f"Take(GenJet_Hbb, Jet_genJetIdx, false)")
             dfw.DefineAndAppend("nJetFromGenHbb", "Jet_p4[Jet_fromGenHbb && Jet_bCand].size()")
-
             for gen_idx in range(2):
                 dfw.DefineAndAppend(f"genLepton{gen_idx+1}_legType", f"static_cast<int>(genHttCandidate->leg_type[{gen_idx}])")
                 for var in [ 'pt', 'eta', 'phi', 'mass' ]:

@@ -185,6 +185,10 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("SR", f" SR_tt &&  SR_bb")
         self.df = self.df.Define("SR_boosted", f" SR_tt &&  SR_bb_boosted")
 
+        self.df = self.df.Define("SR_ellyptical", "(((SVfit_m-116)*(SVfit_m-116)/(35*35)) + ((bb_m_vis-111)*(bb_m_vis-111)/(45*45))) < 1 ")
+        self.df = self.df.Define("SR_ellyptical_boosted_tt", "SVfit_m < 152 && SVfit_m > 80 ")
+        self.df = self.df.Define("SR_ellyptical_boosted_bb", "bb_m_vis_softdrop < 160 && bb_m_vis_softdrop > 90 ")
+        self.df = self.df.Define("SR_ellyptical_boosted", "SR_ellyptical_boosted_tt && SR_ellyptical_boosted_bb")
 
         self.df = self.df.Define("DYCR", "if(muMu || eE) {return (tautau_m_vis < 100 && tautau_m_vis > 80);} return true;")
         self.df = self.df.Define("DYCR_boosted", "DYCR")

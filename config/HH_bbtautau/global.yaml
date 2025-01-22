@@ -460,19 +460,6 @@ var_only_boosted:
 
 unc_to_not_consider_boosted:
   - PUJetID
-  - JER
-  - JES_FlavorQCD
-  - JES_RelativeBal
-  - JES_HF
-  - JES_BBEC1
-  - JES_EC2
-  - JES_Absolute
-  - JES_Total
-  - JES_BBEC1_2018
-  - JES_Absolute_2018
-  - JES_EC2_2018
-  - JES_HF_2018
-  - JES_RelativeSample_2018
   - bTagSF_Loose_btagSFbc_correlated
   - bTagSF_Loose_btagSFbc_uncorrelated
   - bTagSF_Loose_btagSFlight_correlated

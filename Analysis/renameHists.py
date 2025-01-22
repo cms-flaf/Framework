@@ -29,7 +29,7 @@ uncReNames = {
     "pNet_SF":"CMS_pnet_{}", # correlated??
     "PileUp_Lumi_MC":"CMS_pu_lumi_MC_{}",
     "PUJetID":"CMS_eff_j_PUJET_id_{}",
-    "PileUp_Lumi_MC":"CMS_pileup_{}",
+    # "PileUp_Lumi_MC":"CMS_pileup_{}",
     "L1Prefiring":"CMS_l1_prefiring_{}",
     "L1Prefiring_ECAL":"CMS_l1_ecal_prefiring_{}",
     "L1Prefiring_Muon_Stat":"CMS_l1_muon_stat_prefiring_{}",
@@ -73,17 +73,13 @@ uncReNames = {
     "HLT_ditau_DM1":"CMS_bbtt_trig_diTau_DM1_{}",
     "HLT_ditau_3Prong":"CMS_bbtt_trig_diTau_3Prong_{}",
     "HLT_singleTau":"CMS_bbtt_trig_singleTau_{}",
-    "HLT_singleEle":"CMS_bbtt_trig_singleEle_{}", # for eE and eMu
-    "HLT_singleMu":"CMS_bbtt_trig_singleMu_{}", # for muMu and eMu
-    "HLT_eMu":"CMS_bbtt_trig_eMu_{}", # for eMu
-    "weight_trigSF_cross_ele":"CMS_bbtt_trig_eTau_cross_ele_{}",  # cross trigger leg efficiency of ele
-    "weight_trigSF_SL_ele":"CMS_bbtt_trig_eTau_SL_ele_{}",   # single trigger leg efficiency of ele
-    "weight_trigSF_etau_tau":"CMS_bbtt_trig_eTau_cross_tau_{}", # cross trigger leg efficiency of tau - depends on DM
-    "weight_trigSF_ele":"CMS_bbtt_trg_eTau_ele_{}", # SL+xL electron trigger SF for eTau
-    "weight_trigSF_cross_mu":"CMS_bbtt_trig_muTau_cross_mu_{}",  # cross trigger leg efficiency of mu
-    "weight_trigSF_SL_mu":"CMS_bbtt_trig_muTau_SL_mu_{}",   # single trigger leg efficiency of mu
-    "weight_trigSF_mutau_tau":"CMS_bbtt_trig_muTau_cross_tau_{}", # cross trigger leg efficiency of tau - depends on DM
-    "weight_trigSF_mu":"CMS_bbtt_trg_muTau_mu_{}", # SL+xL mu trigger SF for eTau
+    "trigSF_ele":"CMS_bbtt_trig_ele_{}", # SL+xL electron trigger SF for eTau channel
+    "trigSF_SL_ele": "CMS_bbtt_trig_SL_ele_{}",
+    "trigSF_cross_ele": "CMS_bbtt_trig_cross_ele_{}",
+    "trigSF_mu":"CMS_bbtt_trig_mu_{}", # SL+xL muon trigger SF for muTau channel
+    "trigSF_SL_mu": "CMS_bbtt_trig_SL_mu_{}",
+    "trigSF_cross_mu": "CMS_bbtt_trig_cross_mu_{}",
+    "trigSF_tau":"CMS_bbtt_trig_tau_{}", # for all channels and already integrated the DM dependence
     "TauES_DM0": "CMS_scale_t_DM0_{}",
     "TauES_DM1": "CMS_scale_t_DM1_{}",
     "TauES_3prong": "CMS_scale_t_3prong_{}",

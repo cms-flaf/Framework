@@ -109,38 +109,29 @@ norm:
     expression: weight_tau1_MuonID_SF_TightRelIso{scale}_rel * weight_tau2_MuonID_SF_TightRelIso{scale}_rel * final_weight
 
   HLT_MET:
-    expression: weight_TrgSF_MET{scale}_rel * final_weight
-
-  HLT_ditau_DM0:
-    expression: weight_HLT_ditau_DM0{scale}_rel * final_weight
-  HLT_ditau_DM1:
-    expression: weight_HLT_ditau_DM1{scale}_rel * final_weight
-  HLT_ditau_3Prong:
-    expression: weight_HLT_ditau_3Prong{scale}_rel * final_weight
+    expression: weight_trigSF_MET{scale}_rel * final_weight
   HLT_singleTau:
-    expression: weight_HLT_singleTau_{scale}_rel  * final_weight
-  HLT_singleEle:
-    expression: weight_HLT_singleEle{scale}_rel * final_weight
-  HLT_singleMu:
-    expression: weight_HLT_singleMu{scale}_rel * final_weight
-  HLT_eMu:
-    expression: weight_HLT_eMu{scale}_rel * final_weight
-  weight_trigSF_cross_ele:
-    expression: (weight_trigSF_cross_ele_{scale}/weight_HLT_eTau) * final_weight
-  weight_trigSF_SL_ele:
-    expression: (weight_trigSF_SL_ele_{scale}/weight_HLT_eTau) * final_weight
-  weight_trigSF_ele:
-    expression: (weight_trigSF_ele_{scale}/weight_HLT_eTau) * final_weight
-  weight_trigSF_etau_tau:
-    expression: (weight_trigSF_etau_tau_{scale}/weight_HLT_eTau) * final_weight
-  weight_trigSF_cross_mu:
-    expression: (weight_trigSF_cross_mu_{scale}/weight_HLT_muTau) * final_weight
-  weight_trigSF_SL_mu:
-    expression: (weight_trigSF_SL_mu_{scale}/weight_HLT_muTau) * final_weight
-  weight_trigSF_mu:
-    expression: (weight_trigSF_mu_{scale}/weight_HLT_muTau) * final_weight
-  weight_trigSF_mutau_tau:
-    expression: (weight_trigSF_mutau_tau_{scale}/weight_HLT_muTau) * final_weight
+    expression: weight_trigSF_singleTau{scale}_rel  * final_weight
+  # HLT_singleEle:
+  #   expression: weight_trigSF_singleEle{scale}_rel * final_weight
+  # HLT_singleMu:
+  #   expression: weight_trigSF_singleMu{scale}_rel * final_weight
+  # HLT_eMu:
+  #   expression: weight_trigSF_eMu{scale}_rel * final_weight
+  trigSF_ele:
+    expression: trigSF_ele{scale}_rel * final_weight
+  trigSF_SL_ele:
+    expression: trigSF_SL_ele{scale}_rel * final_weight
+  trigSF_cross_ele:
+    expression: trigSF_cross_ele{scale}_rel * final_weight
+  trigSF_mu:
+    expression: trigSF_mu{scale}_rel * final_weight
+  trigSF_SL_mu:
+    expression: trigSF_SL_mu{scale}_rel * final_weight
+  trigSF_cross_mu:
+    expression: trigSF_cross_mu{scale}_rel * final_weight
+  trigSF_tau:
+    expression: trigSF_tau{scale}_rel * final_weight
 
 
 shape:

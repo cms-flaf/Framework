@@ -21,9 +21,7 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
     print(f"Initially Yield for data in SS AntiIso region is{key_D} is {n_data_D}")
     for sample in all_samples_list:
         if sample=='data' or 'GluGluToBulkGraviton' in sample or 'GluGluToRadion' in sample or 'VBFToBulkGraviton' in sample or 'VBFToRadion' in sample or sample=='QCD':
-            #print(f"sample {sample} is not considered")
             continue
-        # print(sample)
         hist_sample = histograms[sample]
         hist_sample_B = hist_sample[key_B].Clone()
         hist_sample_C = hist_sample[key_C].Clone()
@@ -55,7 +53,11 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
     if n_data_C < 0:
         print(f"transfer factor <0, {category}, {channel}, {uncName}, {scale}, returning 0.")
         print(f"num {n_data_B}, den {n_data_D}")
-        return ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX())),ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX())),ROOT.TH1D("","",hist_data_B.GetNbinsX(), hist_data_B.GetXaxis().GetBinLowEdge(1), hist_data_B.GetXaxis().GetBinUpEdge(hist_data_B.GetNbinsX())),0.,0.
+        # hist_data_C.Clone()
+        x_bins = [ hist_data_B.GetXaxis().GetBinLowEdge(i) for i in range(0, hist_data_B.GetNbinsX()+1)]
+        x_bins_vec = ListToVector(x_bins, "double")
+        final_hist =  ROOT.TH1D("", "", x_bins_vec.size()-1, x_bins_vec.data())
+        return final_hist,final_hist,final_hist,0,0
     print(f"n_data_B = {n_data_B}")
     print(f"n_data_C = {n_data_C}")
     print(f"n_data_D = {n_data_D}")
@@ -90,7 +92,11 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
             print(debug_info)
             print(negative_bins_info)
             print("Unable to estimate QCD")
-            final_hist = ROOT.TH1D("","",hist_qcd_Central.GetNbinsX(), hist_qcd_Central.GetXaxis().GetBinLowEdge(1), hist_qcd_Central.GetXaxis().GetBinUpEdge(hist_qcd_Central.GetNbinsX())),ROOT.TH1D("","",hist_qcd_Central.GetNbinsX(), hist_qcd_Central.GetXaxis().GetBinLowEdge(1), hist_qcd_Central.GetXaxis().GetBinUpEdge(hist_qcd_Central.GetNbinsX()))
+
+            x_bins = [ hist_qcd_Central.GetXaxis().GetBinLowEdge(i) for i in range(0, hist_qcd_Central.GetNbinsX()+1)]
+            x_bins_vec = ListToVector(x_bins, "double")
+            final_hist =  ROOT.TH1D("", "", x_bins_vec.size()-1, x_bins_vec.data())
+            return final_hist,final_hist,final_hist,0,0
             return final_hist,final_hist,final_hist,0,0
             #raise RuntimeError("Unable to estimate QCD")
     #if uncName == 'Central':

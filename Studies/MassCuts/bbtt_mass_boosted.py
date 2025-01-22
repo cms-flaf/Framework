@@ -30,11 +30,11 @@ if __name__ == "__main__":
 
 from Studies.MassCuts.DrawPlots import plot_1D_histogram
 
-def createCacheQuantities(dfWrapped_cache, cache_map_name):
-    df_cache = dfWrapped_cache.df
-    map_creator_cache = ROOT.analysis.CacheCreator(*dfWrapped_cache.colTypes)()
-    df_cache = map_creator_cache.processCache(ROOT.RDF.AsRNode(df_cache), Utilities.ListToVector(dfWrapped_cache.colNames), cache_map_name)
-    return df_cache
+# def createCacheQuantities(dfWrapped_cache, cache_map_name):
+#     df_cache = dfWrapped_cache.df
+#     map_creator_cache = ROOT.analysis.CacheCreator(*dfWrapped_cache.colTypes)()
+#     df_cache = map_creator_cache.processCache(ROOT.RDF.AsRNode(df_cache), Utilities.ListToVector(dfWrapped_cache.colNames), cache_map_name)
+#     return df_cache
 
 def GetCorrectBinning():
 
@@ -57,15 +57,15 @@ def GetCorrectBinning():
 
 
 
-def AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache,cache_map_name='cache_map_placeholder'):
-    col_names_cache =  dfWrapped_cache.colNames
-    col_tpyes_cache =  dfWrapped_cache.colTypes
-    #print(col_names_cache)
-    #if "kinFit_result" in col_names_cache:
-    #    col_names_cache.remove("kinFit_result")
-    dfWrapped_cache.df = createCacheQuantities(dfWrapped_cache, cache_map_name)
-    if dfWrapped_cache.df.Filter(f"{cache_map_name} > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
-    dfWrapped_central.AddCacheColumns(col_names_cache,col_tpyes_cache)
+# def AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache,cache_map_name='cache_map_placeholder'):
+#     col_names_cache =  dfWrapped_cache.colNames
+#     col_tpyes_cache =  dfWrapped_cache.colTypes
+#     #print(col_names_cache)
+#     #if "kinFit_result" in col_names_cache:
+#     #    col_names_cache.remove("kinFit_result")
+#     dfWrapped_cache.df = createCacheQuantities(dfWrapped_cache, cache_map_name)
+#     if dfWrapped_cache.df.Filter(f"{cache_map_name} > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
+#     dfWrapped_central.AddCacheColumns(col_names_cache,col_tpyes_cache)
 
 def createCentralQuantities(df_central, central_col_types, central_columns):
     map_creator = ROOT.analysis.MapCreator(*central_col_types)()
@@ -88,7 +88,7 @@ def GetModel1D(x_bins):#hist_cfg, var1, var2):
 
 def getLabels(cat,year,channel,mass,resonance):
     bins = GetCorrectBinning()
-    labels = ["$m^{vis}_{HH}$","$m^{vis+MET}_{HH}$","$m_{HH}^{kinFit}$"]
+    labels = ["$m^{vis}_{HH}$","$m^{vis+MET}_{HH}$"] #,"$m_{HH}^{kinFit}$"
     cat_name = cat.split('_')[0]
     # if cat_name == 'baseline':
     #     cat_name == cat
@@ -121,8 +121,8 @@ def PlotMass(df, hist_cfg_dict, global_cfg_dict,filter_str,cat,channel='tauTau',
     hist_list.append(hist_bbttmass)
     hist_bbttmass_met = df.Filter(filter_str).Define("final_weight", total_weight_expression).Histo1D(GetModel1D(bins),  "bbtautau_mass_met", "final_weight").GetValue()
     hist_list.append(hist_bbttmass_met)
-    hist_kinFit_m = df.Filter(filter_str).Define("final_weight", total_weight_expression).Histo1D(GetModel1D(bins), "kinFit_m", "final_weight").GetValue()
-    hist_list.append(hist_kinFit_m)
+    # hist_kinFit_m = df.Filter(filter_str).Define("final_weight", total_weight_expression).Histo1D(GetModel1D(bins), "kinFit_m", "final_weight").GetValue()
+    # hist_list.append(hist_kinFit_m)
     if saveFile:
         plot_1D_histogram(hist_list,labels, bins,title, [], outFileName, f"Run2_{year}", mass, spin)
         print(outFileName+".pdf")
@@ -214,9 +214,9 @@ if __name__ == "__main__":
     if args.mass == 'all':
         masses_list = [1000, 1250, 1500, 1750, 2000, 2500, 250, 260, 270, 280, 3000, 300, 320, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900]
     channels = ['eTau', 'muTau','tauTau'] if args.channels == '' else args.channels.split(',')
-    cats = ['res1b_cat3_masswindow', 'res2b_cat3_masswindow','baseline_masswindow', 'inclusive_masswindow'] if args.cat == '' else args.cat.split(',')
+    cats = ['boosted_cat3_masswindow'] if args.cat == '' else args.cat.split(',') # 'boosted_baseline_masswindow'
     inFiles = []
-    inCacheFiles = []
+    # inCacheFiles = []
     hists={}
     mass = args.mass
     for year in years_list:
@@ -229,13 +229,13 @@ if __name__ == "__main__":
             inFiles.append(f"/eos/user/a/aciocci/HHbbTauTauRes/anaTuples/v13_deepTau2p1_HTT/SC/Run2_{year}/GluGluToRadionToHHTo2B2Tau_M-{mass}/nanoHTT_0.root")
 
 
-        if args.res == 'radion':
-            inCacheFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaCacheTuples/Run2_{year}/GluGluToBulkGravitonToHHTo2B2Tau_M-{mass}/v13_deepTau2p1_HTT/SC/nanoHTT_0.root")
-        elif args.res == 'graviton':
-            inCacheFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaCacheTuples/Run2_{year}/GluGluToRadionToHHTo2B2Tau_M-{mass}/v13_deepTau2p1_HTT/SC/nanoHTT_0.root")
-        else:
-            inCacheFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaCacheTuples/Run2_{year}/GluGluToBulkGravitonToHHTo2B2Tau_M-{mass}/v13_deepTau2p1_HTT/SC/nanoHTT_0.root")
-            inCacheFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaCacheTuples/Run2_{year}/GluGluToRadionToHHTo2B2Tau_M-{mass}/v13_deepTau2p1_HTT/SC/nanoHTT_0.root")
+        # if args.res == 'radion':
+        #     inCacheFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaCacheTuples/Run2_{year}/GluGluToBulkGravitonToHHTo2B2Tau_M-{mass}/v13_deepTau2p1_HTT/SC/nanoHTT_0.root")
+        # elif args.res == 'graviton':
+        #     inCacheFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaCacheTuples/Run2_{year}/GluGluToRadionToHHTo2B2Tau_M-{mass}/v13_deepTau2p1_HTT/SC/nanoHTT_0.root")
+        # else:
+        #     inCacheFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaCacheTuples/Run2_{year}/GluGluToBulkGravitonToHHTo2B2Tau_M-{mass}/v13_deepTau2p1_HTT/SC/nanoHTT_0.root")
+        #     inCacheFiles.append(f"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/anaCacheTuples/Run2_{year}/GluGluToRadionToHHTo2B2Tau_M-{mass}/v13_deepTau2p1_HTT/SC/nanoHTT_0.root")
 
         res_str = ''
         if args.res == 'graviton':
@@ -256,14 +256,14 @@ if __name__ == "__main__":
         # print(f"************************************* {year} *************************************")
         # print("********************************************************************************")
         df_initial = ROOT.RDataFrame("Events", Utilities.ListToVector(inFiles))
-        df_cache_initial = ROOT.RDataFrame("Events", Utilities.ListToVector(inCacheFiles))
+        # df_cache_initial = ROOT.RDataFrame("Events", Utilities.ListToVector(inCacheFiles))
 
         key_filter_dict = createKeyFilterDict(global_cfg_dict, f"Run2_{year}")
         dfWrapped_central = DataFrameBuilderForHistograms(df_initial,global_cfg_dict, period=f"Run2_{year}", region="SR",isData=False)
 
-        dfWrapped_cache_central = DataFrameBuilderForHistograms(df_cache_initial,global_cfg_dict, period=f"Run2_{year}", region="SR",isData=False)
+        # dfWrapped_cache_central = DataFrameBuilderForHistograms(df_cache_initial,global_cfg_dict, period=f"Run2_{year}", region="SR",isData=False)
 
-        AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache_central, "cache_map_Central")
+        # AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache_central, "cache_map_Central")
         dfWrapped = PrepareDfForHistograms(dfWrapped_central)
         #print(dfWrapped.df.GetColumnNames())
         pNetWP = dfWrapped.pNetWP

@@ -15,7 +15,7 @@ GLOBAL:
     - Flag_BadPFMuonDzFilter
     - Flag_hfNoisyHitsFilter
     - Flag_eeBadScFilter
-    # - Flag_ecalBadCalibFilter
+    - Flag_ecalBadCalibFilter
   lumiFile: /eos/user/c/cmsdqm/www/CAF/certification/Collisions22/Cert_Collisions2023_366442_370790_Golden.json
 
 

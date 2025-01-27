@@ -14,15 +14,15 @@ import sys
 
 class Era(enum.Enum):
 
-    e2016APV = 0
-    e2016 = 1
-    e2017 = 2
-    e2018 = 3
+    Run2_2016H = 0
+    Run2_2016 = 1
+    Run2_2017 = 2
+    Run2_2018 = 3
 
 class DotDict(dict):
     @classmethod
     def wrap(cls, *args, **kwargs) -> 'DotDict':
-        wrap = lambda d: cls((k, wrap(v)) for k, v in d.items()) if isinstance(d, dict) else d  # type: ignore
+        wrap = lambda d: cls((k, wrap(v)) for k, v in d.items()) if isinstance(d, dict) else d  
         return wrap(dict(*args, **kwargs))
 
     def __getattr__(self, attr: str) -> Any:
@@ -41,7 +41,7 @@ def convert_kinematics(pt, eta, phi, mass):
     energy = np.sqrt(pt**2 * np.cosh(eta)**2 + mass**2)
     return px, py, pz, energy
 
-def convert_to_numpy(event_data, EraName, Mass, Spin, PairType):
+def convert_to_numpy(event_data, period, mass, spin):
     dau1_px, dau1_py, dau1_pz, dau1_e = convert_kinematics(event_data["tau1_pt"], event_data["tau1_eta"], event_data["tau1_phi"], event_data["tau1_mass"])
     dau2_px, dau2_py, dau2_pz, dau2_e = convert_kinematics(event_data["tau2_pt"], event_data["tau2_eta"], event_data["tau2_phi"], event_data["tau2_mass"])
     bjet1_px, bjet1_py, bjet1_pz, bjet1_e = convert_kinematics(event_data["b1_pt"], event_data["b1_eta"], event_data["b1_phi"], event_data["b1_mass"])
@@ -68,12 +68,14 @@ def convert_to_numpy(event_data, EraName, Mass, Spin, PairType):
     def al(v): return np.array([v], dtype=np.int64)
     def af(v): return np.array([v], dtype=np.float32)
     
+    pairtype_map = {23: 0, 13: 1, 33: 2}
+
     inputs = {
         "event_number": al(event_data["event"]),
-        "spin": Spin,
-        "mass": Mass,
-        "era": Era[EraName],
-        "pair_type": ai(PairType),
+        "spin": ai(spin),
+        "mass": ai(mass),
+        "era": Era[period],
+        "pair_type": ai(pairtype_map.get(event_data["channelId"], 2)),
         "dau1_dm": ai(event_data["tau1_decayMode"]),
         "dau2_dm": ai(event_data["tau2_decayMode"]),
         "dau1_charge": ai(event_data["tau1_charge"]),
@@ -139,7 +141,7 @@ def load_models(model_dir):
     ]
     return models
 
-def run_inference_on_events_tree(df_begin, models, globalConfig, output_root_file, snapshotOptions, EraName, Mass, Spin, PairType):
+def run_inference_on_events_tree(df_begin, models, globalConfig, output_root_file, snapshotOptions, period, mass, spin):
     print(f"Running inference on the Events tree")
     run_inference_for_tree(
         tree_name="Events",
@@ -148,15 +150,14 @@ def run_inference_on_events_tree(df_begin, models, globalConfig, output_root_fil
         globalConfig=globalConfig,
         output_root_file=output_root_file,
         snapshotOptions=snapshotOptions,
-        EraName=EraName,
-        Mass=Mass,
-        Spin=Spin,
-        PairType=PairType
+        period=period,
+        mass=mass,
+        spin=spin
     )
     print(f"NN scores for Events tree saved in the output ROOT file")
 
 
-def run_inference_on_uncertainty_trees(df_begin, inFileName, models, globalConfig, unc_cfg_dict, scales, output_root_file, snapshotOptions, EraName, Mass, Spin, PairType):
+def run_inference_on_uncertainty_trees(df_begin, inFileName, models, globalConfig, unc_cfg_dict, scales, output_root_file, snapshotOptions, period, mass, spin):
     dfWrapped_central = Utilities.DataFrameBuilderBase(df_begin)
     colNames = dfWrapped_central.colNames
     colTypes = dfWrapped_central.colTypes
@@ -188,25 +189,19 @@ def run_inference_on_uncertainty_trees(df_begin, inFileName, models, globalConfi
                         globalConfig=globalConfig,
                         output_root_file=output_root_file,
                         snapshotOptions=snapshotOptions,
-                        EraName=EraName,
-                        Mass=Mass,
-                        Spin=Spin,
-                        PairType=PairType
+                        period=period,
+                        mass=mass,
+                        spin=spin
                     )
     
     print(f"NN scores saved to {output_file_name}")
 
-def run_inference_for_tree(tree_name, rdf, models, globalConfig, output_root_file, snapshotOptions, EraName, Mass, Spin, PairType):
-    year = EraName[1:]
+def run_inference_for_tree(tree_name, rdf, models, globalConfig, output_root_file, snapshotOptions, period, mass, spin):
 
-    rdf_setup = PrepareDfForDNN(DataFrameBuilderForHistograms(rdf, globalConfig, f"Run2_{year}")).df
-
-    # Filter events based on boosted_baseline
-    rdf_boosted = rdf_setup.Filter("boosted_baseline == 1")
-    rdf_non_boosted = rdf_setup.Filter("boosted_baseline == 0")
+    rdf_setup = PrepareDfForDNN(DataFrameBuilderForHistograms(rdf, globalConfig, period)).df
 
     columns = [
-        "event", "tau1_pt", "tau1_eta", "tau1_phi", "tau1_mass",
+        "entryIndex", "luminosityBlock", "run", "event", "tau1_pt", "tau1_eta", "tau1_phi", "tau1_mass",
         "tau1_decayMode", "tau1_charge",
         "tau2_pt", "tau2_eta", "tau2_phi", "tau2_mass",
         "tau2_decayMode", "tau2_charge",
@@ -216,50 +211,36 @@ def run_inference_for_tree(tree_name, rdf, models, globalConfig, output_root_fil
         "b2_btagDeepFlavB", "b2_btagPNetCvB", "b2_btagPNetCvL", "b2_HHbtag",
         "SelectedFatJet_pt", "SelectedFatJet_eta", "SelectedFatJet_phi", "SelectedFatJet_mass",
         "met_pt", "met_phi", "met_covXX", "met_covXY", "met_covYY",
-        "Hbb_isValid", "boosted_baseline"
+        "Hbb_isValid", "boosted_baseline", "X_mass", "X_spin", "channelId"
     ]
 
-    def run_inference_and_save(rdf_filtered, tree_suffix, is_boosted_special=False):
-
-        event_numbers_vec = rdf_filtered.AsNumpy(["event"])["event"]
-        num_events = len(event_numbers_vec)
+    def run_inference_and_save(rdf_filtered):
+        other_columns_dict = rdf_filtered.AsNumpy(columns)
+        num_events = len(other_columns_dict["event"])
 
         if num_events == 0:
-            print(f"No events found for {tree_name}_{tree_suffix}, skipping inference.")
+            print(f"No events found for {tree_name}, skipping inference.")
             return
 
-        other_columns_dict = rdf_filtered.AsNumpy(columns)
-        event_to_index = {event_num: i for i, event_num in enumerate(event_numbers_vec)}
         predictions_array = np.zeros((NNInterface.n_folds, num_events, NNInterface.n_out))
 
         for fold_index, nn_interface in enumerate(models):
-            print(f'Processing Fold {fold_index} for {tree_name}_{tree_suffix}')
-            for event_num in event_numbers_vec:
-                i = event_to_index[event_num]
+            print(f'Processing Fold {fold_index} for {tree_name}')
+            for i in range(num_events):
                 if i % 100 == 0:
-                    print(f'  Event: {event_num} ({tree_name}_{tree_suffix})')
-                event_data = {col: other_columns_dict[col][i] for col in columns}
-                inputs = convert_to_numpy(event_data, EraName, Mass, Spin, PairType)
+                    print(f'  Event No. {i}')
 
-                if is_boosted_special:
-                    if tree_suffix == "boosted_set1":
-                        inputs["is_boosted"] = np.array([1], dtype=np.int32)  # Set is_boosted to 1
-                        predictions = run_inference(nn_interface, inputs)
-                        predictions_array[fold_index, i, :] = predictions.flatten()
-                    elif tree_suffix == "boosted_set2":
-                        inputs["is_boosted"] = np.array([0], dtype=np.int32)  # Set is_boosted to 0
-                        predictions = run_inference(nn_interface, inputs)
-                        predictions_array[fold_index, i, :] = predictions.flatten()
-                else:
-                    # Normal inference for non-boosted events
-                    predictions = run_inference(nn_interface, inputs)
-                    predictions_array[fold_index, i, :] = predictions.flatten()
+                event_data = {col: other_columns_dict[col][i] for col in columns}
+                inputs = convert_to_numpy(event_data, period, mass, spin)
+
+                predictions = run_inference(nn_interface, inputs)
+                predictions_array[fold_index, i, :] = predictions.flatten()
 
         mean_predictions = np.nanmean(predictions_array, axis=0)
 
         output_root_file.cd()
-        tree = ROOT.TTree(f"{tree_name}_{tree_suffix}", f"NN scores for {tree_suffix}")
-
+        tree = ROOT.TTree(f"{tree_name}", f"NN scores for {tree_name}")
+       
         HH_score = np.zeros(1, dtype=float)
         TT_score = np.zeros(1, dtype=float)
         DY_score = np.zeros(1, dtype=float)
@@ -267,25 +248,30 @@ def run_inference_for_tree(tree_name, rdf, models, globalConfig, output_root_fil
         tree.Branch("TT_score", TT_score, "TT_score/D")
         tree.Branch("DY_score", DY_score, "DY_score/D")
 
-        event_num_branch = np.zeros(1, dtype=np.int64)  
-        tree.Branch("event", event_num_branch, "event/L")
+        entryIndex = np.zeros(1, dtype=np.int64)
+        luminosityBlock = np.zeros(1, dtype=np.int64)
+        run_num = np.zeros(1, dtype=np.int64)
+        event_num = np.zeros(1, dtype=np.int64)
+
+        tree.Branch("entryIndex", entryIndex, "entryIndex/L")
+        tree.Branch("luminosityBlock", luminosityBlock, "luminosityBlock/L")
+        tree.Branch("run", run_num, "run/L")
+        tree.Branch("event", event_num, "event/L")
 
         for i in range(num_events):
             HH_score[0] = mean_predictions[i, 0]
             TT_score[0] = mean_predictions[i, 1]
             DY_score[0] = mean_predictions[i, 2]
-            event_num_branch[0] = event_numbers_vec[i]  
+            entryIndex[0] = other_columns_dict["entryIndex"][i]
+            luminosityBlock[0] = other_columns_dict["luminosityBlock"][i]
+            run_num[0] = other_columns_dict["run"][i]
+            event_num[0] = other_columns_dict["event"][i]
             tree.Fill()
 
         tree.Write()
-        print(f"Tree {tree_name}_{tree_suffix} saved to the file")
+        print(f"Tree: {tree_name} saved to the file")
 
-    # Run inference and save results for non-boosted events
-    run_inference_and_save(rdf_non_boosted, "non_boosted")
-
-    # Run inference for boosted events with two sets of logic
-    run_inference_and_save(rdf_boosted, "boosted_set1", is_boosted_special=True)  # is_boosted = 1
-    run_inference_and_save(rdf_boosted, "boosted_set2", is_boosted_special=True)  # is_boosted = 0
+    run_inference_and_save(rdf_setup)
 
 
 if __name__ == "__main__":
@@ -311,12 +297,9 @@ if __name__ == "__main__":
     parser.add_argument('--globalConfig', required=True, type=str)  
     parser.add_argument('--uncConfig', required=True, type=str)
     parser.add_argument('--outFileName', required=True, type=str)
-    parser.add_argument('--EraName', required=True, type=str)
-    parser.add_argument('--Mass', required=True, type=int)
-    parser.add_argument('--Spin', required=True, type=int)
-    parser.add_argument('--PairType', required=True, type=int)
-
-
+    parser.add_argument('--period', required=True, type=str)
+    parser.add_argument('--mass', required=True, type=int)
+    parser.add_argument('--spin', required=True, type=int)
 
     args = parser.parse_args()
 
@@ -327,14 +310,14 @@ if __name__ == "__main__":
         unc_cfg_dict = yaml.safe_load(f)
 
     defaultColToSave = [
-        "entryIndex", "luminosityBlock", "run", "event", "sample_type", "sample_name", "period", "X_mass", "X_spin", 
+        "entryIndex", "luminosityBlock", "run", "event", "sample_type", "sample_name", "period",
         "isData", "tau1_pt", "tau1_eta", "tau1_phi", "tau1_mass",
         "tau1_decayMode", "tau1_charge", "tau2_pt", "tau2_eta", "tau2_phi", "tau2_mass",
         "tau2_decayMode", "tau2_charge", "b1_pt", "b1_eta", "b1_phi", "b1_mass",
         "b1_btagDeepFlavB", "b1_btagPNetCvB", "b1_btagPNetCvL", "b1_HHbtag", "b2_pt", "b2_eta", "b2_phi", "b2_mass",
         "b2_btagDeepFlavB", "b2_btagPNetCvB", "b2_btagPNetCvL", "b2_HHbtag", "SelectedFatJet_pt", "SelectedFatJet_eta",
         "SelectedFatJet_phi", "SelectedFatJet_mass", "met_pt", "met_phi", "met_covXX", "met_covXY", "met_covYY", 
-        "Hbb_isValid"
+        "Hbb_isValid", "X_mass", "X_spin", "channelId"
     ]
         
     scales = ['Up', 'Down']
@@ -356,10 +339,9 @@ if __name__ == "__main__":
         globalConfig=globalConfig,
         output_root_file=output_root_file,
         snapshotOptions=snapshotOptions,
-        EraName=args.EraName,
-        Mass=args.Mass,
-        Spin=args.Spin,
-        PairType=args.PairType
+        period=args.period,
+        mass=args.mass,
+        spin=args.spin
     )
     
     # Run inference on uncertainty trees
@@ -372,10 +354,9 @@ if __name__ == "__main__":
         scales=scales,
         output_root_file=output_root_file,
         snapshotOptions=snapshotOptions,
-        EraName=args.EraName,
-        Mass=args.Mass,
-        Spin=args.Spin,
-        PairType=args.PairType
+        period=args.period,
+        mass=args.mass,
+        spin=args.spin
     )
     
     output_root_file.Write()

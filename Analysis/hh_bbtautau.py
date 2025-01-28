@@ -134,10 +134,13 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("fatJet_sel"," RemoveOverlaps(SelectedFatJet_p4, fatJet_presel, {tau1_p4, tau2_p4}, 0.8)")
 
         self.df = self.df.Define("SelectedFatJet_size_boosted","SelectedFatJet_p4[fatJet_sel].size()")
+        self.df = self.df.Define("boosted_baseline", "SelectedFatJet_size_boosted >= 1")
+
         # def the correct discriminator
         self.df = self.df.Define(f"SelectedFatJet_particleNet_MD_JetTagger_boosted_vec",f"SelectedFatJet_particleNet_MD_JetTagger[fatJet_sel]")
         self.df = self.df.Define("SelectedFatJet_idxUnordered", "CreateIndexes(SelectedFatJet_p4[fatJet_sel].size())")
         self.df = self.df.Define("SelectedFatJet_idxOrdered", f"ReorderObjects(SelectedFatJet_particleNet_MD_JetTagger_boosted_vec, SelectedFatJet_idxUnordered)")
+
         for fatJetVar in FatJetObservables:
             if f'SelectedFatJet_{fatJetVar}' in self.df.GetColumnNames():
                 if f'SelectedFatJet_{fatJetVar}_boosted_vec' not in self.df.GetColumnNames():
@@ -145,6 +148,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
                 self.df = self.df.Define(f'SelectedFatJet_{fatJetVar}_boosted',f"""
                                     SelectedFatJet_{fatJetVar}_boosted_vec[SelectedFatJet_idxOrdered[0]];
                                    """)
+
 
     def defineTriggers(self):
         for ch in self.config['channelSelection']:
@@ -318,6 +322,13 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.isCentral = isCentral
         self.wantTriggerSFErrors = wantTriggerSFErrors
         self.wantScales = isCentral and wantScales
+    
+
+def PrepareDfForDNN(dfForHistograms):
+    dfForHistograms.df = defineAllP4(dfForHistograms.df)
+    dfForHistograms.defineBoostedVariables()
+    return dfForHistograms
+
 
 def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.df = defineAllP4(dfForHistograms.df)

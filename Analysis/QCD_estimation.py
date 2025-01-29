@@ -57,13 +57,12 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
         x_bins = [ hist_data_B.GetXaxis().GetBinLowEdge(i) for i in range(0, hist_data_B.GetNbinsX()+1)]
         x_bins_vec = ListToVector(x_bins, "double")
         final_hist =  ROOT.TH1D("", "", x_bins_vec.size()-1, x_bins_vec.data())
-        return final_hist,final_hist,final_hist,0,0
+        return final_hist,final_hist,final_hist,final_hist,final_hist
     print(f"n_data_B = {n_data_B}")
     print(f"n_data_C = {n_data_C}")
     print(f"n_data_D = {n_data_D}")
     print(f"QCD norm = {qcd_norm}")
-    hist_qcd_Central = hist_data_C.Clone()
-    hist_qcd_Central.Scale(qcd_norm)
+
     n_data_D_abs = n_data_D
     if n_data_D < 0:
         n_data_D_abs = math.sqrt(n_data_D * n_data_D)
@@ -72,8 +71,19 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
     if n_data_B < 0:
         n_data_B_abs = math.sqrt(n_data_B * n_data_B)
         print(f"attention, n_data_B < 0, {n_data_B}")
-    error_on_qcdnorm = math.sqrt(n_data_B_abs/(n_data_D_abs * n_data_D_abs) + (n_data_B_abs*n_data_B_abs*n_data_D_abs)/(n_data_D_abs*n_data_D_abs*n_data_D_abs*n_data_D_abs)) if n_data_D_abs != 0. else 0.
 
+    ##### Central --> take shape from C #####
+    hist_qcd_Central = hist_data_C.Clone()
+    hist_qcd_Central.Scale(qcd_norm)
+
+    ##### norm uncertainty #####
+    error_on_qcdnorm = math.sqrt(n_data_B_abs/(n_data_D_abs * n_data_D_abs) + (n_data_B_abs*n_data_B_abs*n_data_D_abs)/(n_data_D_abs*n_data_D_abs*n_data_D_abs*n_data_D_abs)) if n_data_D_abs != 0. else 0.
+    hist_qcd_norm_Up = hist_data_C.Clone()
+    hist_qcd_norm_Up.scale(1+error_on_qcdnorm)
+    hist_qcd_norm_Down = hist_data_C.Clone()
+    hist_qcd_norm_Down.scale(1-error_on_qcdnorm)
+
+    ##### scale uncertainty --> take shape from B  #####
     qcd_norm_shape = n_data_C / n_data_D if n_data_D != 0. else 0.
     hist_qcd_Up = hist_data_B.Clone()
     hist_qcd_Up.Scale(qcd_norm_shape)
@@ -83,6 +93,7 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
     if n_data_C < 0:
         n_data_C_abs = math.sqrt(n_data_C * n_data_C)
         print(f"attention, n_data_C < 0, {n_data_C}")
+    ##### if we want also the norm uncertainty on the shape varied templates #####
     error_on_qcdnorm_varied = math.sqrt(n_data_C_abs/(n_data_D_abs * n_data_D_abs) + (n_data_C_abs*n_data_C_abs*n_data_D_abs)/(n_data_D_abs*n_data_D_abs*n_data_D_abs*n_data_D_abs)) if n_data_D_abs != 0. else 0.
 
     if wantNegativeContributions:
@@ -92,16 +103,14 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
             print(debug_info)
             print(negative_bins_info)
             print("Unable to estimate QCD")
-
             x_bins = [ hist_qcd_Central.GetXaxis().GetBinLowEdge(i) for i in range(0, hist_qcd_Central.GetNbinsX()+1)]
             x_bins_vec = ListToVector(x_bins, "double")
             final_hist =  ROOT.TH1D("", "", x_bins_vec.size()-1, x_bins_vec.data())
-            return final_hist,final_hist,final_hist,0,0
-            return final_hist,final_hist,final_hist,0,0
+            return final_hist,final_hist,final_hist,final_hist,final_hist
+            return final_hist,final_hist,final_hist,final_hist,final_hist
             #raise RuntimeError("Unable to estimate QCD")
-    #if uncName == 'Central':
-    #    return hist_qcd_Central,hist_qcd_Up,hist_qcd_Down
-    return hist_qcd_Central,hist_qcd_Up,hist_qcd_Down,error_on_qcdnorm,error_on_qcdnorm_varied
+
+    return hist_qcd_Central,hist_qcd_Up,hist_qcd_Down,hist_qcd_norm_Up,hist_qcd_norm_Down
 
 
 
@@ -307,16 +316,17 @@ def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_sam
                 if uncName=='Central' and scale != 'Central': continue
                 if uncName!='Central' and scale == 'Central': continue
                 key =( (channel, 'OS_Iso', cat), (uncName, scale))
-                hist_qcd_Central,hist_qcd_Up,hist_qcd_Down,error_on_qcdnorm,error_on_qcdnorm_varied = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale,True)
+                hist_qcd_Central,hist_qcd_Up,hist_qcd_Down,hist_qcd_norm_Up,hist_qcd_norm_Down = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale,True)
                 all_histograms['QCD'][key] = hist_qcd_Central
+                keyQCDNorm_up =( (channel, 'OS_Iso', cat), ('QCDNorm', 'Up'))
+                keyQCDNorm_down =( (channel, 'OS_Iso', cat), ('QCDNorm', 'Down'))
+                all_histograms['QCD'][keyQCD_up] = hist_qcd_norm_Up
+                all_histograms['QCD'][keyQCD_down] = hist_qcd_norm_Down
             if uncName=='QCDScale':
                 keyQCD_up =( (channel, 'OS_Iso', cat), ('QCDScale', 'Up'))
                 keyQCD_down =( (channel, 'OS_Iso', cat), ('QCDScale', 'Down'))
                 all_histograms['QCD'][keyQCD_up] = hist_qcd_Up
                 all_histograms['QCD'][keyQCD_down] = hist_qcd_Down
-            if uncName == 'Central':
-                print(f"for {channel}, {cat} and {var} the errors on QCD are {error_on_qcdnorm},{error_on_qcdnorm_varied}")
-    return error_on_qcdnorm,error_on_qcdnorm_varied
 
 
 #### outdated ####

@@ -282,7 +282,7 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 ps_call(dataMerge_cmd,verbose=1)
 
 class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 50.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
     def workflow_requires(self):

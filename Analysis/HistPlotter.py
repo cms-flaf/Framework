@@ -93,8 +93,9 @@ def getNewBins(bins):
 def GetHistograms(inFile, channel, qcdregion, category, uncSource, all_sample_types,all_histlist, wantData):
     inFile = ROOT.TFile(inFile,"READ")
     dir_0 = inFile.Get(channel)
-    dir_0p1 = dir_0.Get(qcdregion)
-    dir_1 = dir_0p1.Get(category)
+    dir_1 = dir_0.Get(category)
+    # dir_0p1 = dir_0.Get(qcdregion)
+    # dir_1 = dir_0p1.Get(category)
     for key in dir_1.GetListOfKeys():
         obj = key.ReadObj()
         if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
@@ -259,9 +260,9 @@ if __name__ == "__main__":
         custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS simulation', 'scope_text':''}
     inFile_root = ROOT.TFile.Open(args.inFile, "READ")
     dir_0 = inFile_root.Get(args.channel)
-    dir_0p1 = dir_0.Get(args.qcdregion)
-    dir_1 = dir_0p1.Get(args.category)
-    # dir_1 = dir_0.Get(args.category) # --> uncomment if QCD regions are not included in the histograms
+    # dir_0p1 = dir_0.Get(args.qcdregion)
+    # dir_1 = dir_0p1.Get(args.category)
+    dir_1 = dir_0.Get(args.category) # --> uncomment if QCD regions are not included in the histograms
     hist_cfg_dict[args.var]['max_y_sf'] = 1.4
     hist_cfg_dict[args.var]['use_log_y'] = False
     hist_cfg_dict[args.var]['use_log_x'] = False
@@ -283,7 +284,9 @@ if __name__ == "__main__":
 
     if rebin_condition :
         bins_to_compute = findNewBins(hist_cfg_dict,args.var,args.channel,args.category)
+    # print(bins_to_compute)
     new_bins = getNewBins(bins_to_compute)
+    # print(new_bins)
 
     for sample_name,sample_content in all_samples_types.items():
         sample_type = sample_content['type']

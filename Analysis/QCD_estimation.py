@@ -79,9 +79,9 @@ def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, sca
     ##### norm uncertainty #####
     error_on_qcdnorm = math.sqrt(n_data_B_abs/(n_data_D_abs * n_data_D_abs) + (n_data_B_abs*n_data_B_abs*n_data_D_abs)/(n_data_D_abs*n_data_D_abs*n_data_D_abs*n_data_D_abs)) if n_data_D_abs != 0. else 0.
     hist_qcd_norm_Up = hist_data_C.Clone()
-    hist_qcd_norm_Up.scale(1+error_on_qcdnorm)
+    hist_qcd_norm_Up.Scale(1+error_on_qcdnorm)
     hist_qcd_norm_Down = hist_data_C.Clone()
-    hist_qcd_norm_Down.scale(1-error_on_qcdnorm)
+    hist_qcd_norm_Down.Scale(1-error_on_qcdnorm)
 
     ##### scale uncertainty --> take shape from B  #####
     qcd_norm_shape = n_data_C / n_data_D if n_data_D != 0. else 0.

@@ -8,15 +8,11 @@ if __name__ == "__main__":
 import Common.Utilities as Utilities
 
 
-
 def GetUncNameTypes(unc_cfg_dict):
     uncNames = []
     uncNames.extend(list(unc_cfg_dict['norm'].keys()))
     uncNames.extend([unc for unc in unc_cfg_dict['shape']])
     return uncNames
-
-
-
 
 def createVoidHist(outFileName, hist_cfg_dict):
     x_bins = hist_cfg_dict['x_bins']

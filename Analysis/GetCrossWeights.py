@@ -2,7 +2,6 @@ import math
 import ROOT
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
-# ROOT.gROOT.ProcessLine('#include "include/AnalysisTools.h"')
 
 ROOT.gInterpreter.Declare(
     """
@@ -222,10 +221,10 @@ def defineTriggerWeightsErrors(dfBuilder):
         dfBuilder.df = dfBuilder.df.Define("trigSF_cross_eleUp", "weight_trigSF_eTau+trigSF_cross_ele_err") # questo ci importa
         dfBuilder.df = dfBuilder.df.Define("trigSF_cross_eleDown", "weight_trigSF_eTau-trigSF_cross_ele_err") # questo ci importa
         for scale in ['Up','Down']:
-            dfBuilder.df = dfBuilder.df.Define(f"trigSF_ele{scale}_rel", f"if ((HLT_singleMu || HLT_etau) && Legacy_region ) {{return trigSF_ele{scale}/weight_trigSF_eTau;}} return 1.f; ")
-            dfBuilder.df = dfBuilder.df.Define(f"trigSF_SL_ele{scale}_rel", f"if ((HLT_singleMu || HLT_etau) && Legacy_region ) {{return trigSF_SL_ele{scale}/weight_trigSF_eTau;}} return 1.f; ")
-            dfBuilder.df = dfBuilder.df.Define(f"trigSF_cross_ele{scale}_rel", f"if ((HLT_singleMu || HLT_etau) && Legacy_region ) {{return trigSF_cross_ele{scale}/weight_trigSF_eTau;}} return 1.f; ")
-            dfBuilder.df = dfBuilder.df.Define(f"eTau_trigSF_tau{scale}_rel", f"if ((HLT_singleMu || HLT_etau) && Legacy_region ) {{return eTau_trigSF_tau{scale}/weight_trigSF_eTau;}} return 1.f; ")
+            dfBuilder.df = dfBuilder.df.Define(f"trigSF_ele{scale}_rel", f"if ((HLT_singleEle || HLT_etau) && Legacy_region ) {{return trigSF_ele{scale}/weight_trigSF_eTau;}} return 1.f; ")
+            dfBuilder.df = dfBuilder.df.Define(f"trigSF_SL_ele{scale}_rel", f"if ((HLT_singleEle || HLT_etau) && Legacy_region ) {{return trigSF_SL_ele{scale}/weight_trigSF_eTau;}} return 1.f; ")
+            dfBuilder.df = dfBuilder.df.Define(f"trigSF_cross_ele{scale}_rel", f"if ((HLT_singleEle || HLT_etau) && Legacy_region ) {{return trigSF_cross_ele{scale}/weight_trigSF_eTau;}} return 1.f; ")
+            dfBuilder.df = dfBuilder.df.Define(f"eTau_trigSF_tau{scale}_rel", f"if ((HLT_singleEle || HLT_etau) && Legacy_region ) {{return eTau_trigSF_tau{scale}/weight_trigSF_eTau;}} return 1.f; ")
 
 
     for scale in ['Up', 'Down']:

@@ -15,8 +15,10 @@ GLOBAL:
     - Flag_BadPFMuonDzFilter
     - Flag_hfNoisyHitsFilter
     - Flag_eeBadScFilter
-    # - Flag_ecalBadCalibFilter
-  lumiFile: /eos/user/c/cmsdqm/www/CAF/certification/Collisions22/Cert_Collisions2023_366442_370790_Golden.json
+    - Flag_ecalBadCalibFilter
+  badMET_flag_runs: #https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#ECal_BadCalibration_Filter_Flag
+    - 366727:367144 # for 2023, Flag_ecalBadCalibFilter should not be used for a range of these run numbers.
+  lumiFile: /eos/user/c/cmsdqm/www/CAF/certification/Collisions23/Cert_Collisions2023_366442_370790_Golden.json
 
 
 TTto2L2Nu:

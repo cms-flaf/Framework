@@ -91,9 +91,10 @@ def getNewBins(bins):
 def GetHistograms(inFile, channel, qcdregion, category, uncSource, all_sample_types,all_histlist, wantData):
     inFile = ROOT.TFile(inFile,"READ")
     dir_0 = inFile.Get(channel)
-    dir_1 = dir_0.Get(category)
-    # dir_0p1 = dir_0.Get(qcdregion)
-    # dir_1 = dir_0p1.Get(category)
+    # dir_1 = dir_0.Get(args.category)
+    # --> uncomment if QCD regions are not included in the histograms
+    dir_0p1 = dir_0.Get(args.qcdregion)
+    dir_1 = dir_0p1.Get(args.category)
     for key in dir_1.GetListOfKeys():
         obj = key.ReadObj()
         if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
@@ -257,10 +258,12 @@ if __name__ == "__main__":
     if args.wantData==False:
         custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS simulation', 'scope_text':''}
     inFile_root = ROOT.TFile.Open(args.inFile, "READ")
+    # print(args.inFile)
     dir_0 = inFile_root.Get(args.channel)
-    # dir_0p1 = dir_0.Get(args.qcdregion)
-    # dir_1 = dir_0p1.Get(args.category)
-    dir_1 = dir_0.Get(args.category) # --> uncomment if QCD regions are not included in the histograms
+    # dir_1 = dir_0.Get(args.category)
+    # --> uncomment if QCD regions are not included in the histograms
+    dir_0p1 = dir_0.Get(args.qcdregion)
+    dir_1 = dir_0p1.Get(args.category)
     hist_cfg_dict[args.var]['max_y_sf'] = 1.4
     hist_cfg_dict[args.var]['use_log_y'] = False
     hist_cfg_dict[args.var]['use_log_x'] = False

@@ -82,7 +82,6 @@ def mkdir(file, path):
         else:
             dir_obj = current_dir.mkdir(dir_name)
             if not dir_obj:
-
                 raise RuntimeError(f'Failed to create {dir_name} in {full_name}')
         current_dir = dir_obj
     return current_dir

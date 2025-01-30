@@ -318,11 +318,12 @@ def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_sam
                 key =( (channel, 'OS_Iso', cat), (uncName, scale))
                 hist_qcd_Central,hist_qcd_Up,hist_qcd_Down,hist_qcd_norm_Up,hist_qcd_norm_Down = QCD_Estimation(all_histograms, all_samples_list, channel, cat, uncName, scale,True)
                 all_histograms['QCD'][key] = hist_qcd_Central
+            if uncName=='QCDNorm':
                 keyQCDNorm_up =( (channel, 'OS_Iso', cat), ('QCDNorm', 'Up'))
                 keyQCDNorm_down =( (channel, 'OS_Iso', cat), ('QCDNorm', 'Down'))
                 all_histograms['QCD'][keyQCDNorm_up] = hist_qcd_norm_Up
                 all_histograms['QCD'][keyQCDNorm_down] = hist_qcd_norm_Down
-            if uncName=='QCDScale':
+            elif uncName=='QCDScale':
                 keyQCD_up =( (channel, 'OS_Iso', cat), ('QCDScale', 'Up'))
                 keyQCD_down =( (channel, 'OS_Iso', cat), ('QCDScale', 'Down'))
                 all_histograms['QCD'][keyQCD_up] = hist_qcd_Up

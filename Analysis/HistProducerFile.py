@@ -77,7 +77,12 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
         if ch not in global_cfg_dict['channels_to_consider'] : continue
         if (key_1, key_2) in histograms.keys(): continue
 
-        if var in boosted_variables and uncName in unc_to_not_consider_boosted: continue
+        if var in boosted_variables and uncName in unc_to_not_consider_boosted:
+            # print(f"going to ignore {uncName} as the variable is {var}")
+            continue
+        if cat in boosted_categories and uncName in unc_to_not_consider_boosted:
+            # print(f"going to ignore {uncName} as the category is {cat}")
+            continue
         total_weight_expression = analysis.GetWeight(ch,cat,boosted_categories) if sample_type!='data' else "1"
 
         weight_name = "final_weight"

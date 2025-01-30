@@ -54,7 +54,13 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
                 dir_2 = dir_1.Get(cat)
                 if uncSource == 'Central':
                     key_to_use = sample_name
+                    # print(key_to_use)
                     obj=dir_2.Get(key_to_use)
+                    if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
+                        print(f"ignoring {key_to_use} as it's not an histogram")
+                        continue
+                    # print(obj.GetEntries())
+
                     obj.SetDirectory(0)
                     if not obj.IsA().InheritsFrom(ROOT.TH1.Class()): continue
                     if key_total not in all_histograms[name_to_use].keys():
@@ -62,10 +68,29 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
                     all_histograms[name_to_use][key_total].append(obj)
                 elif uncSource == 'QCDScale':
                     key_to_use = sample_name
+                    # print(key_to_use)
                     obj=dir_2.Get(key_to_use)
+                    if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
+                        print(f"ignoring {key_to_use} as it's not an histogram")
+                        continue
+                    # print(obj.GetEntries())
                     obj.SetDirectory(0)
                     for scale in ['Up','Down']:
                         key_total_QCD = ((channel, qcdRegion, cat), ('QCDScale', scale))
+                        if key_total_QCD not in all_histograms[name_to_use].keys():
+                            all_histograms[name_to_use][key_total_QCD] = []
+                        all_histograms[name_to_use][key_total_QCD].append(obj)
+                elif uncSource == 'QCDNorm':
+                    key_to_use = sample_name
+                    # print(key_to_use)
+                    obj=dir_2.Get(key_to_use)
+                    if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
+                        print(f"ignoring {key_to_use} as it's not an histogram")
+                        continue
+                    # print(obj.GetEntries())
+                    obj.SetDirectory(0)
+                    for scale in ['Up','Down']:
+                        key_total_QCD = ((channel, qcdRegion, cat), ('QCDNorm', scale))
                         if key_total_QCD not in all_histograms[name_to_use].keys():
                             all_histograms[name_to_use][key_total_QCD] = []
                         all_histograms[name_to_use][key_total_QCD].append(obj)
@@ -76,9 +101,13 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
                         # print(key_final)
                         if sample_name=='data':
                             key_final = 'data'
+                        # print(key_final)
                         obj=dir_2.Get(key_final)
+                        if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
+                            print(f"ignoring {key_final} as it's not an histogram")
+                            continue
+                        # print(obj.GetEntries())
                         obj.SetDirectory(0)
-                        if not obj.IsA().InheritsFrom(ROOT.TH1.Class()): continue
                         key_total = ((channel, qcdRegion, cat), (uncSource, scale))
                         if key_total not in all_histograms[name_to_use].keys():
                             all_histograms[name_to_use][key_total] = []

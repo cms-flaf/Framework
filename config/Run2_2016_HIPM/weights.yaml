@@ -154,3 +154,4 @@ shape:
   - JES_HF_2016preVFP
   - JES_RelativeSample_2016preVFP
   - QCDScale
+  - QCDNorm

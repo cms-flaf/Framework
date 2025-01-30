@@ -104,6 +104,7 @@ uncReNames = {
     "JES_RelativeSample_2016preVFP": "CMS_scale_j_RelSample_2016_HIPM" ,
     "JES_RelativeSample_2016postVFP": "CMS_scale_j_RelSample_2016" ,
     "QCDScale":"CMS_scale_qcd_{}",
+    "QCDNorm":"CMS_norm_qcd_{}",
 
 }
 

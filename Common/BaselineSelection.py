@@ -60,11 +60,22 @@ def applyBadMETfilter(df, MET_flags, badMET_flag_runs, isData):
         if all(run < runStart or run > runEnd for run in runDf["run"]):
             return df, ' && '.join(MET_flags)
         else: #https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#ECal_BadCalibration_Filter_Flag
-            df = df.Define(f"Flag_badMET_calib", f'''PuppiMET_pt > 100 && All(Jet_pt > 50 
-                            && Jet_eta >= -0.5 && Jet_eta <=-0.1 && Jet_phi >= -2.1 && Jet_phi <= -1.8
-                            && Jet_neEmEF > 0.9 && Jet_chEmEF > 0.9 && abs(PuppiMET_phi - Jet_phi) > 2.9)
-                            ''')
-            return df, ' && '.join(MET_flags[:-1])+' && Flag_badMET_calib'
+            df = df.Define(f"Flag_PuppiMET_pt", f"PuppiMET_pt > 100")
+            df = df.Define(f"Flag_Jet_pt", f"Any(Jet_pt > 50)")
+            df = df.Define(f"Flag_Jet_eta", f"Any(Jet_eta >= -0.5 && Jet_eta <=-0.1)")
+            df = df.Define(f"Flag_Jet_phi", f"Any(Jet_phi >= -2.1 && Jet_phi <= -1.8)")
+            df = df.Define(f"Flag_Jet_neEmEF", f"Any(Jet_neEmEF > 0.9)")
+            df = df.Define(f"Flag_Jet_chEmEF", f"Any(Jet_chEmEF > 0.9)")
+            df = df.Define(f"Flag_dphi_PuppiMET_Jet", f"Any((abs(PuppiMET_phi - Jet_phi) > 2.9))")
+            df = df.Define(f"Flag_badMET_calib", f'''Flag_PuppiMET_pt && Flag_Jet_pt && Flag_Jet_eta
+                            && Flag_Jet_phi && Flag_dphi_PuppiMET_Jet && (Flag_Jet_neEmEF || Flag_Jet_chEmEF)''')
+            test = df.Filter('!Flag_badMET_calib').Display({"run", "Flag_PuppiMET_pt", "Flag_Jet_pt", "Flag_Jet_eta", "Flag_Jet_phi", "Flag_Jet_neEmEF", "Flag_Jet_chEmEF", "Flag_dphi_PuppiMET_Jet", "Flag_badMET_calib"}, 10).AsString()
+            print(test)
+            print("^ That was !Flag_badMET_calib")
+            test = df.Filter('Flag_badMET_calib').Display({"run", "Flag_PuppiMET_pt", "Flag_Jet_pt", "Flag_Jet_eta", "Flag_Jet_phi", "Flag_Jet_neEmEF", "Flag_Jet_chEmEF", "Flag_dphi_PuppiMET_Jet", "Flag_badMET_calib"}, 10).AsString()
+            print(test)
+            print("^ That was Flag_badMET_calib")
+            return df, ' && '.join(MET_flags[:-1])+' && !(Flag_badMET_calib)'
 
 def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125., p4_suffix='nano'):
     if isData:

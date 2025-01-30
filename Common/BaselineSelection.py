@@ -44,9 +44,27 @@ def Initialize(loadTF=False, loadHHBtag=False):
 
         initialized = True
 
-def applyMETFlags(df, MET_flags):
-    MET_flags_string = ' && '.join(MET_flags)
+def applyMETFlags(df, MET_flags, badMET_flag_runs, isData):
+    if not badMET_flag_runs:
+        MET_flags_string = ' && '.join(MET_flags)
+    else:
+        df, MET_flags_string = applyBadMETfilter(df, MET_flags, badMET_flag_runs, isData)
     return df.Filter(MET_flags_string, "MET filters")
+
+def applyBadMETfilter(df, MET_flags, badMET_flag_runs, isData):
+    if not isData:
+        return df, ' && '.join(MET_flags)
+    else:
+        runStart, runEnd = int(badMET_flag_runs[0].split(':')[0]), int(badMET_flag_runs[0].split(':')[1])
+        runDf = df.Filter("run").AsNumpy(["run"])
+        if all(run < runStart or run > runEnd for run in runDf["run"]):
+            return df, ' && '.join(MET_flags)
+        else: #https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#ECal_BadCalibration_Filter_Flag
+            df = df.Define(f"Flag_badMET_calib", f'''PuppiMET_pt > 100 && All(Jet_pt > 50 
+                            && Jet_eta >= -0.5 && Jet_eta <=-0.1 && Jet_phi >= -2.1 && Jet_phi <= -1.8
+                            && Jet_neEmEF > 0.9 && Jet_chEmEF > 0.9 && abs(PuppiMET_phi - Jet_phi) > 2.9)
+                            ''')
+            return df, ' && '.join(MET_flags[:-1])+' && Flag_badMET_calib'
 
 def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125., p4_suffix='nano'):
     if isData:

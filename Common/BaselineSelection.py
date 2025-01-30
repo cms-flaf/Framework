@@ -69,12 +69,6 @@ def applyBadMETfilter(df, MET_flags, badMET_flag_runs, isData):
             df = df.Define(f"Flag_dphi_PuppiMET_Jet", f"Any((abs(PuppiMET_phi - Jet_phi) > 2.9))")
             df = df.Define(f"Flag_badMET_calib", f'''Flag_PuppiMET_pt && Flag_Jet_pt && Flag_Jet_eta
                             && Flag_Jet_phi && Flag_dphi_PuppiMET_Jet && (Flag_Jet_neEmEF || Flag_Jet_chEmEF)''')
-            test = df.Filter('!Flag_badMET_calib').Display({"run", "Flag_PuppiMET_pt", "Flag_Jet_pt", "Flag_Jet_eta", "Flag_Jet_phi", "Flag_Jet_neEmEF", "Flag_Jet_chEmEF", "Flag_dphi_PuppiMET_Jet", "Flag_badMET_calib"}, 10).AsString()
-            print(test)
-            print("^ That was !Flag_badMET_calib")
-            test = df.Filter('Flag_badMET_calib').Display({"run", "Flag_PuppiMET_pt", "Flag_Jet_pt", "Flag_Jet_eta", "Flag_Jet_phi", "Flag_Jet_neEmEF", "Flag_Jet_chEmEF", "Flag_dphi_PuppiMET_Jet", "Flag_badMET_calib"}, 10).AsString()
-            print(test)
-            print("^ That was Flag_badMET_calib")
             return df, ' && '.join(MET_flags[:-1])+' && !(Flag_badMET_calib)'
 
 def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125., p4_suffix='nano'):

@@ -3,11 +3,9 @@ import sys
 import os
 import array
 
-from RunKit.run_tools import ps_call
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
-import Common.Utilities as Utilities
 from Analysis.HistHelper import *
 from Analysis.HistMerger import *
 
@@ -93,8 +91,10 @@ def getNewBins(bins):
 def GetHistograms(inFile, channel, qcdregion, category, uncSource, all_sample_types,all_histlist, wantData):
     inFile = ROOT.TFile(inFile,"READ")
     dir_0 = inFile.Get(channel)
-    dir_0p1 = dir_0.Get(qcdregion)
-    dir_1 = dir_0p1.Get(category)
+    # dir_1 = dir_0.Get(args.category)
+    # --> uncomment if QCD regions are not included in the histograms
+    dir_0p1 = dir_0.Get(args.qcdregion)
+    dir_1 = dir_0p1.Get(args.category)
     for key in dir_1.GetListOfKeys():
         obj = key.ReadObj()
         if obj.IsA().InheritsFrom(ROOT.TH1.Class()):
@@ -234,6 +234,7 @@ if __name__ == "__main__":
             if bckg_sample_type in plot_types:
                 all_samples_types[bckg_sample_name]['plot'] = sample_for_plot_dict['name']
         if 'plot' not in all_samples_types[bckg_sample_name].keys():
+            # print(bckg_sample_name)
             all_samples_types[bckg_sample_name]['plot'] = 'Other'
 
     for sig_sample_name in sig_cfg_dict.keys():
@@ -257,10 +258,12 @@ if __name__ == "__main__":
     if args.wantData==False:
         custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS simulation', 'scope_text':''}
     inFile_root = ROOT.TFile.Open(args.inFile, "READ")
+    # print(args.inFile)
     dir_0 = inFile_root.Get(args.channel)
+    # dir_1 = dir_0.Get(args.category)
+    # --> uncomment if QCD regions are not included in the histograms
     dir_0p1 = dir_0.Get(args.qcdregion)
     dir_1 = dir_0p1.Get(args.category)
-    # dir_1 = dir_0.Get(args.category) # --> uncomment if QCD regions are not included in the histograms
     hist_cfg_dict[args.var]['max_y_sf'] = 1.4
     hist_cfg_dict[args.var]['use_log_y'] = False
     hist_cfg_dict[args.var]['use_log_x'] = False
@@ -282,7 +285,9 @@ if __name__ == "__main__":
 
     if rebin_condition :
         bins_to_compute = findNewBins(hist_cfg_dict,args.var,args.channel,args.category)
+    # print(bins_to_compute)
     new_bins = getNewBins(bins_to_compute)
+    # print(new_bins)
 
     for sample_name,sample_content in all_samples_types.items():
         sample_type = sample_content['type']

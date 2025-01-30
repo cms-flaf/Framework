@@ -1,5 +1,6 @@
 import numpy as np
 import math
+
 def GetMassCut(dfWrapped,global_cfg_dict,channels=['tauTau'], categories=['boosted','inclusive', 'res2b', 'res1b'],quantile_max=0.99, wantSequential=False):
     for cat in categories:
         for channel in channels:

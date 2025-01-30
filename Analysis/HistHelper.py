@@ -8,15 +8,11 @@ if __name__ == "__main__":
 import Common.Utilities as Utilities
 
 
-
 def GetUncNameTypes(unc_cfg_dict):
     uncNames = []
     uncNames.extend(list(unc_cfg_dict['norm'].keys()))
     uncNames.extend([unc for unc in unc_cfg_dict['shape']])
     return uncNames
-
-
-
 
 def createVoidHist(outFileName, hist_cfg_dict):
     x_bins = hist_cfg_dict['x_bins']
@@ -47,8 +43,10 @@ def createInvMass(df):
                     """)
 
     df = df.Define("bb_m_vis", f""" if(b1_pt < 0. || b2_pt < 0.) return 0.f; return static_cast<float>((b1_p4+b2_p4).M());""")
+    df = df.Define("bbtautau_mass_met_boosted", """return static_cast<float>((SelectedFatJet_p4_boosted+tau1_p4+tau2_p4+metnomu_p4).M());""")
     df = df.Define("bbtautau_mass_boosted", """return static_cast<float>((SelectedFatJet_p4_boosted+tau1_p4+tau2_p4).M());""")
     df = df.Define("bbtautau_mass", """if(b1_pt < 0. || b2_pt < 0.) return 0.f; return static_cast<float>((b1_p4+b2_p4+tau1_p4+tau2_p4).M());""")
+    df = df.Define("bbtautau_mass_met", """if(b1_pt < 0. || b2_pt < 0.) return 0.f; return static_cast<float>((b1_p4+b2_p4+tau1_p4+tau2_p4+metnomu_p4).M());""")
     df = df.Define("dR_tautau", 'ROOT::Math::VectorUtil::DeltaR(tau1_p4, tau2_p4)')
     df = df.Define("dR_bb", 'ROOT::Math::VectorUtil::DeltaR(b1_p4, b2_p4)')
     for tau_idx in [1,2]:

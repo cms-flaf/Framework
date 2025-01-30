@@ -6,34 +6,50 @@
 - name: DY
   types:
     - DY
-  title: "DY #rightarrow ll + jets"
+  title: "DY Z#rightarrow ll + jets"
   color: kAzure+10
 - name: TT
   types:
     - TT
   title: t#bar{t}
   color: kGreen+3
+  # color: kGreen-4
+- name: W
+  title: W+Jets
+  types:
+    - W
+  color: kPink+1
 - name: ST
   types:
     - ST
-  title: "ST"
-  color: kTeal-9
-- name: VV
-  types:
-    - VV
-  title: "VV"
-  color: kPink+1
+  title: Single top
+  color: kCyan
 - name: single_H
-  title: "H"
+  title: H
   types:
     - ttH
     - VH
     - H
-  color: kRed-7
+  color: kYellow
+- name: VV
+  types:
+    - VV
+  title: VV
+  color: kViolet+8
+- name: VVV
+  types:
+    - VVV
+  title: VVV
+  color: kBlue-9
+- name: EWK
+  title: "EWK"
+  types:
+    - EWK
+  color: kYellow+2
 - name: Other
-  title: "Other"
+  title: "TTX"
   types: []
-  color: kViolet+4
+  color: kRed-7 #kCyan+4
 - name: GluGluToBulkGraviton_1250
   title: "GGBG-1250"
   type: signal

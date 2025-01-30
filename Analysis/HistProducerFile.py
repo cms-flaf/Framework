@@ -6,7 +6,6 @@ import shutil
 import time
 ROOT.EnableThreadSafety()
 
-from RunKit.run_tools import ps_call
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
@@ -29,9 +28,6 @@ def createCacheQuantities(dfWrapped_cache, cache_map_name):
 def AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache,cache_map_name='cache_map_placeholder'):
     col_names_cache =  dfWrapped_cache.colNames
     col_types_cache =  dfWrapped_cache.colTypes
-    #print(col_names_cache)
-    #if "kinFit_result" in col_names_cache:
-    #    col_names_cache.remove("kinFit_result")
     dfWrapped_cache.df = createCacheQuantities(dfWrapped_cache, cache_map_name)
     if dfWrapped_cache.df.Filter(f"{cache_map_name} > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
     dfWrapped_central.AddCacheColumns(col_names_cache,col_types_cache)
@@ -39,7 +35,6 @@ def AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache,cache_map_name='cache
 def createCentralQuantities(df_central, central_col_types, central_columns):
     map_creator = ROOT.analysis.MapCreator(*central_col_types)()
     df_central = map_creator.processCentral(ROOT.RDF.AsRNode(df_central), Utilities.ListToVector(central_columns), 1)
-    #df_central = map_creator.getEventIdxFromShifted(ROOT.RDF.AsRNode(df_central))
     return df_central
 
 def SaveHists(histograms, out_file, categories_to_save):
@@ -57,14 +52,12 @@ def SaveHists(histograms, out_file, categories_to_save):
         hist_name =  sample_type
         if not isCentral:
             hist_name+=f"_{uncName}{scale}"
-        #print(dir_name, hist_name)
         dir_ptr.WriteTObject(merged_hist, hist_name, "Overwrite")
 
 
 def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict, unc_cfg_dict, hist_cfg_dict, global_cfg_dict, furtherCut='', verbose=False):
     dataframes = all_dataframes[key_2]
     sample_type,uncName,scale = key_2
-    isCentral = 'Central' in key_2
     # print(f"key2 is {key_2}")
     histograms = {}
     boosted_categories = global_cfg_dict['boosted_categories']
@@ -75,9 +68,8 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
         all_categories = boosted_categories
     if (args.var.startswith('b1') or args.var.startswith('b2')):
         all_categories = categories
+
     unc_to_not_consider_boosted = global_cfg_dict['unc_to_not_consider_boosted']
-    # if not isCentral:
-    #     print(unc_to_not_consider_boosted)
 
     for key_1,key_cut in key_filter_dict.items():
         ch, reg, cat = key_1
@@ -85,10 +77,16 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
         if ch not in global_cfg_dict['channels_to_consider'] : continue
         if (key_1, key_2) in histograms.keys(): continue
 
-        if var in boosted_variables and uncName in unc_to_not_consider_boosted: continue
+        if var in boosted_variables and uncName in unc_to_not_consider_boosted:
+            # print(f"going to ignore {uncName} as the variable is {var}")
+            continue
+        if cat in boosted_categories and uncName in unc_to_not_consider_boosted:
+            # print(f"going to ignore {uncName} as the category is {cat}")
+            continue
         total_weight_expression = analysis.GetWeight(ch,cat,boosted_categories) if sample_type!='data' else "1"
 
         weight_name = "final_weight"
+        isCentral = uncName=='Central'
         if not isCentral:
             if type(unc_cfg_dict)==dict:
                 if uncName in unc_cfg_dict.keys() and 'expression' in unc_cfg_dict[uncName].keys():
@@ -99,9 +97,9 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
         for dataframe in dataframes:
             if furtherCut != '' : key_cut += f' && {furtherCut}'
             dataframe_new = dataframe.Filter(key_cut)
+
             btag_weight = analysis.GetBTagWeight(global_cfg_dict,cat,applyBtag=False) if sample_type!='data' else "1"
             total_weight_expression = "*".join([total_weight_expression,btag_weight])
-            # dataframe_new = dataframe_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}") # no need to define it twice
             dataframe_new = dataframe_new.Filter(f"{cat}")
             histograms[(key_1, key_2)].append(dataframe_new.Define("final_weight", total_weight_expression).Define("weight_for_hists", f"{weight_name}").Histo1D(GetModel(hist_cfg_dict, var), var, "weight_for_hists"))
     return histograms
@@ -114,7 +112,6 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, fil
         treeName = f"Events_{uncName}{scale}"
         treeName_noDiff = f"{treeName}_noDiff"
         if treeName_noDiff in file_keys:
-            # print(treeName_noDiff)
             dfWrapped_noDiff = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_noDiff, inFile),global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
             if hasCache:
                 dfWrapped_cache_noDiff = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_noDiff,inFileCache),global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
@@ -124,7 +121,6 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, fil
             all_dataframes[key].append(dfWrapped_noDiff.df)
         treeName_Valid = f"{treeName}_Valid"
         if treeName_Valid in file_keys:
-            # print(treeName_Valid)
             dfWrapped_Valid = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_Valid, inFile),global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium", pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
             if hasCache:
                 dfWrapped_cache_Valid = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_Valid,inFileCache), global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
@@ -135,7 +131,6 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, fil
             all_dataframes[key].append(dfWrapped_Valid.df)
         treeName_nonValid = f"{treeName}_nonValid"
         if treeName_nonValid in file_keys:
-            # print(treeName_nonValid)
             dfWrapped_nonValid = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_nonValid, inFile),global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
             if hasCache:
                 dfWrapped_cache_nonValid = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_nonValid,inFileCache), global_cfg_dict, period=period,  deepTauVersion=deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose", region=region,isData=isData, isCentral=False, wantTriggerSFErrors=False,whichType=datasetType)
@@ -182,10 +177,7 @@ if __name__ == "__main__":
     ROOT.gInterpreter.Declare(f'#include "include/pnetSF.h"')
     ROOT.gROOT.ProcessLine('#include "include/AnalysisTools.h"')
     ROOT.gROOT.ProcessLine('#include "include/AnalysisMath.h"')
-    #if not os.path.isdir(args.outDir):
-    #    os.makedirs(args.outDir)
-    # if args.furtherCut:
-    #     print(f"further cut = {args.furtherCut}")
+
 
 
     hist_cfg_dict = {}
@@ -202,14 +194,12 @@ if __name__ == "__main__":
     analysis = importlib.import_module(f'{analysis_import}')
 
     global_cfg_dict['channels_to_consider'] = args.channels.split(',')
-    # print(global_cfg_dict['channels_to_consider'])
     # central hist definition
     create_new_hist = False
     key_not_exist = False
     df_empty = False
     inFile_root = ROOT.TFile.Open(args.inFile,"READ")
     inFile_keys = [k.GetName() for k in inFile_root.GetListOfKeys()]
-    # print(inFile_keys)
     if 'Events' not in inFile_keys:
         key_not_exist = True
     inFile_root.Close()
@@ -223,8 +213,9 @@ if __name__ == "__main__":
     all_categories = categories + boosted_categories
     if args.var in boosted_variables:
         all_categories = boosted_categories
-    if (args.var.startswith('b1') or args.var.startswith('b2') or args.var=='kinFit_m'):
+    if (args.var.startswith('b1') or args.var.startswith('b2') or args.var=='kinFit_m' or args.var=='dR_bb'):
         all_categories = categories
+
     datasetType = 3
     if args.sampleType == 'TT':
         datasetType = 1
@@ -232,8 +223,6 @@ if __name__ == "__main__":
         datasetType = 2
     if args.sampleType in global_cfg_dict['signal_types']:
         datasetType = 0
-    # print(f"datasetType is {datasetType}")
-    # print()
     create_new_hist = key_not_exist or df_empty
     all_dataframes = {}
     all_dataframes_shape = {}
@@ -266,12 +255,10 @@ if __name__ == "__main__":
 
         outfile  = ROOT.TFile(args.outFileName,'RECREATE')
 
-        #print(col_names_central)
 
         hasCache= args.cacheFile != ''
         if hasCache:
             dfWrapped_cache_central = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.cacheFile),global_cfg_dict, args.period, **kwargset)
-            #dfWrapped_cache_central = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame('Events',args.cacheFile),global_cfg_dict, args.period, deepTauVersion=args.deepTauVersion, bTagWPString = "Medium",pNetWPstring="Loose",region=args.region,isData=isData,isCentral=True, wantTriggerSFErrors=compute_rel_weights_not_data,whichType=datasetType)
 
             AddCacheColumnsInDf(dfWrapped_central, dfWrapped_cache_central, "cache_map_Central")
 
@@ -293,7 +280,6 @@ if __name__ == "__main__":
         if compute_rel_weights_not_data:
             for uncName in unc_cfg_dict['norm'].keys():
                 for scale in scales:
-                    # print(uncName, scale)
                     key_2 = (args.dataset, uncName, scale)
                     if key_2 not in all_dataframes.keys():
                         all_dataframes[key_2] = []
@@ -304,16 +290,13 @@ if __name__ == "__main__":
         # save histograms
         SaveHists(central_histograms, outfile, all_categories)
 
-        #print(central_histograms)
         # shape weight  histograms
         all_dataframes_shape[key_central]=[all_dataframes[key_central][0]]
         compute_shape = args.compute_unc_variations and args.dataset!='data'
         if compute_shape:
             for uncName in unc_cfg_dict['shape']:
-                # print(f"uncname is {uncName}")
                 for scale in scales:
                     key_2 = (args.dataset, uncName, scale)
-                    # print(f" key 2 is {key_2}")
                     GetShapeDataFrameDict(all_dataframes_shape, global_cfg_dict, key_2, key_central, inFile_keys,args.inFile, args.cacheFile,compute_shape , args.period, args.deepTauVersion, col_names_central, col_types_central, args.region, isData,datasetType, hasCache)
                     if key_2 not in all_dataframes_shape.keys(): continue
                     if all_dataframes_shape[key_2]==[] :

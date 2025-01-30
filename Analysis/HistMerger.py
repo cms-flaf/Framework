@@ -4,7 +4,6 @@ import os
 import math
 import shutil
 import time
-from RunKit.run_tools import ps_call
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
@@ -55,7 +54,13 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
                 dir_2 = dir_1.Get(cat)
                 if uncSource == 'Central':
                     key_to_use = sample_name
+                    # print(key_to_use)
                     obj=dir_2.Get(key_to_use)
+                    if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
+                        print(f"ignoring {key_to_use} as it's not an histogram")
+                        continue
+                    # print(obj.GetEntries())
+
                     obj.SetDirectory(0)
                     if not obj.IsA().InheritsFrom(ROOT.TH1.Class()): continue
                     if key_total not in all_histograms[name_to_use].keys():
@@ -63,10 +68,29 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
                     all_histograms[name_to_use][key_total].append(obj)
                 elif uncSource == 'QCDScale':
                     key_to_use = sample_name
+                    # print(key_to_use)
                     obj=dir_2.Get(key_to_use)
+                    if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
+                        print(f"ignoring {key_to_use} as it's not an histogram")
+                        continue
+                    # print(obj.GetEntries())
                     obj.SetDirectory(0)
                     for scale in ['Up','Down']:
                         key_total_QCD = ((channel, qcdRegion, cat), ('QCDScale', scale))
+                        if key_total_QCD not in all_histograms[name_to_use].keys():
+                            all_histograms[name_to_use][key_total_QCD] = []
+                        all_histograms[name_to_use][key_total_QCD].append(obj)
+                elif uncSource == 'QCDNorm':
+                    key_to_use = sample_name
+                    # print(key_to_use)
+                    obj=dir_2.Get(key_to_use)
+                    if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
+                        print(f"ignoring {key_to_use} as it's not an histogram")
+                        continue
+                    # print(obj.GetEntries())
+                    obj.SetDirectory(0)
+                    for scale in ['Up','Down']:
+                        key_total_QCD = ((channel, qcdRegion, cat), ('QCDNorm', scale))
                         if key_total_QCD not in all_histograms[name_to_use].keys():
                             all_histograms[name_to_use][key_total_QCD] = []
                         all_histograms[name_to_use][key_total_QCD].append(obj)
@@ -77,14 +101,17 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
                         # print(key_final)
                         if sample_name=='data':
                             key_final = 'data'
+                        # print(key_final)
                         obj=dir_2.Get(key_final)
+                        if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
+                            print(f"ignoring {key_final} as it's not an histogram")
+                            continue
+                        # print(obj.GetEntries())
                         obj.SetDirectory(0)
-                        if not obj.IsA().InheritsFrom(ROOT.TH1.Class()): continue
                         key_total = ((channel, qcdRegion, cat), (uncSource, scale))
                         if key_total not in all_histograms[name_to_use].keys():
                             all_histograms[name_to_use][key_total] = []
                         all_histograms[name_to_use][key_total].append(obj)
-    # print(all_histograms)
 
 
 def MergeHistogramsPerType(all_histograms):
@@ -176,11 +203,9 @@ if __name__ == "__main__":
     categories = list(global_cfg_dict['categories'])
     boosted_categories = list(global_cfg_dict['boosted_categories'])
     QCDregions = list(global_cfg_dict['QCDRegions'])
-    #Controlregions = list(global_cfg_dict['ControlRegions']) #Later maybe we want to separate Controls from QCDs
     global_cfg_dict['channelSelection']=args.channels.split(',')
 
     channels = global_cfg_dict['channelSelection']
-    # print(channels)
 
     signals = list(global_cfg_dict['signal_types'])
     unc_to_not_consider_boosted = list(global_cfg_dict['unc_to_not_consider_boosted'])
@@ -190,7 +215,7 @@ if __name__ == "__main__":
     if args.var in boosted_variables:
         all_categories = boosted_categories
 
-    if (args.var.startswith('b1') or args.var.startswith('b2')):
+    if (args.var.startswith('b1') or args.var.startswith('b2') or args.var=='kinFit_m' or args.var=='dR_bb'):
         all_categories = categories
 
     sample_types_to_merge = list(global_cfg_dict['sample_types_to_merge'])
@@ -202,7 +227,7 @@ if __name__ == "__main__":
         raise RuntimeError(f"all_infiles have len {len(all_infiles)} and all_samples_list have len {len(all_samples_list)}")
     ignore_samples = []
     for (inFileName, sample_name) in zip(all_infiles, all_samples_list):
-        print(inFileName)
+        # print(inFileName)
         if not os.path.exists(inFileName):
             print(f"{inFileName} does not exist")
             continue
@@ -218,10 +243,8 @@ if __name__ == "__main__":
             inFileRoot.Close()
             continue
 
-
         sample_type= 'data' if sample_name == 'data' else sample_cfg_dict[sample_name]['sampleType']
         getHistDict(args.var,all_histograms, inFileRoot,channels, QCDregions, all_categories, args.uncSource,sample_name,sample_type,sample_types_to_merge)
-        # print(all_histograms.keys())
         inFileRoot.Close()
 
         if sample_name == 'data':
@@ -232,10 +255,6 @@ if __name__ == "__main__":
                 if sample_key not in all_samples_types.keys(): all_samples_types[sample_key] = []
                 all_samples_types[sample_key].append(sample_name)
 
-    # for key in all_histograms.keys():
-    #     print(key, len(all_histograms[key]))
-    # for key in all_samples_types.keys():
-    #     print(key, all_samples_types[key])
 
     MergeHistogramsPerType(all_histograms)
     if args.apply_btag_shape_weights == True:
@@ -243,13 +262,12 @@ if __name__ == "__main__":
     else:
         all_histograms_1D = all_histograms
     fixNegativeContributions = False
-    error_on_qcdnorm,error_on_qcdnorm_varied = AddQCDInHistDict(args.var, all_histograms_1D, channels, all_categories, args.uncSource, all_samples_types.keys(), scales, wantNegativeContributions=False)
+    AddQCDInHistDict(args.var, all_histograms_1D, channels, all_categories, args.uncSource, all_samples_types.keys(), scales, fixNegativeContributions)
 
     outFile = ROOT.TFile(args.outFile, "RECREATE")
 
 
     for sample_type in all_histograms_1D.keys():
-
         for key in all_histograms_1D[sample_type]:
             (channel, qcdRegion, cat), (uncNameType, uncScale) = key
             #if qcdRegion != 'OS_Iso': continue
@@ -257,7 +275,6 @@ if __name__ == "__main__":
             dir_name = '/'.join(dirStruct)
             dir_ptr = Utilities.mkdir(outFile,dir_name)
             hist = all_histograms_1D[sample_type][key]
-            #print(sample_type, key, hist.GetEntries())
             hist_name =  sample_type
             if uncNameType!=args.uncSource: continue
             if uncNameType != 'Central':

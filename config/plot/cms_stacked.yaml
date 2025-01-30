@@ -1,7 +1,7 @@
 page_setup:
   canvas_size: [ 1000, 1000 ]
-  main_pad: [ 0.02, 0.25, 0.98, 0.96 ]
-  margins: [ 0.14, 0.12, 0.03, 0.05 ]
+  main_pad: [ 0.02, 0.25, 0.98, 0.98 ]
+  margins: [ 0.15, 0.11, 0.03, 0.05 ]
   paper_size: [ 20, 20 ]
   canvas_color: kWhite
   canvas_border_size: 10
@@ -10,17 +10,17 @@ page_setup:
   end_error_size: 0
   grid_xy: [ false, false ]
   tick_xy: [ false, false ]
-  tick_length_xy: [ 0.03, 0.03 ]
+  tick_length_xy: [ 0.02, 0.02 ]
   n_div_xy: [ 510, 510 ]
   y_min: 0
   y_min_log: 1e-2
-  axis_title_sizes: [ 0.055, 0.055 ]
+  axis_title_sizes: [ 0.055, 0.05 ]
   axis_title_offsets: [ 0.8, 1.2 ]
   axis_label_sizes: [ 0.04, 0.04 ]
   axis_label_offsets: [ 0.005, 0.005 ]
   draw_ratio: true
-  ratio_y_title: "Obs/Bkg"
-  ratio_y_title_size: 0.055
+  ratio_y_title: "Data/MC"
+  ratio_y_title_size: 0.05
   ratio_y_title_offset: 0.3
   ratio_y_label_size: 0.04
   ratio_y_label_offset: 0.005
@@ -29,6 +29,7 @@ page_setup:
   allowed_ratio_margin: 0.5
   ratio_pad_size: 0.25
   ratio_pad_spacing: 0.04
+  font_axes: 52
   text_boxes:
     - cms_text
     - scope_text
@@ -46,29 +47,29 @@ legend:
   fill_color: kWhite
   fill_style: 0
   border_size: 0
-  text_size: 0.02
+  text_size: 0.03
   font: 42
 
 cms_text:
   text: "CMS"
   pos_ref: inner_left_top
-  pos: [ 0., -0.09 ]
+  pos: [ 0., -0.085 ]
   text_size: 0.04
   font: 61
 
 ana_text:
   text: "hh#rightarrowbb#tau#tau"
-  pos_ref: cms_text
-  pos: [ 0.12, -0.06 ]
-  text_size: 0.03
+  pos_ref: inner_left_top
+  pos: [ 0.12, -0.075 ]
+  text_size: 0.032
   font: 62
-  align: left_bottom
+  # align: left_bottom
 
 scope_text:
   text: "Private work"
   pos_ref: cms_text
   pos: [ 0.012, -0.1 ]
-  text_size: 0.04
+  text_size: 0.035
   font: 52
 
 datasim_text:
@@ -79,14 +80,14 @@ datasim_text:
 
 cat_text:
   pos_ref: datasim_text
-  pos: [0.1, -0.079 ]
-  text_size: 0.026
+  pos: [0.12, -0.079 ]
+  text_size: 0.035
   font: 62
 
 ch_text:
   pos_ref: datasim_text
   pos: [0.01, -0.08]
-  text_size: 0.026
+  text_size: 0.035
   font: 62
 
 bkg_hist:
@@ -102,7 +103,7 @@ bkg_unc_hist:
   fill_style: 3013
   fill_color: kCyan-5
   line_width: 0
-  legend_title: "Bkg. uncertainty"
+  legend_title: "Stat. unc."
   legend_style: f
   draw_opt: e2
 

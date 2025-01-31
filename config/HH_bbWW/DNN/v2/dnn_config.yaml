@@ -1,0 +1,29 @@
+features:
+- lep1_pt
+- lep1_phi
+- lep1_eta
+- lep1_mass
+- lep2_pt
+- lep2_phi
+- lep2_eta
+- lep2_mass
+- met_pt
+- met_phi
+listfeatures:
+- - centralJet_pt
+  - 0
+- - centralJet_phi
+  - 0
+- - centralJet_eta
+  - 0
+- - centralJet_mass
+  - 0
+- - centralJet_pt
+  - 1
+- - centralJet_phi
+  - 1
+- - centralJet_eta
+  - 1
+- - centralJet_mass
+  - 1
+use_parametric: true

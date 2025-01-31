@@ -34,27 +34,55 @@ def getKeyNames(root_file_name):
 
 
 
-def applyDNNScore(inFileName, global_cfg_dict, dnnName, param_mass_list, outFileName, varToSave, is_central=True):
+def applyDNNScore(inFileName, global_cfg_dict, dnnFolder, param_mass_list, outFileName, varToSave, is_central=True):
+    print("Going to load model")
+    dnnName = os.path.join(dnnFolder, 'ResHH_Classifier.keras')
+    dnnConfig_Name = os.path.join(dnnFolder, 'dnn_config.yaml')
+
+    dnnConfig = None
+    with open(dnnConfig_Name, 'r') as file:
+        dnnConfig = yaml.safe_load(file)
+
     model = tf.keras.models.load_model(dnnName)
 
-    #Features to load from df to awkward
-    input_features = [ 'lep1_pt', 'lep1_phi', 'lep1_eta', 'lep1_mass', 'lep2_pt', 'lep2_phi', 'lep2_eta', 'lep2_mass', 'met_pt', 'met_phi', 'centralJet_pt', 'centralJet_phi', 'centralJet_eta', 'centralJet_mass' ]
+
+    print("We have dnnConfig")
+    print(dnnConfig)
+
 
     #Features to use for DNN application (single vals)
-    features = [ 'lep1_pt', 'lep1_phi', 'lep1_eta', 'lep1_mass', 'lep2_pt', 'lep2_phi', 'lep2_eta', 'lep2_mass', 'met_pt', 'met_phi' ]
+    features = dnnConfig['features']
     #Features to use for DNN application (vectors and index)
-    list_features = [ ['centralJet_pt', 0], ['centralJet_phi', 0], ['centralJet_eta', 0], ['centralJet_mass', 0], ['centralJet_pt', 1], ['centralJet_phi', 1], ['centralJet_eta', 1], ['centralJet_mass', 1]  ]
+    list_features = dnnConfig['listfeatures']
+
+    #Features to load from df to awkward
+    load_features = set()
+    load_features.update(features)
+    for feature in list_features:
+        load_features.update([feature[0]])
 
 
     events = uproot.open(inFileName)
-    branches = events['Events'].arrays(features+varToSave)
+    branches = events['Events'].arrays(list(load_features)+varToSave)
 
     #Get single value array
     array = np.array([getattr(branches, feature_name) for feature_name in features]).transpose()
 
     #Get vector value array (Not done yet)
+    default_value = 0.0
+    if list_features != None:
+        print(branches[0])
+        array_listfeatures = np.array([ak.fill_none(ak.pad_none(getattr(branches, feature_name), index+1), default_value)[:,index] for [feature_name,index] in list_features]).transpose()
+    print("Got the list features")
+
+    #Need to append the value features and the listfeatures together
+    if list_features != None: 
+        print("We have list features!")
+        array = np.append(array, array_listfeatures, axis=1)
+
 
     #Add parametric mass point to the array
+    print("Starting param loop")
     for param_mass in param_mass_list:
         param_array = np.array([[param_mass for x in array]]).transpose()
         final_array = np.append(array, param_array, axis=1)
@@ -66,17 +94,18 @@ def applyDNNScore(inFileName, global_cfg_dict, dnnName, param_mass_list, outFile
         branches[f'dnn_M{param_mass}_DY'] = prediction.transpose()[2]
 
     #But we want to drop the features from this outfile
-    for feature in features:
+    for feature in load_features:
         del branches[feature]
 
     #This will save the file
+    print("Saving tree")
     outfile = uproot.recreate(outFileName)
     outfile['Events'] = branches
 
     return outfile
 
 
-def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, snapshotOptions, compute_unc_variations, deepTauVersion, dnnName):
+def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, snapshotOptions, compute_unc_variations, deepTauVersion, dnnFolder):
     start_time = datetime.datetime.now()
     verbosity = ROOT.Experimental.RLogScopedVerbosity(ROOT.Detail.RDF.RDFLogChannel(), ROOT.Experimental.ELogLevel.kInfo)
     snaps = []
@@ -88,7 +117,8 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
 
     #param_mass_list = [250, 260, 270, 280, 300, 350, 450, 550, 600, 650, 700, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 4000, 5000 ]
     param_mass_list = [250, 260, 270, 280, 300, 350, 450, 550, 600, 650, 700, 800, 1000 ]
-    dnn_prediction = applyDNNScore(inFileName, global_cfg_dict, dnnName, param_mass_list, f'{outFileName}_Central.root', defaultColToSave)
+    print("Starting add DNN")
+    dnn_prediction = applyDNNScore(inFileName, global_cfg_dict, dnnFolder, param_mass_list, f'{outFileName}_Central.root', defaultColToSave)
     all_files.append(f'{outFileName}_Central.root')
     return all_files
 
@@ -105,7 +135,7 @@ if __name__ == "__main__":
     parser.add_argument('--compressionLevel', type=int, default=4)
     parser.add_argument('--compressionAlgo', type=str, default="ZLIB")
     parser.add_argument('--deepTauVersion', type=str, default="v2p1")
-    parser.add_argument('--dnnName', type=str, default=None)
+    parser.add_argument('--dnnFolder', type=str, default=None)
     #parser.add_argument('--modules', type=list, default=None)
     args = parser.parse_args()
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
@@ -127,8 +157,10 @@ if __name__ == "__main__":
 
     outFileNameFinal = f'{args.outFileName}'
 
+    all_files = createAnaCacheTuple(args.inFileName, args.outFileName.split('.')[0], unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion, args.dnnFolder)
     try:
-        all_files = createAnaCacheTuple(args.inFileName, args.outFileName.split('.')[0], unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion, args.dnnName)
+        all_files = createAnaCacheTuple(args.inFileName, args.outFileName.split('.')[0], unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion, args.dnnFolder)
+        print("Finished add DNN")
         hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
         hadd_str += ' '.join(f for f in all_files)
         if len(all_files) > 1:

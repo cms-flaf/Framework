@@ -48,22 +48,8 @@ QCDRegions:
   - SS_Iso
   - OS_AntiIso
   - SS_AntiIso
-  #- Z_Region
 
 boosted_categories: []
-
-
-#Later maybe we will separate Control Regions from the dict "QCDRegions"
-#ControlRegions:
-#  - Z_Region
-
-
-# triggers:
-#   e:  HLT_singleEleWpTight
-#   mu: HLT_singleIsoMu
-#   eE: HLT_singleEleWpTight || diElec
-#   eMu: HLT_singleIsoMu || HLT_singleEleWpTight || EMu || MuE
-#   muMu: HLT_singleIsoMu || diMuon
 
 
 triggers:
@@ -84,13 +70,15 @@ application_regions:
     region_name: SingleMu_region
     region_cut: (true)
 
-sample_types_to_merge:
+sample_types_to_merge: #Use this for what samples to run limits on
   - DY
   - TT
-  - W
-  - ST
-  - TTX
-  - VV
+  # - W
+  # - ST
+  # - TTX
+  # - VV
+  # - TTV
+  # - TTVV
 
 samples_to_skip_hist:
   - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-1000
@@ -125,8 +113,8 @@ uncs_to_exclude:
   Run3_2022EE: []
 
 storeExtraJets: False
-scales: []
-  #- Up
-  #- Down
+scales:
+  - Up
+  - Down
 deepTauVersion: 2p1
 met_type: "PFMET"

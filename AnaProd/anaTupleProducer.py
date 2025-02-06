@@ -74,6 +74,8 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
 
     if isData:
         syst_dict = { 'nano' : 'Central' }
+        ana_reco_objects = Baseline.ana_reco_object_collections[setup.global_params['nano_version']]
+        df, syst_dict = corrections.applyScaleUncertainties(df, ana_reco_objects)
     else:
         ana_reco_objects = Baseline.ana_reco_object_collections[setup.global_params['nano_version']]
         df, syst_dict = corrections.applyScaleUncertainties(df, ana_reco_objects)

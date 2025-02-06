@@ -38,7 +38,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
     loadHHBtag = anaTupleDef.loadHHBtag
     lepton_legs = anaTupleDef.lepton_legs
     Baseline.Initialize(loadTF, loadHHBtag)
-    Corrections.initializeGlobal(setup.global_params, isData=isData, load_corr_lib=True)
+    Corrections.initializeGlobal(setup.global_params, sample_name, isData=isData, load_corr_lib=True)
     corrections = Corrections.getGlobal()
     triggerFile = setup.global_params.get('triggerFile')
     if triggerFile is not None:

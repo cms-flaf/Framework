@@ -16,7 +16,7 @@ def computeAnaCache(file_lists, global_params, generator, range=None):
     from Corrections.pu import puWeightProducer
 
     start_time = datetime.datetime.now()
-    Corrections.initializeGlobal(global_params, isData=False, load_corr_lib=True)
+    Corrections.initializeGlobal(global_params, sample_name=None, isData=False, load_corr_lib=True)
     anaCache = { 'denominator': {} }
     sources = [ central ]
     if 'pu' in Corrections.getGlobal().to_apply:

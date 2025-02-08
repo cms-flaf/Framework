@@ -382,7 +382,6 @@ class DNNCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     spin = sample_info['spin']
                     branches[br_idx_final] = (sample_name, sample_type, input_file, ana_br_idx, spin, mass)
                     br_idx_final += 1
-        print(branches)
         return branches 
 
     def output(self):

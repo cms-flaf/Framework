@@ -1,164 +1,168 @@
 import numpy as np
 import math
+
+from scipy.stats import chi2
+from sklearn.covariance import MinCovDet
+import matplotlib.pyplot as plt
+'''
+def GetMassesQuantilesJoint(df_cat, tt_mass, bb_mass, quantile_max):
+    np_dict_cat = df_cat.AsNumpy([tt_mass, bb_mass])
+    mbb = np_dict_cat[bb_mass]
+    mtt = np_dict_cat[tt_mass]
+    data = np.vstack((mbb, mtt)).T  # Matrice Nx2
+
+    lower, upper = 0.16, 0.84  # Limiti iniziali in percentili
+    den = df_cat.Count().GetValue()
+    num = den
+    perc = 1
+    p_low_mtt, p_low_mbb = np.min(data, axis=0)
+    p_high_mtt, p_high_mbb = np.max(data, axis=0)
+    print(f"initially: bb in {p_low_mbb}, {p_high_mbb}")
+    print(f"initially: tt in {p_low_mtt}, {p_high_mtt}")
+
+
+    while perc < quantile_max:  # Espandiamo finché non superiamo quantile_max
+        print("perc, quantile_max, perc - quantile_max")
+        print(perc, quantile_max, perc - quantile_max)
+        print("upper, lower")
+        print(upper, lower)
+        p_low = np.percentile(data, lower, axis=0)
+        p_high = np.percentile(data, upper, axis=0)
+        p_low_mbb, p_low_mtt = p_low
+        p_high_mbb, p_high_mtt = p_high
+
+        print(f"during: bb in {p_low_mbb}, {p_high_mbb}")
+        print(f"during: tt in {p_low_mtt}, {p_high_mtt}")
+        num = df_cat.Filter(f"{tt_mass} >= {p_low_mtt} && {tt_mass} < {p_high_mtt}")\
+                    .Filter(f"{bb_mass} >= {p_low_mbb} && {bb_mass} < {p_high_mbb}")\
+                    .Count().GetValue()
+        print(num)
+        perc = num / den
+        # print(f"Dati selezionati: {num} su {den} (percentuale: {perc}%)")
+        # print(f"mbb = {p_low[0]}, {p_high[0]}")
+        # print(f"mtt = {p_low[1]}, {p_high[1]}")
+        if perc < quantile_max:
+            upper += (100 - upper) * 0.1  # Espandi i limiti
+            print("sto espandendo i limiti")
+            print(upper, lower)
+        else:
+            print("sto restringendo i limiti")
+            upper -= (upper - lower) * 0.1  # Restringi i limiti
+            print(upper, lower)
+        print(p_low_mbb, p_low_mtt)
+        print(p_high_mbb, p_high_mtt)
+    # Arrotondiamo i limiti finali
+    min_tt_int = math.floor(p_low_mtt / 10) * 10
+    max_tt_int = math.ceil(p_high_mtt / 10) * 10
+    min_bb_int = math.floor(p_low_mbb / 10) * 10
+    max_bb_int = math.ceil(p_high_mbb / 10) * 10
+    print(f" final fraction = {perc}")
+    print(f"mbb = {min_bb_int}, {max_bb_int}")
+    print(f"mtt = {min_tt_int}, {max_tt_int}")
+
+    return min_tt_int, max_tt_int, min_bb_int, max_bb_int  # Restituisce i limiti finali
+
+import numpy as np
+import math
+from sklearn.covariance import MinCovDet
+from scipy.stats import chi2
+'''
 import numpy as np
 import math
 
 def GetMassesQuantilesJoint(df_cat, tt_mass, bb_mass, quantile_max):
-    # Estrai i dati come array numpy
     np_dict_cat = df_cat.AsNumpy([tt_mass, bb_mass])
-    mbb_list = np_dict_cat[bb_mass]
-    mtt_list = np_dict_cat[tt_mass]
+    mbb = np_dict_cat[bb_mass]
+    mtt = np_dict_cat[tt_mass]
+    data = np.vstack((mbb, mtt)).T  # Matrice Nx2
 
-    # Combina m_bb e m_tt in un array bidimensionale
-    data = np.column_stack((mtt_list, mbb_list))
+    lower, upper = 0, 1  # Limiti iniziali in percentili
+    den = df_cat.Count().GetValue()
+    num = den
+    perc = 0. # num / den
 
-    # Calcola il punto mediano (o centrale) nello spazio bidimensionale
-    median_point = np.median(data, axis=0)
+    # Inizializziamo i limiti per evitare UnboundLocalError
+    p_low_mtt, p_low_mbb = np.min(data, axis=0)
+    p_high_mtt, p_high_mbb = np.max(data, axis=0)
 
-    # Calcola le distanze euclidee di ogni punto dal mediano
-    distances = np.linalg.norm(data - median_point, axis=1)
+    # if perc >= quantile_max:
+    #     print("Percentuale già superiore al quantile massimo richiesto.")
+    #     return
 
-    # Ordina i dati per distanza crescente
-    sorted_indices = np.argsort(distances)
-    sorted_data = data[sorted_indices]
+    while perc < quantile_max:  # Continua fino a superare quantile_max
+        p_low = np.percentile(data, lower, axis=0)
+        p_high = np.percentile(data, upper, axis=0)
+        p_low_mbb, p_low_mtt = p_low
+        p_high_mbb, p_high_mtt = p_high
 
-    # Seleziona la frazione di punti corrispondente al quantile massimo
-    n_points = int(len(data) * quantile_max)
-    selected_data = sorted_data[:n_points]
+        num = df_cat.Filter(f"{tt_mass} >= {p_low_mtt} && {tt_mass} < {p_high_mtt}")\
+                    .Filter(f"{bb_mass} >= {p_low_mbb} && {bb_mass} < {p_high_mbb}")\
+                    .Count().GetValue()
+        perc = num / den
+        # print(f"Dati selezionati: {num} su {den} (percentuale: {perc:.3f})")
+        # print(f"mbb = {p_low[0]:.2f}, {p_high[0]:.2f}")
+        # print(f"mtt = {p_low[1]:.2f}, {p_high[1]:.2f}")
 
-    print(len(selected_data)/len(data))
-    # Trova i limiti massimi e minimi del sottoinsieme selezionato
-    min_tt, max_tt = np.min(selected_data[:, 0]), np.max(selected_data[:, 0])
-    min_bb, max_bb = np.min(selected_data[:, 1]), np.max(selected_data[:, 1])
+        if perc < quantile_max:
+            upper += (100 - upper) * 0.1  # Espandi i limiti per includere più dati
 
-    # Arrotonda i limiti ai 10 più vicini (se necessario)
-    min_tt_int = math.floor(min_tt / 10) * 10
-    max_tt_int = math.ceil(max_tt / 10) * 10
-    min_bb_int = math.floor(min_bb / 10) * 10
-    max_bb_int = math.ceil(max_bb / 10) * 10
+    # Arrotondiamo i limiti finali
+    min_tt_int = math.floor(p_low_mtt / 10) * 10
+    max_tt_int = math.ceil(p_high_mtt / 10) * 10
+    min_bb_int = math.floor(p_low_mbb / 10) * 10
+    max_bb_int = math.ceil(p_high_mbb / 10) * 10
 
-    # print(f"Quantile target: {quantile_max}")
-    # print(f"bb masses: min = {min_bb_int}, max = {max_bb_int}")
-    # print(f"tt masses: min = {min_tt_int}, max = {max_tt_int}")
+    # print(f"mbb = {min_bb_int}, {max_bb_int}")
+    # print(f"mtt = {min_tt_int}, {max_tt_int}")
 
-    return min_bb_int, max_bb_int, min_tt_int, max_tt_int
-
-
-def GetMassesQuantiles(df_cat,tt_mass,bb_mass,quantile_max,wantSequential):
-    np_dict_cat = df_cat.AsNumpy([tt_mass,bb_mass])
-    mbb_list = np_dict_cat[bb_mass]
-    mtt_list = np_dict_cat[tt_mass]
-    max_bb_mass =np.quantile(mbb_list, quantile_max)
-    min_bb_mass =np.quantile(mbb_list, 1-quantile_max)
-    max_bb_mass_int = math.ceil(max_bb_mass / 10) * 10
-    min_bb_mass_int = math.floor(min_bb_mass / 10) * 10
-    if wantSequential:
-        df_cat_bb = df_cat.Filter(f"{bb_mass} > {min_bb_mass_int} && {bb_mass} < {max_bb_mass_int}")
-        np_dict_cat_bb = df_cat_bb.AsNumpy([tt_mass])
-        mtt_list = np_dict_cat_bb[tt_mass]
-    max_tt_mass =np.quantile(mtt_list, quantile_max)
-    min_tt_mass =np.quantile(mtt_list, 1-quantile_max)
-
-    max_tt_mass_int = math.ceil(max_tt_mass / 10) * 10
-    min_tt_mass_int = math.floor(min_tt_mass / 10) * 10
-    print(f"quantile is {quantile_max}")
-    min_bb = min(min_bb_mass_int, max_bb_mass_int)
-    max_bb = max(min_bb_mass_int, max_bb_mass_int)
-    min_tt = min(min_tt_mass_int, max_tt_mass_int)
-    max_tt = max(min_tt_mass_int, max_tt_mass_int)
-    print(f"bb masses: min = {min_bb}, max = {max_bb}")
-    print(f"tt masses: min = {min_tt}, max = {max_tt}")
-    return min_bb,max_bb,min_tt,max_tt
+    return min_tt_int,max_tt_int,min_bb_int,max_bb_int
 
 
-def GetSquareSignalMassCut(dfWrapped_sig,global_cfg_dict,channel, cat,bb_mass, tt_mass = "tautau_m_vis",quantile_sig=0.68,wantSequential=False):
-    df_cat_sig = dfWrapped_sig.df.Filter(f"OS_Iso && {cat} && {channel}")
-    # df_cat_tt = dfWrapped_bckg.df.Filter(f"OS_Iso && {cat} && {channel}")
-    if cat == 'boosted':
-        df_cat_sig = df_cat_sig.Define("FatJet_atLeast1BHadron",
-        "SelectedFatJet_nBHadrons>0").Filter("SelectedFatJet_p4[FatJet_atLeast1BHadron].size()>0")
-    else:
-        df_cat_sig = df_cat_sig.Filter("b1_hadronFlavour==5 && b2_hadronFlavour==5 ")
-    return GetMassesQuantiles(df_cat_sig,tt_mass,bb_mass,quantile_sig,wantSequential)
+def GetEllipticCut(df_cat, tt_mass, bb_mass, quantile_max):
+    np_dict_cat = df_cat.AsNumpy([tt_mass, bb_mass])
+    mbb = np_dict_cat[bb_mass]
+    mtt = np_dict_cat[tt_mass]
+    data = np.vstack((mtt, mbb)).T  # Matrice Nx2 con ordine (mtt, mbb)
+
+    den = df_cat.Count().GetValue()
+    num = den  # Inizialmente includiamo tutti i dati
+    perc = 0. #num / den
+
+    # Stima della media robusta e della matrice di covarianza con MinCovDet
+    mcd = MinCovDet(support_fraction=0.68).fit(data)
+    center = mcd.location_  # Centro dell'ellisse (A, C)
+    covariance = mcd.covariance_  # Matrice di covarianza robusta
+
+    # Calcoliamo gli autovalori per determinare i semiassi iniziali
+    eigvals, eigvecs = np.linalg.eigh(covariance)
+
+    # Chi-quadro per selezionare un livello di confidenza iniziale
+    chi2_val = np.sqrt(chi2.ppf(quantile_max, df=2))  # Valore di chi-quadro per il livello desiderato
+    B, D = chi2_val * np.sqrt(eigvals)  # Semiassi iniziali
+
+    scale_factor = 1.0  # Fattore di scala per espandere/ridurre l'ellisse
+
+    while perc < quantile_max:  # Espandiamo finché non superiamo quantile_max
+        # Definiamo la funzione ellittica
+        mask = ((data[:, 0] - center[0])**2 / (B * scale_factor)**2 +
+                (data[:, 1] - center[1])**2 / (D * scale_factor)**2) < 1
+
+        num = np.sum(mask)  # Conta i punti dentro l'ellisse
+        perc = num / den
+
+        if perc < quantile_max:
+            scale_factor += 0.05  # Aumentiamo la dimensione dell'ellisse
+
+        # Valori finali
+        B_final = B * scale_factor
+        D_final = D * scale_factor
+        A, C = center  # Centro dell'ellisse
+
+        # **Filtro corretto nel dataframe**
+        num = df_cat.Filter(f"(({tt_mass} - {A})*({tt_mass} - {A}) / ({B_final}*{B_final}) + ({bb_mass} - {C})*({bb_mass} - {C}) / ({D_final}*{D_final})) < 1").Count().GetValue()
+
+        perc = num / den  # Percentuale aggiornata dopo il filtro
+
+    return A, B_final, C, D_final  # Restituisce i parametri dell'ellisse
 
 
-def GetSquareSignalAndBckgMassCut(dfWrapped_sig,dfWrapped_bckg,global_cfg_dict,channel, cat,bb_mass, tt_mass = "tautau_m_vis",quantile_sig=0.90,quantile_bckg=0.68,wantSequential=False):
-
-    df_cat_sig = dfWrapped_sig.df.Filter(f"OS_Iso && {cat} && {channel}")
-    df_cat_bckg = dfWrapped_bckg.df.Filter(f"OS_Iso && {cat} && {channel}")
-    n_in_sig = df_cat_sig.Count().GetValue()
-    n_in_bckg = df_cat_bckg.Count().GetValue()
-    print(f"n_initial sig = {n_in_sig}")
-    print(f"n_initial bckg = {n_in_bckg}")
-    if cat == 'boosted':
-        df_cat_sig = df_cat_sig.Define("FatJet_atLeast1BHadron",
-        "SelectedFatJet_nBHadrons>0").Filter("SelectedFatJet_p4[FatJet_atLeast1BHadron].size()>0")
-        df_cat_bckg = df_cat_bckg.Define("FatJet_atLeast1BHadron",
-        "SelectedFatJet_nBHadrons>0").Filter("SelectedFatJet_p4[FatJet_atLeast1BHadron].size()>0")
-    else:
-        df_cat_sig = df_cat_sig.Filter("b1_hadronFlavour==5 && b2_hadronFlavour==5 ")
-        df_cat_bckg = df_cat_bckg.Filter("b1_hadronFlavour==5 && b2_hadronFlavour==5 ")
-    print("SIGNALS")
-    masses_sig  = GetMassesQuantiles(df_cat_sig,tt_mass,bb_mass,quantile_sig,wantSequential)
-    masses_bckg = GetMassesQuantiles(df_cat_bckg,tt_mass,bb_mass,1-quantile_bckg,wantSequential)
-    min_bb,max_bb,min_tt,max_tt = masses_sig
-    n_fin_sig = df_cat_sig.Filter(f"{tt_mass} > {min_tt} && {tt_mass} < {max_tt} && {bb_mass}>{min_bb} && {bb_mass} < {max_bb}").Count().GetValue() # min_bb,max_bb,min_tt,max_tt
-    min_bb,max_bb,min_tt,max_tt = masses_bckg
-    n_fin_bckg = df_cat_bckg.Filter(f"{tt_mass} > {min_tt} && {tt_mass} < {max_tt} && {bb_mass}>{min_bb} && {bb_mass} < {max_bb}").Count().GetValue() # min_bb,max_bb,min_tt,max_tt
-    n_in_bckg = df_cat_bckg.Count().GetValue()
-    print(f"n_initial sig = {n_fin_sig}")
-    print(f"n_initial bckg = {n_fin_bckg}")
-
-    print("\nBACKGROUNDS")
-
-    return masses_sig, masses_bckg
-
-'''
-def fraction_in_square(data, M_c1, M_c2, side):
-    x, y = data[:, 0], data[:, 1]
-    half_side = side / 2
-    in_square = (M_c1 - half_side <= x) & (x <= M_c1 + half_side) & \
-                (M_c2 - half_side <= y) & (y <= M_c2 + half_side)
-    return np.mean(in_square)
-
-def objective_square(params, dataset_tt, dataset_sig, fraction_b, fraction_sig):
-    M_c1, M_c2, side = params
-    frac_A = fraction_in_square(dataset_tt, M_c1, M_c2, side)  # Dataset A: frazione inclusa
-    frac_B = fraction_in_square(dataset_sig, M_c1, M_c2, side)  # Dataset B: frazione inclusa
-
-    # Penalizzazioni
-    penalty_A = abs(frac_A - (1 - fraction_b))  # Target frazione di ttbar esclusa
-    penalty_B = abs(frac_B - fraction_sig)      # Target frazione di segnale inclusa
-
-    return penalty_A + penalty_B
-
-def optimize_square(dataset_tt, dataset_sig, fraction_b, fraction_sig):
-    dataset_sig = np.column_stack((mtt_list_sig, mbb_list_sig))  # Signal dataset
-    dataset_tt = np.column_stack((mtt_list_tt, mbb_list_tt))  # Background dataset
-
-    # Valori iniziali per [M_c1, M_c2, side]
-    initial_guess = [125, 125, 50]
-
-    # Ottimizzazione
-    result = minimize(
-        objective_square,
-        initial_guess,
-        args=(dataset_tt, dataset_sig, fraction_b, fraction_sig),
-        bounds=[(None, None), (None, None), (0.1, None)],
-        method='Nelder-Mead'
-    )
-
-    # Risultati finali
-    M_c1_opt, M_c2_opt, side_opt = result.x
-    print(f"Centro quadrato: M_c1 = {M_c1_opt}, M_c2 = {M_c2_opt}")
-    print(f"Lato quadrato: side = {side_opt}")
-
-    # Frazione finale nei dataset
-    frac_A_final = fraction_in_square(dataset_tt, M_c1_opt, M_c2_opt, side_opt)
-    frac_B_final = fraction_in_square(dataset_sig, M_c1_opt, M_c2_opt, side_opt)
-    print(f"Frazione in Dataset A (ttbar, esclusa al 99%): {frac_A_final:.3f}")
-    print(f"Frazione in Dataset B (segnale, inclusa al 68%): {frac_B_final:.3f}")
-    return M_c1_opt, M_c2_opt, side_opt
-
-
-'''

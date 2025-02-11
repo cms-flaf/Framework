@@ -70,6 +70,7 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
     LegacyVariables.Initialize()
     applyLegacyVariables(dfw, global_cfg_dict, True)
     varToSave = Utilities.ListToVector(dfw.colToSave)
+    print(f"the DF central has {dfw.df.Count().GetValue()} entries")
     all_files.append(f'{outFileName}_Central.root')
     snaps.append(dfw.df.Snapshot(f"Events", f'{outFileName}_Central.root', varToSave, snapshotOptions))
     print("append the central snapshot")
@@ -84,9 +85,11 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
         snapshotOptions.fLazy=False
         for uncName in unc_cfg_dict['shape']:
             for scale in scales:
+                print(uncName, scale)
                 treeName = f"Events_{uncName}{scale}"
                 treeName_noDiff = f"{treeName}_noDiff"
                 if treeName_noDiff in file_keys:
+                    print(treeName_noDiff)
                     df_noDiff = ROOT.RDataFrame(treeName_noDiff, inFileName)
                     dfWrapped_noDiff = Utilities.DataFrameBuilderBase(df_noDiff)
                     dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
@@ -96,8 +99,10 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     varToSave = Utilities.ListToVector(dfW_noDiff.colToSave)
                     all_files.append(f'{outFileName}_{uncName}{scale}_noDiff.root')
                     dfW_noDiff.df.Snapshot(treeName_noDiff, f'{outFileName}_{uncName}{scale}_noDiff.root', varToSave, snapshotOptions)
+                    print(f"dfW no diff has {dfW_noDiff.df.Count().GetValue()} entries")
                 treeName_Valid = f"{treeName}_Valid"
                 if treeName_Valid in file_keys:
+                    print(treeName_Valid)
                     df_Valid = ROOT.RDataFrame(treeName_Valid, inFileName)
                     dfWrapped_Valid = Utilities.DataFrameBuilderBase(df_Valid)
                     dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
@@ -107,8 +112,10 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     varToSave = Utilities.ListToVector(dfW_Valid.colToSave)
                     all_files.append(f'{outFileName}_{uncName}{scale}_Valid.root')
                     dfW_Valid.df.Snapshot(treeName_Valid, f'{outFileName}_{uncName}{scale}_Valid.root', varToSave, snapshotOptions)
+                    print(f"dfW valid has {dfW_Valid.df.Count().GetValue()} entries")
                 treeName_nonValid = f"{treeName}_nonValid"
                 if treeName_nonValid in file_keys:
+                    print(treeName_nonValid)
                     df_nonValid = ROOT.RDataFrame(treeName_nonValid, inFileName)
                     dfWrapped_nonValid = Utilities.DataFrameBuilderBase(df_nonValid)
                     dfWrapped_nonValid.AddMissingColumns(colNames, colTypes)
@@ -117,6 +124,7 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     varToSave = Utilities.ListToVector(dfW_nonValid.colToSave)
                     all_files.append(f'{outFileName}_{uncName}{scale}_nonValid.root')
                     dfW_nonValid.df.Snapshot(treeName_nonValid, f'{outFileName}_{uncName}{scale}_nonValid.root', varToSave, snapshotOptions)
+                    print(f"dfW non valid has {dfW_nonValid.df.Count().GetValue()} entries")
     print(f"snaps len is {len(snaps)}")
     snapshotOptions.fLazy = True
     if snapshotOptions.fLazy == True:

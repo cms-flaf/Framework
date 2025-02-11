@@ -67,9 +67,15 @@ class Task(law.Task):
         return self.setup.get_fs('anaCache')
 
     @property
+    def fs_anaTuple2p5(self):
+        return self.setup.get_fs('anaTuple2p5')
+    @property
     def fs_anaTuple(self):
         return self.setup.get_fs('anaTuple')
 
+    @property
+    def fs_nnCacheTuple(self):
+        return self.setup.get_fs('nnCacheTuple')
     @property
     def fs_anaCacheTuple(self):
         return self.setup.get_fs('anaCacheTuple')

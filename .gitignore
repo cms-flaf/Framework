@@ -6,5 +6,7 @@ __pycache__
 /test
 /utilities
 /.vscode
+/Studies/MassCuts/Square/plots
+/Studies/MassCuts/Inputs/
 /site
 /config/user_custom.yaml

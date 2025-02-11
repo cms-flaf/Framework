@@ -299,7 +299,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
         compute_unc_histograms = customisation_dict['compute_unc_histograms']=='True' if 'compute_unc_histograms' in customisation_dict.keys() else self.global_params.get('compute_unc_histograms', False)
         if compute_unc_histograms:
-            for uncName in list(unc_cfg_dict['norm'].keys())+unc_cfg_dict['shape']:
+            for uncName in unc_cfg_dict['shape'] + list(unc_cfg_dict['norm'].keys()):
                 if uncName in uncs_to_exclude: continue
                 uncNames.append(uncName)
         print(uncNames)
@@ -359,7 +359,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     tmp_outfile_merge_remote = self.remote_target(infile_merged, fs=self.fs_histograms)
                     local_merged_files.append(stack.enter_context(tmp_outfile_merge_remote.localize('r')).path)
                 with tmp_outFile.localize("w") as tmpFile:
-                    HaddMergedHistsProducer_cmd = ['python3', HaddMergedHistsProducer,'--outFile', tmpFile.path, '--var', var]
+                    HaddMergedHistsProducer_cmd = ['python3', HaddMergedHistsProducer,'--outFile', tmpFile.path] #, '--var', var]
                     HaddMergedHistsProducer_cmd.extend(local_merged_files)
                     ps_call(HaddMergedHistsProducer_cmd,verbose=1)
             with tmp_outFile.localize("r") as tmpFile, self.output().localize("w") as outFile:

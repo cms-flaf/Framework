@@ -50,80 +50,65 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
         for qcdRegion in QCDregions:
             dir_1 = dir_0.Get(qcdRegion)
             for cat in all_categories:
-                key_total = ((channel, qcdRegion, cat), (uncSource, 'Central'))
                 dir_2 = dir_1.Get(cat)
+                # print(f"{channel}, {qcdRegion},{cat}")
                 if uncSource == 'Central':
+                    key_total = ((channel, qcdRegion, cat), (uncSource, 'Central'))
                     key_to_use = sample_name
+                    # print("CENTRAL")
                     # print(key_to_use)
                     obj=dir_2.Get(key_to_use)
                     if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
                         print(f"ignoring {key_to_use} as it's not an histogram")
                         continue
-                    # print(obj.GetEntries())
-
                     obj.SetDirectory(0)
-                    if not obj.IsA().InheritsFrom(ROOT.TH1.Class()): continue
                     if key_total not in all_histograms[name_to_use].keys():
                         all_histograms[name_to_use][key_total] = []
                     all_histograms[name_to_use][key_total].append(obj)
-                elif uncSource == 'QCDScale':
-                    key_to_use = sample_name
-                    # print(key_to_use)
-                    obj=dir_2.Get(key_to_use)
-                    if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
-                        print(f"ignoring {key_to_use} as it's not an histogram")
-                        continue
-                    # print(obj.GetEntries())
-                    obj.SetDirectory(0)
+                elif uncSource == 'QCDScale' or uncSource == 'QCDNorm':
+                    # print(uncSource)
                     for scale in ['Up','Down']:
-                        key_total_QCD = ((channel, qcdRegion, cat), ('QCDScale', scale))
-                        if key_total_QCD not in all_histograms[name_to_use].keys():
-                            all_histograms[name_to_use][key_total_QCD] = []
-                        all_histograms[name_to_use][key_total_QCD].append(obj)
-                elif uncSource == 'QCDNorm':
-                    key_to_use = sample_name
-                    # print(key_to_use)
-                    obj=dir_2.Get(key_to_use)
-                    if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
-                        print(f"ignoring {key_to_use} as it's not an histogram")
-                        continue
-                    # print(obj.GetEntries())
-                    obj.SetDirectory(0)
-                    for scale in ['Up','Down']:
-                        key_total_QCD = ((channel, qcdRegion, cat), ('QCDNorm', scale))
-                        if key_total_QCD not in all_histograms[name_to_use].keys():
-                            all_histograms[name_to_use][key_total_QCD] = []
-                        all_histograms[name_to_use][key_total_QCD].append(obj)
+                        key_total = ((channel, qcdRegion, cat), (uncSource, scale))
+                        key_to_use = sample_name
+                        obj=dir_2.Get(key_to_use)
+                        if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
+                            print(f"ignoring {key_to_use} as it's not an histogram")
+                            continue
+                        obj.SetDirectory(0)
+                        if key_total not in all_histograms[name_to_use].keys():
+                            all_histograms[name_to_use][key_total] = []
+                        all_histograms[name_to_use][key_total].append(obj)
                 else:
-                    key_to_use = sample_name + '_' + uncSource
                     for scale in ['Up', 'Down']:
-                        key_final = key_to_use+scale
-                        # print(key_final)
-                        if sample_name=='data':
-                            key_final = 'data'
-                        # print(key_final)
-                        obj=dir_2.Get(key_final)
+                        # print(uncSource, scale)
+                        key_to_use = 'data' if sample_name=='data' else sample_name + '_' + uncSource +scale
+                        obj=dir_2.Get(key_to_use)
+                        # print(key_to_use)
                         if not obj.IsA().InheritsFrom(ROOT.TH1.Class()):
                             print(f"ignoring {key_final} as it's not an histogram")
                             continue
-                        # print(obj.GetEntries())
                         obj.SetDirectory(0)
                         key_total = ((channel, qcdRegion, cat), (uncSource, scale))
                         if key_total not in all_histograms[name_to_use].keys():
                             all_histograms[name_to_use][key_total] = []
                         all_histograms[name_to_use][key_total].append(obj)
 
-
 def MergeHistogramsPerType(all_histograms):
     for sample_type in all_histograms.keys():
-        if sample_type == 'data': print(f"DURING MERGE HISTOGRAMS, sample_type is {sample_type}")
+        # print(sample_type)
+        # if sample_type == 'data': print(f"DURING MERGE HISTOGRAMS, sample_type is {sample_type}")
         for key_name,histlist in all_histograms[sample_type].items():
+            # print(key_name)
+            # print(len(histlist))
             final_hist =  histlist[0]
             objsToMerge = ROOT.TList()
             for hist in histlist[1:]:
                 objsToMerge.Add(hist)
             final_hist.Merge(objsToMerge)
-            all_histograms[sample_type][key_name] = final_hist
+            all_histograms[sample_type][key_name] = final_hist.Clone()
+            # print(final_hist.Integral(0,final_hist.GetNbinsX()+1))
+            # print(all_histograms[sample_type][key_name].Integral(0,final_hist.GetNbinsX()+1))
+            # print(all_histograms[sample_type][key_name].GetEntries())
             #if len(histlist)!=1:
                 #print(f"for {sample_type} the lenght of histlist is {len(histlist)}")
 
@@ -136,7 +121,6 @@ def GetBTagWeightDict(var,all_histograms, categories, boosted_categories, booste
         all_histograms_1D[sample_type] = {}
         for key_name,histogram in all_histograms[sample_type].items():
             (key_1, key_2) = key_name
-
             if var not in boosted_variables:
                 ch, reg, cat = key_1
                 uncName,scale = key_2
@@ -155,7 +139,6 @@ def GetBTagWeightDict(var,all_histograms, categories, boosted_categories, booste
                 histogram.Scale(ratio)
             else:
                 print(f"for var {var} no ratio is considered and the histogram is directly saved")
-
             all_histograms_1D[sample_type][key_name] = histogram
             # print(sample_type, key_name, histogram.Integral(0, histogram.GetNbinsX()+1))
     return all_histograms_1D
@@ -246,7 +229,6 @@ if __name__ == "__main__":
         sample_type= 'data' if sample_name == 'data' else sample_cfg_dict[sample_name]['sampleType']
         getHistDict(args.var,all_histograms, inFileRoot,channels, QCDregions, all_categories, args.uncSource,sample_name,sample_type,sample_types_to_merge)
         inFileRoot.Close()
-
         if sample_name == 'data':
             all_samples_types['data'] = ['data']
         else:
@@ -254,6 +236,7 @@ if __name__ == "__main__":
             if sample_name not in ignore_samples:
                 if sample_key not in all_samples_types.keys(): all_samples_types[sample_key] = []
                 all_samples_types[sample_key].append(sample_name)
+    # print(f"all samples types = {all_samples_types}")
 
 
     MergeHistogramsPerType(all_histograms)
@@ -262,7 +245,9 @@ if __name__ == "__main__":
     else:
         all_histograms_1D = all_histograms
     fixNegativeContributions = False
-    AddQCDInHistDict(args.var, all_histograms_1D, channels, all_categories, args.uncSource, all_samples_types.keys(), scales, fixNegativeContributions)
+    wantSymm = True
+    wantInverted = False
+    AddQCDInHistDict(args.var, all_histograms_1D, channels, all_categories, args.uncSource, all_samples_types.keys(), scales,wantSymm, wantInverted,fixNegativeContributions)
 
     outFile = ROOT.TFile(args.outFile, "RECREATE")
 

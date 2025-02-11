@@ -13,7 +13,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('inputFile', nargs='+', type=str)
     parser.add_argument('--outFile', required=True)
-    parser.add_argument('--var', required=False, type=str, default='tau1_pt')
     #parser.add_argument('--remove-files', required=False, type=bool, default=False)
     args = parser.parse_args()
 

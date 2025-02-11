@@ -55,13 +55,13 @@ unc_names = [
 
 histograms_initials = {
     "2016":"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/histograms/New_massCut/SC/SR/Run2_2016/merged/kinFit_m/kinFit_m.root",
-    "2016_HIPM":"output/kinFit_m_2016HIPM.root", #"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/histograms/New_massCut/SC/SR/Run2_2016_HIPM/merged/kinFit_m/kinFit_m.root",
+    "2016_HIPM":"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/histograms/New_massCut/SC/SR/Run2_2016_HIPM/merged/kinFit_m/kinFit_m.root",
     "2017":"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/histograms/New_massCut/SC/SR/Run2_2017/merged/kinFit_m/kinFit_m.root",
     "2018":"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/histograms/New_massCut/SC/SR/Run2_2018/merged/kinFit_m/kinFit_m.root"
 }
 histograms_initials_boosted = {
     "2016": "/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/histograms/New_massCut/SC/SR/Run2_2016/merged/bbtautau_mass_met_boosted/bbtautau_mass_met_boosted.root",
-    "2016_HIPM": "output/bbtautau_mass_met_boosted_2016HIPM.root", #"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/histograms/New_massCut/SC/SR/Run2_2016_HIPM/merged/bbtautau_mass_met_boosted/bbtautau_mass_met_boosted.root",
+    "2016_HIPM": "/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/histograms/New_massCut/SC/SR/Run2_2016_HIPM/merged/bbtautau_mass_met_boosted/bbtautau_mass_met_boosted.root",
     "2017":"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/histograms/New_massCut/SC/SR/Run2_2017/merged/bbtautau_mass_met_boosted/bbtautau_mass_met_boosted.root",
     "2018":"/eos/user/v/vdamante/HH_bbtautau_resonant_Run2/histograms/New_massCut/SC/SR/Run2_2018/merged/bbtautau_mass_met_boosted/bbtautau_mass_met_boosted.root"
 }
@@ -71,7 +71,8 @@ histograms_initials_boosted = {
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year', required=False, type=str, default='2016_HIPM')
+    # parser.add_argument('--year', required=False, type=str, default='2016_HIPM')
+    parser.add_argument('--outFile', required=True, type=str, default='')
     args = parser.parse_args()
     years = ["2016", "2016_HIPM", "2017","2018"]
     all_histnames = {}
@@ -82,5 +83,22 @@ if __name__ == "__main__":
                 for year in years:
                     all_histnames[proc].append(proc+"_"+uncname.format(scale=scale,year=year))
 
-    AddMissingHistograms(histograms_initials[args.year], all_histnames)
-    AddMissingHistograms(histograms_initials_boosted[args.year], all_histnames)
+    hadd_str = f'hadd -f209 -n 0 {args.outFile} '
+
+    all_files = []
+    for year in years:
+        AddMissingHistograms(histograms_initials[year], all_histnames)
+        all_files.append(histograms_initials[year])
+        AddMissingHistograms(histograms_initials_boosted[year], all_histnames)
+        all_files.append(histograms_initials_boosted[year])
+
+
+    hadd_str += ' '.join(f for f in all_files)
+    if len(all_files) > 1:
+        ps_call([hadd_str], True)
+    else:
+        shutil.copy(all_files[0],args.outFile)
+    # if os.path.exists(args.outFile) and args.remove_files:
+    #     for histFile in all_files:
+    #         if histFile == args.outFile: continue
+    #         os.remove(histFile)

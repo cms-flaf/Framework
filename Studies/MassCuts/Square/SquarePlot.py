@@ -13,12 +13,27 @@ period_dict = {
 }
 
 
+# kCubehelix=58, # 5/10 ma inverted è poco colorblind proven
+# kCMYK=73, # 6/10 ma inverted è o cess
+# kWaterMelon=108, # 3/10 ma inverted è meglio
+# kCividis=113, # 7/10 # invertito è 2/10
+# kTemperatureMap=104, # 6.5 /10 # invertito è 2/10
+# kColorPrintableOnGrey=62, # 5 /10
+# kDeepSea=51, # 8 /10 (inverted è top)
+# kBlueYellow= 54, # 7 /10
+# kCool=109, # 8 /10 (inverted anche è top)
+# kBlueGreenYellow=71, # 6/10
+# kBird=57, # 8/10
+# kRainBow=55, # /10
+# kThermometer=105, # 6 /10
+# kViridis=112, # /10
+
 def plot_2D_histogram(histogram, title, xlabel, ylabel, bin_labels, filename, period, rectangle_coordinates):
     hep.style.use("CMS")
     plt.figure(figsize=(25, 15))
     plt.xlabel(xlabel, fontsize=40)
     plt.ylabel(ylabel, fontsize=40)
-    hep.hist2dplot(histogram, cmap='Blues', cmax=histogram.GetMaximum())
+    hep.hist2dplot(histogram, cmap='YlGnBu', cmax=histogram.GetMaximum())
     #hep.cms.text("work in progress")
     #hep.cms.text("")
     #hep.cms.label("Simulation Preliminary")
@@ -42,7 +57,7 @@ def plot_2D_histogram(histogram, title, xlabel, ylabel, bin_labels, filename, pe
         (m1_min, m2_min),  # Coordinate in basso a sinistra
         width,             # Larghezza
         height,            # Altezza
-        linewidth=2, edgecolor='r', facecolor='none', label="Quadrato"
+        linewidth=3, edgecolor='r', facecolor='none', label="Quadrato"
     )
     plt.gca().add_patch(square)
     plt.gca().set_aspect('auto')

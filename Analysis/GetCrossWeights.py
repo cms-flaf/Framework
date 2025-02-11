@@ -343,3 +343,42 @@ def AddTriggerWeightsAndErrors(dfBuilder,WantErrors):
     defineTriggerWeights(dfBuilder)
     if WantErrors:
         defineTriggerWeightsErrors(dfBuilder)
+
+
+
+def defineTauTauTriggerWeightsErrors(dfBuilder):
+
+    for scale in ['Up', 'Down']:
+        ### diTau - for tauTau ###
+        dfBuilder.df = dfBuilder.df.Define(
+            f"trigSF_tau{scale}_rel",
+            f"if (HLT_ditau && Legacy_region && tauTau) {{return (SelectCorrectDM(tau1_decayMode, weight_tau1_TrgSF_ditau_DM0{scale}_rel, weight_tau1_TrgSF_ditau_DM1{scale}_rel, weight_tau1_TrgSF_ditau_3Prong{scale}_rel)*SelectCorrectDM(tau2_decayMode, weight_tau2_TrgSF_ditau_DM0{scale}_rel, weight_tau2_TrgSF_ditau_DM1{scale}_rel, weight_tau2_TrgSF_ditau_3Prong{scale}_rel)); }}return 1.f;"
+        )
+        ### singleTau ###
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_singleTau{scale}_rel", f"""if (HLT_singleTau && (tauTau ) && SingleTau_region && !(Legacy_region)) {{return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleTau, weight_tau1_TrgSF_singleTau{scale}_rel,tau2_pt, tau2_eta, tau2_HasMatching_singleTau, weight_tau2_TrgSF_singleTau{scale}_rel); }} else if (HLT_singleTau && (eTau || muTau ) && SingleTau_region && !(Legacy_region)) {{return weight_tau2_TrgSF_singleTau{scale}_rel;}} ;return 1.f;""")
+        ### MET ###
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_MET{scale}_rel", f"if(HLT_MET && !(SingleTau_region) && !(Legacy_region)) {{return weight_TrgSF_MET{scale}_rel;}} return 1.f;")
+        #### final tau trig sf ##### --> not needed as there is only tauTau channel
+        # dfBuilder.df = dfBuilder.df.Define(f"trigSF_tau{scale}_rel", f"""if (Legacy_region && eTau){{return eTau_trigSF_tau{scale}_rel;}} else if (Legacy_region && muTau){{return muTau_trigSF_tau{scale}_rel;}} else if(Legacy_region && tauTau){{return tauTau_trigSF_tau{scale}_rel;}} return 1.f;""")
+
+
+def defineTauTauTriggerWeights(dfBuilder): # needs application region def
+    # *********************** tauTau ***********************
+    if 'tauTau' in dfBuilder.config['channels_to_consider']:
+        dfBuilder.df = dfBuilder.df.Define(
+                    f"weight_trigSF_diTau",
+                    f"if (HLT_ditau && Legacy_region && tauTau) {{return (SelectCorrectDM(tau1_decayMode, weight_tau1_TrgSF_ditau_DM0Central, weight_tau1_TrgSF_ditau_DM1Central, weight_tau1_TrgSF_ditau_3ProngCentral)*SelectCorrectDM(tau2_decayMode, weight_tau2_TrgSF_ditau_DM0Central, weight_tau2_TrgSF_ditau_DM1Central, weight_tau2_TrgSF_ditau_3ProngCentral)); }}return 1.f;"
+                )
+    # *********************** singleTau ***********************
+
+    # dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_singleTau", f"if  (HLT_singleTau && (tauTau || eTau || muTau ) && SingleTau_region && !(Legacy_region)) {{return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleTau, weight_tau1_TrgSF_singleTauCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleTau, weight_tau2_TrgSF_singleTauCentral);}} return 1.f;")
+    # if 'tauTau' in dfBuilder.config['channels_to_consider'] or 'muTau' in dfBuilder.config['channels_to_consider'] or 'eTau' in dfBuilder.config['channels_to_consider']  :
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_singleTau", f"""if (HLT_singleTau && (tauTau ) && SingleTau_region && !(Legacy_region)) {{return getCorrectSingleLepWeight(tau1_pt, tau1_eta, tau1_HasMatching_singleTau, weight_tau1_TrgSF_singleTauCentral,tau2_pt, tau2_eta, tau2_HasMatching_singleTau, weight_tau2_TrgSF_singleTauCentral); }} else if (HLT_singleTau && (eTau || muTau ) && SingleTau_region && !(Legacy_region)) {{return weight_tau2_TrgSF_singleTauCentral;}} ;return 1.f;""")
+    # *********************** MET ***********************
+    # if 'tauTau' in dfBuilder.config['channels_to_consider'] or 'muTau' in dfBuilder.config['channels_to_consider'] or 'eTau' in dfBuilder.config['channels_to_consider']  :
+        dfBuilder.df = dfBuilder.df.Define(f"weight_trigSF_MET", "if (HLT_MET && (tauTau || eTau || muTau ) && !(SingleTau_region) && !(Legacy_region)) { return (weight_TrgSF_METCentral) ;} return 1.f;")
+
+def AddTauTauTriggerWeightsAndErrors(dfBuilder,WantErrors):
+    defineTauTauTriggerWeights(dfBuilder)
+    if WantErrors:
+        defineTauTauTriggerWeightsErrors(dfBuilder)

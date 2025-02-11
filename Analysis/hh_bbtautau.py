@@ -3,10 +3,10 @@ if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
 from Analysis.HistHelper import *
-from Analysis.GetCrossWeights import *
-# from Analysis.GetTauTauWeights import *
-from Common.Utilities import *
 
+from Common.Utilities import *
+# import Analysis.GetTauTauWeights as CrossTauTauWeights
+import Analysis.GetCrossWeights as CrossWeights
 uncReNames = {
     "bTagShape_lf":"CMS_btag_LF",
     "bTagShape_hf":"CMS_btag_HF",
@@ -195,8 +195,8 @@ def GetBTagWeight(global_cfg_dict,cat,applyBtag=False):
     return f'{btag_weight}*{btagshape_weight}'
 
 
-def GetWeight(channel, cat, boosted_categories):
-    weights_to_apply = ["weight_MC_Lumi_pu", "weight_L1PreFiring_Central"]#,"weight_L1PreFiring_ECAL_Central", "weight_L1PreFiring_Muon_Central"]
+def GetWeight(channel, cat, boosted_categories,wantPrefiring=True):
+    weights_to_apply = ["weight_MC_Lumi_pu"]#,"weight_L1PreFiring_ECAL_Central", "weight_L1PreFiring_Muon_Central"]
     trg_weights_dict = {
         'eTau':["weight_trigSF_eTau", "weight_trigSF_singleTau", "weight_trigSF_MET"],
         'muTau':["weight_trigSF_muTau", "weight_trigSF_singleTau", "weight_trigSF_MET"],
@@ -214,7 +214,8 @@ def GetWeight(channel, cat, boosted_categories):
         #'eMu': ["weight_tau1_MuonID_SF_RecoCentral","weight_tau1_HighPt_MuonID_SF_RecoCentral","weight_tau1_MuonID_SF_TightID_TrkCentral","weight_tau1_MuonID_SF_TightRelIsoCentral","weight_tau2_EleSF_wp80iso_EleIDCentral"]
         'eE':["weight_tau1_EleSF_wp80iso_EleIDCentral","weight_tau2_EleSF_wp80noiso_EleIDCentral"]
         }
-
+    if wantPrefiring:
+        weights_to_apply.extend(["weight_L1PreFiring_Central"])
     weights_to_apply.extend(ID_weights_dict[channel])
     weights_to_apply.extend(trg_weights_dict[channel])
     if cat not in boosted_categories:
@@ -283,6 +284,11 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         SR_mass_limits_bb_boosted = self.config['mass_cut_limits']['bb_m_vis']['boosted']
         SR_mass_limits_bb = self.config['mass_cut_limits']['bb_m_vis']['other']
         SR_mass_limits_tt = self.config['mass_cut_limits']['tautau_m_vis']
+        ellypse_limts_A = self.config['ellypse_limits']['A']
+        ellypse_limts_B = self.config['ellypse_limits']['B']
+        ellypse_limts_C = self.config['ellypse_limits']['C']
+        ellypse_limts_D = self.config['ellypse_limits']['D']
+
         self.df = self.df.Define("SR_tt", f"return (tautau_m_vis > {SR_mass_limits_tt[0]} && tautau_m_vis  < {SR_mass_limits_tt[1]});")
         self.df = self.df.Define("SR_bb", f"(bb_m_vis > {SR_mass_limits_bb[0]} && bb_m_vis < {SR_mass_limits_bb[1]});")
         self.df = self.df.Define("SR_bb_boosted", f"(bb_m_vis_softdrop > {SR_mass_limits_bb_boosted[0]} && bb_m_vis_softdrop < {SR_mass_limits_bb_boosted[1]});")
@@ -290,7 +296,8 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("SR_boosted", f" SR_tt &&  SR_bb_boosted")
         self.df = self.df.Define("DYCR", "if(muMu || eE) {return (tautau_m_vis < 100 && tautau_m_vis > 80);} return true;")
         self.df = self.df.Define("DYCR_boosted", "DYCR")
-        # self.df = self.df.Define("SR_ellyptical", "(((SVfit_m-116)*(SVfit_m-116)/(35*35)) + ((bb_m_vis-111)*(bb_m_vis-111)/(45*45))) < 1 ")
+        self.df = self.df.Define("SR_ellyptical", f"(((SVfit_m-{ellypse_limts_A})*(SVfit_m-{ellypse_limts_A})/({ellypse_limts_B}*{ellypse_limts_A})) + ((bb_m_vis-{ellypse_limts_C})*(bb_m_vis-{ellypse_limts_C})/({ellypse_limts_D}*{ellypse_limts_D}))) < 1 ")
+        self.df = self.df.Define("SR_ellyptical_boosted", f"(((SVfit_m-{ellypse_limts_A})*(SVfit_m-{ellypse_limts_A})/({ellypse_limts_B}*{ellypse_limts_A})) + ((bb_m_vis_softdrop-{ellypse_limts_C})*(bb_m_vis_softdrop-{ellypse_limts_C})/({ellypse_limts_D}*{ellypse_limts_D}))) < 1 ")
         # self.df = self.df.Define("SR_ellyptical_boosted_tt", "SVfit_m < 152 && SVfit_m > 80 ")
         # self.df = self.df.Define("SR_ellyptical_boosted_bb", "bb_m_vis_softdrop < 160 && bb_m_vis_softdrop > 90 ")
         # self.df = self.df.Define("SR_ellyptical_boosted", "SR_ellyptical_boosted_tt && SR_ellyptical_boosted_bb")
@@ -301,15 +308,11 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         TTCR_mass_limits_muMu = self.config['TTCR_mass_limits']['muMu']
         TTCR_mass_limits_eE = self.config['TTCR_mass_limits']['eE']
         self.df = self.df.Define("TTCR", f"""
-                                if(eTau) {{return (tautau_m_vis < {TTCR_mass_limits_eTau[0]} || tautau_m_vis > {TTCR_mass_limits_eTau[1]});
+                                if(eTau || muTau || tauTau) {{ return !(SR_ellyptical);
                                 }};
-                                 if(muTau) {{return (tautau_m_vis < {TTCR_mass_limits_muTau[0]} || tautau_m_vis > {TTCR_mass_limits_muTau[1]});
+                                if(muMu) {{return (tautau_m_vis < {TTCR_mass_limits_muMu[0]} || tautau_m_vis > {TTCR_mass_limits_muMu[1]});
                                  }};
-                                 if(tauTau) {{return (tautau_m_vis < {TTCR_mass_limits_tauTau[0]} || tautau_m_vis > {TTCR_mass_limits_tauTau[1]});
-                                 }};
-                                 if(muMu) {{return (tautau_m_vis < {TTCR_mass_limits_muMu[0]} || tautau_m_vis > {TTCR_mass_limits_muMu[1]});
-                                 }};
-                                 if(eE) {{return (tautau_m_vis < {TTCR_mass_limits_eE[0]} || tautau_m_vis > {TTCR_mass_limits_eE[1]});
+                                if(eE) {{return (tautau_m_vis < {TTCR_mass_limits_eE[0]} || tautau_m_vis > {TTCR_mass_limits_eE[1]});
                                  }};
                                  return true;""")
         self.df = self.df.Define("TTCR_boosted", "TTCR")
@@ -437,7 +440,10 @@ def PrepareDfForHistograms(dfForHistograms):
         wantErrors = dfForHistograms.wantTriggerSFErrors and dfForHistograms.isCentral
         # if wantErrors:
         #     print(dfForHistograms.df.Describe())
-        AddTriggerWeightsAndErrors(dfForHistograms,wantErrors)
+        if dfForHistograms.deepTauVersion=='v2p5':
+            CrossWeights.AddTauTauTriggerWeightsAndErrors(dfForHistograms,wantErrors)
+        else:
+            CrossWeights.AddTriggerWeightsAndErrors(dfForHistograms,wantErrors)
     dfForHistograms.defineCRs()
     dfForHistograms.defineCategories()
     dfForHistograms.defineQCDRegions()

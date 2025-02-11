@@ -3,8 +3,8 @@ norm:
     expression: weight_Jet_PUJetID_eff{scale}_rel_b1_2 * weight_Jet_PUJetID_eff{scale}_rel_b2_2 * final_weight
   PileUp_Lumi_MC:
     expression: weight_MC_Lumi_pu{scale}_rel  * final_weight
-  L1Prefiring:
-    expression: weight_L1PreFiring{scale}_rel  * final_weight
+  # L1Prefiring:
+  #   expression: weight_L1PreFiring{scale}_rel  * final_weight
   # L1Prefiring_ECAL:
     # expression: weight_L1PreFiring_ECAL{scale}_rel * final_weight
   # L1Prefiring_Muon_Stat:
@@ -111,24 +111,18 @@ norm:
     expression: weight_trigSF_MET{scale}_rel * final_weight
   HLT_singleTau:
     expression: weight_trigSF_singleTau{scale}_rel  * final_weight
-  # HLT_singleEle:
-  #   expression: weight_trigSF_singleEle{scale}_rel * final_weight
-  # HLT_singleMu:
-  #   expression: weight_trigSF_singleMu{scale}_rel * final_weight
-  # HLT_eMu:
-  #   expression: weight_trigSF_eMu{scale}_rel * final_weight
-  trigSF_ele:
-    expression: trigSF_ele{scale}_rel * final_weight
-  trigSF_SL_ele:
-    expression: trigSF_SL_ele{scale}_rel * final_weight
-  trigSF_cross_ele:
-    expression: trigSF_cross_ele{scale}_rel * final_weight
-  trigSF_mu:
-    expression: trigSF_mu{scale}_rel * final_weight
-  trigSF_SL_mu:
-    expression: trigSF_SL_mu{scale}_rel * final_weight
-  trigSF_cross_mu:
-    expression: trigSF_cross_mu{scale}_rel * final_weight
+  # trigSF_ele:
+  #   expression: trigSF_ele{scale}_rel * final_weight
+  # trigSF_SL_ele:
+  #   expression: trigSF_SL_ele{scale}_rel * final_weight
+  # trigSF_cross_ele:
+  #   expression: trigSF_cross_ele{scale}_rel * final_weight
+  # trigSF_mu:
+  #   expression: trigSF_mu{scale}_rel * final_weight
+  # trigSF_SL_mu:
+  #   expression: trigSF_SL_mu{scale}_rel * final_weight
+  # trigSF_cross_mu:
+  #   expression: trigSF_cross_mu{scale}_rel * final_weight
   trigSF_tau:
     expression: trigSF_tau{scale}_rel * final_weight
 

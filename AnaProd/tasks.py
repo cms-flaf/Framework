@@ -345,26 +345,26 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             thread.join()
 
 
+
 class DNNCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
-   
 
     def workflow_requires(self):
-        workflow_dict = {}
-        workflow_dict["anaTuple"] = {
-            br_idx: AnaTupleTask.req(self, branch=br_idx)
-            for br_idx, _ in self.branch_map.items()
-        }
-        return workflow_dict
+        branches_set = set()
+        for branch_idx, (sample_name, sample_type, input_file, ana_br_idx, spin, mass) in self.branch_map.items():
+            if ana_br_idx not in branches_set:
+                branches_set.add(ana_br_idx)
+        return { "anaTuple" :AnaTupleTask.req(self, branches=tuple(branches_set),customisations=self.customisations)}
 
     def requires(self):
+        sample_name, sample_type, input_file, ana_br_idx, spin, mass =  self.branch_data
         return [
-            AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default)
+            AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=ana_br_idx, branches=(ana_br_idx,),customisations=self.customisations)
         ]
-
-    def load_sample_configs(self, signal_config_file):
+    @staticmethod
+    def load_sample_configs(signal_config_file):
         with open(signal_config_file, 'r') as f:
             signal_config = yaml.safe_load(f)
         return signal_config
@@ -375,17 +375,17 @@ class DNNCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
         branches = {}
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).branch_map
-        br_idx = 0
-        for _, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-            for sample_key, sample_info in signal_config.items():
+        br_idx_final = 0
+        for sample_key, sample_info in signal_config.items():
+            for ana_br_idx, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
                     mass = sample_info['mass']
                     spin = sample_info['spin']
-                    branches[br_idx] = (sample_name, sample_type, input_file, spin, mass)
-                    br_idx += 1
-        return branches
+                    branches[br_idx_final] = (sample_name, sample_type, input_file, ana_br_idx, spin, mass)
+                    br_idx_final += 1
+        return branches 
 
     def output(self):
-        sample_name, sample_type, input_file, spin, mass = self.branch_data
+        sample_name, sample_type, input_file, ana_br_idx, spin, mass = self.branch_data
         out_file_name = os.path.basename(self.input()[0].path)
         out_dir = os.path.join(
             "nnCacheTuple", self.period, sample_name, self.version,
@@ -395,7 +395,7 @@ class DNNCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return self.remote_target(final_file, fs=self.fs_nnCacheTuple)
 
     def run(self):
-        sample_name, sample_type, input_file, spin, mass = self.branch_data
+        sample_name, sample_type, input_file, ana_br_idx, spin, mass = self.branch_data
         unc_config = os.path.join(self.ana_path(), "config", self.period, "weights.yaml")
         nn_interface_script = os.path.join(self.ana_path(), "AnaProd","HH_bbtautau", "NNInterface.py")
         global_config = os.path.join(self.ana_path(), "config", "HH_bbtautau", "global.yaml")
@@ -426,6 +426,7 @@ class DNNCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             kInit_cond.notify_all()
             kInit_cond.release()
             thread.join()
+
 
 
 class DataCacheMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):

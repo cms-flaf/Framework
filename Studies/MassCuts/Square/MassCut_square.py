@@ -110,8 +110,8 @@ def getDataFramesFromFile(infile, res=None, mass=None,printout=False):
     return df_initial
 
 def buildDfWrapped(df_initial,global_cfg_dict,year,df_initial_cache=None):
-    dfBuilder_init = DataFrameBuilderForHistograms(df_initial,global_cfg_dict, f"Run2_{year}")
-    dfBuilder_cache_init = DataFrameBuilderForHistograms(df_initial_cache,global_cfg_dict, f"Run2_{year}")
+    dfBuilder_init = DataFrameBuilderForHistograms(df_initial,global_cfg_dict, f"Run2_{year}",deepTauVersion="v2p5")
+    dfBuilder_cache_init = DataFrameBuilderForHistograms(df_initial_cache,global_cfg_dict, f"Run2_{year}",deepTauVersion="v2p5")
     # print(dfBuilder_init.df.Count().GetValue())
     # print(dfBuilder_cache_init.df.Count().GetValue())
     if df_initial_cache:
@@ -176,13 +176,15 @@ if __name__ == "__main__":
     for cat in  args.cat.split(','):
         print(cat)
         bb_mass = "bb_m_vis" if cat != 'boosted_cat3' else "bb_m_vis_softdrop"
+        print(bb_mass)
         y_bins = hist_cfg_dict[bb_mass]['x_rebin']['other']
-        x_bins = hist_cfg_dict['tautau_m_vis']['x_rebin']['other']
+        x_bins = hist_cfg_dict[tt_mass]['x_rebin']['other']
         # print(x_bins)
         for channel in global_cfg_dict['channels_to_consider']:
             # print(channel,cat)
             dfWrapped_sig.df = dfWrapped_sig.df.Filter(f"SVfit_valid >0 && OS_Iso && {channel} && {cat}")
             dfWrapped_sig = FilterForbJets(cat,dfWrapped_sig)
+
             df_sig_old = dfWrapped_sig.df
             df_sig_new = dfWrapped_sig.df
             # df_sig_new = df_sig_new.Range(100000)
@@ -199,6 +201,7 @@ if __name__ == "__main__":
                 ssqrtb_in = 0
                 if args.checkBckg:
                     n_in_bckg = df_bckg_old.Count().GetValue()
+                    print(f"inizialmente {n_in_sig} eventi di segnale e {n_in_bckg} eventi di fondo")
                     ssqrtb_in =0 if n_in_bckg == 0 else  n_in_sig/math.sqrt(n_in_bckg)
 
                 # SQUARE CUT
@@ -214,6 +217,7 @@ if __name__ == "__main__":
                 ssqrtb_lin = 0
                 if args.checkBckg:
                     n_after_bckg_lin = df_bckg_old.Filter(f"{tt_mass}< {mtt_max} && {tt_mass} > {mtt_min}").Filter(f"{bb_mass}< {mbb_max} && {bb_mass} > {mbb_min}").Count().GetValue()
+                    print(f"dopo taglio lineare {n_after_sig_lin} eventi di segnale e {n_after_bckg_lin} eventi di fondo")
                     percentage_bckg_lin =  n_after_bckg_lin/n_in_bckg if n_in_bckg!=0 else 0
                     ssqrtb_lin = 0 if n_after_bckg_lin ==0 else n_after_sig_lin/math.sqrt(n_after_bckg_lin)
 
@@ -233,8 +237,9 @@ if __name__ == "__main__":
                 ssqrtb_ell = 0
                 if args.checkBckg:
                     n_after_bckg_ell = df_bckg_old.Filter(f"(({tt_mass} - {new_par_A})*({tt_mass} - {new_par_A}) / ({new_par_B}*{new_par_B}) + ({bb_mass} - {new_par_C})*({bb_mass} - {new_par_C}) / ({new_par_D}*{new_par_D})) < 1").Count().GetValue()
+                    print(f"dopo taglio ellittico {n_after_sig_ell} eventi di segnale e {n_after_bckg_ell} eventi di fondo")
                     percentage_bckg_ell =  n_after_bckg_ell/n_in_bckg if n_in_bckg!=0 else 0
-                    ssqrtb_ell = n_after_sig_ell/math.sqrt(n_after_bckg_ell)
+                    ssqrtb_ell = n_after_sig_ell/math.sqrt(n_after_bckg_ell) if n_after_bckg_ell!=0 else 0
 
                 print(f"| {args.mass} | {cat} | {ssqrtb_in} | {mtt_min}, {mtt_max} | {mbb_min}, {mbb_max} | {percentage_sig_lin} | {percentage_bckg_lin} |  {ssqrtb_lin}| {new_par_A} | {new_par_B} | {new_par_C} | {new_par_D} | {percentage_sig_ell} | {percentage_bckg_ell} |  {ssqrtb_ell} |" )
                 csv_header = ["mass","cat","ssqrt(b) in","mtt min ", "mtt max", "mbb min","mbb max","%s (lin)","%b (lin)"," ssqrt(b) lin","A","B","C","D","%s (ell)","%b (ell)"," ssqrt(b) ell"]
@@ -253,16 +258,16 @@ if __name__ == "__main__":
             # mtt_min = 55
             # mtt_max = 150
 
-            mbb_min = 40
-            mbb_max = 270
-            mtt_min = 15
-            mtt_max = 130
-            new_par_A = 121
-            new_par_B = 26
-            new_par_C = 115
-            new_par_D = 36
-
             if args.wantPlots:
+                mbb_min = 50
+                mbb_max = 150
+                mtt_min = 50
+                mtt_max = 160
+                new_par_A = 121
+                new_par_B = 26
+                new_par_C = 115
+                new_par_D = 36
+
                 if args.res and args.mass:
                     hist_sig=df_sig_old.Histo2D(GetModel2D(x_bins, y_bins),bb_mass, tt_mass).GetValue()
                 hist_bckg=df_bckg_old.Histo2D(GetModel2D(x_bins, y_bins),bb_mass, tt_mass).GetValue()

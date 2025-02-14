@@ -42,9 +42,10 @@ def applyLegacyVariables(dfw, global_cfg_dict, is_central=True):
             trigger_name = 'HLT_'+trigger
             if trigger_name not in dfw.df.GetColumnNames():
                 dfw.df = dfw.df.Define(trigger_name, "1")
-    entryvalid_stri = '('
-    entryvalid_stri += ' || '.join(f'({ch} & {trg_strings[ch]})' for ch in channels)
-    entryvalid_stri += ')'
+    # entryvalid_stri = '('
+    # entryvalid_stri += ' || '.join(f'({ch} & {trg_strings[ch]})' for ch in channels)
+    # entryvalid_stri += ')'
+    entryvalid_stri="true"
     dfw.DefineAndAppend("entry_valid",entryvalid_stri)
     MT2Branches = dfw.Apply(LegacyVariables.GetMT2)
     dfw.colToSave.extend(MT2Branches)

@@ -245,7 +245,7 @@ if __name__ == "__main__":
     else:
         all_histograms_1D = all_histograms
     fixNegativeContributions = False
-    wantSymm = True
+    wantSymm = False
     wantInverted = False
     AddQCDInHistDict(args.var, all_histograms_1D, channels, all_categories, args.uncSource, all_samples_types.keys(), scales,wantSymm, wantInverted,fixNegativeContributions)
 

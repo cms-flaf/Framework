@@ -252,6 +252,12 @@ ellypse_limits:
   C: 115
   D: 36
 
+ellypse_limits_boosted:
+  A: 114
+  B: 23
+  C: 123
+  D: 46
+
 # mass_cut_limits:
 #   bb_m_vis:
 #     boosted:

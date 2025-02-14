@@ -319,6 +319,9 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         thread = threading.Thread(target=update_kinit_thread)
         customisation_dict = getCustomisationSplit(self.customisations)
         channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
+        store_noncentral = customisation_dict['store_noncentral']=='True' if 'store_noncentral' in customisation_dict.keys() else self.global_params.get('store_noncentral', False)
+
+        compute_unc_variations = customisation_dict['compute_unc_variations']=='True' if 'compute_unc_variations' in customisation_dict.keys() else self.global_params.get('compute_unc_variations', False)
         #Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
         if type(channels) == list:
             channels = ','.join(channels)
@@ -331,7 +334,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else ""
             with input_file.localize("r") as local_input, self.output().localize("w") as outFile:
                 anaCacheTupleProducer_cmd = ['python3', producer_anacachetuples,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config, '--globalConfig', global_config, '--channels', channels ]
-                if self.global_params['store_noncentral'] and sample_type != 'data':
+                if compute_unc_variations and sample_type != 'data':
                     anaCacheTupleProducer_cmd.extend(['--compute_unc_variations', 'True'])
                 if deepTauVersion!="":
                     anaCacheTupleProducer_cmd.extend([ '--deepTauVersion', deepTauVersion])

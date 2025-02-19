@@ -101,7 +101,7 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("baseline",f"return true;")
 
     def defineChannels(self):
-        self.df = self.df.Define("channelId", f"(lep1_type*10) + lep2_type")
+        #self.df = self.df.Define("channelId", f"(lep1_type*10) + lep2_type") #Muhammad moved this to anaTupleDef like a jerk
         for channel in self.config['channelSelection']:
             ch_value = self.config['channelDefinition'][channel]
             #self.df = self.df.Define(f"{channel}", f"channelId=={ch_value}")
@@ -142,6 +142,8 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         self.df = self.df.Define("Z_Region", f"(lep1_type == 2 && lep2_type == 2) && (abs(diLep_p4.mass() - 91) < 10)")
         self.df = self.df.Define("diLep_mass", f"(lep1_type == 2 && lep2_type == 2) ? diLep_p4.mass() : 0.0")
 
+        self.df = self.df.Define("Lep1Lep2Jet1Jet2_mass", f"(lep1_type == 2 && lep2_type == 2) ? Lep1Lep2Jet1Jet2_p4.mass() : 0.0")
+        self.df = self.df.Define("Lep1Jet1Jet2_mass", f"(lep1_type == 2) ? Lep1Jet1Jet2_p4.mass() : 0.0")
 
     def calculateMT(self):
         self.df = self.df.Define("MT_lep1", f"(lep1_type > 0) ? Calculate_MT(lep1_p4, PuppiMET_p4) : 0.0")
@@ -188,17 +190,20 @@ def defineAllP4(df):
     df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")
     for idx in [0,1]:
         df = Utilities.defineP4(df, f"lep{idx+1}")
+    df = df.Define(f"centralJet_p4", f"GetP4(centralJet_pt, centralJet_eta, centralJet_phi, centralJet_mass)")
     for met_var in ['DeepMETResolutionTune', 'DeepMETResponseTune', 'PuppiMET']:
         df = df.Define(f"{met_var}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({met_var}_pt,0.,{met_var}_phi,0.)")
 
     df = df.Define(f"diLep_p4", f"(lep1_p4+lep2_p4)")
+    df = df.Define(f"Lep1Lep2Jet1Jet2_p4", f"(centralJet_pt.size() >= 2) ? (lep1_p4+lep2_p4+centralJet_p4[0]+centralJet_p4[1]) : LorentzVectorM()")
+    df = df.Define(f"Lep1Jet1Jet2_p4", f"(centralJet_pt.size() >= 2) ? (lep1_p4+centralJet_p4[0]+centralJet_p4[1]) : LorentzVectorM()")
     return df
 
 
 
 def PrepareDfForHistograms(dfForHistograms):
     dfForHistograms.df = defineAllP4(dfForHistograms.df)
-    dfForHistograms.defineChannels()
+    #dfForHistograms.defineChannels()
     dfForHistograms.defineLeptonPreselection()
     dfForHistograms.defineJetSelections()
     dfForHistograms.defineQCDRegions()

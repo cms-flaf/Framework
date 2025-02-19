@@ -10,6 +10,8 @@ corrections:
   - ele
   - eleES
   - pu
+  - JEC
+  - JER
 
 #This is for Analysis Selection
 channelSelection:

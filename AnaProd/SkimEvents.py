@@ -71,7 +71,7 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Event
   df_out_valid = df_out.Filter('isValid')
 
   colToSave_diff= []
-  colToNotToMakeDiff=  ["period","run", "sample_name", "sample_type", "channelId", "entryIndex", "event", "isData", "luminosityBlock", "X_mass", "X_spin"]
+  colToNotToMakeDiff = ["period","run", "sample_name", "sample_type", "entryIndex", "event", "isData", "luminosityBlock", "X_mass", "X_spin"]
 
 
   condition_noDiff_list = []

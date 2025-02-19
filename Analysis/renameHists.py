@@ -12,6 +12,7 @@ if __name__ == "__main__":
 import Common.Utilities as Utilities
 from Analysis.HistHelper import *
 from Analysis.hh_bbtautau import *
+import Common.Setup as Setup
 
 
 processes= ["GluGluToRadionToHHTo2B2Tau_M-250","GluGluToRadionToHHTo2B2Tau_M-260","GluGluToRadionToHHTo2B2Tau_M-270","GluGluToRadionToHHTo2B2Tau_M-280","GluGluToRadionToHHTo2B2Tau_M-300","GluGluToRadionToHHTo2B2Tau_M-320","GluGluToRadionToHHTo2B2Tau_M-350","GluGluToRadionToHHTo2B2Tau_M-400","GluGluToRadionToHHTo2B2Tau_M-450","GluGluToRadionToHHTo2B2Tau_M-500","GluGluToRadionToHHTo2B2Tau_M-550","GluGluToRadionToHHTo2B2Tau_M-600","GluGluToRadionToHHTo2B2Tau_M-650","GluGluToRadionToHHTo2B2Tau_M-700","GluGluToRadionToHHTo2B2Tau_M-750","GluGluToRadionToHHTo2B2Tau_M-800","GluGluToRadionToHHTo2B2Tau_M-850","GluGluToRadionToHHTo2B2Tau_M-900","GluGluToRadionToHHTo2B2Tau_M-1000","GluGluToRadionToHHTo2B2Tau_M-1250","GluGluToRadionToHHTo2B2Tau_M-1500","GluGluToRadionToHHTo2B2Tau_M-1750","GluGluToRadionToHHTo2B2Tau_M-2000","GluGluToRadionToHHTo2B2Tau_M-2500","GluGluToRadionToHHTo2B2Tau_M-3000","GluGluToBulkGravitonToHHTo2B2Tau_M-250","GluGluToBulkGravitonToHHTo2B2Tau_M-260","GluGluToBulkGravitonToHHTo2B2Tau_M-270","GluGluToBulkGravitonToHHTo2B2Tau_M-280","GluGluToBulkGravitonToHHTo2B2Tau_M-300","GluGluToBulkGravitonToHHTo2B2Tau_M-320","GluGluToBulkGravitonToHHTo2B2Tau_M-350","GluGluToBulkGravitonToHHTo2B2Tau_M-400","GluGluToBulkGravitonToHHTo2B2Tau_M-450","GluGluToBulkGravitonToHHTo2B2Tau_M-500","GluGluToBulkGravitonToHHTo2B2Tau_M-550","GluGluToBulkGravitonToHHTo2B2Tau_M-600","GluGluToBulkGravitonToHHTo2B2Tau_M-650","GluGluToBulkGravitonToHHTo2B2Tau_M-700","GluGluToBulkGravitonToHHTo2B2Tau_M-750","GluGluToBulkGravitonToHHTo2B2Tau_M-800","GluGluToBulkGravitonToHHTo2B2Tau_M-850","GluGluToBulkGravitonToHHTo2B2Tau_M-900","GluGluToBulkGravitonToHHTo2B2Tau_M-1000","GluGluToBulkGravitonToHHTo2B2Tau_M-1250","GluGluToBulkGravitonToHHTo2B2Tau_M-1500","GluGluToBulkGravitonToHHTo2B2Tau_M-1750","GluGluToBulkGravitonToHHTo2B2Tau_M-2000","GluGluToBulkGravitonToHHTo2B2Tau_M-2500","GluGluToBulkGravitonToHHTo2B2Tau_M-3000","data","QCD","W","TT","DY","EWK_ZTo2L","EWK_ZTo2Nu","EWK_WplusToLNu","EWK_WminusToLNu","ggHToZZTo2L2Q","GluGluHToTauTau_M125","VBFHToTauTau_M125","GluGluHToWWTo2L2Nu_M125","VBFHToWWTo2L2Nu_M125","WplusHToTauTau_M125","WminusHToTauTau_M125","ZHToTauTau_M125","ZH_Hbb_Zll","ZH_Hbb_Zqq","HWplusJ_HToWW_M125","HWminusJ_HToWW_M125","HZJ_HToWW_M125","WW","WZ","ZZ","WWW_4F","WWZ_4F","WZZ","ZZZ","ST_t-channel_antitop_4f_InclusiveDecays","ST_t-channel_top_4f_InclusiveDecays","ST_tW_antitop_5f_InclusiveDecays","ST_tW_top_5f_InclusiveDecays","TTWW","TTWH","TTZH","TTZZ","TTWZ","TTTT","TTTW","TTTJ","TTGG","TTGJets","TT4b","ttHTobb_M125","ttHToTauTau_M125"]
@@ -122,6 +123,7 @@ uncReNames = {
 }
 
 
+
 if __name__ == "__main__":
     import argparse
     import yaml
@@ -131,22 +133,50 @@ if __name__ == "__main__":
     parser.add_argument('--year', required=True)
     parser.add_argument('--var', required=False, type=str, default='tau1_pt')
     #parser.add_argument('--remove-files', required=False, type=bool, default=False)
+    parser.add_argument('--ana_path', required=True, type=str)
+    parser.add_argument('--period', required=True, type=str)
     args = parser.parse_args()
+
+
+    setup = Setup.Setup(args.ana_path, args.period)
+
+samples_to_consider = setup.global_params['sample_types_to_merge']
+if type(samples_to_consider) == list:
+    samples_to_consider.append('data')
+    for signal_name in setup.signal_samples:
+        samples_to_consider.append(signal_name)
 
 
 all_histnames = {}
 
-for process in processes:
-    all_histnames[process] = process
-    for unc_old in uncReNames.keys():
-        new_unc = uncReNames[unc_old].format(args.year)
-        #print(unc_old.split('_'))
-        #print(args.year)
-        for scale in ['Up','Down']:
-            all_histnames[f"{process}_{unc_old}_{args.year}_{scale}"] = f"{process}_{new_unc}{scale}"
-            all_histnames[f"{process}_{unc_old}_{scale}"] = f"{process}_{new_unc}{scale}"
+#Move this rename map to the weights.yaml for Run3, but keep previous Run2 support for now
+if int(args.year) < 2020:
+    for process in processes:
+        all_histnames[process] = process
+        for unc_old in uncReNames.keys():
+            new_unc = uncReNames[unc_old].format(args.year)
+            #print(unc_old.split('_'))
+            #print(args.year)
+            for scale in ['Up','Down']:
+                all_histnames[f"{process}_{unc_old}_{args.year}_{scale}"] = f"{process}_{new_unc}{scale}"
+                all_histnames[f"{process}_{unc_old}_{scale}"] = f"{process}_{new_unc}{scale}"
+elif int(args.year) >= 2020:
+    for process in samples_to_consider:
+        all_histnames[process] = process
+        for unc_old in setup.weights_config['norm'].keys():
+            print(setup.weights_config)
+            print(setup.weights_config['norm'])
+            print(setup.weights_config['norm'][unc_old])
+            new_unc = setup.weights_config['norm'][unc_old]['name'].format(args.year)
+            for scale in ['Up', 'Down']:
+                all_histnames[f"{process}_{unc_old}_{args.year}_{scale}"] = f"{process}_{new_unc}{scale}"
+                all_histnames[f"{process}_{unc_old}_{scale}"] = f"{process}_{new_unc}{scale}"      
+
+
 
 #print(all_histnames.keys())
+
+
 inFile = ROOT.TFile.Open(args.inFile, "READ")
 outFile = ROOT.TFile.Open(args.outFile, "RECREATE")
 channels =[str(key.GetName()) for key in inFile.GetListOfKeys()]
@@ -154,9 +184,9 @@ for channel in channels:
     dir_0 = inFile.Get(channel)
     dir_1 = dir_0.Get("OS_Iso")
     keys_categories = [str(key.GetName()) for key in dir_1.GetListOfKeys()]
-    for cat in keys_categories:
+    for cat in keys_categories: #This is inclusive/boosted/baseline/res1b/res2b
         dir_2= dir_1.Get(cat)
-        for key_hist in dir_2.GetListOfKeys():
+        for key_hist in dir_2.GetListOfKeys(): #This is process names
             key_name = key_hist.GetName()
             if key_name not in all_histnames.keys():
                 print(f"{key_name} not in all_histnames keys")

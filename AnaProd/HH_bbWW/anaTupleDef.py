@@ -272,4 +272,3 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
             for var in PtEtaPhiM:
                 dfw.DefineAndAppend(f"{name}_mother_{var}", f"static_cast<float>({name}_mother_p4.{var}())")
                 dfw.DefineAndAppend(f"{name}_{var}", f"static_cast<float>({name}_p4.{var}())")
-

@@ -75,6 +75,11 @@ class Task(law.Task):
         return self.setup.get_fs('anaCacheTuple')
 
     @property
+    def fs_nnCacheTuple(self):
+        return self.setup.get_fs('nnCacheTuple')
+
+
+    @property
     def fs_histograms(self):
         return self.setup.get_fs('histograms')
 

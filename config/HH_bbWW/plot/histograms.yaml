@@ -127,3 +127,52 @@ dnn_M700_Signal:
   use_log_y: True
   max_y_sf: 10.0
   divide_by_bin_width: False
+
+########## diLep BEGIN ##########
+diLep_mass:
+  x_bins: "100|0:200"
+  x_title: diLep mass (mumu)
+  y_title: Events
+  use_log_y: True
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+Lep1Jet1Jet2_mass:
+  x_bins: "50|0:1000"
+  x_title: Lep1Jet1Jet2 mass
+  y_title: Events
+  use_log_y: True
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+Lep1Lep2Jet1Jet2_mass:
+  x_bins: "50|0:1000"
+  x_title: Lep1Lep2Jet1Jet2 mass
+  y_title: Events
+  use_log_y: True
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+MT_tot:
+  x_bins: "100|0:200"
+  x_title: MT tot
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+MT_lep1:
+  x_bins: "100|0:200"
+  x_title: MT lep1
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False
+
+MT_lep2:
+  x_bins: "100|0:200"
+  x_title: MT lep2
+  y_title: Events
+  use_log_y: False
+  max_y_sf: 1.2
+  divide_by_bin_width: False

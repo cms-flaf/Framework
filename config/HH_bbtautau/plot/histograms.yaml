@@ -120,6 +120,7 @@ deltaPhi_met_tau1:
   max_y_sf: 1.8
   divide_by_bin_width: False
 
+
 ########## tau1 END ##########
 
 ########## tau2 BEGIN ##########
@@ -350,6 +351,7 @@ deltaPhi_met_b1:
 ########## b1 END ##########
 
 ########## b2 BEGIN ##########
+
 b2_pt:
   x_bins: "200|0:1000"
   x_rebin:
@@ -498,6 +500,7 @@ pt_bb:
   # use_log_y: True
   # max_y_sf: 20.2
   divide_by_bin_width: True
+
 
 tautau_m_vis:
   x_bins: "200|0:1000"

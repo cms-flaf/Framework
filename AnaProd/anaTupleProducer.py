@@ -58,7 +58,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
 
     # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters#Analysis_Recommendations_for_any
     if "MET_flags" in setup.global_params:
-        df = Baseline.applyMETFlags(df, setup.global_params["MET_flags"], setup.global_params["badMET_flag_runs"], isData)
+        df = Baseline.applyMETFlags(df, setup.global_params["MET_flags"], setup.global_params.get("badMET_flag_runs", []), isData)
 
     df = df.Define("sample_type", f"static_cast<int>(SampleType::{sample_config['sampleType']})")
     df = df.Define("sample_name", f"static_cast<int>({zlib.crc32(sample_name.encode())})")

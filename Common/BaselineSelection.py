@@ -60,15 +60,17 @@ def applyBadMETfilter(df, MET_flags, badMET_flag_runs, isData):
         if all(run < runStart or run > runEnd for run in runDf["run"]):
             return df, ' && '.join(MET_flags)
         else: #https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#ECal_BadCalibration_Filter_Flag
-            df = df.Define(f"Flag_PuppiMET_pt", f"PuppiMET_pt > 100")
-            df = df.Define(f"Flag_Jet_pt", f"Any(Jet_pt > 50)")
-            df = df.Define(f"Flag_Jet_eta", f"Any(Jet_eta >= -0.5 && Jet_eta <=-0.1)")
-            df = df.Define(f"Flag_Jet_phi", f"Any(Jet_phi >= -2.1 && Jet_phi <= -1.8)")
-            df = df.Define(f"Flag_Jet_neEmEF", f"Any(Jet_neEmEF > 0.9)")
-            df = df.Define(f"Flag_Jet_chEmEF", f"Any(Jet_chEmEF > 0.9)")
-            df = df.Define(f"Flag_dphi_PuppiMET_Jet", f"Any((abs(PuppiMET_phi - Jet_phi) > 2.9))")
-            df = df.Define(f"Flag_badMET_calib", f'''Flag_PuppiMET_pt && Flag_Jet_pt && Flag_Jet_eta
-                            && Flag_Jet_phi && Flag_dphi_PuppiMET_Jet && (Flag_Jet_neEmEF || Flag_Jet_chEmEF)''')
+            # df = df.Define(f"Flag_badMET_calib", f'''PuppiMET_pt > 100 && 
+            #                                     All( Jet_pt > 50 && Jet_eta >= -0.5 && Jet_eta <=-0.1
+            #                                     && Jet_phi >= -2.1 && Jet_phi <= -1.8 && (abs(PuppiMET_phi - Jet_phi) > 2.9)
+            #                                     && (Jet_neEmEF > 0.9 || Jet_chEmEF > 0.9)
+            #                                     )''')
+            df = df.Define(f"Flag_badMET_calib", f'''v_ops::pt(PuppiMET_p4) > 100 && 
+                                                All( v_ops::pt(Jet_p4) > 50 && v_ops::eta(Jet_p4) >= -0.5 && v_ops::eta(Jet_p4) <=-0.1
+                                                && v_ops::phi(Jet_p4) >= -2.1 && v_ops::phi(Jet_p4) <= -1.8 
+                                                && (abs(v_ops::phi(PuppiMET_p4) - v_ops::phi(Jet_p4)) ) > 2.9)
+                                                && (Jet_neEmEF > 0.9 || Jet_chEmEF > 0.9)
+                                                )''')
             return df, ' && '.join(MET_flags[:-1])+' && !(Flag_badMET_calib)'
 
 def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125., p4_suffix='nano'):

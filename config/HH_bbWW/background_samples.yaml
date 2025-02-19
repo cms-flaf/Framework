@@ -12,6 +12,14 @@ TTto4Q:
   sampleType: TT
 TTtoLNu2Q:
   sampleType: TT
+#Sometimes the 'To' is 'to'
+#This took like 3 hours of my life away ):
+TTto2L2Nu:
+  sampleType: TT
+TTto4Q:
+  sampleType: TT
+TTtoLNu2Q:
+  sampleType: TT
 
 
 ############## DY ##############

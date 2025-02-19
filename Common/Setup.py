@@ -141,6 +141,8 @@ class Setup:
 
         self.cmssw_env_ = None
 
+        self.signal_samples = [ key for key in self.samples if self.samples[key]['sampleType'] in self.global_params['signal_types'] ]
+
     def get_fs(self, fs_name):
         if fs_name not in self.fs_dict:
             full_fs_name = f'fs_{fs_name}'

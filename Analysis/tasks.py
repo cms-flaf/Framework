@@ -157,6 +157,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                                     '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type, '--globalConfig', global_config, '--var', var, '--period', self.period, '--region', region, '--channels', channels]
             if compute_unc_histograms:
                 HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
+                #HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'False'])
             if (deepTauVersion!="2p1") and (deepTauVersion!=''):
                 HistProducerFile_cmd.extend([ '--deepTauVersion', deepTauVersion])
             if need_cache:
@@ -359,6 +360,6 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     HaddMergedHistsProducer_cmd.extend(local_merged_files)
                     ps_call(HaddMergedHistsProducer_cmd,verbose=1)
             with tmp_outFile.localize("r") as tmpFile, self.output().localize("w") as outFile:
-                RenameHistsProducer_cmd = ['python3', RenameHistsProducer,'--inFile', tmpFile.path, '--outFile', outFile.path, '--var', var, '--year', getYear(self.period)]
+                RenameHistsProducer_cmd = ['python3', RenameHistsProducer,'--inFile', tmpFile.path, '--outFile', outFile.path, '--var', var, '--year', getYear(self.period), '--ana_path', self.ana_path(), '--period', self.period]
                 ps_call(RenameHistsProducer_cmd,verbose=1)
 

@@ -38,7 +38,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
     loadHHBtag = anaTupleDef.loadHHBtag
     lepton_legs = anaTupleDef.lepton_legs
     Baseline.Initialize(loadTF, loadHHBtag)
-    Corrections.initializeGlobal(setup.global_params, isData=isData, load_corr_lib=True)
+    Corrections.initializeGlobal(setup.global_params, sample_name, isData=isData, load_corr_lib=True)
     corrections = Corrections.getGlobal()
     triggerFile = setup.global_params.get('triggerFile')
     if triggerFile is not None:
@@ -74,6 +74,8 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
 
     if isData:
         syst_dict = { 'nano' : 'Central' }
+        ana_reco_objects = Baseline.ana_reco_object_collections[setup.global_params['nano_version']]
+        df, syst_dict = corrections.applyScaleUncertainties(df, ana_reco_objects)
     else:
         ana_reco_objects = Baseline.ana_reco_object_collections[setup.global_params['nano_version']]
         df, syst_dict = corrections.applyScaleUncertainties(df, ana_reco_objects)

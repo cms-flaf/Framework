@@ -73,12 +73,12 @@ application_regions:
 sample_types_to_merge: #Use this for what samples to run limits on
   - DY
   - TT
-  # - W
-  # - ST
-  # - TTX
-  # - VV
-  # - TTV
-  # - TTVV
+  - W
+  - ST
+  - TTX
+  - VV
+  - TTV
+  - TTVV
 
 samples_to_skip_hist:
   - GluGlutoRadiontoHHto2B2Vto2B2L2Nu_M-1000

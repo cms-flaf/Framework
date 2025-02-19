@@ -3,19 +3,19 @@ GLOBAL:
   sampleSelection:
     - drop ^.*
     - keep ^TT.*
-    #- keep ^ST.*
+    - keep ^ST.*
     - keep ^GluGlutoRadiontoHHto2B2Vto2B2L2Nu.*
     - keep DYto2L_M_10to50_amcatnloFXFX
     - keep DYto2L_M_50_amcatnloFXFX
-    #- keep WtoLNu_amcatnloFXFX
-    #- keep WW
-    #- keep WZ
-    #- keep ZZ
-    #- keep ^EGamma_.*
+    - keep WtoLNu_amcatnloFXFX
+    - keep WW
+    - keep WZ
+    - keep ZZ
+    - keep ^EGamma_.*
     - keep ^Muon_.*
     - keep ^DoubleMuon_.*
     - keep ^SingleMuon_.*
-    #- keep ^MuonEG_.*
+    - keep ^MuonEG_.*
   use_stitching: false
 
 

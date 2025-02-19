@@ -7,7 +7,6 @@ loadHHBtag = False
 lepton_legs = [ "lep1", "lep2" ]
 
 
-
 Muon_int_observables = ["Muon_tightId","Muon_highPtId","Muon_pfIsoId"]
 Muon_float_observables = ["Muon_tkRelIso", "Muon_pfRelIso04_all","Muon_miniPFRelIso_all"]
 Muon_observables = Muon_int_observables + Muon_float_observables

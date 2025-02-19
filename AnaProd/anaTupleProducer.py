@@ -56,9 +56,6 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
         lumiFilter = LumiFilter(setup.global_params['lumiFile'])
         df = lumiFilter.filter(df)
 
-    # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters#Analysis_Recommendations_for_any
-    if "MET_flags" in setup.global_params:
-        df = Baseline.applyMETFlags(df, setup.global_params["MET_flags"], setup.global_params.get("badMET_flag_runs", []), isData)
 
     df = df.Define("sample_type", f"static_cast<int>(SampleType::{sample_config['sampleType']})")
     df = df.Define("sample_name", f"static_cast<int>({zlib.crc32(sample_name.encode())})")
@@ -89,6 +86,10 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
         suffix = '' if is_central else f'_{syst_name}'
         if len(suffix) and not store_noncentral: continue
         dfw = Utilities.DataFrameWrapper(df_empty, anaTupleDef.getDefaultColumnsToSave(isData))
+        dfw.Apply(Baseline.SelectRecoP4, syst_name, setup.global_params["nano_version"])
+        # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters#Analysis_Recommendations_for_any
+        if "MET_flags" in setup.global_params:
+            dfw.Apply(Baseline.applyMETFlags, setup.global_params["MET_flags"], setup.global_params.get("badMET_flag_runs", []), isData)
         anaTupleDef.addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal, setup.global_params, channels)
         if setup.global_params['nano_version'] == 'v12':
             dfw.DefineAndAppend("weight_L1PreFiring_Central","L1PreFiringWeight_Nom")

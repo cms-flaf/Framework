@@ -15,7 +15,6 @@ GLOBAL:
     - Flag_eeBadScFilter
     #- Flag_hfNoisyHitsFilter
     #- Flag_BadChargedCandidateFilter
-  badMET_flag_runs: []
   met_type: MET
   triggerFile: config/Run2_2017/triggers.yaml
   crossSectionsFile : config/crossSections13TeV.yaml

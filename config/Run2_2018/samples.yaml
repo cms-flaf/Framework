@@ -14,7 +14,6 @@ GLOBAL:
     - Flag_BadPFMuonDzFilter
     - Flag_eeBadScFilter
     - Flag_ecalBadCalibFilter
-  badMET_flag_runs: []
   met_type: MET
   triggerFile: config/Run2_2018/triggers.yaml
   crossSectionsFile : config/crossSections13TeV.yaml

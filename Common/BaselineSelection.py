@@ -48,26 +48,27 @@ def applyMETFlags(df, MET_flags, badMET_flag_runs, isData):
     if not badMET_flag_runs:
         MET_flags_string = ' && '.join(MET_flags)
     else:
-        df, MET_flags_string = applyBadMETfilter(df, MET_flags, badMET_flag_runs, isData)
+        df, MET_flags_updated = applyBadMETfilter(df, MET_flags, badMET_flag_runs, isData)
+        MET_flags_string = ' && '.join(MET_flags_updated)
     return df.Filter(MET_flags_string, "MET filters")
 
 def applyBadMETfilter(df, MET_flags, badMET_flag_runs, isData):
     if not isData:
-        return df, ' && '.join(MET_flags)
+        return df, MET_flags
     else:
         #https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#ECal_BadCalibration_Filter_Flag
-        df = df.Define(f"apply_Flag_ecalBadCalibFilter", f"run < {badMET_flag_runs[0]} || run > {badMET_flag_runs[1]}").Filter('Flag_ecalBadCalibFilter', 'MET filter Flag_ecalBadCalibFilter')
-        df = df.Define(f"Flag_badMET_calib", f''' !( run >= {badMET_flag_runs[0]} && run <= {badMET_flag_runs[1]} 
-                                                && PuppiMET_p4.pt()>100 && 
+        df = df.Define(f"Flag_badMET_calib", f''' !( PuppiMET_p4.pt()>100 && 
                                                 Any(v_ops::pt(Jet_p4) > 50 
                                                 && v_ops::eta(Jet_p4) >= -0.5 && v_ops::eta(Jet_p4) <= -0.1 
                                                 && v_ops::phi(Jet_p4) >= -2.1 && v_ops::phi(Jet_p4) <= -1.8 
                                                 && abs(PuppiMET_p4.phi() - v_ops::phi(Jet_p4)) > 2.9
                                                 && (Jet_neEmEF > 0.9 || Jet_chEmEF > 0.9)
                                                 ) )''')
+        
+        df = df.Define(f"Flag_ecalBadCalibFilter_updated", f" ( run >= {badMET_flag_runs[0]} && run <= {badMET_flag_runs[1]} ) ? Flag_badMET_calib : Flag_ecalBadCalibFilter")
         MET_flags.remove('Flag_ecalBadCalibFilter')
-        MET_flags.append('Flag_badMET_calib')
-        return df, ' && '.join(MET_flags)
+        MET_flags.append('Flag_ecalBadCalibFilter_updated')
+        return df, MET_flags
 
 def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125., p4_suffix='nano'):
     if isData:

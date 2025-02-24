@@ -9,6 +9,11 @@ from Common.Utilities import *
 
 
 WorkingPointsParticleNet = {
+        "Run3_2022":{
+            "Loose":0.0583,#these are placeholders from /cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/BTV/2022_Summer22/btagging.json.gz
+            "Medium":0.3086,
+            "Tight":0.7183
+        },
         "Run2_2018":{
             "Loose":0.9172,
             "Medium":0.9734,

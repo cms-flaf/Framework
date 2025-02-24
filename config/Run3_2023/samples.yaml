@@ -5,10 +5,21 @@ GLOBAL:
   - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/skim_2024_v1/Run3_2023'
   nano_version: v14
   crossSectionsFile : config/crossSections13p6TeV.yaml
-  triggerFile: config/Run3_2023/triggers.yaml
   use_stitching: false
   met_type: PFMET
-  lumiFile: /eos/user/c/cmsdqm/www/CAF/certification/Collisions22/Cert_Collisions2023_366442_370790_Golden.json
+  MET_flags: #https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#Run_3_2022_and_2023_data_and_MC
+    - Flag_goodVertices
+    - Flag_globalSuperTightHalo2016Filter
+    - Flag_EcalDeadCellTriggerPrimitiveFilter
+    - Flag_BadPFMuonFilter
+    - Flag_BadPFMuonDzFilter
+    - Flag_hfNoisyHitsFilter
+    - Flag_eeBadScFilter
+    - Flag_ecalBadCalibFilter
+  badMET_flag_runs: #https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#ECal_BadCalibration_Filter_Flag
+    - 366727
+    - 367144 # for 2023, Flag_ecalBadCalibFilter should not be used for a range of these two run numbers.
+  lumiFile: /eos/user/c/cmsdqm/www/CAF/certification/Collisions23/Cert_Collisions2023_366442_370790_Golden.json
 
 
 TTto2L2Nu:

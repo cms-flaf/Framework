@@ -1,0 +1,114 @@
+############## WJetsToLNu ##############
+WtoLNu_amcatnloFXFX:
+  sampleType: W
+
+
+############## TT ##############
+TT:
+  sampleType: TT
+TTTo2L2Nu:
+  sampleType: TT
+TTTo4Q:
+  sampleType: TT
+TTToLNu2Q:
+  sampleType: TT
+
+
+############## DY ##############
+DYto2L_M_10to50_amcatnloFXFX:
+  sampleType: DY
+DYto2L_M_50_amcatnloFXFX:
+  sampleType: DY
+
+############## EWK ##############
+# EWK_ZTo2L:
+#   sampleType: EWK
+# EWK_ZTo2Nu:
+#   sampleType: EWK
+# EWK_WplusToLNu:
+#   sampleType: EWK
+# EWK_WminusToLNu:
+#   sampleType: EWK
+
+############## single Higgs ##############
+# ggHToZZTo2L2Q:
+#   sampleType: H
+# GluGluHToTauTau_M125:
+#   sampleType: H
+# VBFHToTauTau_M125:
+#   sampleType: H
+# GluGluHToWWTo2L2Nu_M125:
+#   sampleType: H
+# VBFHToWWTo2L2Nu_M125:
+#   sampleType: H
+
+############## VH non-inclusive ##############
+# WplusHToTauTau_M125:
+#   sampleType: VH
+# WminusHToTauTau_M125:
+#   sampleType: VH
+# ZHToTauTau_M125:
+#   sampleType: VH
+# ZH_Hbb_Zll:
+#   sampleType: VH
+# ZH_Hbb_Zqq:
+#   sampleType: VH
+# HWplusJ_HToWW_M125:
+#   sampleType: VH
+# HWminusJ_HToWW_M125:
+#   sampleType: VH
+# HZJ_HToWW_M125:
+#   sampleType: VH
+
+############## VV inclusive ##############
+WW:
+  sampleType: VV
+WZ:
+  sampleType: VV
+ZZ:
+  sampleType: VV
+
+
+############## VVV inclusive ##############
+WWW_4F:
+  sampleType: VVV
+WWZ_4F:
+  sampleType: VVV
+WZZ:
+  sampleType: VVV
+ZZZ:
+  sampleType: VVV
+
+############## ST #############
+ST_t_channel_antitop_4f_InclusiveDecays:
+  sampleType: ST
+ST_t_channel_top_4f_InclusiveDecays:
+  sampleType: ST
+ST_tW_antitop_2L2Nu:
+  sampleType: ST
+ST_tW_antitop_4Q:
+  sampleType: ST
+ST_tW_antitop_LNu2Q:
+  sampleType: ST
+ST_tW_top_2L2Nu:
+  sampleType: ST
+ST_tW_top_4Q:
+  sampleType: ST
+ST_tW_top_LNu2Q:
+  sampleType: ST
+
+############## TTX inclusive ##############
+TTWW:
+  sampleType: TTVV
+TTWH:
+  sampleType: TTVV
+TTZH:
+  sampleType: TTVV
+TTZZ:
+  sampleType: TTVV
+
+############## ttH ##############
+ttHToNonbb_M125:
+ sampleType: ttH
+ttHTobb_M125:
+  sampleType: ttH

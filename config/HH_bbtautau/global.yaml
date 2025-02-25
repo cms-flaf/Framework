@@ -1,8 +1,8 @@
 anaTupleDef: AnaProd/HH_bbtautau/anaTupleDef.py
 analysis_import: Analysis.hh_bbtautau
-signal_types:
-  - GluGluToRadion
-  - GluGluToBulkGraviton
+signal_types: []
+  # - GluGluToRadion
+  # - GluGluToBulkGraviton
   #- VBFToRadion
   #- VBFToBulkGraviton
 genuineTau_SFtype:
@@ -27,12 +27,12 @@ corrections:
   - tauES
   - JEC
   - JER
-  - trg
-  - btagWP
-  - btagShape
+  # - trg
+  # - btagWP
+  # - btagShape
   - mu
   - ele
-  - puJetID
+  # - puJetID
   - pu
 
 channelSelection:
@@ -43,27 +43,28 @@ channelSelection:
     - eMu
     - muMu
 
-met_type: "MET"
-deepTauVersion: 2p1
+met_type: "PFMET"
+deepTauVersion: 2p5
 region: SR
+region_default: SR
 channels: ""
 QCDRegions:
   - OS_Iso
   - SS_Iso
   - OS_AntiIso
   - SS_AntiIso
-boosted_categories:
+boosted_categories: []
   # - boosted_cat2
   # - boosted_cat3
   # - boosted_masswindow
   # - boosted_cat2_masswindow
-  - boosted_cat3_masswindow
+  # - boosted_cat3_masswindow
 categories:
   - inclusive
   - btag_shape
   - baseline
-  - boosted_baseline
-  - boosted_baseline_cat3
+  # - boosted_baseline
+  # - boosted_baseline_cat3
   #- boosted_baseline_masswindow
   #- boosted_baseline_cat3_masswindow
   # - res0b_inclusive
@@ -71,23 +72,23 @@ categories:
   # - res2b_inclusive
   # - boosted
   # - res0b_cat2
-  # - res1b_cat2
-  # - res2b_cat2
+  - res1b # - res1b_cat2
+  - res2b # - res2b_cat2
   # - res2b_cat3
   # - res1b_cat3
   # - res0b_cat3
-  - inclusive_masswindow
-  - btag_shape_masswindow
-  - baseline_masswindow
+  # - inclusive_masswindow
+  # - btag_shape_masswindow
+  # - baseline_masswindow
   # - res0b_inclusive_masswindow
   # - res1b_inclusive_masswindow
   # - res2b_inclusive_masswindow
   # - res0b_cat2_masswindow
   # - res1b_cat2_masswindow
   # - res2b_cat2_masswindow
-  - res2b_cat3_masswindow
-  - res1b_cat3_masswindow
-  - res0b_cat3_masswindow
+  # - res2b_cat3_masswindow
+  # - res1b_cat3_masswindow
+  # - res0b_cat3_masswindow
 
 
 storeExtraJets: False
@@ -125,28 +126,28 @@ channelDefinition:
 
 
 triggers:
-  eTau: [ singleEle, etau, singleTau, MET]
-  muTau: [singleMu, mutau, singleTau, MET]
-  tauTau: [ditau, singleTau, MET]
-  eE: [singleEle, MET]
-  eMu: [singleEle, singleMu, MET]
-  muMu: [singleMu, MET]
+  eTau: [singleEleWpTight] #[ singleEle, etau, singleTau, MET]
+  muTau: [singleIsoMu] #[singleMu, mutau, singleTau, MET]
+  tauTau: [ditau] #[ditau, singleTau, MET]
+  eE: [singleEleWpTight, diElec] #[singleEle, MET]
+  eMu: [singleEleWpTight, singleIsoMu] #[singleEle, singleMu, MET]
+  muMu: [singleIsoMu] #[singleMu, MET]
 
 hist_triggers:
   eTau:
-    default: ( ( (HLT_singleEle || HLT_etau ) && Legacy_region ) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
+    default: ( ( (HLT_singleEleWpTight || HLT_etau ) && Legacy_region ) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
     Run2_2016 :  ( ( (HLT_singleEle && SingleEle_region) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) )))
     Run2_2016_HIPM :  ( ( (HLT_singleEle && SingleEle_region) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) )))
   muTau:
-    default: (( (HLT_singleMu || HLT_mutau ) && Legacy_region ) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
+    default: (( (HLT_singleIsoMu || HLT_mutau ) && Legacy_region ) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
   tauTau:
     default: ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ) )
   eE:
-    default: (HLT_singleEle && SingleEle_region)
+    default: (HLT_singleEleWpTight && SingleEle_region)
   eMu:
-    default: ((HLT_singleEle && SingleEle_region) || (HLT_singleMu && SingleMu_region))
+    default: ((HLT_singleEleWpTight && SingleEle_region) || (HLT_singleIsoMu && SingleMu_region))
   muMu:
-    default: (HLT_singleMu && SingleMu_region)
+    default: (HLT_singleIsoMu && SingleMu_region)
 
 
 
@@ -216,30 +217,35 @@ singleMu_th:
   "Run2_2016_HIPM": 26
   "Run2_2017": 29
   "Run2_2018": 26
+  "Run3_2022": 26
 
 singleEle_th:
   "Run2_2016": 26
   "Run2_2016_HIPM": 26
   "Run2_2017": 33
   "Run2_2018": 33
+  "Run3_2022": 32
 
 singleTau_th:
   "Run2_2016": 130
   "Run2_2016_HIPM": 130
   "Run2_2017": 190
   "Run2_2018": 190
+  "Run3_2022": 190
 
 eTau_th:
   "Run2_2016":
   "Run2_2016_HIPM":
   "Run2_2017":
   "Run2_2018":
+  "Run3_2022":
 
 muTau_th:
   "Run2_2016":
   "Run2_2016_HIPM":
   "Run2_2017":
   "Run2_2018":
+  "Run3_2022":
 
 btag_wps:
   res2b: Medium
@@ -308,8 +314,15 @@ sample_types_to_merge:
   - DY
   - TT
   - W
+  - ST
+  - VVV
+  - VV
+  - ttH
+  - TTVV
 
 uncs_to_exclude :
+  Run3_2022: []
+  Run3_2022EE: []
   Run2_2018:
     - JES_BBEC1_2017
     - JES_Absolute_2017

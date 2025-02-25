@@ -1,3 +1,9 @@
+PV_npvs:
+  x_bins: "100|0:100"
+  x_title: PV_npvs
+  y_title: Events
+  use_log_y: False
+  divide_by_bin_width: False
 ########## tau1 BEGIN ##########
 tau1_pt:
   x_bins: "200|0:1000"

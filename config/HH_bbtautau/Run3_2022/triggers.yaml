@@ -1,0 +1,224 @@
+#https://twiki.cern.ch/twiki/bin/viewauth/CMS/TauTrigger#Updates_for_2022_data_taking
+ditau:
+  channels:
+    - tauTau
+  path:
+    - HLT_DoubleMediumDeepTauPFTauHPS35_L2NN_eta2p1
+  legs:
+    - offline_obj:
+        type: Tau
+        cut: v_ops::pt(Tau_p4) > 40 && abs(v_ops::eta(Tau_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id==15 && (TrigObj_filterBits&8)!=0 && (TrigObj_filterBits&2048)!=0
+      doMatching: True
+
+mutau:
+  channels:
+    - muTau
+  path:
+    - HLT_IsoMu20_eta2p1_LooseDeepTauPFTauHPS27_eta2p1_CrossL1
+  legs:
+    - offline_obj:
+        type: Muon
+        cut: v_ops::pt(Muon_p4) > 22 && abs(v_ops::eta(Muon_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id==13 && (TrigObj_filterBits&64)!=0 #&& TrigObj_pt>20
+      doMatching: True
+    - offline_obj:
+        type: Tau
+        cut: v_ops::pt(Tau_p4) > 32 && abs(v_ops::eta(Tau_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id==15 && (TrigObj_filterBits&8)!=0  && (TrigObj_filterBits&8192)!=0
+      doMatching: True
+
+etau:
+  channels:
+    - eTau
+  path:
+    - HLT_Ele24_eta2p1_WPTight_Gsf_LooseDeepTauPFTauHPS30_eta2p1_CrossL1
+  legs:
+    - offline_obj:
+        type: Electron
+        cut: v_ops::pt(Electron_p4) > 26 && abs(v_ops::eta(Electron_p4)) < 2.1
+      online_obj:
+        cut: TrigObj_id==11 && (TrigObj_filterBits&128)!=0 #&& TrigObj_pt>24
+      doMatching: True
+    - offline_obj:
+        type: Tau
+        cut: v_ops::pt(Tau_p4) > 35 && abs(v_ops::eta(Tau_p4)) < 2.1
+      online_obj:
+        cut:  TrigObj_id==15 && (TrigObj_filterBits&8)!=0 && (TrigObj_filterBits&4096)!=0
+      doMatching: True
+
+MET:
+    channels:
+      - tauTau
+      - muTau
+      - eTau
+      - eMu
+      - muMu
+      - eE
+    path:
+      - HLT_PFMETNoMu120_PFMHTNoMu120_IDTight
+    legs:
+      - offline_obj:
+          type: MET
+          cut: metnomu_pt > 150
+        doMatching: False
+
+singleTau:
+    channels:
+      - tauTau
+      - muTau
+      - eTau
+    path:
+      - HLT_LooseDeepTauPFTauHPS180_L2NN_eta2p1
+    legs:
+      - offline_obj:
+          type: Tau
+          cut: v_ops::pt(Tau_p4) > 190 && abs(v_ops::eta(Tau_p4)) < 2.1
+        online_obj:
+          cut: TrigObj_id == 15 && (TrigObj_filterBits&8)!=0 && (TrigObj_filterBits&512)!=0
+        doMatching: True
+
+singleIsoMu:
+  channels:
+    - muMu
+    - eMu
+    - mu
+  path:
+    - HLT_IsoMu24
+  legs:
+    - offline_obj:
+        type: Muon
+        cut:  v_ops::pt(Muon_p4) > 26
+      online_obj:
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&8)!=0
+      doMatching: True
+
+singleIsoMuHT:
+  channels:
+    - muMu
+    - eMu
+    - mu
+  path:
+    - HLT_Mu15_IsoVVVL_PFHT450
+  legs:
+    - offline_obj:
+        type: Muon
+        cut:  v_ops::pt(Muon_p4) > 17
+      online_obj:
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&32)!=0 #why is this 32? 1mu-1e
+      doMatching: False
+
+singleIsoEleHT:
+  channels:
+    - eE
+    - eMu
+    - e
+  path:
+    - HLT_Ele15_IsoVVVL_PFHT450
+  legs:
+    - offline_obj:
+        type: Electron
+        cut:  v_ops::pt(Electron_p4) > 17
+      online_obj:
+        cut: TrigObj_id == 11 && (TrigObj_filterBits&32)!=0
+      doMatching: False
+
+singleEleWpTight:
+  channels:
+    - eMu
+    - eE
+    - e
+  path:
+    - HLT_Ele30_WPTight_Gsf
+  legs:
+    - offline_obj:
+        type: Electron
+        cut: v_ops::pt(Electron_p4) > 32
+      online_obj:
+        cut: TrigObj_id == 11 && (TrigObj_filterBits&4)!=0
+      doMatching: True
+
+diElec:
+  channels:
+    - e
+    - eE
+  path:
+    - HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL
+  legs:
+    - offline_obj:
+        type: Electron
+        cut: v_ops::pt(Electron_p4) > 25
+      online_obj:
+        cut: TrigObj_id == 11 &&  (TrigObj_filterBits&16)!=0
+      doMatching: True
+    - offline_obj:
+        type: Electron
+        cut: v_ops::pt(Electron_p4) > 14
+      online_obj:
+        cut: TrigObj_id == 11 && (TrigObj_filterBits&32)!=0
+      doMatching: True
+
+diMuon:
+  channels:
+    - muMu
+    - mu
+  path:
+    - HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8
+  legs:
+    - offline_obj:
+        type: Muon
+        cut:  v_ops::pt(Muon_p4) > 19
+      online_obj:
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&16)!=0
+      doMatching: True
+    - offline_obj:
+        type: Muon
+        cut:  v_ops::pt(Muon_p4) > 10
+      online_obj:
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&16)!=0
+      doMatching: True
+
+EMu:
+  channels:
+    - e
+    - Mu
+    - eMu
+  path:
+    - HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ
+  legs:
+    - offline_obj:
+        type: Muon
+        cut: v_ops::pt(Muon_p4) > 10
+      online_obj:
+        cut: TrigObj_id == 13 && (TrigObj_filterBits&32)!=0
+      doMatching: True
+    - offline_obj:
+        type: Electron
+        cut: v_ops::pt(Electron_p4) > 25
+      online_obj:
+        cut:  TrigObj_id==11 && (TrigObj_filterBits&64)!=0
+      doMatching: True
+
+MuE:
+  channels:
+    - e
+    - Mu
+    - eMu
+  path:
+    - HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ
+  legs:
+    - offline_obj:
+        type: Muon
+        cut: v_ops::pt(Muon_p4) > 25
+      online_obj:
+        cut: TrigObj_id == 13 & (TrigObj_filterBits&32)!=0
+      doMatching: True
+    - offline_obj:
+        type: Electron
+        cut: v_ops::pt(Electron_p4) > 14
+      online_obj:
+        cut:  TrigObj_id==11 && (TrigObj_filterBits&64)!=0
+      doMatching: True

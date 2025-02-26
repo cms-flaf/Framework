@@ -12,6 +12,7 @@ corrections:
   - pu
   - JEC
   - JER
+  - btagShape
 
 #This is for Analysis Selection
 channelSelection:

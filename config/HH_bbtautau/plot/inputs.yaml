@@ -12,28 +12,28 @@
   types:
     - TT
   title: t#bar{t}
-  color: kTeal-8 #kGreen+3
+  color: kSpring+5 #kGreen+3
 - name: ST
   types:
     - ST
   title: "ST"
-  color: kSpring+5 #kTeal-9
+  color: kYellow-9 #kTeal-9
 - name: VV
   types:
     - VV
   title: "VV"
-  color: kYellow-9 #kPink+1
+  color: kOrange-4 #kPink+1
 - name: single_H
   title: "H"
   types:
     - ttH
     - VH
     - H
-  color: kOrange-4 #kRed-7
+  color: kRed-10 #kRed-7
 - name: Other
   title: "Other"
   types: []
-  color: kOrange-9 #kViolet+4
+  color: kPink+2 #kViolet+4
 - name: GluGluToBulkGraviton_1250
   title: "GGBG-1250"
   type: signal

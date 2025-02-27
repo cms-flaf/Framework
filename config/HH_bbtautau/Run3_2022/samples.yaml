@@ -22,6 +22,8 @@ GLOBAL:
     - keep ^MuonEG_.*
     - keep ^Jet.*
     - keep ^MET_.*
+    - keep ^GluGlutoHHto2B2Tau_.*
+    - keep ^VBFHHto2B2Tau_.*
   use_stitching: false
   triggerFile: config/HH_bbtautau/Run3_2022/triggers.yaml
 ############## Signals ##############

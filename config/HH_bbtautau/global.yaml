@@ -1,8 +1,9 @@
 anaTupleDef: AnaProd/HH_bbtautau/anaTupleDef.py
 analysis_import: Analysis.hh_bbtautau
-signal_types: []
+signal_types:
   # - GluGluToRadion
   # - GluGluToBulkGraviton
+  - HHnonRes
   #- VBFToRadion
   #- VBFToBulkGraviton
 genuineTau_SFtype:
@@ -218,6 +219,7 @@ singleMu_th:
   "Run2_2017": 29
   "Run2_2018": 26
   "Run3_2022": 26
+  "Run3_2022EE": 26
 
 singleEle_th:
   "Run2_2016": 26
@@ -225,6 +227,7 @@ singleEle_th:
   "Run2_2017": 33
   "Run2_2018": 33
   "Run3_2022": 32
+  "Run3_2022EE": 32
 
 singleTau_th:
   "Run2_2016": 130
@@ -232,6 +235,7 @@ singleTau_th:
   "Run2_2017": 190
   "Run2_2018": 190
   "Run3_2022": 190
+  "Run3_2022EE": 190
 
 eTau_th:
   "Run2_2016":
@@ -239,6 +243,7 @@ eTau_th:
   "Run2_2017":
   "Run2_2018":
   "Run3_2022":
+  "Run3_2022EE":
 
 muTau_th:
   "Run2_2016":
@@ -246,6 +251,7 @@ muTau_th:
   "Run2_2017":
   "Run2_2018":
   "Run3_2022":
+  "Run3_2022EE":
 
 btag_wps:
   res2b: Medium
@@ -429,7 +435,7 @@ FatJetObservables :
   - mass
 
 var_only_boosted:
-  - bbtautau_mass
+  # - bbtautau_mass
   - SelectedFatJet_area_boosted
   - SelectedFatJet_btagCSVV2_boosted
   - SelectedFatJet_btagDDBvLV2_boosted

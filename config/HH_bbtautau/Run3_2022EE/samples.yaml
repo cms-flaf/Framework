@@ -1,3 +1,29 @@
+GLOBAL:
+  sampleSelection:
+    - drop ^.*
+    - keep ^TT.*
+    - keep ^ttH.*
+    - keep ^ST.*
+    - keep DYto2L_M_10to50_amcatnloFXFX
+    - keep DYto2L_M_50_amcatnloFXFX
+    - keep WtoLNu_amcatnloFXFX
+    - keep WW
+    - keep WZ
+    - keep ZZ
+    - keep WWW_4F
+    - keep WWZ_4F
+    - keep WZZ
+    - keep ZZZ
+    - keep ^Muon_.*
+    - keep ^SingleMuon_.*
+    - keep ^DoubleMuon_.*
+    - keep ^Tau_.*
+    - keep ^EGamma_.*
+    - keep ^MuonEG_.*
+    - keep ^Jet.*
+    - keep ^MET_.*
+  use_stitching: false
+  triggerFile: config/HH_bbtautau/Run3_2022/triggers.yaml
 GluGlutoBulkGravitontoHHto2B2Tau_M-250:
   sampleType: GluGluToBulkGraviton
   mass: 250

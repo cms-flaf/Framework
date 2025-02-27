@@ -15,7 +15,7 @@ Electron_float_observables = ["Electron_pfRelIso03_all","Electron_miniPFRelIso_a
 Electron_observables = Electron_int_observables + Electron_float_observables
 JetObservables = ["PNetRegPtRawCorr", "PNetRegPtRawCorrNeutrino", "PNetRegPtRawRes",
                   "btagDeepFlavB", "btagDeepFlavCvB", "btagDeepFlavCvL", "btagDeepFlavQG",
-                  "btagPNetB", "btagPNetCvB", "btagPNetCvL", "btagPNetCvNotB", "btagPNetQvG"] # 2024
+                  "btagPNetB", "btagPNetCvB", "btagPNetCvL", "btagPNetCvNotB", "btagPNetQvG", "ptRes", "idbtagPNetB"] # 2024
 
 JetObservablesMC = ["hadronFlavour", "partonFlavour"]
 
@@ -86,6 +86,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
     # dfw.Apply(CommonBaseline.SelectRecoP4, syst_name, global_params["nano_version"])
     dfw.Apply(AnaBaseline.RecoHWWCandidateSelection)
     dfw.Apply(AnaBaseline.RecoHWWJetSelection)
+    dfw.Apply(Corrections.getGlobal().jet.getEnergyResolution)
+    dfw.Apply(Corrections.getGlobal().btag.getWPid)
 
     PtEtaPhiM = ["pt", "eta", "phi", "mass"]
     # save reco lepton from HWWcandidate

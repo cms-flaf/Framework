@@ -28,41 +28,6 @@
     - QCD
   title: QCD
   color: kCyan
-=======
-  title: DY
-  color: kAzure+10
-  types:
-    - DY
-- name: TT
-  title: t#bar{t}
-  color: kGreen-3
-  types:
-    - TT
-# - name: W
-#   title: "W #rightarrow l#nu + jets"
-#   color: kYellow-7
-#   types:
-#     - W
-# - name: ST
-#   title: SingleTop
-#   color: kPink+1
-#   types:
-#     - ST
-# - name: VV
-#   title: VV
-#   color: kGreen
-#   types:
-#     - VV
-
-
-
-- name: QCD
-  title: QCD
-  color: kCyan
-  types:
-    - QCD
-
->>>>>>> refs/rewritten/onto
 #- name: TTX
 #  title: TTX
 #  color: kCyan

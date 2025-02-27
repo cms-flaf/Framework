@@ -6,12 +6,12 @@ WtoLNu_amcatnloFXFX:
 ############## TT ##############
 TT:
   sampleType: TT
-TTTo2L2Nu:
-  sampleType: TT
-TTTo4Q:
-  sampleType: TT
-TTToLNu2Q:
-  sampleType: TT
+# TTTo2L2Nu:
+#   sampleType: TT
+# TTTo4Q:
+#   sampleType: TT
+# TTToLNu2Q:
+#   sampleType: TT
 
 
 ############## DY ##############

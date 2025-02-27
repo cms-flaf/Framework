@@ -5,9 +5,9 @@ ver = "SF"
 indir = f"/eos/user/t/toakhter/HH_bbtautau_Run3/histograms/{ver}/{era}/merged/"
 plotdir = f"/eos/user/t/toakhter/HH_bbtautau_Run3/histograms/{ver}/{era}/plots/"
 
-varnames = ["MT2"]#["tau1_pt", "tau2_pt", "tautau_m_vis", "bb_m_vis", "bbtautau_mass"]
+varnames = ["tau1_pt", "tau2_pt", "tautau_m_vis", "bb_m_vis", "bbtautau_mass"] 
 
-channellist = ["tauTau"]#["eE", "eMu", "muMu", "eTau", "muTau", "tauTau"]
+channellist = ["eE", "eMu", "muMu", "eTau", "muTau", "tauTau"]
 
 cat = "inclusive"
 

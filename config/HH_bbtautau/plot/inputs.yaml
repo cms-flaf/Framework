@@ -7,7 +7,7 @@
   types:
     - DY
   title: "DY #rightarrow ll + jets"
-  color: kCyan-6 #kAzure+10
+  color: kAzure+6 #kAzure+10
 - name: TT
   types:
     - TT

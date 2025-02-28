@@ -30,11 +30,13 @@ corrections:
   - JER
   # - trg
   # - btagWP
-  # - btagShape
+  - btagShape
   - mu
   - ele
   # - puJetID
   - pu
+
+tagger_name: "particleNet"
 
 channelSelection:
     - eTau

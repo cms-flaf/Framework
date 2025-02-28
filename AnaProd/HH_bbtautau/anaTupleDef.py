@@ -17,7 +17,8 @@ Electron_observables = ["Electron_mvaNoIso_WP80", "Electron_mvaIso_WP80","Electr
 JetObservables = ["particleNetAK4_B", "particleNetAK4_CvsB",
                 "particleNetAK4_CvsL","particleNetAK4_QvsG","particleNetAK4_puIdDisc",
                 "btagDeepFlavB","btagDeepFlavCvB","btagDeepFlavCvL", "bRegCorr", "bRegRes", "idbtagDeepFlavB",
-                "btagPNetB", "btagPNetCvL", "btagPNetCvB", "btagPNetQvG", "btagPNetTauVJet", "PNetRegPtRawCorr", "PNetRegPtRawCorrNeutrino", "PNetRegPtRawRes"] # 2016]
+                "btagPNetB", "btagPNetCvL", "btagPNetCvB", "btagPNetQvG", "btagPNetTauVJet", "PNetRegPtRawCorr", "PNetRegPtRawCorrNeutrino", "PNetRegPtRawRes", # 2016]
+                "ptRes", "idbtagPNetB"]
 JetObservablesMC = ["hadronFlavour","partonFlavour"]
 FatJetObservables = ["area", "btagCSVV2", "btagDDBvLV2", "btagDeepB", "btagHbb", "deepTagMD_HbbvsQCD",
                      "deepTagMD_ZHbbvsQCD", "deepTagMD_ZbbvsQCD", "deepTagMD_bbvsLight", "deepTag_H",
@@ -87,9 +88,8 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
     dfw.Apply(AnaBaseline.DefineHbbCand, global_params["met_type"])
     dfw.DefineAndAppend("Hbb_isValid" , "HbbCandidate.has_value()")
     dfw.Apply(AnaBaseline.ExtraRecoJetSelection, global_params["era"])
-    if global_params["era"].startswith("Run2"):
-        dfw.Apply(Corrections.getGlobal().jet.getEnergyResolution)
-        dfw.Apply(Corrections.getGlobal().btag.getWPid)
+    dfw.Apply(Corrections.getGlobal().jet.getEnergyResolution)
+    dfw.Apply(Corrections.getGlobal().btag.getWPid)
     jet_obs = []
     jet_obs.extend(JetObservables)
     dfw.Apply(AnaBaseline.ApplyJetSelection)

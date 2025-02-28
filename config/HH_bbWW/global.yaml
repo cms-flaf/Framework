@@ -12,6 +12,9 @@ corrections:
   - pu
   - JEC
   - JER
+  - btagShape
+
+tagger_name: "particleNet"
 
 #This is for Analysis Selection
 channelSelection:

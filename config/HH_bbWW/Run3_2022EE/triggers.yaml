@@ -53,8 +53,8 @@ singleEleWpTight:
         type: Electron
         cut: v_ops::pt(Electron_p4) > 32
       online_obj:
-        cut: TrigObj_id == 11 && (TrigObj_filterBits&4)!=0
-      doMatching: False
+        cut: TrigObj_id == 11 && (TrigObj_filterBits&2)!=0
+      doMatching: True
 
 diElec:
   channels:

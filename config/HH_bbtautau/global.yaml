@@ -35,6 +35,8 @@ corrections:
   - puJetID
   - pu
 
+bjet_preselection_branch : "Jet_bCand"
+
 channelSelection:
     - eTau
     - muTau

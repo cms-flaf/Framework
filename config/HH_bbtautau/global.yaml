@@ -28,7 +28,7 @@ corrections:
   - tauES
   - JEC
   - JER
-  # - trg
+  - trg
   # - btagWP
   - btagShape
   - mu
@@ -37,6 +37,7 @@ corrections:
   - pu
 
 tagger_name: "particleNet"
+bjet_preselection_branch : "Jet_bCand"
 
 channelSelection:
     - eTau
@@ -129,10 +130,10 @@ channelDefinition:
 
 
 triggers:
-  eTau: [singleEleWpTight] #[ singleEle, etau, singleTau, MET]
-  muTau: [singleIsoMu] #[singleMu, mutau, singleTau, MET]
+  eTau: [singleEleWpTight, singleTau, etau] #[ singleEle, etau, singleTau, MET]
+  muTau: [singleIsoMu, singleTau, mutau] #[singleMu, mutau, singleTau, MET]
   tauTau: [ditau] #[ditau, singleTau, MET]
-  eE: [singleEleWpTight, diElec] #[singleEle, MET]
+  eE: [singleEleWpTight] #[singleEle, MET]
   eMu: [singleEleWpTight, singleIsoMu] #[singleEle, singleMu, MET]
   muMu: [singleIsoMu] #[singleMu, MET]
 

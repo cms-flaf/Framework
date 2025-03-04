@@ -86,27 +86,45 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if need_cache:
                     branch_set_cache.add(br)
         reqs = {}
+
+        isbbtt = 'HH_bbtautau' in self.global_params['analysis_config_area'].split('/')
+
         if len(branch_set) > 0:
             reqs['anaTuple'] = AnaTupleTask.req(self, branches=tuple(branch_set),customisations=self.customisations)
         if len(branch_set_cache) > 0:
-            reqs['anaCacheTuple'] = AnaCacheTupleTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
+            if isbbtt:
+                reqs['anaCacheTuple'] = AnaCacheTupleTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
+            else:
+                reqs['analysisCache'] = AnalysisCacheTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
         if need_data:
             reqs['dataMergeTuple'] = DataMergeTask.req(self, branches=(),customisations=self.customisations)
         if need_data_cache:
-            reqs['dataCacheMergeTuple'] = DataCacheMergeTask.req(self, branches=(),customisations=self.customisations)
+            if isbbtt:
+                reqs['dataCacheMergeTuple'] = DataCacheMergeTask.req(self, branches=(),customisations=self.customisations)
+            else:
+                reqs['analysisCacheMerge'] = AnalysisCacheMergeTask.req(self, branches=(),customisations=self.customisations)
         return reqs
 
     def requires(self):
         sample_name, prod_br, var, need_cache = self.branch_data
         deps = []
+
+        isbbtt = 'HH_bbtautau' in self.global_params['analysis_config_area'].split('/')
+
         if sample_name =='data':
             deps.append(DataMergeTask.req(self, max_runtime=DataMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
             if need_cache:
-                deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                if isbbtt:
+                    deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                else:
+                    deps.append(AnalysisCacheMergeTask.req(self, max_runtime=AnalysisCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
         else:
             deps.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
             if need_cache:
-                deps.append(AnaCacheTupleTask.req(self, max_runtime=AnaCacheTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                if isbbtt:
+                    deps.append(AnaCacheTupleTask.req(self, max_runtime=AnaCacheTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                else:
+                    deps.append(AnalysisCacheTask.req(self, max_runtime=AnalysisCacheTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
         return deps
 
     def create_branch_map(self):
@@ -403,6 +421,9 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_name, sample_type = self.branch_data
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         producer_anacachetuples = os.path.join(self.ana_path(), 'Analysis', 'hh_bbWW_AnaCacheProducer.py')
+        # This is only change for the 'new' DNN code
+        producer_anacachetuples = os.path.join(self.ana_path(), 'Analysis', 'HH_bbWW', 'DNN_Application.py')
+
         global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
         thread = threading.Thread(target=update_kinit_thread)
         thread.start()
@@ -420,7 +441,7 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     anaCacheTupleProducer_cmd.extend([ '--deepTauVersion', deepTauVersion])
                 useDNNModel = "HH_bbWW" in self.global_params['analysis_config_area'] #Now bbtautau won't use this DNN model arg (even though this task is only for bbWW right now)
                 if useDNNModel:
-                    dnnFolder = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], 'DNN', 'v2') #'ResHH_Classifier.keras')
+                    dnnFolder = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], 'DNN', 'v6') #'ResHH_Classifier.keras')
                     anaCacheTupleProducer_cmd.extend([ '--dnnFolder', dnnFolder])
                 ps_call(anaCacheTupleProducer_cmd, verbose=1)
             print(f"finished to produce anacachetuple")
@@ -430,8 +451,6 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             kInit_cond.notify_all()
             kInit_cond.release()
             thread.join()
-
-
 
 
 

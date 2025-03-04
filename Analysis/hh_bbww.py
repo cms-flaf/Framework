@@ -93,11 +93,12 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
 
         #self.df = self.df.Define("nSelBtag", f"int(centralJet_btagPNetB >= {self.bTagWP}) + int(centralJet_btagPNetB >= {self.bTagWP})")
         #self.df = self.df.Define("boosted", "nSelectedFatJet > 0")
-        self.df = self.df.Define("boosted", "SelectedFatJet_pt.size() > 0")
-        self.df = self.df.Define("resolved", "!boosted && centralJet_pt.size() >= 2")
-        self.df = self.df.Define("res1b", f"!boosted && resolved && nSelBtag == 1")
-        self.df = self.df.Define("res2b", f"!boosted && resolved && nSelBtag == 2")
-        self.df = self.df.Define("inclusive", f"!boosted && resolved")
+        self.df = self.df.Define("resolved", "centralJet_pt.size() >= 2")
+        self.df = self.df.Define("res1b", f"resolved && nSelBtag == 1")
+        self.df = self.df.Define("res2b", f"resolved && nSelBtag >= 2")
+        self.df = self.df.Define("boosted", "resolved && !res2b && SelectedFatJet_pt.size() > 0") #Work in progress
+
+        self.df = self.df.Define("inclusive", f"centralJet_pt.size() >= 2")
         self.df = self.df.Define("baseline",f"return true;")
 
     def defineChannels(self):
@@ -110,7 +111,31 @@ class DataFrameBuilderForHistograms(DataFrameBuilderBase):
         #Later we will defined some lepton selections
 
         self.df = self.df.Define("passed_singleIsoMu", "HLT_singleIsoMu && (lep1_type == 2 && lep1_HasMatching_singleIsoMu)")
-        self.df = self.df.Filter(f"passed_singleIsoMu")
+
+        muMu_df = self.df.Filter("(channelId == 22)")
+        eMu_df = self.df.Filter("(channelId == 12)")
+        muE_df = self.df.Filter("(channelId == 21)")
+        eE_df = self.df.Filter("(channelId == 11)")
+        print(f"Checking nEvents muMu {muMu_df.Count().GetValue()}")
+        print(f"Checking nEvents eMu {eMu_df.Count().GetValue()}")
+        print(f"Checking nEvents muE {muE_df.Count().GetValue()}")
+        print(f"Checking nEvents eE {eE_df.Count().GetValue()}")
+
+        self.df = self.df.Define("passed_singleEleWpTight", "HLT_singleEleWpTight && (lep1_type == 1 && lep1_HasMatching_singleEleWpTight)")
+        # self.df = self.df.Define("passed_singleEleWpTight", "HLT_singleEleWpTight && (lep1_type == 1)")
+        print(f"Checking nEvents before defineLeptonPreselection {self.df.Count().GetValue()}")
+        self.df = self.df.Filter(f"passed_singleIsoMu || passed_singleEleWpTight")
+        print(f"Checking nEvents after defineLeptonPreselection {self.df.Count().GetValue()}")
+
+
+        muMu_df = self.df.Filter("(channelId == 22)")
+        eMu_df = self.df.Filter("(channelId == 12)")
+        muE_df = self.df.Filter("(channelId == 21)")
+        eE_df = self.df.Filter("(channelId == 11)")
+        print(f"Checking nEvents muMu {muMu_df.Count().GetValue()}")
+        print(f"Checking nEvents eMu {eMu_df.Count().GetValue()}")
+        print(f"Checking nEvents muE {muE_df.Count().GetValue()}")
+        print(f"Checking nEvents eE {eE_df.Count().GetValue()}")
 
     def defineJetSelections(self):
         self.df = self.df.Define("jet1_isvalid", "centralJet_pt.size() > 0")
@@ -191,14 +216,88 @@ def defineAllP4(df):
     for idx in [0,1]:
         df = Utilities.defineP4(df, f"lep{idx+1}")
     df = df.Define(f"centralJet_p4", f"GetP4(centralJet_pt, centralJet_eta, centralJet_phi, centralJet_mass)")
-    for met_var in ['DeepMETResolutionTune', 'DeepMETResponseTune', 'PuppiMET']:
+    for met_var in ['DeepMETResolutionTune', 'DeepMETResponseTune', 'PuppiMET', 'met']:
         df = df.Define(f"{met_var}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({met_var}_pt,0.,{met_var}_phi,0.)")
+
+
+    df = df.Define('HT', f"Sum(centralJet_pt)")
+
+    df = df.Define('dR_dilep', f"ROOT::Math::VectorUtil::DeltaR(lep1_p4, lep2_p4)")
+    df = df.Define('dR_dibjet', f"ROOT::Math::VectorUtil::DeltaR(centralJet_p4[0], centralJet_p4[1])")
+    df = df.Define('dR_dilep_dibjet', f"ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[0]+centralJet_p4[1]))")
+    df = df.Define('dR_dilep_dijet', f"(centralJet_pt.size() >= 4) ? ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[2]+centralJet_p4[3])) : -100.")
+    df = df.Define('dPhi_lep1_lep2', f"ROOT::Math::VectorUtil::DeltaPhi(lep1_p4,lep2_p4)")
+    df = df.Define('dPhi_jet1_jet2', f"ROOT::Math::VectorUtil::DeltaPhi(centralJet_p4[0],centralJet_p4[1])")
+    df = df.Define('dPhi_MET_dilep', f"ROOT::Math::VectorUtil::DeltaPhi(met_p4,(lep1_p4+lep2_p4))")
+    df = df.Define('dPhi_MET_dibjet', f"ROOT::Math::VectorUtil::DeltaPhi(met_p4,(centralJet_p4[0]+centralJet_p4[1]))")
+    df = df.Define('min_dR_lep0_jets', f"MinDeltaR(lep1_p4, centralJet_p4)")
+    df = df.Define('min_dR_lep1_jets', f"MinDeltaR(lep2_p4, centralJet_p4)")
+
+    df = df.Define('MT', f"(lep1_type > 0 && lep2_type > 0) ? Calculate_TotalMT(lep1_p4, lep2_p4, met_p4) : -100.")
+    df = df.Define('MT2', f'(lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4)) : -100.')
+    df = df.Define('MT2_bbWW', f'(lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_bbWW(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4)) : -100.')
+
+    #Functional form of MT2 claculation
+    df = df.Define('MT2_ll', f'(lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(lep1_p4, lep2_p4, centralJet_p4[0] + centralJet_p4[1] + met_p4, centralJet_p4[0].mass(), centralJet_p4[1].mass())) : -100.')
+    df = df.Define('MT2_bb', f'(lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(centralJet_p4[0], centralJet_p4[1], lep1_p4 + lep2_p4 + met_p4, 80.4, 80.4)) : -100.')
+    df = df.Define('MT2_blbl', f'(lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(lep1_p4 + centralJet_p4[1], lep2_p4 + centralJet_p4[1], met_p4, 0.0, 0.0)) : -100.')
+
+    df = df.Define('CosTheta_bb', f'(centralJet_pt.size() > 1) ? analysis::CosDTheta(centralJet_p4[0], centralJet_p4[1]) : -1.0')
+
+    df = df.Define(f"ll_mass","(lep1_type > 0 && lep2_type > 0) ? (lep1_p4+lep2_p4).mass() : -1.0") 
+
+    df = df.Define(f"bb_mass","centralJet_pt.size() > 1 ? (centralJet_p4[0]+centralJet_p4[1]).mass() : -1.0") 
 
     df = df.Define(f"diLep_p4", f"(lep1_p4+lep2_p4)")
     df = df.Define(f"Lep1Lep2Jet1Jet2_p4", f"(centralJet_pt.size() >= 2) ? (lep1_p4+lep2_p4+centralJet_p4[0]+centralJet_p4[1]) : LorentzVectorM()")
     df = df.Define(f"Lep1Jet1Jet2_p4", f"(centralJet_pt.size() >= 2) ? (lep1_p4+centralJet_p4[0]+centralJet_p4[1]) : LorentzVectorM()")
     return df
 
+def RedefineAllP4_DNNBatchMaker(df):
+    df = df.Define(f"SelectedFatJet_idx", f"CreateIndexes(SelectedFatJet_pt.size())")
+    df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")
+    for idx in [0,1]:
+        df = Utilities.defineP4(df, f"lep{idx+1}")
+    df = df.Define(f"centralJet_p4", f"GetP4(centralJet_pt, centralJet_eta, centralJet_phi, centralJet_mass)")
+    for met_var in ['DeepMETResolutionTune', 'DeepMETResponseTune', 'PuppiMET', 'met']:
+        df = df.Define(f"{met_var}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({met_var}_pt,0.,{met_var}_phi,0.)")
+
+
+    df = df.Redefine('HT', f"_entry ? Sum(centralJet_pt) : HT")
+
+    df = df.Redefine('dR_dilep', f"_entry ? ROOT::Math::VectorUtil::DeltaR(lep1_p4, lep2_p4) : dR_dilep")
+    df = df.Redefine('dR_dibjet', f"_entry ? ROOT::Math::VectorUtil::DeltaR(centralJet_p4[0], centralJet_p4[1]) : dR_dibjet")
+    df = df.Redefine('dR_dilep_dibjet', f"_entry ? ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[0]+centralJet_p4[1])) : dR_dilep_dijet")
+    df = df.Redefine('dR_dilep_dijet', f"_entry && (centralJet_pt.size() >= 4) ? ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[2]+centralJet_p4[3])) : dR_dilep_dibjet")
+    df = df.Redefine('dPhi_lep1_lep2', f"_entry ? ROOT::Math::VectorUtil::DeltaPhi(lep1_p4,lep2_p4) : dPhi_lep1_lep2")
+    df = df.Redefine('dPhi_jet1_jet2', f"_entry ? ROOT::Math::VectorUtil::DeltaPhi(centralJet_p4[0],centralJet_p4[1]) : dPhi_jet1_jet2")
+    df = df.Redefine('dPhi_MET_dilep', f"_entry ? ROOT::Math::VectorUtil::DeltaPhi(met_p4,(lep1_p4+lep2_p4)) : dPhi_MET_dilep")
+    df = df.Redefine('dPhi_MET_dibjet', f"_entry ? ROOT::Math::VectorUtil::DeltaPhi(met_p4,(centralJet_p4[0]+centralJet_p4[1])) : dPhi_MET_dibjet")
+    df = df.Redefine('min_dR_lep0_jets', f"_entry ? MinDeltaR(lep1_p4, centralJet_p4) : min_dR_lep0_jets")
+    df = df.Redefine('min_dR_lep1_jets', f"_entry ? MinDeltaR(lep2_p4, centralJet_p4) : min_dR_lep1_jets")
+
+    df = df.Redefine('MT', f"_entry && (lep1_type > 0 && lep2_type > 0) ? Calculate_TotalMT(lep1_p4, lep2_p4, met_p4) : MT")
+    df = df.Redefine('MT2', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4)) : MT2')
+    df = df.Redefine('MT2_bbWW', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_bbWW(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4)) : MT2_bbWW')
+
+    #Functional form of MT2 claculation
+    df = df.Redefine('MT2_ll', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(lep1_p4, lep2_p4, centralJet_p4[0] + centralJet_p4[1] + met_p4, centralJet_p4[0].mass(), centralJet_p4[1].mass())) : MT2_ll')
+    df = df.Redefine('MT2_bb', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(centralJet_p4[0], centralJet_p4[1], lep1_p4 + lep2_p4 + met_p4, 80.4, 80.4)) : MT2_bb')
+    df = df.Redefine('MT2_blbl', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(lep1_p4 + centralJet_p4[1], lep2_p4 + centralJet_p4[1], met_p4, 0.0, 0.0)) : MT2_blbl')
+
+    df = df.Redefine('CosTheta_bb', f'_entry && (centralJet_pt.size() > 1) ? analysis::CosDTheta(centralJet_p4[0], centralJet_p4[1]) : CosTheta_bb')
+
+    df = df.Redefine(f"ll_mass","_entry && (lep1_type > 0 && lep2_type > 0) ? (lep1_p4+lep2_p4).mass() : ll_mass") 
+
+    df = df.Redefine(f"bb_mass","centralJet_pt.size() > 1 ? (centralJet_p4[0]+centralJet_p4[1]).mass() : bb_mass") 
+
+    return df
+
+
+def PrepareDfForDNN(dfForHistograms):
+    dfForHistograms.df = defineAllP4(dfForHistograms.df)
+    #dfForHistograms.defineBoostedVariables()
+    return dfForHistograms
 
 
 def PrepareDfForHistograms(dfForHistograms):

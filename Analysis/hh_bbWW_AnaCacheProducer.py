@@ -9,6 +9,7 @@ import tensorflow as tf
 import awkward as ak
 import numpy as np
 import uproot
+import vector
 
 
 if __name__ == "__main__":
@@ -34,6 +35,111 @@ def getKeyNames(root_file_name):
 
 
 
+def CreateHigherLevelVariables(branches, highlevelfeatures_names):
+    #HT
+    HT = ak.sum(branches['centralJet_pt'], axis=1)
+
+    #dR_dilep
+    lep1 = vector.arr({'pt': branches['lep1_pt'], 'phi': branches['lep1_phi'], 'eta': branches['lep1_eta'], 'mass': branches['lep1_mass']})
+    lep2 = vector.arr({'pt': branches['lep2_pt'], 'phi': branches['lep2_phi'], 'eta': branches['lep2_eta'], 'mass': branches['lep2_mass']})
+    dR_dilep = lep1.deltaR(lep2)
+
+    #dR_diBjet
+    jet_pt_branch = ak.pad_none(branches['centralJet_pt'], 4)
+    jet_phi_branch = ak.pad_none(branches['centralJet_phi'], 4)
+    jet_eta_branch = ak.pad_none(branches['centralJet_eta'], 4)
+    jet_mass_branch = ak.pad_none(branches['centralJet_mass'], 4)
+    jets = vector.arr({'pt': jet_pt_branch, 'phi': jet_phi_branch, 'eta': jet_eta_branch, 'mass': jet_mass_branch})
+    dR_dibjet = ak.fill_none(jets[:,0].deltaR(jets[:,1]), 0.0)
+
+    #dR_dilep_dijet
+    dilep = lep1+lep2
+    dijet = jets[:,2] + jets[:,3]
+    dR_dilep_dijet = ak.fill_none(dilep.deltaR(dijet), 0.0)
+
+    #dR_dilep_dibjet
+    dibjet = jets[:,0] + jets[:,1]
+    dR_dilep_dibjet = ak.fill_none(dilep.deltaR(dibjet), 0.0)
+
+    #dPhi_MET_dilep
+    met = vector.arr({'pt': branches['met_pt'], 'phi': branches['met_phi']})
+    dPhi_MET_dilep = met.deltaphi(dilep)
+
+    #dPhi_MET_dibjet
+    dPhi_MET_dibjet = ak.fill_none(met.deltaphi(dibjet), 0.0)
+
+    #min_dR_lep0_jets
+    min_dR_lep0_jets = ak.fill_none(ak.min(lep1.deltaR(jets), axis=1), 0.0)
+
+    #min_dR_lep1_jets
+    min_dR_lep1_jets = ak.fill_none(ak.min(lep2.deltaR(jets), axis=1), 0.0)
+
+    #mt2
+    #MT2 code requires a event loop ):
+    mt2_ll_lester_list = []
+    mt2_bb_lester_list = []
+    mt2_blbl_lester_list = []
+
+    calculate_mt2 = ('mt2_ll_lester' in highlevelfeatures_names) or ('mt2_bb_lester' in highlevelfeatures_names) or ('mt2_blbl_lester' in highlevelfeatures_names)
+    if calculate_mt2:
+        print("Calculating mt2 (sadly this must be an event loop)")
+        for idx in tqdm.tqdm(range(len(lep1))): #Can loop over the lep object since it is of length nEvent
+            lep0_p4 = lep1[idx]
+            lep1_p4 = lep2[idx]
+            bjet0_p4 = jets[idx,0]
+            bjet1_p4 = jets[idx,1]
+            #Don't have subjets yet
+            # if ev.Double_HbbFat:
+            #     bjet0_p4 = vector.obj(pt = ev.ak8_jet0_subjet1_pt, eta = ev.ak8_jet0_subjet1_eta, phi = ev.ak8_jet0_subjet1_phi, energy = ev.ak8_jet0_subjet1_E)
+            #     bjet1_p4 = vector.obj(pt = ev.ak8_jet0_subjet2_pt, eta = ev.ak8_jet0_subjet2_eta, phi = ev.ak8_jet0_subjet2_phi, energy = ev.ak8_jet0_subjet2_E)
+            this_met = met[idx]
+
+            if bjet0_p4.pt == None:
+                bjet0_p4 = vector.obj(pt = 0.0, eta = 0.0, phi = 0.0, energy = 0.0)
+            if bjet1_p4.pt == None:
+                bjet1_p4 = vector.obj(pt = 0.0, eta = 0.0, phi = 0.0, energy = 0.0)
+                
+            mt2_ll_lester_list.append(mt2_lester.get_mT2(lep0_p4.M, lep0_p4.px, lep0_p4.py, lep1_p4.M, lep1_p4.px, lep1_p4.py, this_met.px+bjet0_p4.px+bjet1_p4.px, this_met.py+bjet0_p4.py+bjet1_p4.py, bjet0_p4.M, bjet1_p4.M, 0, True))
+            wMass = 80.4
+            mt2_bb_lester_list.append(mt2_lester.get_mT2(bjet0_p4.M, bjet0_p4.px, bjet0_p4.py, bjet1_p4.M, bjet1_p4.px, bjet1_p4.py, this_met.px+lep0_p4.px+lep1_p4.px, this_met.py+lep0_p4.py+lep1_p4.py, wMass, wMass, 0, True))
+
+            lep0bjet0_p4 = lep0_p4 + bjet0_p4
+            lep0bjet1_p4 = lep0_p4 + bjet1_p4
+            lep1bjet0_p4 = lep1_p4 + bjet0_p4
+            lep1bjet1_p4 = lep1_p4 + bjet1_p4
+            if max(lep0bjet0_p4.M, lep1bjet1_p4.M) < max(lep0bjet1_p4.M, lep1bjet0_p4.M):
+                mt2_blbl_lester_list.append(mt2_lester.get_mT2(lep0bjet0_p4.M, lep0bjet0_p4.px, lep0bjet0_p4.py, lep1bjet1_p4.M, lep1bjet1_p4.px, lep1bjet1_p4.py, this_met.px, this_met.py, 0, 0, 0, True))
+            else:
+                mt2_blbl_lester_list.append(mt2_lester.get_mT2(lep0bjet1_p4.M, lep0bjet1_p4.px, lep0bjet1_p4.py, lep1bjet0_p4.M, lep1bjet0_p4.px, lep1bjet0_p4.py, this_met.px, this_met.py, 0, 0, 0, True))
+        mt2_ll_lester = np.array(mt2_ll_lester_list)
+        mt2_bb_lester = np.array(mt2_bb_lester_list)
+        mt2_blbl_lester = np.array(mt2_blbl_lester_list)
+
+
+
+    hlv_list = []
+    if 'HT' in highlevelfeatures_names: hlv_list.append(HT)
+    if 'dR_dilep' in highlevelfeatures_names: hlv_list.append(dR_dilep)
+    if 'dR_dibjet' in highlevelfeatures_names: hlv_list.append(dR_dibjet)
+
+    if 'dR_dilep_dijet' in highlevelfeatures_names: hlv_list.append(dR_dilep_dijet)
+    if 'dR_dilep_dibjet' in highlevelfeatures_names: hlv_list.append(dR_dilep_dibjet)
+
+    if 'dPhi_MET_dilep' in highlevelfeatures_names: hlv_list.append(dPhi_MET_dilep)
+    if 'dPhi_MET_dibjet' in highlevelfeatures_names: hlv_list.append(dPhi_MET_dibjet)
+
+    if 'min_dR_lep0_jets' in highlevelfeatures_names: hlv_list.append(min_dR_lep0_jets)
+    if 'min_dR_lep1_jets' in highlevelfeatures_names: hlv_list.append(min_dR_lep1_jets)
+
+    if 'mt2_ll_lester' in highlevelfeatures_names: hlv_list.append(mt2_ll_lester)
+    if 'mt2_bb_lester' in highlevelfeatures_names: hlv_list.append(mt2_bb_lester)
+    if 'mt2_blbl_lester' in highlevelfeatures_names: hlv_list.append(mt2_blbl_lester)
+
+    high_level_features = np.array(hlv_list)
+    return high_level_features
+
+
+
 def applyDNNScore(inFileName, global_cfg_dict, dnnFolder, param_mass_list, outFileName, varToSave, is_central=True):
     print("Going to load model")
     dnnName = os.path.join(dnnFolder, 'ResHH_Classifier.keras')
@@ -54,12 +160,17 @@ def applyDNNScore(inFileName, global_cfg_dict, dnnFolder, param_mass_list, outFi
     features = dnnConfig['features']
     #Features to use for DNN application (vectors and index)
     list_features = dnnConfig['listfeatures']
+    #Features to use for DNN application (high level names to create)
+    highlevel_features = dnnConfig['highlevelfeatures']
 
     #Features to load from df to awkward
     load_features = set()
     load_features.update(features)
     for feature in list_features:
         load_features.update([feature[0]])
+    load_features.update(highlevel_features)
+
+
 
 
     events = uproot.open(inFileName)
@@ -68,17 +179,17 @@ def applyDNNScore(inFileName, global_cfg_dict, dnnFolder, param_mass_list, outFi
     #Get single value array
     array = np.array([getattr(branches, feature_name) for feature_name in features]).transpose()
 
-    #Get vector value array (Not done yet)
+    #Get vector value array
     default_value = 0.0
     if list_features != None:
-        print(branches[0])
         array_listfeatures = np.array([ak.fill_none(ak.pad_none(getattr(branches, feature_name), index+1), default_value)[:,index] for [feature_name,index] in list_features]).transpose()
-    print("Got the list features")
-
-    #Need to append the value features and the listfeatures together
-    if list_features != None: 
-        print("We have list features!")
+        #Need to append the value features and the listfeatures together
         array = np.append(array, array_listfeatures, axis=1)
+
+    #Need to append the high level features and the other features together
+    if highlevel_features != None: 
+        array_highlevelfeatures = CreateHigherLevelVariables(branches, highlevel_features).transpose()
+        array = np.append(array, array_highlevelfeatures, axis=1)
 
 
     #Add parametric mass point to the array

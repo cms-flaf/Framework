@@ -182,6 +182,9 @@ if __name__ == "__main__":
     ROOT.gInterpreter.Declare(f'#include "include/pnetSF.h"')
     ROOT.gROOT.ProcessLine('#include "include/AnalysisTools.h"')
     ROOT.gROOT.ProcessLine('#include "include/AnalysisMath.h"')
+    ROOT.gROOT.ProcessLine(f'#include "include/MT2.h"') # Include due to DNN using these
+    ROOT.gROOT.ProcessLine(f'#include "include/Lester_mt2_bisect.cpp"')
+
     #if not os.path.isdir(args.outDir):
     #    os.makedirs(args.outDir)
     # if args.furtherCut:

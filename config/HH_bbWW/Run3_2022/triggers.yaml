@@ -41,6 +41,7 @@ singleIsoEleHT:
       online_obj:
         cut: TrigObj_id == 11 && (TrigObj_filterBits&32)!=0
       doMatching: False
+      
 singleEleWpTight:
   channels:
     - eMu
@@ -54,7 +55,7 @@ singleEleWpTight:
         cut: v_ops::pt(Electron_p4) > 32
       online_obj:
         cut: TrigObj_id == 11 && (TrigObj_filterBits&4)!=0
-      doMatching: False
+      doMatching: True
 
 diElec:
   channels:

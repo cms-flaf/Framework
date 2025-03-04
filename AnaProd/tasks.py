@@ -99,6 +99,7 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         input_files = InputFileTask.load_input_files(self.input()[0].path, sample_name)
         ana_caches = []
         generator_name = self.samples[sample_name]['generator'] if not isData else ''
+        sample_type = self.samples[sample_name]['sampleType']
         global_params_str = SerializeObjectToString(self.global_params)
         n_inputs = len(input_files)
         for input_idx, input_file in enumerate(input_files):
@@ -106,7 +107,9 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             print(f'[{input_idx+1}/{n_inputs}] {input_target.uri()}')
             with input_target.localize("r") as input_local:
                 returncode, output, err = ps_call([ 'python3', producer, '--input-files', input_local.path,
-                                                    '--global-params', global_params_str, '--generator-name',generator_name,'--verbose', '1' ],
+                                                    '--global-params', global_params_str, '--generator-name', generator_name,
+                                                    '--sample-type', sample_type, 
+                                                    '--stitch-config', self.setup.stitch_config_path, '--verbose', '1' ],
                                                   env=self.cmssw_env, catch_stdout=True)
             ana_cache = json.loads(output)
             print(json.dumps(ana_cache))

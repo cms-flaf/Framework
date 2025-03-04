@@ -98,6 +98,8 @@ class Setup:
         ana_sample_config_path = os.path.join(self.analysis_config_area, period, 'samples.yaml')
         weights_config_path = os.path.join(ana_path, 'config', period, 'weights.yaml')
 
+        self.stitch_config_path = os.path.join(ana_path, 'config', period, 'stitching.yaml')
+
         with open(sample_config_path, 'r') as f:
             sample_config = yaml.safe_load(f)
 
@@ -115,6 +117,11 @@ class Setup:
 
         with open(weights_config_path, 'r') as f:
             weights_config = yaml.safe_load(f)
+
+        with open(self.stitch_config_path, 'r') as f:
+            stitch_config = yaml.safe_load(f)
+
+        self.stitch_config = stitch_config
 
         self.weights_config = weights_config
 

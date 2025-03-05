@@ -28,7 +28,7 @@ corrections:
   - tauES
   - JEC
   - JER
-  - trg
+  # - trg
   # - btagWP
   - btagShape
   - mu

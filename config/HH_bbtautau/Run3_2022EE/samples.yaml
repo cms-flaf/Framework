@@ -1,7 +1,7 @@
 GLOBAL:
   sampleSelection:
     - drop ^.*
-    - keep ^TT.*
+    - keep TT
     - keep ^ttH.*
     - keep ^ST.*
     - keep DYto2L_M_10to50_amcatnloFXFX

@@ -40,8 +40,8 @@ def GetMT2(df):
 def GetKinFit(df):
     if not initialized:
         raise RuntimeError("Legacy Variables not initialized!")
-    df = df.Define("bjet1_JER", f"b1_pt*{b1_p4}.E()")#f"b1_ptRes*{b1_p4}.E()")
-    df = df.Define("bjet2_JER", f"b2_pt*{b2_p4}.E()")#f"b2_ptRes*{b2_p4}.E()")
+    df = df.Define("bjet1_JER", f"b1_ptRes*{b1_p4}.E()")
+    df = df.Define("bjet2_JER", f"b2_ptRes*{b2_p4}.E()")
     df = df.Define("kinFit_result", f"""entry_valid ? kin_fit::FitProducer::Fit({tau1_p4}, {tau2_p4},{b1_p4}, {b2_p4}, {MET_p4}, met_covXX, met_covXY, met_covYY, bjet1_JER,bjet2_JER, 0): kin_fit::FitResults()""")
 
     df = df.Define('kinFit_convergence', 'entry_valid ? kinFit_result.convergence: -100.')

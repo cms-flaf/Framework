@@ -131,28 +131,29 @@ channelDefinition:
 
 
 triggers:
-  eTau: [singleEleWpTight, singleTau, etau] #[ singleEle, etau, singleTau, MET]
-  muTau: [singleIsoMu, singleTau, mutau] #[singleMu, mutau, singleTau, MET]
-  tauTau: [ditau] #[ditau, singleTau, MET]
-  eE: [singleEleWpTight] #[singleEle, MET]
-  eMu: [singleEleWpTight, singleIsoMu] #[singleEle, singleMu, MET]
-  muMu: [singleIsoMu] #[singleMu, MET]
+  eTau: [ singleEle, etau, singleTau, MET]
+  muTau: [singleMu, mutau, singleTau, MET]
+  tauTau: [ditau, ditauJet, singleTau, MET]
+  eE: [singleEle, MET]
+  eMu: [singleEle, singleMu, MET]
+  muMu: [singleMu, MET]
 
 hist_triggers:
   eTau:
-    default: ( ( (HLT_singleEleWpTight || HLT_etau ) && Legacy_region ) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
+    default: ( ( (HLT_singleEle || HLT_etau ) && Legacy_region ) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
     Run2_2016 :  ( ( (HLT_singleEle && SingleEle_region) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) )))
     Run2_2016_HIPM :  ( ( (HLT_singleEle && SingleEle_region) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) )))
   muTau:
-    default: (( (HLT_singleIsoMu || HLT_mutau ) && Legacy_region ) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
+    default: (( (HLT_singleMu || HLT_mutau ) && Legacy_region ) || (HLT_singleTau && SingleTau_region && !Legacy_region) || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ))
   tauTau:
-    default: ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ) )
+    default: ( ((HLT_ditau || HLT_ditauJet) && Legacy_region) || (HLT_MET && !(Legacy_region) )
+    #default: ((HLT_ditau && Legacy_region) || (HLT_singleTau && SingleTau_region && !Legacy_region)  || (HLT_MET && (!(Legacy_region) && !(SingleTau_region)) ) )
   eE:
-    default: (HLT_singleEleWpTight && SingleEle_region)
+    default: (HLT_singleEle && SingleEle_region)
   eMu:
-    default: ((HLT_singleEleWpTight && SingleEle_region) || (HLT_singleIsoMu && SingleMu_region))
+    default: ((HLT_singleEle && SingleEle_region) || (HLT_singleMu && SingleMu_region))
   muMu:
-    default: (HLT_singleIsoMu && SingleMu_region)
+    default: (HLT_singleMu && SingleMu_region)
 
 
 
@@ -166,6 +167,7 @@ application_regions:
   SingleEle_region: ((tau1_pt > {ele_th}  && abs(tau1_eta) < 2.5) || (tau2_pt > {ele_th}  && abs(tau2_eta) < 2.5))
   CrossEleTau_region: (tau1_pt > 25 && abs(tau1_eta) < 2.1 && tau2_pt > 35 && abs(tau2_eta) < 2.1)
   diTau_region: (tau1_pt > 40 && abs(tau1_eta) < 2.1 && tau2_pt > 40 && abs(tau2_eta) < 2.1)
+  diTauJet_region: (tau1_pt > 35 && abs(tau1_eta) < 2.1 && tau2_pt > 35 && abs(tau2_eta) < 2.1 && v_ops::pt(Jet_p4)>60)
   SingleTau_region: (((tau1_pt > {tau_th} && abs(tau1_eta) < 2.1) || (tau2_pt > {tau_th} && abs(tau2_eta) < 2.1)) )
   #MET_region: (!(Legacy_region) && !(SingleTau_region))
 

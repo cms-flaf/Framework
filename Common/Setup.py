@@ -2,8 +2,8 @@ import os
 import re
 import yaml
 
-from RunKit.envToJson import get_cmsenv
-from RunKit.law_wlcg import WLCGFileSystem
+from FLAF.RunKit.envToJson import get_cmsenv
+from FLAF.RunKit.law_wlcg import WLCGFileSystem
 
 def select_items(all_items, filters):
     def name_match(name, pattern):
@@ -92,11 +92,11 @@ class Setup:
         user_config_path = os.path.join(ana_path, 'config', 'user_custom.yaml')
         with open(user_config_path, 'r') as f:
             user_config = yaml.safe_load(f)
-        sample_config_path = os.path.join(ana_path, 'config', period, 'samples.yaml')
+        sample_config_path = os.path.join(ana_path, 'FLAF', 'config', period, 'samples.yaml')
         self.analysis_config_area= os.path.join(ana_path, user_config['analysis_config_area'])
         ana_global_config_path = os.path.join(self.analysis_config_area, 'global.yaml')
         ana_sample_config_path = os.path.join(self.analysis_config_area, period, 'samples.yaml')
-        weights_config_path = os.path.join(ana_path, 'config', period, 'weights.yaml')
+        weights_config_path = os.path.join(ana_path, 'FLAF', 'config', period, 'weights.yaml')
 
         with open(sample_config_path, 'r') as f:
             sample_config = yaml.safe_load(f)
@@ -161,10 +161,14 @@ class Setup:
     def cmssw_env(self):
         if self.cmssw_env_ is None:
             self.cmssw_env_ = get_cmsenv(cmssw_path=os.getenv("FLAF_CMSSW_BASE"))
-            for var in [ 'HOME', 'ANALYSIS_PATH', 'ANALYSIS_DATA_PATH', 'X509_USER_PROXY', 'CENTRAL_STORAGE',
-                         'ANALYSIS_BIG_DATA_PATH', 'FLAF_CMSSW_BASE', 'FLAF_CMSSW_ARCH' ]:
+            for var in [ 'HOME', 'FLAF_PATH', 'ANALYSIS_PATH', 'ANALYSIS_DATA_PATH', 'X509_USER_PROXY',
+                         'FLAF_CMSSW_BASE', 'FLAF_CMSSW_ARCH' ]:
                 if var in os.environ:
                     self.cmssw_env_[var] = os.environ[var]
+            if 'PYTHONPATH' not in self.cmssw_env_:
+                self.cmssw_env_['PYTHONPATH'] = self.ana_path
+            else:
+                self.cmssw_env_['PYTHONPATH'] = f'{self.ana_path}:{self.cmssw_env["PYTHONPATH"]}'
         return self.cmssw_env_
 
     @property

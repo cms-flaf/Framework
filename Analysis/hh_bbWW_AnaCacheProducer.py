@@ -14,11 +14,11 @@ import uproot
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
-from RunKit.run_tools import ps_call
+from FLAF.RunKit.run_tools import ps_call
 ROOT.EnableThreadSafety()
 #ROOT.EnableImplicitMT()
-import Common.LegacyVariables as LegacyVariables
-import Common.Utilities as Utilities
+import FLAF.Common.LegacyVariables as LegacyVariables
+import FLAF.Common.Utilities as Utilities
 defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "X_spin", "isData"]
 scales = ['Up','Down']
 #from Analysis.HistHelper import *
@@ -76,7 +76,7 @@ def applyDNNScore(inFileName, global_cfg_dict, dnnFolder, param_mass_list, outFi
     print("Got the list features")
 
     #Need to append the value features and the listfeatures together
-    if list_features != None: 
+    if list_features != None:
         print("We have list features!")
         array = np.append(array, array_listfeatures, axis=1)
 

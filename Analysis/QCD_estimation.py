@@ -2,8 +2,8 @@ import ROOT
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
-from Analysis.HistHelper import *
-from Common.Utilities import *
+from FLAF.Analysis.HistHelper import *
+from FLAF.Common.Utilities import *
 
 def QCD_Estimation(histograms, all_samples_list, channel, category, uncName, scale, wantNegativeContributions):
     key_B = ((channel, 'OS_AntiIso', category), (uncName, scale))

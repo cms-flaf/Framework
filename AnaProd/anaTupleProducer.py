@@ -8,11 +8,11 @@ import zlib
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
-import Common.BaselineSelection as Baseline
-import Common.Utilities as Utilities
-import Common.ReportTools as ReportTools
-import Common.triggerSel as Triggers
-from Common.Setup import Setup
+import FLAF.Common.BaselineSelection as Baseline
+import FLAF.Common.Utilities as Utilities
+import FLAF.Common.ReportTools as ReportTools
+import FLAF.Common.triggerSel as Triggers
+from FLAF.Common.Setup import Setup
 from Corrections.Corrections import Corrections
 from Corrections.lumi import LumiFilter
 
@@ -172,7 +172,7 @@ if __name__ == "__main__":
     parser.add_argument('--customisations', type=str, default=None)
     parser.add_argument('--treeName', required=False, type=str, default="Events")
     parser.add_argument('--particleFile', type=str,
-                        default=f"{os.environ['ANALYSIS_PATH']}/config/pdg_name_type_charge.txt")
+                        default=f"{os.environ['FLAF_PATH']}/config/pdg_name_type_charge.txt")
     parser.add_argument('--compressionLevel', type=int, default=4)
     parser.add_argument('--compressionAlgo', type=str, default="ZLIB")
     parser.add_argument('--channels', type=str, default=None)
@@ -181,7 +181,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
+    ROOT.gROOT.ProcessLine(".include "+ os.environ['FLAF_PATH'])
     ROOT.gROOT.ProcessLine('#include "include/GenTools.h"')
     ROOT.gInterpreter.ProcessLine(f"ParticleDB::Initialize(\"{args.particleFile}\");")
     setup = Setup.getGlobal(os.environ['ANALYSIS_PATH'], args.period, args.customisations)

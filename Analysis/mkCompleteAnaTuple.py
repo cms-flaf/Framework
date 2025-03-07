@@ -6,12 +6,12 @@ import shutil
 import time
 ROOT.EnableThreadSafety()
 
-from RunKit.run_tools import ps_call
+from FLAF.RunKit.run_tools import ps_call
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
-import Common.Utilities as Utilities
-from Analysis.HistHelper import *
+import FLAF.Common.Utilities as Utilities
+from FLAF.Analysis.HistHelper import *
 from Analysis.hh_bbtautau import *
 
 if __name__ == "__main__":

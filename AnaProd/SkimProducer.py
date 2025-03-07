@@ -4,8 +4,8 @@ import sys
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
-from RunKit.run_tools import ps_call
-import Common.ConvertUproot as ConvertUproot
+from FLAF.RunKit.run_tools import ps_call
+import FLAF.Common.ConvertUproot as ConvertUproot
 
 import ROOT
 ROOT.EnableThreadSafety()
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     #print(getTreeName(systFile))
     treeName = getTreeName(systFile)
     #if args.test : print(f"final TreeName is {treeName}")
-    skimEventsPython = os.path.join(os.environ['ANALYSIS_PATH'], "AnaProd/SkimEvents.py")
+    skimEventsPython = os.path.join(os.environ['FLAF_PATH'], "AnaProd", "SkimEvents.py")
     cmd = f"""python3 {skimEventsPython} --inFileCentral {inFileCentralName} --inFileShifted {inFileShiftedName} --outDir {args.workingDir} --treeName_out {treeName}"""
     if args.test : print(cmd)
     ps_call(cmd, True)

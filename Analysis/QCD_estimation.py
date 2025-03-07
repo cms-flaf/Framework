@@ -310,7 +310,8 @@ def AddQCDInHistDict(var, all_histograms, channels, categories, uncName, all_sam
                 all_histograms['QCD'][keyQCD_down] = hist_qcd_Down
             if uncName == 'Central':
                 print(f"for {channel}, {cat} and {var} the errors on QCD are {error_on_qcdnorm},{error_on_qcdnorm_varied}")
-    return error_on_qcdnorm,error_on_qcdnorm_varied
+    #return error_on_qcdnorm,error_on_qcdnorm_varied
+    return "", ""
 
 
 #### outdated ####

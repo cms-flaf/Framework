@@ -240,8 +240,7 @@ def addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal
         dfw.Define( f"tau{leg_idx+1}_type", f"HttCandidate.leg_type.size() > {leg_idx} ? static_cast<int>(HttCandidate.leg_type.at({leg_idx})) : -1")
 
         dfw.Define(f"b{leg_idx+1}_idx", f"Hbb_isValid ? HbbCandidate->leg_index[{leg_idx}] : -1")
-        if global_params["era"].startswith("Run2"):
-            dfw.DefineAndAppend(f"b{leg_idx+1}_ptRes",f"Hbb_isValid ? static_cast<float>(Jet_ptRes.at(HbbCandidate->leg_index[{leg_idx}])) : 0.f")
+        dfw.DefineAndAppend(f"b{leg_idx+1}_ptRes",f"Hbb_isValid ? static_cast<float>(Jet_ptRes.at(HbbCandidate->leg_index[{leg_idx}])) : 0.f")
         dfw.DefineAndAppend(f"b{leg_idx+1}_pt", f"Hbb_isValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].Pt()) : 0.f")
         dfw.DefineAndAppend(f"b{leg_idx+1}_pt_raw", f"Hbb_isValid ? static_cast<float>(Jet_pt.at(HbbCandidate->leg_index[{leg_idx}])) : 0.f")
         dfw.DefineAndAppend(f"b{leg_idx+1}_eta", f"Hbb_isValid ? static_cast<float>(HbbCandidate->leg_p4[{leg_idx}].Eta()) : 0.f")

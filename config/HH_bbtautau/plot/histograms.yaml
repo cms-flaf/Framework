@@ -651,6 +651,7 @@ bbtautau_mass:
   use_log_x: True
   max_y_sf: 1.8
   divide_by_bin_width: False
+  blind_ranges : [250, 3500]
 
 dR_tautau:
   x_bins: "50|0:5"

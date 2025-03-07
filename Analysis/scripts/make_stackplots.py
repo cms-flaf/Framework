@@ -11,7 +11,7 @@ channellist = ["eE", "eMu", "muMu", "eTau", "muTau", "tauTau"]
 
 cat = "inclusive"
 
-using_uncertainties = False #When we turn on Up/Down, the file storage changes due to renameHists.py
+using_uncertainties = True #When we turn on Up/Down, the file storage changes due to renameHists.py
 
 for var in varnames:
     for channel in channellist:

@@ -7,63 +7,6 @@ from Analysis.GetCrossWeights import *
 # from Analysis.GetTauTauWeights import *
 from Common.Utilities import *
 
-
-WorkingPointsParticleNet = {
-        "Run3_2022":{
-            "Loose":0.0583,#these are placeholders from /cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/BTV/2022_Summer22/btagging.json.gz
-            "Medium":0.3086,
-            "Tight":0.7183
-        },
-        "Run2_2018":{
-            "Loose":0.9172,
-            "Medium":0.9734,
-            "Tight":0.988
-        },
-        "Run2_2017":{
-            "Loose":0.9105,
-            "Medium":0.9714,
-            "Tight":0.987
-        },
-        "Run2_2016":{
-            "Loose":0.9137,
-            "Medium":0.9735,
-            "Tight":0.9883
-        },
-        "Run2_2016_HIPM":{
-            "Loose":0.9088,
-            "Medium":0.9737,
-            "Tight":0.9883
-        },
-    }
-WorkingPointsDeepFlav = {
-        "Run3_2022":{
-            "Loose":0.047,#these are placeholders from /cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/BTV/2022_Summer22/btagging.json.gz
-            "Medium":0.245,
-            "Tight":0.6734
-        },
-        "Run2_2018":{
-            "Loose":0.049,
-            "Medium":0.2783,
-            "Tight":0.71
-        },
-        "Run2_2017":{
-            "Loose":0.0532,
-            "Medium":0.304,
-            "Tight":0.7476
-        },
-        "Run2_2016_HIPM":{
-            "Loose":0.0508,
-            "Medium":0.2598,
-            "Tight":0.6502
-        },
-        "Run2_2016":{
-            "Loose":0.048,
-            "Medium":0.2489,
-            "Tight":0.6377
-        },
-    }
-
-
 def createKeyFilterDict(global_cfg_dict, year):
     reg_dict = {}
     filter_str = ""

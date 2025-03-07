@@ -7,7 +7,7 @@ if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
 
-import Common.Utilities as Utilities
+import FLAF.Common.Utilities as Utilities
 bTagWP = 2
 def defineSelectionRegions(df):
     df = df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {bTagWP}) + int(b2_idbtagDeepFlavB >= {bTagWP})")

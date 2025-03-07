@@ -5,7 +5,7 @@ import math
 import array
 import time
 
-from RunKit.run_tools import ps_call
+from FLAF.RunKit.run_tools import ps_call
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 from Analysis.HistHelper import *

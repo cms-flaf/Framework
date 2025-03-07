@@ -1,6 +1,6 @@
 import ROOT
-import Common.LegacyVariables as LegacyVariables
-import Common.Utilities as Utilities
+import FLAF.Common.LegacyVariables as LegacyVariables
+import FLAF.Common.Utilities as Utilities
 import sys
 import os
 

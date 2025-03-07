@@ -3,14 +3,14 @@ import sys
 import os
 import math
 import shutil
-from RunKit.run_tools import ps_call
+from FLAF.RunKit.run_tools import ps_call
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
 # HistProducerSample.py --histDir my/hist/dir --outDir my/out/dir --hists m_tautau,tau1_pt --file-name-pattern 'nano_{id}.root' --file-ids '0-100'
 
-import Common.Utilities as Utilities
-from Analysis.HistHelper import *
+import FLAF.Common.Utilities as Utilities
+from FLAF.Analysis.HistHelper import *
 
 if __name__ == "__main__":
     import argparse

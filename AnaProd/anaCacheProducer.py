@@ -82,7 +82,7 @@ if __name__ == "__main__":
     parser.add_argument('--verbose', type=int, default=1)
     args = parser.parse_args()
 
-    from Common.Utilities import DeserializeObjectFromString
+    from FLAF.Common.Utilities import DeserializeObjectFromString
     input_files = args.input_files.split(',')
     global_params = DeserializeObjectFromString(args.global_params)
 

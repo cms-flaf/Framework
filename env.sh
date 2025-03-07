@@ -28,7 +28,7 @@ get_os_prefix() {
 
 do_install_cmssw() {
   local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
-  local this_dir="$( cd "$( dirname "$this_file" )" && pwd )"
+  local this_dir="$( cd "$( dirname "$this_file" )/.." && pwd )"
 
   export SCRAM_ARCH=$1
   local CMSSW_VER=$2
@@ -66,7 +66,7 @@ do_install_cmssw() {
 
 do_install_inference() {
   local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
-  local this_dir="$( cd "$( dirname "$this_file" )" && pwd )"
+  local this_dir="$( cd "$( dirname "$this_file" )/.." && pwd )"
 
   local cmb_version=$1
   export ANALYSIS_PATH="$this_dir"
@@ -107,7 +107,7 @@ EOF
 
 install() {
   local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
-  local this_dir="$( cd "$( dirname "$this_file" )" && pwd )"
+  local this_dir="$( cd "$( dirname "$this_file" )/.." && pwd )"
   local node_os=$1
   local target_os=$2
   local cmd_to_run=$3
@@ -153,11 +153,11 @@ action() {
   local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
   local this_dir="$( cd "$( dirname "$this_file" )" && pwd )"
 
-  export PYTHONPATH="$this_dir:$this_dir/inference:$PYTHONPATH"
-  export LAW_HOME="$this_dir/.law"
-  export LAW_CONFIG_FILE="$this_dir/config/law.cfg"
-
-  export ANALYSIS_PATH="$this_dir"
+  export FLAF_PATH="$this_dir"
+  export ANALYSIS_PATH="$( cd "$this_dir/.." && pwd )"
+  export PYTHONPATH="$ANALYSIS_PATH:$ANALYSIS_PATH/inference:$PYTHONPATH"
+  export LAW_HOME="$ANALYSIS_PATH/.law"
+  export LAW_CONFIG_FILE="$ANALYSIS_PATH/config/law.cfg"
   export ANALYSIS_DATA_PATH="$ANALYSIS_PATH/data"
   export X509_USER_PROXY="$ANALYSIS_DATA_PATH/voms.proxy"
 
@@ -169,7 +169,7 @@ action() {
   local os_prefix=$(get_os_prefix $os_version)
   local node_os=$os_prefix$os_version
 
-  local flaf_cmssw_ver=CMSSW_14_1_0_pre6
+  local flaf_cmssw_ver=CMSSW_14_1_7
   local target_os_version=9
   local target_os_prefix=$(get_os_prefix $target_os_version)
   local target_os_gt_prefix=$(get_os_prefix $target_os_version 1)

@@ -42,11 +42,11 @@ def applyLegacyVariables(dfw, global_cfg_dict, is_central=True):
     dfw.DefineAndAppend("entry_valid",entryvalid_stri)
     MT2Branches = dfw.Apply(LegacyVariables.GetMT2)
     dfw.colToSave.extend(MT2Branches)
-    # KinFitBranches = dfw.Apply(LegacyVariables.GetKinFit)
-    # dfw.colToSave.extend(KinFitBranches)
-    # if is_central:
-    #     SVFitBranches  = dfw.Apply(LegacyVariables.GetSVFit)
-    #     dfw.colToSave.extend(SVFitBranches)
+    KinFitBranches = dfw.Apply(LegacyVariables.GetKinFit)
+    dfw.colToSave.extend(KinFitBranches)
+    if is_central:
+        SVFitBranches  = dfw.Apply(LegacyVariables.GetSVFit)
+        dfw.colToSave.extend(SVFitBranches)
 
 def createCentralQuantities(df_central, central_col_types, central_columns):
     map_creator = ROOT.analysis.MapCreator(*central_col_types)()

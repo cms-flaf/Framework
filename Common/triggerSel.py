@@ -1,6 +1,6 @@
 import yaml
 class Triggers():
-    dict_legtypes = {"Electron":"Leg::e", "Muon":"Leg::mu", "Tau":"Leg::tau"}
+    dict_legtypes = {"Electron":"Leg::e", "Muon":"Leg::mu", "Tau":"Leg::tau", "Jet":"Leg::jet"}
 
     def __init__(self, triggerFile, deltaR_matching=0.4):
         with open(triggerFile, "r") as stream:

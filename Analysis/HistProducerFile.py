@@ -177,11 +177,11 @@ if __name__ == "__main__":
     headers_dir = os.path.dirname(os.path.abspath(__file__))
     ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
     ROOT.gInterpreter.Declare(f'#include "include/KinFitNamespace.h"')
-    ROOT.gInterpreter.Declare(f'#include "include/HistHelper.h"')
-    ROOT.gInterpreter.Declare(f'#include "include/Utilities.h"')
-    ROOT.gInterpreter.Declare(f'#include "include/pnetSF.h"')
-    ROOT.gROOT.ProcessLine('#include "include/AnalysisTools.h"')
-    ROOT.gROOT.ProcessLine('#include "include/AnalysisMath.h"')
+    ROOT.gInterpreter.Declare(f'#include "FLAF/include/HistHelper.h"')
+    ROOT.gInterpreter.Declare(f'#include "FLAF/include/Utilities.h"')
+    ROOT.gInterpreter.Declare(f'#include "FLAF/include/pnetSF.h"')
+    ROOT.gROOT.ProcessLine('#include "FLAF/include/AnalysisTools.h"')
+    ROOT.gROOT.ProcessLine('#include "FLAF/include/AnalysisMath.h"')
     #if not os.path.isdir(args.outDir):
     #    os.makedirs(args.outDir)
     # if args.furtherCut:

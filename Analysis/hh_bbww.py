@@ -334,7 +334,6 @@ def AddDNNVariablesForApplication(df):
 
     df = DFSafeDefine(df, "MT", "(lep1_type > 0 && lep2_type > 0)", "Calculate_TotalMT(lep1_p4, lep2_p4, met_p4)", "-100.")
     df = DFSafeDefine(df, "MT2", "(lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4))", "-100.")
-    df = DFSafeDefine(df, "MT2_bbWW", "(lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_bbWW(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4))", "-100.")
 
     df = DFSafeDefine(df, "MT2_ll", "(lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_func(lep1_p4, lep2_p4, centralJet_p4[0] + centralJet_p4[1] + met_p4, centralJet_p4[0].mass(), centralJet_p4[1].mass()))", "-100.")
     df = DFSafeDefine(df, "MT2_bb", "(lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_func(centralJet_p4[0], centralJet_p4[1], lep1_p4 + lep2_p4 + met_p4, 80.4, 80.4))", "-100.")

@@ -340,7 +340,7 @@ def AddDNNVariablesForApplication(df):
     df = DFSafeDefine(df, "MT2_bb", "(lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_func(centralJet_p4[0], centralJet_p4[1], lep1_p4 + lep2_p4 + met_p4, 80.4, 80.4))", "-100.")
     df = DFSafeDefine(df, "MT2_blbl", "(lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_func(lep1_p4 + centralJet_p4[1], lep2_p4 + centralJet_p4[1], met_p4, 0.0, 0.0))", "-100.")
 
-    df = DFSafeDefine(df, "CosTheta_bb", "(centralJet_pt.size() > 1)", "analysis::CosDTheta(centralJet_p4[0], centralJet_p4[1])", "-100.")
+    df = DFSafeDefine(df, "CosTheta_bb", "(centralJet_pt.size() > 1)", "analysis::Calculate_CosDTheta(centralJet_p4[0], centralJet_p4[1])", "-100.")
 
     df = DFSafeDefine(df, "ll_mass", "(lep1_type > 0 && lep2_type > 0)", "(lep1_p4+lep2_p4).mass()", "-100.")
     df = DFSafeDefine(df, "bb_mass", "(centralJet_pt.size() > 1)", "(centralJet_p4[0]+centralJet_p4[1]).mass()", "-100.")
@@ -385,7 +385,7 @@ def RedefineAllP4_DNNBatchMaker(df):
     df = df.Redefine('MT2_bb', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(centralJet_p4[0], centralJet_p4[1], lep1_p4 + lep2_p4 + met_p4, 80.4, 80.4)) : MT2_bb')
     df = df.Redefine('MT2_blbl', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(lep1_p4 + centralJet_p4[1], lep2_p4 + centralJet_p4[1], met_p4, 0.0, 0.0)) : MT2_blbl')
 
-    df = df.Redefine('CosTheta_bb', f'_entry && (centralJet_pt.size() > 1) ? analysis::CosDTheta(centralJet_p4[0], centralJet_p4[1]) : CosTheta_bb')
+    df = df.Redefine('CosTheta_bb', f'_entry && (centralJet_pt.size() > 1) ? analysis::Calculate_CosDTheta(centralJet_p4[0], centralJet_p4[1]) : CosTheta_bb')
 
     df = df.Redefine(f"ll_mass","_entry && (lep1_type > 0 && lep2_type > 0) ? (lep1_p4+lep2_p4).mass() : ll_mass") 
 

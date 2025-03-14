@@ -82,19 +82,4 @@ double Calculate_MT2_ext(const LVector1& lepton1_p4, const LVector2& lepton2_p4,
 }
 
 
-
-template<typename LVector1, typename LVector2 >
-double CosDTheta(const LVector1& obj1_p4, const LVector2& obj2_p4)
-{
-    const ROOT::Math::DisplacementVector3D boost_vec = (obj1_p4 + obj2_p4).BoostToCM();
-    const ROOT::Math::Boost b(boost_vec);
-    const ROOT::Math::LorentzVector obj1 = b(obj1_p4);
-    const ROOT::Math::LorentzVector obj2 = b(obj2_p4);
-
-    const double dTheta = obj1.Theta() - obj2.Theta();
-    const double cosDTheta = cos(dTheta);
-    return cosDTheta;
-}
-
-
 }

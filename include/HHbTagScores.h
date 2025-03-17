@@ -15,14 +15,14 @@ inline int PeriodToHHbTagInput (Period period)
         { Period::Run2_2016, 2016 },
         { Period::Run2_2017, 2017 },
         { Period::Run2_2018, 2018 },
-        { Period::Run3_2022, 2018 },
-        { Period::Run3_2022EE, 2018 },
-        { Period::Run3_2023, 2018 },
-        { Period::Run3_2023BPix, 2018 },
+        { Period::Run3_2022, 0 },
+        { Period::Run3_2022EE, 1 },
+        { Period::Run3_2023, 2 },
+        { Period::Run3_2023BPix, 3 },
     };
     auto iter = periodHHBtag.find(period);
     if (iter == periodHHBtag.end()) {
-        throw analysis::exception("Period corrispondence not found");
+        throw analysis::exception("Period correspondence not found");
     }
     return iter->second;
 }
@@ -30,16 +30,16 @@ inline int PeriodToHHbTagInput (Period period)
 inline int ChannelToHHbTagInput (Channel channel)
 {
     static const std::map<Channel, int> channelHHBtag{
-        { Channel::eE, -1 },
-        { Channel::eMu, -1 },
-        { Channel::muMu, -1 },
-        { Channel::eTau, 0 },
-        { Channel::muTau, 1 },
+        { Channel::muTau, 0 },
+        { Channel::eTau, 1 },
         { Channel::tauTau, 2 },
+        { Channel::muMu, 3 },
+        { Channel::eE, 4 },
+        { Channel::eMu, 5 },
     };
     auto iter = channelHHBtag.find(channel);
     if (iter == channelHHBtag.end()){
-        throw analysis::exception("Channel corrispondence not found");
+        throw analysis::exception("Channel correspondence not found");
     }
     return iter->second;
 

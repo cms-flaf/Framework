@@ -1,7 +1,7 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #pragma clang diagnostic ignored "-Wdeprecated-anon-enum-enum-conversion"
-#include "../HHbtag/interface/HH_BTag.h"
+#include "../../HHbtag/interface/HH_BTag.h"
 #pragma clang diagnostic pop
 
 #include "AnalysisTools.h"

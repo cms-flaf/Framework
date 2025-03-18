@@ -8,9 +8,9 @@ if __name__ == "__main__":
 
 
 import Common.Utilities as Utilities
-bTagWP = 2
+bTagWP = 0.3086 #taking the medium working point from /cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/BTV/2022_Summer22/btagging.json.gz
 def defineSelectionRegions(df):
-    df = df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {bTagWP}) + int(b2_idbtagDeepFlavB >= {bTagWP})")
+    df = df.Define("nSelBtag", f"int(b1_btagDeepFlavB >= {bTagWP}) + int(b2_btagDeepFlavB >= {bTagWP})")
     df = df.Define("res1b", f"nSelBtag == 1")
     df = df.Define("res2b", f"nSelBtag == 2")
     df = df.Define("inclusive", f"return true;")
@@ -23,7 +23,7 @@ def defineChannels(df):
     return df
 
 def defineQCDRegions(df):
-    tau2_iso_var = f"tau2_idDeepTau2017v2p1VSjet"
+    tau2_iso_var = f"tau2_idDeepTau{self.deepTauYear()}v{self.deepTauVersion}VSjet"
     df = df.Define("OS", "tau1_charge*tau2_charge < 0")
     df = df.Define("Iso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
     df = df.Define("AntiIso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value} && !Iso")

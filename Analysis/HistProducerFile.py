@@ -16,7 +16,7 @@ from Analysis.HistHelper import *
 import importlib
 
 #Import correct analysis
-#from Analysis.hh_bbtautau import *
+from Analysis.hh_bbtautau import *
 #import Analysis.hh_bbww as analysis
 
 def createCacheQuantities(dfWrapped_cache, cache_map_name):
@@ -70,7 +70,7 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
     boosted_categories = global_cfg_dict['boosted_categories']
     categories = global_cfg_dict['categories']
     boosted_variables = global_cfg_dict['var_only_boosted']
-    all_categories = categories + boosted_categories
+    all_categories = categories #+ boosted_categories
     if args.var in boosted_variables:
         all_categories = boosted_categories
     if (args.var.startswith('b1') or args.var.startswith('b2')):
@@ -220,7 +220,7 @@ if __name__ == "__main__":
     categories = global_cfg_dict['categories']
     boosted_categories = global_cfg_dict['boosted_categories']
     boosted_variables = global_cfg_dict['var_only_boosted']
-    all_categories = categories + boosted_categories
+    all_categories = categories #+ boosted_categories
     if args.var in boosted_variables:
         all_categories = boosted_categories
     if (args.var.startswith('b1') or args.var.startswith('b2') or args.var=='kinFit_m'):

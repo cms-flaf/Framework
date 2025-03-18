@@ -27,22 +27,39 @@ inline int PeriodToHHbTagInput (Period period)
     return iter->second;
 }
 
-inline int ChannelToHHbTagInput (Channel channel)
+inline int ChannelToHHbTagInput (Channel channel, Period period)
 {
-    static const std::map<Channel, int> channelHHBtag{
-        { Channel::muTau, 0 },
-        { Channel::eTau, 1 },
-        { Channel::tauTau, 2 },
-        { Channel::muMu, 3 },
-        { Channel::eE, 4 },
-        { Channel::eMu, 5 },
-    };
-    auto iter = channelHHBtag.find(channel);
-    if (iter == channelHHBtag.end()){
-        throw analysis::exception("Channel correspondence not found");
+    if (period == Period::Run3_2022 || period == Period::Run3_2022EE || period == Period::Run3_2023 || period == Period::Run3_2023BPix) {
+        static const std::map<Channel, int> channelHHBtag{
+            { Channel::muTau, 0 },
+            { Channel::eTau, 1 },
+            { Channel::tauTau, 2 },
+            { Channel::muMu, 3 },
+            { Channel::eE, 4 },
+            { Channel::eMu, 5 },
+        };
+        auto iter = channelHHBtag.find(channel);
+        if (iter == channelHHBtag.end()){
+            throw analysis::exception("Channel correspondence not found");
+        }
+        return iter->second;
     }
-    return iter->second;
-
+    else if (period == Period::Run2_2016_HIPM || period == Period::Run2_2016 || period == Period::Run2_2017 || period == Period::Run2_2018) {
+        static const std::map<Channel, int> channelHHBtag{
+            { Channel::eE, -1 },
+            { Channel::eMu, -1 },
+            { Channel::muMu, -1 },
+            { Channel::eTau, 0 },
+            { Channel::muTau, 1 },
+            { Channel::tauTau, 2 },
+        };
+        auto iter = channelHHBtag.find(channel);
+        if (iter == channelHHBtag.end()){
+            throw analysis::exception("Channel correspondence not found");
+        }
+        return iter->second;
+    }
+    throw analysis::exception("Period correspondence not found for channel ID");
 }
 
 struct HHBtagWrapper{
@@ -76,7 +93,7 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
                             const HTTCand<2>& HTT_Cand, const int& period, int event){
     const ULong64_t parity = event % 2;
     RVecI JetIdxOrdered = ReorderObjects(Jet_deepFlavour, Jet_idx);
-    int channelId = ChannelToHHbTagInput(HTT_Cand.channel());
+    int channelId = ChannelToHHbTagInput(HTT_Cand.channel(), static_cast<Period>(period));
     RVecF all_scores(JetIdxOrdered.size(), -1.);
     std::vector<float> jet_pt;
     std::vector<float> jet_eta;

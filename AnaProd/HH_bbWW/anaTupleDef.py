@@ -13,7 +13,7 @@ Muon_observables = Muon_int_observables + Muon_float_observables
 Electron_int_observables = ["Electron_mvaNoIso_WP80", "Electron_mvaIso_WP80"]
 Electron_float_observables = ["Electron_pfRelIso03_all","Electron_miniPFRelIso_all","Electron_mvaIso","Electron_mvaNoIso"]
 Electron_observables = Electron_int_observables + Electron_float_observables
-JetObservables = ["PNetRegPtRawCorr", "PNetRegPtRawCorrNeutrino", "PNetRegPtRawRes",
+JetObservables = ["PNetRegPtRawCorr", "PNetRegPtRawCorrNeutrino", "PNetRegPtRawRes", "rawFactor",
                   "btagDeepFlavB", "btagDeepFlavCvB", "btagDeepFlavCvL", "btagDeepFlavQG",
                   "btagPNetB", "btagPNetCvB", "btagPNetCvL", "btagPNetCvNotB", "btagPNetQvG", "ptRes", "idbtagPNetB"] # 2024
 

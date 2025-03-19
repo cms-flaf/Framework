@@ -1,51 +1,89 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #pragma clang diagnostic ignored "-Wdeprecated-anon-enum-enum-conversion"
-#include "../HHbtag/interface/HH_BTag.h"
+#include "../../HHbtag/interface/HH_BTag.h"
 #pragma clang diagnostic pop
 
 #include "AnalysisTools.h"
 #include "HHCore.h"
 #include <map>
 
-inline int PeriodToHHbTagInput (Period period)
+inline int PeriodToHHbTagInput (int version, Period period)
 {
-    static const std::map<Period, int> periodHHBtag{
-        { Period::Run2_2016_HIPM, 2016 },
-        { Period::Run2_2016, 2016 },
-        { Period::Run2_2017, 2017 },
-        { Period::Run2_2018, 2018 },
-        { Period::Run3_2022, 2018 },
-        { Period::Run3_2022EE, 2018 },
-        { Period::Run3_2023, 2018 },
-        { Period::Run3_2023BPix, 2018 },
+    static const std::map<std::pair<int, Period>, int> periodHHBtag{
+        //v1
+        { { 1, Period::Run2_2016_HIPM }, 2016 },
+        { { 1, Period::Run2_2016 }, 2016 },
+        { { 1, Period::Run2_2017 }, 2017 },
+        { { 1, Period::Run2_2018 }, 2018 },
+        { { 1, Period::Run3_2022 }, 2018 },
+        { { 1, Period::Run3_2022EE }, 2018 },
+        { { 1, Period::Run3_2023 }, 2018 },
+        { { 1, Period::Run3_2023BPix }, 2018 },
+        //v2
+        { { 2, Period::Run2_2016_HIPM }, 2016 },
+        { { 2, Period::Run2_2016 }, 2016 },
+        { { 2, Period::Run2_2017 }, 2017 },
+        { { 2, Period::Run2_2018 }, 2018 },
+        { { 2, Period::Run3_2022 }, 2018 },
+        { { 2, Period::Run3_2022EE }, 2018 },
+        { { 2, Period::Run3_2023 }, 2018 },
+        { { 2, Period::Run3_2023BPix }, 2018 },
+        //v3
+        { { 3, Period::Run2_2016_HIPM }, 0 },
+        { { 3, Period::Run2_2016 }, 0 },
+        { { 3, Period::Run2_2017 }, 0 },
+        { { 3, Period::Run2_2018 }, 0 },
+        { { 3, Period::Run3_2022 }, 0 },
+        { { 3, Period::Run3_2022EE }, 1 },
+        { { 3, Period::Run3_2023 }, 2 },
+        { { 3, Period::Run3_2023BPix }, 3 },
     };
-    auto iter = periodHHBtag.find(period);
+    auto iter = periodHHBtag.find(std::make_pair(version, period));
     if (iter == periodHHBtag.end()) {
-        throw analysis::exception("Period corrispondence not found");
+        throw analysis::exception("Period correspondence not found");
     }
     return iter->second;
 }
 
-inline int ChannelToHHbTagInput (Channel channel)
+inline int ChannelToHHbTagInput (int version, Channel channel)
 {
-    static const std::map<Channel, int> channelHHBtag{
-        { Channel::eE, -1 },
-        { Channel::eMu, -1 },
-        { Channel::muMu, -1 },
-        { Channel::eTau, 0 },
-        { Channel::muTau, 1 },
-        { Channel::tauTau, 2 },
+    static const std::map<std::pair<int, Channel>, int> channelHHBtag{
+        //v1
+        { { 1, Channel::eE },  -1 },
+        { { 1, Channel::eMu },  -1 },
+        { { 1, Channel::muMu },  -1 },
+        { { 1, Channel::eTau },  0 },
+        { { 1, Channel::muTau },  1 },
+        { { 1, Channel::tauTau },  2 },
+        //v2
+        { { 2, Channel::eE },  -1 },
+        { { 2, Channel::eMu },  -1 },
+        { { 2, Channel::muMu },  -1 },
+        { { 2, Channel::eTau },  0 },
+        { { 2, Channel::muTau },  1 },
+        { { 2, Channel::tauTau },  2 },
+        //v3
+        { { 3, Channel::muTau },  0 },
+        { { 3, Channel::eTau },  1 },
+        { { 3, Channel::tauTau },  2 },
+        { { 3, Channel::muMu },  3 },
+        { { 3, Channel::eE },  4 },
+        { { 3, Channel::eMu },  5 },
     };
-    auto iter = channelHHBtag.find(channel);
+    auto iter = channelHHBtag.find(std::make_pair(version, channel));
     if (iter == channelHHBtag.end()){
-        throw analysis::exception("Channel corrispondence not found");
+        throw analysis::exception("Channel correspondance not found");
     }
     return iter->second;
-
 }
 
 struct HHBtagWrapper{
+    struct Handle {
+        std::unique_ptr<hh_btag::HH_BTag> tagger;
+        int version{-1};
+    };
+
     static void Initialize(const std::string& path, int version)
     {
         std::array <std::string, 2> models;
@@ -54,19 +92,20 @@ struct HHBtagWrapper{
             ss_model << path + "HHbtag_v" << version << "_par_" << n;
             models.at(n) = ss_model.str();
         }
-        _Get() = std::make_unique<hh_btag::HH_BTag>(models);
+        _Get().tagger = std::make_unique<hh_btag::HH_BTag>(models);
+        _Get().version = version;
     }
-    static hh_btag::HH_BTag& Get()
+    static const Handle& Get()
     {
         auto& hh_btag = HHBtagWrapper::_Get();
-        if(!hh_btag)
+        if(!hh_btag.tagger)
             throw std::runtime_error("HHBtag is not initialized.");
-        return *hh_btag;
+        return hh_btag;
     }
     private:
-    static std::unique_ptr<hh_btag::HH_BTag>& _Get()
+    static Handle& _Get()
     {
-        static std::unique_ptr<hh_btag::HH_BTag> hh_btag;
+        static Handle hh_btag;
         return hh_btag;
     }
 };
@@ -76,7 +115,8 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
                             const HTTCand<2>& HTT_Cand, const int& period, int event){
     const ULong64_t parity = event % 2;
     RVecI JetIdxOrdered = ReorderObjects(Jet_deepFlavour, Jet_idx);
-    int channelId = ChannelToHHbTagInput(HTT_Cand.channel());
+    const auto& handle = HHBtagWrapper::Get();
+    int channelId = ChannelToHHbTagInput(handle.version, HTT_Cand.channel());
     RVecF all_scores(JetIdxOrdered.size(), -1.);
     std::vector<float> jet_pt;
     std::vector<float> jet_eta;
@@ -97,7 +137,7 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
 
     // select good jets only
 
-    auto hhBtag_period = PeriodToHHbTagInput(static_cast<Period>(period));
+    auto hhBtag_period = PeriodToHHbTagInput(handle.version, static_cast<Period>(period));
     for (size_t jet_idx=0; jet_idx<jet_p4.size(); jet_idx++){
         int jet_idx_ordered = JetIdxOrdered[jet_idx];
         if(!Jet_sel[jet_idx_ordered]) continue;
@@ -112,7 +152,7 @@ RVecF GetHHBtagScore(const RVecB& Jet_sel, const RVecI& Jet_idx, const RVecLV& j
     }
 
 
-    RVecF goodJet_scores = HHBtagWrapper::Get().GetScore(jet_pt, jet_eta,
+    RVecF goodJet_scores = handle.tagger->GetScore(jet_pt, jet_eta,
                                              rel_jet_M_pt, rel_jet_E_pt,
                                              jet_htt_deta, jet_deepFlavour,
                                              jet_htt_dphi, hhBtag_period,

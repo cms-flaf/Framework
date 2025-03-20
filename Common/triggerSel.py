@@ -1,13 +1,13 @@
 import yaml
 class Triggers():
-    dict_legtypes = {"Electron":"Leg::e", "Muon":"Leg::mu", "Tau":"Leg::tau"}
+    dict_legtypes = {"Electron":"Leg::e", "Muon":"Leg::mu", "Tau":"Leg::tau", "Jet":"Leg::jet"}
 
     def __init__(self, triggerFile, deltaR_matching=0.4):
         with open(triggerFile, "r") as stream:
             self.trigger_dict= yaml.safe_load(stream)
         self.deltaR_matching = deltaR_matching
 
-    def ApplyTriggers(self, df, offline_lepton_legs, channel, isData = False, isSignal=False, default=0):
+    def ApplyTriggers(self, df, offline_lepton_legs, channel='Htt', isData = False, isSignal=False, default=0):
 
         hltBranches = []
         matchedObjectsBranches= []

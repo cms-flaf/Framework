@@ -260,143 +260,197 @@ def defineAllP4(df):
 # Then close the file, open again and apply the 'Cache' level variables -- This removes _entry and removes the define/redefine issue
 
 # Safe Define/Redefine is needed for the DNN Training file maker -- Since we fill by _entry we need something smart for the filling
-def DFSafeDefine(df, branch_name, cut, expression, init_value):
-    if branch_name in df.GetColumnNames():
-        df = df.Redefine(branch_name, f"{cut} ? {expression} : {branch_name}")
-    else:
-        df = df.Define(branch_name, f"{cut} ? {expression} : {init_value}")
-    return df
+# def DFSafeDefine(df, branch_name, cut, expression, init_value):
+#     if branch_name in df.GetColumnNames():
+#         df = df.Redefine(branch_name, f"{cut} ? {expression} : {branch_name}")
+#     else:
+#         df = df.Define(branch_name, f"{cut} ? {expression} : {init_value}")
+#     return df
 
-def AddDNNVariablesForTraining(df):
-    df = df.Define(f"SelectedFatJet_idx", f"CreateIndexes(SelectedFatJet_pt.size())")
-    df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")
-    for idx in [0,1]:
-        df = Utilities.defineP4(df, f"lep{idx+1}")
-    df = df.Define(f"centralJet_p4", f"GetP4(centralJet_pt, centralJet_eta, centralJet_phi, centralJet_mass)")
-    for met_var in ['DeepMETResolutionTune', 'DeepMETResponseTune', 'PuppiMET', 'met']:
-        df = df.Define(f"{met_var}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({met_var}_pt,0.,{met_var}_phi,0.)")
+# def AddDNNVariablesForTraining(df):
+#     df = df.Define(f"SelectedFatJet_idx", f"CreateIndexes(SelectedFatJet_pt.size())")
+#     df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")
+#     for idx in [0,1]:
+#         df = Utilities.defineP4(df, f"lep{idx+1}")
+#     df = df.Define(f"centralJet_p4", f"GetP4(centralJet_pt, centralJet_eta, centralJet_phi, centralJet_mass)")
+#     for met_var in ['DeepMETResolutionTune', 'DeepMETResponseTune', 'PuppiMET', 'met']:
+#         df = df.Define(f"{met_var}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({met_var}_pt,0.,{met_var}_phi,0.)")
 
-    df = DFSafeDefine(df, "HT", "_entry", "Sum(centralJet_pt)", "-100.")
+#     df = DFSafeDefine(df, "HT", "_entry", "Sum(centralJet_pt)", "-100.")
 
-    df = DFSafeDefine(df, "dR_dilep", "_entry", "ROOT::Math::VectorUtil::DeltaR(lep1_p4, lep2_p4)", "-100.")
-    df = DFSafeDefine(df, "dR_dibjet", "_entry", "ROOT::Math::VectorUtil::DeltaR(centralJet_p4[0], centralJet_p4[1])", "-100.")
-    df = DFSafeDefine(df, "dR_dilep_dibjet", "_entry", "ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[0]+centralJet_p4[1]))", "-100.")
-    df = DFSafeDefine(df, "dR_dilep_dijet", "_entry && (centralJet_pt.size() >= 4)", "ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[2]+centralJet_p4[3]))", "-100.")
-    df = DFSafeDefine(df, "dPhi_lep1_lep2", "_entry", "ROOT::Math::VectorUtil::DeltaPhi(lep1_p4,lep2_p4)", "-100.")
-    df = DFSafeDefine(df, "dPhi_jet1_jet2", "_entry", "ROOT::Math::VectorUtil::DeltaPhi(centralJet_p4[0],centralJet_p4[1])", "-100.")
-    df = DFSafeDefine(df, "dPhi_MET_dilep", "_entry", "ROOT::Math::VectorUtil::DeltaPhi(met_p4,(lep1_p4+lep2_p4))", "-100.")
-    df = DFSafeDefine(df, "dPhi_MET_dibjet", "_entry", "ROOT::Math::VectorUtil::DeltaPhi(met_p4,(centralJet_p4[0]+centralJet_p4[1]))", "-100.")
-    df = DFSafeDefine(df, "min_dR_lep0_jets", "_entry", "MinDeltaR(lep1_p4, centralJet_p4)", "-100.")
-    df = DFSafeDefine(df, "min_dR_lep1_jets", "_entry", "MinDeltaR(lep2_p4, centralJet_p4)", "-100.")
+#     df = DFSafeDefine(df, "dR_dilep", "_entry", "ROOT::Math::VectorUtil::DeltaR(lep1_p4, lep2_p4)", "-100.")
+#     df = DFSafeDefine(df, "dR_dibjet", "_entry", "ROOT::Math::VectorUtil::DeltaR(centralJet_p4[0], centralJet_p4[1])", "-100.")
+#     df = DFSafeDefine(df, "dR_dilep_dibjet", "_entry", "ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[0]+centralJet_p4[1]))", "-100.")
+#     df = DFSafeDefine(df, "dR_dilep_dijet", "_entry && (centralJet_pt.size() >= 4)", "ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[2]+centralJet_p4[3]))", "-100.")
+#     df = DFSafeDefine(df, "dPhi_lep1_lep2", "_entry", "ROOT::Math::VectorUtil::DeltaPhi(lep1_p4,lep2_p4)", "-100.")
+#     df = DFSafeDefine(df, "dPhi_jet1_jet2", "_entry", "ROOT::Math::VectorUtil::DeltaPhi(centralJet_p4[0],centralJet_p4[1])", "-100.")
+#     df = DFSafeDefine(df, "dPhi_MET_dilep", "_entry", "ROOT::Math::VectorUtil::DeltaPhi(met_p4,(lep1_p4+lep2_p4))", "-100.")
+#     df = DFSafeDefine(df, "dPhi_MET_dibjet", "_entry", "ROOT::Math::VectorUtil::DeltaPhi(met_p4,(centralJet_p4[0]+centralJet_p4[1]))", "-100.")
+#     df = DFSafeDefine(df, "min_dR_lep0_jets", "_entry", "MinDeltaR(lep1_p4, centralJet_p4)", "-100.")
+#     df = DFSafeDefine(df, "min_dR_lep1_jets", "_entry", "MinDeltaR(lep2_p4, centralJet_p4)", "-100.")
 
-    df = DFSafeDefine(df, "MT", "_entry && (lep1_type > 0 && lep2_type > 0)", "Calculate_TotalMT(lep1_p4, lep2_p4, met_p4)", "-100.")
-    df = DFSafeDefine(df, "MT2", "_entry && (lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4))", "-100.")
-    df = DFSafeDefine(df, "MT2_bbWW", "_entry && (lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_bbWW(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4))", "-100.")
+#     df = DFSafeDefine(df, "MT", "_entry && (lep1_type > 0 && lep2_type > 0)", "Calculate_TotalMT(lep1_p4, lep2_p4, met_p4)", "-100.")
+#     df = DFSafeDefine(df, "MT2", "_entry && (lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4))", "-100.")
+#     df = DFSafeDefine(df, "MT2_bbWW", "_entry && (lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_bbWW(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4))", "-100.")
 
-    df = DFSafeDefine(df, "MT2_ll", "_entry && (lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_func(lep1_p4, lep2_p4, centralJet_p4[0] + centralJet_p4[1] + met_p4, centralJet_p4[0].mass(), centralJet_p4[1].mass()))", "-100.")
-    df = DFSafeDefine(df, "MT2_bb", "_entry && (lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_func(centralJet_p4[0], centralJet_p4[1], lep1_p4 + lep2_p4 + met_p4, 80.4, 80.4))", "-100.")
-    df = DFSafeDefine(df, "MT2_blbl", "_entry && (lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_func(lep1_p4 + centralJet_p4[1], lep2_p4 + centralJet_p4[1], met_p4, 0.0, 0.0))", "-100.")
+#     df = DFSafeDefine(df, "MT2_ll", "_entry && (lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_func(lep1_p4, lep2_p4, centralJet_p4[0] + centralJet_p4[1] + met_p4, centralJet_p4[0].mass(), centralJet_p4[1].mass()))", "-100.")
+#     df = DFSafeDefine(df, "MT2_bb", "_entry && (lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_func(centralJet_p4[0], centralJet_p4[1], lep1_p4 + lep2_p4 + met_p4, 80.4, 80.4))", "-100.")
+#     df = DFSafeDefine(df, "MT2_blbl", "_entry && (lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_func(lep1_p4 + centralJet_p4[1], lep2_p4 + centralJet_p4[1], met_p4, 0.0, 0.0))", "-100.")
 
-    df = DFSafeDefine(df, "CosTheta_bb", "_entry && (centralJet_pt.size() > 1)", "analysis::CosDTheta(centralJet_p4[0], centralJet_p4[1])", "-100.")
+#     df = DFSafeDefine(df, "CosTheta_bb", "_entry && (centralJet_pt.size() > 1)", "analysis::CosDTheta(centralJet_p4[0], centralJet_p4[1])", "-100.")
 
-    df = DFSafeDefine(df, "ll_mass", "_entry && (lep1_type > 0 && lep2_type > 0)", "(lep1_p4+lep2_p4).mass()", "-100.")
-    df = DFSafeDefine(df, "bb_mass", "_entry && (centralJet_pt.size() > 1)", "(centralJet_p4[0]+centralJet_p4[1]).mass()", "-100.")
+#     df = DFSafeDefine(df, "ll_mass", "_entry && (lep1_type > 0 && lep2_type > 0)", "(lep1_p4+lep2_p4).mass()", "-100.")
+#     df = DFSafeDefine(df, "bb_mass", "_entry && (centralJet_pt.size() > 1)", "(centralJet_p4[0]+centralJet_p4[1]).mass()", "-100.")
 
-    df = DFSafeDefine(df, "diLep_p4", "_entry", "(lep1_p4+lep2_p4)", "LorentzVectorM()")
-    df = DFSafeDefine(df, "Lep1Lep2Jet1Jet2_p4", "_entry && (centralJet_pt.size() >= 2)", "(lep1_p4+lep2_p4+centralJet_p4[0]+centralJet_p4[1])", "LorentzVectorM()")
-    df = DFSafeDefine(df, "Lep1Jet1Jet2_p4", "_entry && (centralJet_pt.size() >= 2)", "(lep1_p4+centralJet_p4[0]+centralJet_p4[1])", "LorentzVectorM()")
+#     df = DFSafeDefine(df, "diLep_p4", "_entry", "(lep1_p4+lep2_p4)", "LorentzVectorM()")
+#     df = DFSafeDefine(df, "Lep1Lep2Jet1Jet2_p4", "_entry && (centralJet_pt.size() >= 2)", "(lep1_p4+lep2_p4+centralJet_p4[0]+centralJet_p4[1])", "LorentzVectorM()")
+#     df = DFSafeDefine(df, "Lep1Jet1Jet2_p4", "_entry && (centralJet_pt.size() >= 2)", "(lep1_p4+centralJet_p4[0]+centralJet_p4[1])", "LorentzVectorM()")
 
-    return df
+#     return df
+
+
+# #In application, there is no _entry var
+# def AddDNNVariablesForApplication(df):
+#     df = df.Define(f"SelectedFatJet_idx", f"CreateIndexes(SelectedFatJet_pt.size())")
+#     df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")
+#     for idx in [0,1]:
+#         df = Utilities.defineP4(df, f"lep{idx+1}")
+#     df = df.Define(f"centralJet_p4", f"GetP4(centralJet_pt, centralJet_eta, centralJet_phi, centralJet_mass)")
+#     for met_var in ['DeepMETResolutionTune', 'DeepMETResponseTune', 'PuppiMET', 'met']:
+#         df = df.Define(f"{met_var}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({met_var}_pt,0.,{met_var}_phi,0.)")
+
+#     df = DFSafeDefine(df, "HT", "true", "Sum(centralJet_pt)", "-100.")
+
+#     df = DFSafeDefine(df, "dR_dilep", "true", "ROOT::Math::VectorUtil::DeltaR(lep1_p4, lep2_p4)", "-100.")
+#     df = DFSafeDefine(df, "dR_dibjet", "true", "ROOT::Math::VectorUtil::DeltaR(centralJet_p4[0], centralJet_p4[1])", "-100.")
+#     df = DFSafeDefine(df, "dR_dilep_dibjet", "true", "ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[0]+centralJet_p4[1]))", "-100.")
+#     df = DFSafeDefine(df, "dR_dilep_dijet", "(centralJet_pt.size() >= 4)", "ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[2]+centralJet_p4[3]))", "-100.")
+#     df = DFSafeDefine(df, "dPhi_lep1_lep2", "true", "ROOT::Math::VectorUtil::DeltaPhi(lep1_p4,lep2_p4)", "-100.")
+#     df = DFSafeDefine(df, "dPhi_jet1_jet2", "true", "ROOT::Math::VectorUtil::DeltaPhi(centralJet_p4[0],centralJet_p4[1])", "-100.")
+#     df = DFSafeDefine(df, "dPhi_MET_dilep", "true", "ROOT::Math::VectorUtil::DeltaPhi(met_p4,(lep1_p4+lep2_p4))", "-100.")
+#     df = DFSafeDefine(df, "dPhi_MET_dibjet", "true", "ROOT::Math::VectorUtil::DeltaPhi(met_p4,(centralJet_p4[0]+centralJet_p4[1]))", "-100.")
+#     df = DFSafeDefine(df, "min_dR_lep0_jets", "true", "MinDeltaR(lep1_p4, centralJet_p4)", "-100.")
+#     df = DFSafeDefine(df, "min_dR_lep1_jets", "true", "MinDeltaR(lep2_p4, centralJet_p4)", "-100.")
+
+#     df = DFSafeDefine(df, "MT", "(lep1_type > 0 && lep2_type > 0)", "Calculate_TotalMT(lep1_p4, lep2_p4, met_p4)", "-100.")
+#     df = DFSafeDefine(df, "MT2", "(lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4))", "-100.")
+
+#     df = DFSafeDefine(df, "MT2_ll", "(lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_func(lep1_p4, lep2_p4, centralJet_p4[0] + centralJet_p4[1] + met_p4, centralJet_p4[0].mass(), centralJet_p4[1].mass()))", "-100.")
+#     df = DFSafeDefine(df, "MT2_bb", "(lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_func(centralJet_p4[0], centralJet_p4[1], lep1_p4 + lep2_p4 + met_p4, 80.4, 80.4))", "-100.")
+#     df = DFSafeDefine(df, "MT2_blbl", "(lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_func(lep1_p4 + centralJet_p4[1], lep2_p4 + centralJet_p4[1], met_p4, 0.0, 0.0))", "-100.")
+
+#     df = DFSafeDefine(df, "CosTheta_bb", "(centralJet_pt.size() > 1)", "analysis::Calculate_CosDTheta(centralJet_p4[0], centralJet_p4[1])", "-100.")
+
+#     df = DFSafeDefine(df, "ll_mass", "(lep1_type > 0 && lep2_type > 0)", "(lep1_p4+lep2_p4).mass()", "-100.")
+#     df = DFSafeDefine(df, "bb_mass", "(centralJet_pt.size() > 1)", "(centralJet_p4[0]+centralJet_p4[1]).mass()", "-100.")
+
+#     df = DFSafeDefine(df, "diLep_p4", "true", "(lep1_p4+lep2_p4)", "LorentzVectorM()")
+#     df = DFSafeDefine(df, "Lep1Lep2Jet1Jet2_p4", "(centralJet_pt.size() >= 2)", "(lep1_p4+lep2_p4+centralJet_p4[0]+centralJet_p4[1])", "LorentzVectorM()")
+#     df = DFSafeDefine(df, "Lep1Jet1Jet2_p4", "(centralJet_pt.size() >= 2)", "(lep1_p4+centralJet_p4[0]+centralJet_p4[1])", "LorentzVectorM()")
+
+#     return df
+
+
 
 
 #In application, there is no _entry var
-def AddDNNVariablesForApplication(df):
+def AddDNNVariables(df):
     df = df.Define(f"SelectedFatJet_idx", f"CreateIndexes(SelectedFatJet_pt.size())")
     df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")
     for idx in [0,1]:
         df = Utilities.defineP4(df, f"lep{idx+1}")
     df = df.Define(f"centralJet_p4", f"GetP4(centralJet_pt, centralJet_eta, centralJet_phi, centralJet_mass)")
-    for met_var in ['DeepMETResolutionTune', 'DeepMETResponseTune', 'PuppiMET', 'met']:
-        df = df.Define(f"{met_var}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({met_var}_pt,0.,{met_var}_phi,0.)")
-
-    df = DFSafeDefine(df, "HT", "true", "Sum(centralJet_pt)", "-100.")
-
-    df = DFSafeDefine(df, "dR_dilep", "true", "ROOT::Math::VectorUtil::DeltaR(lep1_p4, lep2_p4)", "-100.")
-    df = DFSafeDefine(df, "dR_dibjet", "true", "ROOT::Math::VectorUtil::DeltaR(centralJet_p4[0], centralJet_p4[1])", "-100.")
-    df = DFSafeDefine(df, "dR_dilep_dibjet", "true", "ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[0]+centralJet_p4[1]))", "-100.")
-    df = DFSafeDefine(df, "dR_dilep_dijet", "(centralJet_pt.size() >= 4)", "ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[2]+centralJet_p4[3]))", "-100.")
-    df = DFSafeDefine(df, "dPhi_lep1_lep2", "true", "ROOT::Math::VectorUtil::DeltaPhi(lep1_p4,lep2_p4)", "-100.")
-    df = DFSafeDefine(df, "dPhi_jet1_jet2", "true", "ROOT::Math::VectorUtil::DeltaPhi(centralJet_p4[0],centralJet_p4[1])", "-100.")
-    df = DFSafeDefine(df, "dPhi_MET_dilep", "true", "ROOT::Math::VectorUtil::DeltaPhi(met_p4,(lep1_p4+lep2_p4))", "-100.")
-    df = DFSafeDefine(df, "dPhi_MET_dibjet", "true", "ROOT::Math::VectorUtil::DeltaPhi(met_p4,(centralJet_p4[0]+centralJet_p4[1]))", "-100.")
-    df = DFSafeDefine(df, "min_dR_lep0_jets", "true", "MinDeltaR(lep1_p4, centralJet_p4)", "-100.")
-    df = DFSafeDefine(df, "min_dR_lep1_jets", "true", "MinDeltaR(lep2_p4, centralJet_p4)", "-100.")
-
-    df = DFSafeDefine(df, "MT", "(lep1_type > 0 && lep2_type > 0)", "Calculate_TotalMT(lep1_p4, lep2_p4, met_p4)", "-100.")
-    df = DFSafeDefine(df, "MT2", "(lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4))", "-100.")
-
-    df = DFSafeDefine(df, "MT2_ll", "(lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_func(lep1_p4, lep2_p4, centralJet_p4[0] + centralJet_p4[1] + met_p4, centralJet_p4[0].mass(), centralJet_p4[1].mass()))", "-100.")
-    df = DFSafeDefine(df, "MT2_bb", "(lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_func(centralJet_p4[0], centralJet_p4[1], lep1_p4 + lep2_p4 + met_p4, 80.4, 80.4))", "-100.")
-    df = DFSafeDefine(df, "MT2_blbl", "(lep1_type > 0 && lep2_type > 0)", "float(analysis::Calculate_MT2_func(lep1_p4 + centralJet_p4[1], lep2_p4 + centralJet_p4[1], met_p4, 0.0, 0.0))", "-100.")
-
-    df = DFSafeDefine(df, "CosTheta_bb", "(centralJet_pt.size() > 1)", "analysis::Calculate_CosDTheta(centralJet_p4[0], centralJet_p4[1])", "-100.")
-
-    df = DFSafeDefine(df, "ll_mass", "(lep1_type > 0 && lep2_type > 0)", "(lep1_p4+lep2_p4).mass()", "-100.")
-    df = DFSafeDefine(df, "bb_mass", "(centralJet_pt.size() > 1)", "(centralJet_p4[0]+centralJet_p4[1]).mass()", "-100.")
-
-    df = DFSafeDefine(df, "diLep_p4", "true", "(lep1_p4+lep2_p4)", "LorentzVectorM()")
-    df = DFSafeDefine(df, "Lep1Lep2Jet1Jet2_p4", "(centralJet_pt.size() >= 2)", "(lep1_p4+lep2_p4+centralJet_p4[0]+centralJet_p4[1])", "LorentzVectorM()")
-    df = DFSafeDefine(df, "Lep1Jet1Jet2_p4", "(centralJet_pt.size() >= 2)", "(lep1_p4+centralJet_p4[0]+centralJet_p4[1])", "LorentzVectorM()")
-
-    return df
-
-
-
-def RedefineAllP4_DNNBatchMaker(df):
-    df = df.Define(f"SelectedFatJet_idx", f"CreateIndexes(SelectedFatJet_pt.size())")
-    df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")
-    for idx in [0,1]:
-        df = Utilities.defineP4(df, f"lep{idx+1}")
-    df = df.Define(f"centralJet_p4", f"GetP4(centralJet_pt, centralJet_eta, centralJet_phi, centralJet_mass)")
+    df = df.Define(f"centralJet_PNetRegPtRawCorr_p4", f"GetP4(centralJet_pt*(1.0-centralJet_rawFactor)*centralJet_PNetRegPtRawCorr, centralJet_eta, centralJet_phi, centralJet_mass)")
+    df = df.Define(f"centralJet_PNetRegPtRawCorr_PNetRegPtRawCorrNeutrino_p4", f"GetP4(centralJet_pt*(1.0-centralJet_rawFactor)*centralJet_PNetRegPtRawCorr*centralJet_PNetRegPtRawCorrNeutrino, centralJet_eta, centralJet_phi, centralJet_mass)")
     for met_var in ['DeepMETResolutionTune', 'DeepMETResponseTune', 'PuppiMET', 'met']:
         df = df.Define(f"{met_var}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({met_var}_pt,0.,{met_var}_phi,0.)")
 
 
-    df = df.Redefine('HT', f"_entry ? Sum(centralJet_pt) : HT")
+    df = df.Define('HT', f"Sum(centralJet_pt)")
 
-    df = df.Redefine('dR_dilep', f"_entry ? ROOT::Math::VectorUtil::DeltaR(lep1_p4, lep2_p4) : dR_dilep")
-    df = df.Redefine('dR_dibjet', f"_entry ? ROOT::Math::VectorUtil::DeltaR(centralJet_p4[0], centralJet_p4[1]) : dR_dibjet")
-    df = df.Redefine('dR_dilep_dibjet', f"_entry ? ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[0]+centralJet_p4[1])) : dR_dilep_dijet")
-    df = df.Redefine('dR_dilep_dijet', f"_entry && (centralJet_pt.size() >= 4) ? ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[2]+centralJet_p4[3])) : dR_dilep_dibjet")
-    df = df.Redefine('dPhi_lep1_lep2', f"_entry ? ROOT::Math::VectorUtil::DeltaPhi(lep1_p4,lep2_p4) : dPhi_lep1_lep2")
-    df = df.Redefine('dPhi_jet1_jet2', f"_entry ? ROOT::Math::VectorUtil::DeltaPhi(centralJet_p4[0],centralJet_p4[1]) : dPhi_jet1_jet2")
-    df = df.Redefine('dPhi_MET_dilep', f"_entry ? ROOT::Math::VectorUtil::DeltaPhi(met_p4,(lep1_p4+lep2_p4)) : dPhi_MET_dilep")
-    df = df.Redefine('dPhi_MET_dibjet', f"_entry ? ROOT::Math::VectorUtil::DeltaPhi(met_p4,(centralJet_p4[0]+centralJet_p4[1])) : dPhi_MET_dibjet")
-    df = df.Redefine('min_dR_lep0_jets', f"_entry ? MinDeltaR(lep1_p4, centralJet_p4) : min_dR_lep0_jets")
-    df = df.Redefine('min_dR_lep1_jets', f"_entry ? MinDeltaR(lep2_p4, centralJet_p4) : min_dR_lep1_jets")
+    df = df.Define('dR_dilep', f"ROOT::Math::VectorUtil::DeltaR(lep1_p4, lep2_p4)")
+    df = df.Define('dR_dibjet', f"ROOT::Math::VectorUtil::DeltaR(centralJet_p4[0], centralJet_p4[1])")
+    df = df.Define('dR_dilep_dibjet', f"ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[0]+centralJet_p4[1]))")
+    df = df.Define('dR_dilep_dijet', f"(centralJet_pt.size() >= 4) ? ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[2]+centralJet_p4[3])) : -100.")
+    df = df.Define('dPhi_lep1_lep2', f"ROOT::Math::VectorUtil::DeltaPhi(lep1_p4,lep2_p4)")
+    df = df.Define('dPhi_jet1_jet2', f"ROOT::Math::VectorUtil::DeltaPhi(centralJet_p4[0],centralJet_p4[1])")
+    df = df.Define('dPhi_MET_dilep', f"ROOT::Math::VectorUtil::DeltaPhi(met_p4,(lep1_p4+lep2_p4))")
+    df = df.Define('dPhi_MET_dibjet', f"ROOT::Math::VectorUtil::DeltaPhi(met_p4,(centralJet_p4[0]+centralJet_p4[1]))")
+    df = df.Define('min_dR_lep0_jets', f"MinDeltaR(lep1_p4, centralJet_p4)")
+    df = df.Define('min_dR_lep1_jets', f"MinDeltaR(lep2_p4, centralJet_p4)")
 
-    df = df.Redefine('MT', f"_entry && (lep1_type > 0 && lep2_type > 0) ? Calculate_TotalMT(lep1_p4, lep2_p4, met_p4) : MT")
-    df = df.Redefine('MT2', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4)) : MT2')
-    df = df.Redefine('MT2_bbWW', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_bbWW(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4)) : MT2_bbWW')
+    df = df.Define('MT', f"(lep1_type > 0 && lep2_type > 0) ? Calculate_TotalMT(lep1_p4, lep2_p4, met_p4) : -100.")
+    df = df.Define('MT2', f'(lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4)) : -100.')
 
     #Functional form of MT2 claculation
-    df = df.Redefine('MT2_ll', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(lep1_p4, lep2_p4, centralJet_p4[0] + centralJet_p4[1] + met_p4, centralJet_p4[0].mass(), centralJet_p4[1].mass())) : MT2_ll')
-    df = df.Redefine('MT2_bb', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(centralJet_p4[0], centralJet_p4[1], lep1_p4 + lep2_p4 + met_p4, 80.4, 80.4)) : MT2_bb')
-    df = df.Redefine('MT2_blbl', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(lep1_p4 + centralJet_p4[1], lep2_p4 + centralJet_p4[1], met_p4, 0.0, 0.0)) : MT2_blbl')
+    df = df.Define('MT2_ll', f'(lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(lep1_p4, lep2_p4, centralJet_p4[0] + centralJet_p4[1] + met_p4, centralJet_p4[0].mass(), centralJet_p4[1].mass())) : -100.')
+    df = df.Define('MT2_bb', f'(lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(centralJet_p4[0], centralJet_p4[1], lep1_p4 + lep2_p4 + met_p4, 80.4, 80.4)) : -100.')
+    df = df.Define('MT2_blbl', f'(lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(lep1_p4 + centralJet_p4[1], lep2_p4 + centralJet_p4[1], met_p4, 0.0, 0.0)) : -100.')
 
-    df = df.Redefine('CosTheta_bb', f'_entry && (centralJet_pt.size() > 1) ? analysis::Calculate_CosDTheta(centralJet_p4[0], centralJet_p4[1]) : CosTheta_bb')
+    df = df.Define('CosTheta_bb', f'(centralJet_pt.size() > 1) ? analysis::Calculate_CosDTheta(centralJet_p4[0], centralJet_p4[1]) : -100.')
 
-    df = df.Redefine(f"ll_mass","_entry && (lep1_type > 0 && lep2_type > 0) ? (lep1_p4+lep2_p4).mass() : ll_mass") 
+    df = df.Define(f"ll_mass","(lep1_type > 0 && lep2_type > 0) ? (lep1_p4+lep2_p4).mass() : -100.") 
 
-    df = df.Redefine(f"bb_mass","centralJet_pt.size() > 1 ? (centralJet_p4[0]+centralJet_p4[1]).mass() : bb_mass") 
+    df = df.Define(f"bb_mass","centralJet_pt.size() > 1 ? (centralJet_p4[0]+centralJet_p4[1]).mass() : -100.") 
+    df = df.Define(f"bb_mass_PNetRegPtRawCorr","centralJet_pt.size() > 1 ? (centralJet_PNetRegPtRawCorr_p4[0]+centralJet_PNetRegPtRawCorr_p4[1]).mass() : -100.") 
+    df = df.Define(f"bb_mass_PNetRegPtRawCorr_PNetRegPtRawCorrNeutrino","centralJet_pt.size() > 1 ? (centralJet_PNetRegPtRawCorr_PNetRegPtRawCorrNeutrino_p4[0]+centralJet_PNetRegPtRawCorr_PNetRegPtRawCorrNeutrino_p4[1]).mass() : -100.") 
+
+
+    df = df.Define("diLep_p4", "(lep1_p4+lep2_p4)")
+    df = df.Define("Lep1Lep2Jet1Jet2_p4", "(centralJet_pt.size() >= 2) ? (lep1_p4+lep2_p4+centralJet_p4[0]+centralJet_p4[1]) : LorentzVectorM()")
+    df = df.Define("Lep1Jet1Jet2_p4", "(centralJet_pt.size() >= 2) ? (lep1_p4+centralJet_p4[0]+centralJet_p4[1]) : LorentzVectorM()")
 
     return df
 
 
-def PrepareDfForDNN(dfForHistograms):
-    dfForHistograms.df = AddDNNVariablesForApplication(dfForHistograms.df)
-    #dfForHistograms.defineBoostedVariables()
-    return dfForHistograms
+
+
+
+# def RedefineAllP4_DNNBatchMaker(df):
+#     df = df.Define(f"SelectedFatJet_idx", f"CreateIndexes(SelectedFatJet_pt.size())")
+#     df = df.Define(f"SelectedFatJet_p4", f"GetP4(SelectedFatJet_pt, SelectedFatJet_eta, SelectedFatJet_phi, SelectedFatJet_mass, SelectedFatJet_idx)")
+#     for idx in [0,1]:
+#         df = Utilities.defineP4(df, f"lep{idx+1}")
+#     df = df.Define(f"centralJet_p4", f"GetP4(centralJet_pt, centralJet_eta, centralJet_phi, centralJet_mass)")
+#     for met_var in ['DeepMETResolutionTune', 'DeepMETResponseTune', 'PuppiMET', 'met']:
+#         df = df.Define(f"{met_var}_p4", f"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>({met_var}_pt,0.,{met_var}_phi,0.)")
+
+
+#     df = df.Redefine('HT', f"_entry ? Sum(centralJet_pt) : HT")
+
+#     df = df.Redefine('dR_dilep', f"_entry ? ROOT::Math::VectorUtil::DeltaR(lep1_p4, lep2_p4) : dR_dilep")
+#     df = df.Redefine('dR_dibjet', f"_entry ? ROOT::Math::VectorUtil::DeltaR(centralJet_p4[0], centralJet_p4[1]) : dR_dibjet")
+#     df = df.Redefine('dR_dilep_dibjet', f"_entry ? ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[0]+centralJet_p4[1])) : dR_dilep_dijet")
+#     df = df.Redefine('dR_dilep_dijet', f"_entry && (centralJet_pt.size() >= 4) ? ROOT::Math::VectorUtil::DeltaR((lep1_p4+lep2_p4), (centralJet_p4[2]+centralJet_p4[3])) : dR_dilep_dibjet")
+#     df = df.Redefine('dPhi_lep1_lep2', f"_entry ? ROOT::Math::VectorUtil::DeltaPhi(lep1_p4,lep2_p4) : dPhi_lep1_lep2")
+#     df = df.Redefine('dPhi_jet1_jet2', f"_entry ? ROOT::Math::VectorUtil::DeltaPhi(centralJet_p4[0],centralJet_p4[1]) : dPhi_jet1_jet2")
+#     df = df.Redefine('dPhi_MET_dilep', f"_entry ? ROOT::Math::VectorUtil::DeltaPhi(met_p4,(lep1_p4+lep2_p4)) : dPhi_MET_dilep")
+#     df = df.Redefine('dPhi_MET_dibjet', f"_entry ? ROOT::Math::VectorUtil::DeltaPhi(met_p4,(centralJet_p4[0]+centralJet_p4[1])) : dPhi_MET_dibjet")
+#     df = df.Redefine('min_dR_lep0_jets', f"_entry ? MinDeltaR(lep1_p4, centralJet_p4) : min_dR_lep0_jets")
+#     df = df.Redefine('min_dR_lep1_jets', f"_entry ? MinDeltaR(lep2_p4, centralJet_p4) : min_dR_lep1_jets")
+
+#     df = df.Redefine('MT', f"_entry && (lep1_type > 0 && lep2_type > 0) ? Calculate_TotalMT(lep1_p4, lep2_p4, met_p4) : MT")
+#     df = df.Redefine('MT2', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4)) : MT2')
+#     df = df.Redefine('MT2_bbWW', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_bbWW(lep1_p4, lep2_p4, centralJet_p4[0], centralJet_p4[1], met_p4)) : MT2_bbWW')
+
+#     #Functional form of MT2 claculation
+#     df = df.Redefine('MT2_ll', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(lep1_p4, lep2_p4, centralJet_p4[0] + centralJet_p4[1] + met_p4, centralJet_p4[0].mass(), centralJet_p4[1].mass())) : MT2_ll')
+#     df = df.Redefine('MT2_bb', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(centralJet_p4[0], centralJet_p4[1], lep1_p4 + lep2_p4 + met_p4, 80.4, 80.4)) : MT2_bb')
+#     df = df.Redefine('MT2_blbl', f'_entry && (lep1_type > 0 && lep2_type > 0) ? float(analysis::Calculate_MT2_func(lep1_p4 + centralJet_p4[1], lep2_p4 + centralJet_p4[1], met_p4, 0.0, 0.0)) : MT2_blbl')
+
+#     df = df.Redefine('CosTheta_bb', f'_entry && (centralJet_pt.size() > 1) ? analysis::Calculate_CosDTheta(centralJet_p4[0], centralJet_p4[1]) : CosTheta_bb')
+
+#     df = df.Redefine(f"ll_mass","_entry && (lep1_type > 0 && lep2_type > 0) ? (lep1_p4+lep2_p4).mass() : ll_mass") 
+
+#     df = df.Redefine(f"bb_mass","centralJet_pt.size() > 1 ? (centralJet_p4[0]+centralJet_p4[1]).mass() : bb_mass") 
+
+#     return df
+
+
+# def PrepareDfForDNN(dfForHistograms):
+#     dfForHistograms.df = AddDNNVariablesForApplication(dfForHistograms.df)
+#     #dfForHistograms.defineBoostedVariables()
+#     return dfForHistograms
 
 
 def PrepareDfForHistograms(dfForHistograms):

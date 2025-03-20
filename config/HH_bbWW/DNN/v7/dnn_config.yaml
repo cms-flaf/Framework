@@ -1,0 +1,72 @@
+features:
+- lep1_pt
+- lep1_phi
+- lep1_eta
+- lep1_mass
+- lep2_pt
+- lep2_phi
+- lep2_eta
+- lep2_mass
+- met_pt
+- met_phi
+highlevelfeatures:
+- HT
+- dR_dilep
+- dR_dibjet
+- dR_dilep_dibjet
+- dR_dilep_dijet
+- dPhi_lep1_lep2
+- dPhi_jet1_jet2
+- dPhi_MET_dilep
+- dPhi_MET_dibjet
+- min_dR_lep0_jets
+- min_dR_lep1_jets
+- MT
+- MT2_ll
+- MT2_bb
+- MT2_blbl
+- ll_mass
+- CosTheta_bb
+listfeatures:
+- - centralJet_pt
+  - 0
+- - centralJet_phi
+  - 0
+- - centralJet_eta
+  - 0
+- - centralJet_mass
+  - 0
+- - centralJet_pt
+  - 1
+- - centralJet_phi
+  - 1
+- - centralJet_eta
+  - 1
+- - centralJet_mass
+  - 1
+- - centralJet_pt
+  - 2
+- - centralJet_phi
+  - 2
+- - centralJet_eta
+  - 2
+- - centralJet_mass
+  - 2
+- - centralJet_pt
+  - 3
+- - centralJet_phi
+  - 3
+- - centralJet_eta
+  - 3
+- - centralJet_mass
+  - 3
+modelname_parity:
+- - ResHH_Classifier_parity0
+  - (lep1_type > 0) && (lep2_type > 0) && (event%4 == 0)
+- - ResHH_Classifier_parity1
+  - (lep1_type > 0) && (lep2_type > 0) && (event%4 == 1)
+- - ResHH_Classifier_parity2
+  - (lep1_type > 0) && (lep2_type > 0) && (event%4 == 2)
+- - ResHH_Classifier_parity3
+  - (lep1_type > 0) && (lep2_type > 0) && (event%4 == 3)
+use_parametric: true

@@ -8,26 +8,26 @@
     - TT
   title: t#bar{t}
   color: kGreen-3
-- name: W
-  types:
-    - W
-  title: "W #rightarrow l#nu + jets"
-  color: kYellow-7
-- name: ST
-  types:
-    - ST
-  title: SingleTop
-  color: kPink+1
-- name: VV
-  types:
-    - VV
-  title: VV
-  color: kGreen
-- name: QCD
-  types:
-    - QCD
-  title: QCD
-  color: kCyan
+# - name: W
+#   types:
+#     - W
+#   title: "W #rightarrow l#nu + jets"
+#   color: kYellow-7
+# - name: ST
+#   types:
+#     - ST
+#   title: SingleTop
+#   color: kPink+1
+# - name: VV
+#   types:
+#     - VV
+#   title: VV
+#   color: kGreen
+# - name: QCD
+#   types:
+#     - QCD
+#   title: QCD
+#   color: kCyan
 #- name: TTX
 #  title: TTX
 #  color: kCyan

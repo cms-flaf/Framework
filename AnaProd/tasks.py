@@ -144,6 +144,11 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return branches
 
     def workflow_requires(self):
+        input_file_task_complete = InputFileTask.req(self, branches=()).complete()
+        if not input_file_task_complete:
+            return { "anaCache" : AnaCacheTask.req(self, branches=()),
+                     "inputFile": InputFileTask.req(self, branches=()) }
+
         branches_set = set()
         for branch_idx, (sample_id, sample_name, sample_type, input_file) in self.branch_map.items():
             branches_set.add(sample_id)

@@ -11,7 +11,8 @@ if __name__ == "__main__":
 
 import FLAF.Common.Utilities as Utilities
 from FLAF.Analysis.HistHelper import *
-from Analysis.hh_bbtautau import *
+# from Analysis.hh_bbtautau import *
+import importlib
 import FLAF.Common.Setup as Setup
 
 
@@ -137,8 +138,11 @@ if __name__ == "__main__":
     parser.add_argument('--period', required=True, type=str)
     args = parser.parse_args()
 
-
     setup = Setup.Setup(args.ana_path, args.period)
+
+analysis_import = (setup.global_params['analysis_import'])
+analysis = importlib.import_module(f'{analysis_import}')
+
 
 samples_to_consider = setup.global_params['sample_types_to_merge']
 if type(samples_to_consider) == list:
@@ -196,7 +200,7 @@ for channel in channels:
             obj.SetDirectory(0)
             dirStruct = (channel, cat)
             dir_name = '/'.join(dirStruct)
-            dir_ptr = mkdir(outFile,dir_name)
+            dir_ptr = Utilities.mkdir(outFile,dir_name)
             obj.SetTitle(all_histnames[key_name])
             obj.SetName(all_histnames[key_name])
             dir_ptr.WriteTObject(obj, all_histnames[key_name], "Overwrite")

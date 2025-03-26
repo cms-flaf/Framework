@@ -176,12 +176,13 @@ if __name__ == "__main__":
     startTime = time.time()
     headers_dir = os.path.dirname(os.path.abspath(__file__))
     ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
-    ROOT.gInterpreter.Declare(f'#include "include/KinFitNamespace.h"')
     ROOT.gInterpreter.Declare(f'#include "FLAF/include/HistHelper.h"')
     ROOT.gInterpreter.Declare(f'#include "FLAF/include/Utilities.h"')
     ROOT.gInterpreter.Declare(f'#include "FLAF/include/pnetSF.h"')
     ROOT.gROOT.ProcessLine('#include "FLAF/include/AnalysisTools.h"')
     ROOT.gROOT.ProcessLine('#include "FLAF/include/AnalysisMath.h"')
+    ROOT.gROOT.ProcessLine(f'#include "FLAF/include/MT2.h"') # Include due to DNN using these
+    ROOT.gROOT.ProcessLine(f'#include "FLAF/include/Lester_mt2_bisect.cpp"')
     #if not os.path.isdir(args.outDir):
     #    os.makedirs(args.outDir)
     # if args.furtherCut:
@@ -200,6 +201,10 @@ if __name__ == "__main__":
 
     analysis_import = (global_cfg_dict['analysis_import'])
     analysis = importlib.import_module(f'{analysis_import}')
+
+    # Only import KinFit for bbtautau analysis
+    if os.path.exists(os.path.join(os.environ['ANALYSIS_PATH'], 'include/KinFitNamespace.h')):
+        ROOT.gInterpreter.Declare(f'#include "include/KinFitNamespace.h"')
 
     global_cfg_dict['channels_to_consider'] = args.channels.split(',')
     # print(global_cfg_dict['channels_to_consider'])

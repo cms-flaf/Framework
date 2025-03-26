@@ -9,7 +9,7 @@ if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
 
-import Common.ConvertUproot as ConvertUproot
+import FLAF.Common.ConvertUproot as ConvertUproot
 ROOT.gInterpreter.Declare(
     """
     using lumiEventMapType = std::map < unsigned int, std::set <unsigned long long > >;

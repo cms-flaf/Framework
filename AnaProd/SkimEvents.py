@@ -9,7 +9,7 @@ ROOT.EnableThreadSafety()
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
-import Common.Utilities as Utilities
+import FLAF.Common.Utilities as Utilities
 
 def createVoidTree(file_name, tree_name):
     df = ROOT.RDataFrame(0)
@@ -129,7 +129,7 @@ if __name__ == "__main__":
   parser.add_argument('--treeName_central', required=False, type=str, default='Events')
   args = parser.parse_args()
   headers_dir = os.path.dirname(os.path.abspath(__file__))
-  ROOT.gROOT.ProcessLine(f".include {os.environ['ANALYSIS_PATH']}")
+  ROOT.gROOT.ProcessLine(f".include {os.environ['FLAF_PATH']}")
   #header_path_Skimmer = os.path.join(headers_dir, "include/SystSkimmer.h")
   ROOT.gInterpreter.Declare(f'#include "include/SystSkimmer.h"')
   make_df(args.inFileCentral,args.inFileShifted,args.outDir,args.treeName_out,args.treeName_in,args.treeName_central)

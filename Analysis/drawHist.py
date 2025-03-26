@@ -7,7 +7,7 @@ if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
 
-import Common.Utilities as Utilities
+import FLAF.Common.Utilities as Utilities
 bTagWP = 2
 def defineSelectionRegions(df):
     df = df.Define("nSelBtag", f"int(b1_idbtagDeepFlavB >= {bTagWP}) + int(b2_idbtagDeepFlavB >= {bTagWP})")
@@ -23,7 +23,7 @@ def defineChannels(df):
     return df
 
 def defineQCDRegions(df):
-    tau2_iso_var = f"tau2_idDeepTau2017v2p1VSjet"
+    tau2_iso_var = f"tau2_idDeepTau{self.deepTauYear()}v{self.deepTauVersion}VSjet"
     df = df.Define("OS", "tau1_charge*tau2_charge < 0")
     df = df.Define("Iso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.Medium.value}")
     df = df.Define("AntiIso", f"{tau2_iso_var} >= {Utilities.WorkingPointsTauVSjet.VVVLoose.value} && !Iso")

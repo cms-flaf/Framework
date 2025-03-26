@@ -5,10 +5,10 @@ import math
 import os
 import tempfile
 
-from RunKit.run_tools import natural_sort
-from RunKit.crabLaw import update_kinit
-from RunKit.law_wlcg import WLCGFileTarget
-from Common.Setup import Setup
+from FLAF.RunKit.run_tools import natural_sort
+from FLAF.RunKit.crabLaw import update_kinit
+from FLAF.RunKit.law_wlcg import WLCGFileTarget
+from FLAF.Common.Setup import Setup
 
 law.contrib.load("htcondor")
 
@@ -146,7 +146,7 @@ class HTCondorWorkflow(law.htcondor.HTCondorWorkflow):
     def htcondor_bootstrap_file(self):
         # each job can define a bootstrap file that is executed prior to the actual job
         # in order to setup software and environment variables
-        return os.path.join(os.getenv("ANALYSIS_PATH"), "bootstrap.sh")
+        return os.path.join(os.getenv("ANALYSIS_PATH"), "FLAF", "bootstrap.sh")
 
     def htcondor_job_config(self, config, job_num, branches):
         ana_path = os.getenv("ANALYSIS_PATH")

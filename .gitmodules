@@ -1,30 +1,6 @@
 [submodule "RunKit"]
 	path = RunKit
 	url = git@github.com:kandrosov/RunKit.git
-[submodule "HHbtag"]
-	path = HHbtag
-	url = git@github.com:hh-italian-group/HHbtag.git
-[submodule "Corrections"]
-	path = Corrections
-	url = git@github.com:cms-hh-bbtautau/Corrections.git
 [submodule "PlotKit"]
 	path = PlotKit
 	url = git@github.com:kandrosov/PlotKit.git
-[submodule "SyncTool"]
-	path = SyncTool
-	url = git@github.com:cms-hh-bbtautau/SyncTool.git
-[submodule "ClassicSVfit"]
-	path = ClassicSVfit
-	url = git@github.com:cms-hh-bbtautau/ClassicSVfit.git
-[submodule "SVfitTF"]
-	path = SVfitTF
-	url = git@github.com:cms-hh-bbtautau/SVfitTF.git
-[submodule "HHKinFit2"]
-	path = HHKinFit2
-	url = git@github.com:cms-hh-bbtautau/HHKinFit2.git
-[submodule "StatInference"]
-	path = StatInference
-	url = git@github.com:cms-hh-bbtautau/StatInference.git
-[submodule "inference"]
-	path = inference
-	url = ssh://git@gitlab.cern.ch:7999/hh/tools/inference.git

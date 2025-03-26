@@ -1,10 +1,9 @@
-import ROOT
 import os
 from .Utilities import *
 
 initialized = False
 
-def Initialize():
+def Initialize(load_kinfit=True, load_svfit=True, load_mt2=True):
     global initialized
     global tau1_p4
     global tau2_p4
@@ -12,18 +11,18 @@ def Initialize():
     global b2_p4
     global MET_p4
     if initialized:
-        raise RuntimeError('HH KinFitSel already initialized')
-    headers_dir = os.path.dirname(os.path.abspath(__file__))
-    header_path_AnalysisTools = "include/AnalysisTools.h"
-    ROOT.gInterpreter.Declare(f'#include "{header_path_AnalysisTools}"')
-    header_path_HHKinFit = "include/KinFitInterface.h"
-    ROOT.gInterpreter.Declare(f'#include "{header_path_HHKinFit}"')
-    header_path_SVFit = "include/SVfitAnaInterface.h"
-    ROOT.gInterpreter.Declare(f'#include "{header_path_SVFit}"')
-    header_path_MT2 = "include/MT2.h"
-    ROOT.gInterpreter.Declare(f'#include "{header_path_MT2}"')
-    header_path_Lester_mt2_bisect = "include/Lester_mt2_bisect.cpp"
-    ROOT.gInterpreter.Declare(f'#include "{header_path_Lester_mt2_bisect}"')
+        raise RuntimeError("Legacy variables are already initialized")
+    headers_to_include = [ "FLAF/include/AnalysisTools.h" ]
+    if load_kinfit:
+        headers_to_include += [ "include/KinFitInterface.h" ]
+    if load_svfit:
+        headers_to_include += [ "include/SVfitAnaInterface.h" ]
+    if load_mt2:
+        headers_to_include += [ "FLAF/include/MT2.h", "FLAF/include/Lester_mt2_bisect.cpp" ]
+
+    for header in headers_to_include:
+        DeclareHeader(header)
+
     tau1_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(tau1_pt,tau1_eta,tau1_phi,tau1_mass)"
     tau2_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(tau2_pt,tau2_eta,tau2_phi,tau2_mass)"
     b1_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(b1_pt,b1_eta,b1_phi,b1_mass)"

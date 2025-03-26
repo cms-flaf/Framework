@@ -258,12 +258,12 @@ RVecB RemoveOverlaps(const RVecLV& obj_p4, const RVecB& pre_sel, const RVecLV& o
 }
 
 
-template<typename LVec, typename LVecCollection
-float MinDeltaR(const LVec& obj_p4, const LVecCollection& other_objects)
+template<typename LVec, typename LVecCollection>
+double MinDeltaR(const LVec& obj_p4, const LVecCollection& other_objects)
 {
-  float min_dR = std::numeric_limits<double>::infinity();
+  double min_dR = std::numeric_limits<double>::infinity();
   for(const auto& other_obj_p4 : other_objects){
-    const float dR = ROOT::Math::VectorUtil::DeltaR(obj_p4, other_obj_p4);
+    const double dR = ROOT::Math::VectorUtil::DeltaR(obj_p4, other_obj_p4);
     if(dR < min_dR){
       min_dR = dR;
     }

@@ -32,7 +32,7 @@ using RVecSh = ROOT::VecOps::RVec<short>;
 //using RVecB = ROOT::VecOps::RVec<bool>;
 
 namespace analysis {
-typedef std::variant<int,float,bool, unsigned long,unsigned long long,long long, long,unsigned int, RVecI, RVecF,RVecUC,RVecUL, RVecSh, double, unsigned char, kin_fit::FitResults> MultiType;
+typedef std::variant<int,float,bool, unsigned long,unsigned long long,long long, long,unsigned int, RVecI, RVecF,RVecUC,RVecUL, RVecSh, double, unsigned char> MultiType; // Removed kin_fit::FitResults from the variant
 
 struct Entry {
   std::vector<MultiType> var_values;
@@ -45,11 +45,12 @@ struct Entry {
       var_values.at(index)= value;
   }
 
-  void Add(int index, const kin_fit::FitResults& value)
-  {
-    kin_fit::FitResults toAdd(value.mass, value.chi2, value.probability, value.convergence) ;
-    var_values.at(index)= toAdd;
-  }
+  // Konstantin approved that this method can be removed. For bbWW kin_fit is not defined and caused crashes
+  // void Add(int index, const kin_fit::FitResults& value)
+  // {
+  //   kin_fit::FitResults toAdd(value.mass, value.chi2, value.probability, value.convergence) ;
+  //   var_values.at(index)= toAdd;
+  // }
 
 template<typename T>
   const T& GetValue(int idx) const

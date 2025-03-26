@@ -31,7 +31,7 @@ def Initialize(loadTF=False, loadHHBtag=False):
         for wpcl in [WorkingPointsTauVSe,WorkingPointsTauVSmu,WorkingPointsTauVSjet,WorkingPointsbTag, WorkingPointsMuonID]:
             ROOT.gInterpreter.Declare(f'{generate_enum_class(wpcl)}')
         if(loadTF):
-            import RunKit.includeCMSSWlibs as IncludeLibs
+            import FLAF.RunKit.includeCMSSWlibs as IncludeLibs
             IncludeLibs.includeLibTool("tensorflow")
         if(loadHHBtag):
             lib_path = os.path.join(os.environ["FLAF_CMSSW_BASE"], "lib", os.environ["FLAF_CMSSW_ARCH"],
@@ -40,7 +40,7 @@ def Initialize(loadTF=False, loadHHBtag=False):
             if load_result != 0:
                 raise RuntimeError(f"HHBtagWrapper failed to load with status {load_result}")
             ROOT.gInterpreter.Declare(f'#include "{header_path_HHbTag}"')
-            ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 2)')
+            ROOT.gROOT.ProcessLine(f'HHBtagWrapper::Initialize("{os.environ["CMSSW_BASE"]}/src/HHTools/HHbtag/models/", 3)')
 
         initialized = True
 

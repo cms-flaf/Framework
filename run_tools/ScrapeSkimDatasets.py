@@ -2,7 +2,7 @@ import os
 import yaml
 import json
 import sys
-from RunKit.run_tools import natural_sort
+from FLAF.RunKit.run_tools import natural_sort
 
 
 def ScrapeSkimDatasets(input_dir, output):

@@ -264,7 +264,7 @@ float MinDeltaR(const LVec& obj_p4, const LVecCollection& other_objects)
   float min_dR = std::numeric_limits<double>::infinity();
   for(const auto& other_obj_p4 : other_objects){
     const float dR = ROOT::Math::VectorUtil::DeltaR(obj_p4, other_obj_p4);
-    if(abs(dR) <= abs(min_dR)){
+    if(dR < min_dR){
       min_dR = dR;
     }
   }

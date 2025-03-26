@@ -203,7 +203,7 @@ if __name__ == "__main__":
     analysis = importlib.import_module(f'{analysis_import}')
 
     # Only import KinFit for bbtautau analysis
-    if global_cfg_dict['analysis_name'] != "bbww":
+    if os.path.exists(os.path.join(os.environ['ANALYSIS_PATH'], 'include/KinFitNamespace.h')):
         ROOT.gInterpreter.Declare(f'#include "include/KinFitNamespace.h"')
 
     global_cfg_dict['channels_to_consider'] = args.channels.split(',')

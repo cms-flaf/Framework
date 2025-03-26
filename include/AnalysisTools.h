@@ -258,7 +258,8 @@ RVecB RemoveOverlaps(const RVecLV& obj_p4, const RVecB& pre_sel, const RVecLV& o
 }
 
 
-float MinDeltaR(const LorentzVectorM& obj_p4, const RVecLV& other_objects)
+template<typename LVec, typename LVecCollection
+float MinDeltaR(const LVec& obj_p4, const LVecCollection& other_objects)
 {
   float min_dR = 1000.0;
   for(const auto& other_obj_p4 : other_objects){

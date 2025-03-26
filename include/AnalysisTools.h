@@ -257,6 +257,19 @@ RVecB RemoveOverlaps(const RVecLV& obj_p4, const RVecB& pre_sel, const RVecLV& o
   return result;
 }
 
+
+float MinDeltaR(const LorentzVectorM& obj_p4, const RVecLV& other_objects)
+{
+  float min_dR = 1000.0;
+  for(const auto& other_obj_p4 : other_objects){
+    const float dR = ROOT::Math::VectorUtil::DeltaR(obj_p4, other_obj_p4);
+    if(abs(dR) <= abs(min_dR)){
+      min_dR = dR;
+    }
+  }
+  return min_dR;
+}
+
 int FindMatching(const LorentzVectorM& target_p4, const RVecLV& ref_p4,const float deltaR_thr){
   double deltaR_min = deltaR_thr;
   int current_idx = -1;

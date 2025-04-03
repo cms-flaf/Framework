@@ -165,7 +165,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         region = customisation_dict['region'] if 'region' in customisation_dict.keys() else self.global_params['region_default']
         print(f'input file is {input_file.path}')
         global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
-        unc_config = os.path.join(self.ana_path(), 'FLAF', 'config',self.period, f'weights.yaml')
+        unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         sample_type = self.samples[sample_name]['sampleType'] if sample_name != 'data' else 'data'
         HistProducerFile = os.path.join(self.ana_path(), 'FLAF', 'Analysis', 'HistProducerFile.py')
         print(f'output file is {self.output().path}')

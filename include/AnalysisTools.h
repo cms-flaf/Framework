@@ -296,6 +296,20 @@ RVecSetInt FindMatchingSet(const RVecB& pre_sel_target, const RVecB& pre_sel_ref
         return findMatching;
     }
 
+bool FindMatchingSet(const bool pre_sel_target, const RVecB& pre_sel_ref, const LorentzVectorM& target_p4,
+  const RVecLV& ref_p4, const float dR_thr)
+{
+  bool findMatching = 0; // Only one target, so size is 1
+  for(size_t ref_idx = 0; ref_idx < pre_sel_ref.size(); ref_idx++) {
+    if(pre_sel_ref[ref_idx] == 0) continue;
+    auto dR_current = ROOT::Math::VectorUtil::DeltaR(target_p4, ref_p4[ref_idx]);
+    if(dR_current < dR_thr && pre_sel_target) {
+      findMatching=true;
+    }
+  }
+  return findMatching;
+}
+
 
 namespace v_ops{
   template<typename LV>

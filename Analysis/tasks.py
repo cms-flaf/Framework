@@ -6,10 +6,10 @@ import luigi
 import threading
 
 
-from RunKit.run_tools import ps_call
-from RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
-from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param,get_param_value
-from AnaProd.tasks import AnaTupleTask, DataMergeTask, AnaCacheTupleTask, DataCacheMergeTask, AnaCacheTask
+from FLAF.RunKit.run_tools import ps_call
+from FLAF.RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
+from FLAF.run_tools.law_customizations import Task, HTCondorWorkflow, copy_param,get_param_value
+from FLAF.AnaProd.tasks import AnaTupleTask, DataMergeTask, AnaCacheTupleTask, DataCacheMergeTask, AnaCacheTask
 
 
 unc_cfg_dict = None
@@ -86,27 +86,45 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if need_cache:
                     branch_set_cache.add(br)
         reqs = {}
+
+        isbbtt = 'HH_bbtautau' in self.global_params['analysis_config_area'].split('/')
+
         if len(branch_set) > 0:
             reqs['anaTuple'] = AnaTupleTask.req(self, branches=tuple(branch_set),customisations=self.customisations)
         if len(branch_set_cache) > 0:
-            reqs['anaCacheTuple'] = AnaCacheTupleTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
+            if isbbtt:
+                reqs['anaCacheTuple'] = AnaCacheTupleTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
+            else:
+                reqs['analysisCache'] = AnalysisCacheTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
         if need_data:
             reqs['dataMergeTuple'] = DataMergeTask.req(self, branches=(),customisations=self.customisations)
         if need_data_cache:
-            reqs['dataCacheMergeTuple'] = DataCacheMergeTask.req(self, branches=(),customisations=self.customisations)
+            if isbbtt:
+                reqs['dataCacheMergeTuple'] = DataCacheMergeTask.req(self, branches=(),customisations=self.customisations)
+            else:
+                reqs['analysisCacheMerge'] = AnalysisCacheMergeTask.req(self, branches=(),customisations=self.customisations)
         return reqs
 
     def requires(self):
         sample_name, prod_br, var, need_cache = self.branch_data
         deps = []
+
+        isbbtt = 'HH_bbtautau' in self.global_params['analysis_config_area'].split('/')
+
         if sample_name =='data':
             deps.append(DataMergeTask.req(self, max_runtime=DataMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
             if need_cache:
-                deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                if isbbtt:
+                    deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                else:
+                    deps.append(AnalysisCacheMergeTask.req(self, max_runtime=AnalysisCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
         else:
             deps.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
             if need_cache:
-                deps.append(AnaCacheTupleTask.req(self, max_runtime=AnaCacheTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                if isbbtt:
+                    deps.append(AnaCacheTupleTask.req(self, max_runtime=AnaCacheTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                else:
+                    deps.append(AnalysisCacheTask.req(self, max_runtime=AnalysisCacheTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
         return deps
 
     def create_branch_map(self):
@@ -149,7 +167,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
         unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         sample_type = self.samples[sample_name]['sampleType'] if sample_name != 'data' else 'data'
-        HistProducerFile = os.path.join(self.ana_path(), 'Analysis', 'HistProducerFile.py')
+        HistProducerFile = os.path.join(self.ana_path(), 'FLAF', 'Analysis', 'HistProducerFile.py')
         print(f'output file is {self.output().path}')
         compute_unc_histograms = customisation_dict['compute_unc_histograms']=='True' if 'compute_unc_histograms' in customisation_dict.keys() else self.global_params.get('compute_unc_histograms', False)
         with input_file.localize("r") as local_input, self.output().localize("w") as local_output:
@@ -223,7 +241,7 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         sample_name, idx_list, var  = self.branch_data
-        HistProducerSample = os.path.join(self.ana_path(), 'Analysis', 'HistProducerSample.py')
+        HistProducerSample = os.path.join(self.ana_path(), 'FLAF', 'Analysis', 'HistProducerSample.py')
         with contextlib.ExitStack() as stack:
             local_inputs = [stack.enter_context(inp.localize('r')).path for inp in self.input()]
             with self.output().localize("w") as tmp_local_file:
@@ -278,9 +296,9 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         var, branches_idx = self.branch_data
-        sample_config = os.path.join(self.ana_path(), 'config',self.period, f'samples.yaml')
+        sample_config = os.path.join(self.ana_path(), 'FLAF', 'config', self.period, f'samples.yaml')
         global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
-        unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
+        unc_config = os.path.join(self.ana_path(), 'FLAF', 'config', self.period, f'weights.yaml')
         customisation_dict = getCustomisationSplit(self.customisations)
         channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
         #Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
@@ -302,9 +320,9 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if uncName in uncs_to_exclude: continue
                 uncNames.append(uncName)
         print(uncNames)
-        MergerProducer = os.path.join(self.ana_path(), 'Analysis', 'HistMerger.py')
-        HaddMergedHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'hadd_merged_hists.py')
-        RenameHistsProducer = os.path.join(self.ana_path(), 'Analysis', 'renameHists.py')
+        MergerProducer = os.path.join(self.ana_path(), 'FLAF', 'Analysis', 'HistMerger.py')
+        HaddMergedHistsProducer = os.path.join(self.ana_path(), 'FLAF', 'Analysis', 'hadd_merged_hists.py')
+        RenameHistsProducer = os.path.join(self.ana_path(), 'FLAF', 'Analysis', 'renameHists.py')
 
 
         output_path_hist_prod_sample_data = os.path.join(self.version, self.period, 'split', var, f'data.root')
@@ -401,8 +419,9 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def run(self):
         #For now, this is only for bbWW, for the bbtautau we still use the AnaCahceTupleTask found in AanProd folder
         sample_name, sample_type = self.branch_data
-        unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
-        producer_anacachetuples = os.path.join(self.ana_path(), 'Analysis', 'hh_bbWW_AnaCacheProducer.py')
+        unc_config = os.path.join(self.ana_path(), 'FLAF', 'config',self.period, f'weights.yaml')
+        producer_anacachetuples = os.path.join(self.ana_path(), 'Analysis', 'DNN_Application.py')
+
         global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
         thread = threading.Thread(target=update_kinit_thread)
         thread.start()
@@ -419,8 +438,9 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if deepTauVersion!="":
                     anaCacheTupleProducer_cmd.extend([ '--deepTauVersion', deepTauVersion])
                 useDNNModel = "HH_bbWW" in self.global_params['analysis_config_area'] #Now bbtautau won't use this DNN model arg (even though this task is only for bbWW right now)
+                useDNNModel = 'bbww' == self.global_params['anlaysis_name']
                 if useDNNModel:
-                    dnnFolder = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], 'DNN', 'v2') #'ResHH_Classifier.keras')
+                    dnnFolder = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], 'DNN', 'v7') #'ResHH_Classifier.keras')
                     anaCacheTupleProducer_cmd.extend([ '--dnnFolder', dnnFolder])
                 ps_call(anaCacheTupleProducer_cmd, verbose=1)
             print(f"finished to produce anacachetuple")
@@ -430,8 +450,6 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             kInit_cond.notify_all()
             kInit_cond.release()
             thread.join()
-
-
 
 
 
@@ -463,7 +481,7 @@ class AnalysisCacheMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return self.remote_target(output_path, fs=self.fs_anaCacheTuple)
 
     def run(self):
-        producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
+        producer_dataMerge = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'MergeNtuples.py')
         with contextlib.ExitStack() as stack:
             local_inputs = [stack.enter_context(inp.localize('r')).path for inp in self.input()]
             with self.output().localize("w") as tmp_local_file:

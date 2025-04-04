@@ -8,11 +8,11 @@ import threading
 import yaml
 
 
-from RunKit.run_tools import ps_call, natural_sort
-from RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
-from run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
-from Common.Utilities import SerializeObjectToString
-from AnaProd.anaCacheProducer import addAnaCaches
+from FLAF.RunKit.run_tools import ps_call, natural_sort
+from FLAF.RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
+from FLAF.run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
+from FLAF.Common.Utilities import SerializeObjectToString
+from FLAF.AnaProd.anaCacheProducer import addAnaCaches
 
 
 def getCustomisationSplit(customisations):
@@ -95,7 +95,7 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             self.output().touch()
             return
         print(f'Creating anaCache for sample {sample_name} into {self.output().uri()}')
-        producer = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheProducer.py')
+        producer = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'anaCacheProducer.py')
         input_files = InputFileTask.load_input_files(self.input()[0].path, sample_name)
         ana_caches = []
         generator_name = self.samples[sample_name]['generator'] if not isData else ''
@@ -144,6 +144,11 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return branches
 
     def workflow_requires(self):
+        input_file_task_complete = InputFileTask.req(self, branches=()).complete()
+        if not input_file_task_complete:
+            return { "anaCache" : AnaCacheTask.req(self, branches=()),
+                     "inputFile": InputFileTask.req(self, branches=()) }
+
         branches_set = set()
         for branch_idx, (sample_id, sample_name, sample_type, input_file) in self.branch_map.items():
             branches_set.add(sample_id)
@@ -169,8 +174,8 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         sample_id, sample_name, sample_type, input_file = self.branch_data
-        producer_anatuples = os.path.join(self.ana_path(), 'AnaProd', 'anaTupleProducer.py')
-        producer_skimtuples = os.path.join(self.ana_path(), 'AnaProd', 'SkimProducer.py')
+        producer_anatuples = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'anaTupleProducer.py')
+        producer_skimtuples = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'SkimProducer.py')
         thread = threading.Thread(target=update_kinit_thread)
         thread.start()
         anaCache_remote = self.input()[0]
@@ -194,7 +199,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             outdir_anatuples = os.path.join(job_home, 'anaTuples', sample_name)
             anaTupleDef = os.path.join(self.ana_path(), self.global_params['anaTupleDef'])
             with input_file.localize("r") as local_input, anaCache_remote.localize("r") as anaCache_input:
-                anatuple_cmd = [ 'python3', producer_anatuples, '--period', self.period,
+                anatuple_cmd = [ 'python3', '-u', producer_anatuples, '--period', self.period,
                                  '--inFile', local_input.path, '--outDir', outdir_anatuples, '--sample', sample_name,
                                  '--anaTupleDef', anaTupleDef, '--anaCache', anaCache_input.path, '--channels', channels ]
                 if deepTauVersion!="":
@@ -272,7 +277,7 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         #     return self.remote_target(output_path, fs=self.fs_anaTuple2p5)
 
     def run(self):
-        producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
+        producer_dataMerge = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'MergeNtuples.py')
         with contextlib.ExitStack() as stack:
             local_inputs = [stack.enter_context(inp.localize('r')).path for inp in self.input()]
             with self.output().localize("w") as tmp_local_file:
@@ -313,9 +318,9 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         sample_name, sample_type = self.branch_data
-        unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
-        producer_anacachetuples = os.path.join(self.ana_path(), 'AnaProd', 'anaCacheTupleProducer.py')
-        global_config = os.path.join(self.ana_path(), 'config','HH_bbtautau', f'global.yaml')
+        unc_config = os.path.join(self.ana_path(), 'FLAF', 'config', self.period, f'weights.yaml')
+        producer_anacachetuples = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'anaCacheTupleProducer.py')
+        global_config = os.path.join(self.ana_path(), 'config', 'global.yaml')
         thread = threading.Thread(target=update_kinit_thread)
         customisation_dict = getCustomisationSplit(self.customisations)
         channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
@@ -370,7 +375,7 @@ class DNNCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return signal_config
 
     def create_branch_map(self):
-        signal_config_file = os.path.join(self.ana_path(), "config", "HH_bbtautau", "signal_samples.yaml")
+        signal_config_file = os.path.join(self.ana_path(), "config", "signal_samples.yaml")
         signal_config = self.load_sample_configs(signal_config_file)
 
         branches = {}
@@ -382,7 +387,7 @@ class DNNCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     spin = sample_info['spin']
                     branches[br_idx_final] = (sample_name, sample_type, input_file, ana_br_idx, spin, mass)
                     br_idx_final += 1
-        return branches 
+        return branches
 
     def output(self):
         sample_name, sample_type, input_file, ana_br_idx, spin, mass = self.branch_data
@@ -396,10 +401,10 @@ class DNNCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         sample_name, sample_type, input_file, ana_br_idx, spin, mass = self.branch_data
-        unc_config = os.path.join(self.ana_path(), "config", self.period, "weights.yaml")
-        nn_interface_script = os.path.join(self.ana_path(), "AnaProd","HH_bbtautau", "NNInterface.py")
-        global_config = os.path.join(self.ana_path(), "config", "HH_bbtautau", "global.yaml")
-        in_model_dir = os.path.join(self.ana_path(), "config", "HH_bbtautau", "nn_models")
+        unc_config = os.path.join(self.ana_path(), "FLAF", "config", self.period, "weights.yaml")
+        nn_interface_script = os.path.join(self.ana_path(), "AnaProd", "NNInterface.py")
+        global_config = os.path.join(self.ana_path(), "config", "global.yaml")
+        in_model_dir = os.path.join(self.ana_path(), "config", "nn_models")
         thread = threading.Thread(target=update_kinit_thread)
         thread.start()
         try:
@@ -457,7 +462,7 @@ class DataCacheMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return self.remote_target(output_path, fs=self.fs_anaCacheTuple)
 
     def run(self):
-        producer_dataMerge = os.path.join(self.ana_path(), 'AnaProd', 'MergeNtuples.py')
+        producer_dataMerge = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'MergeNtuples.py')
         with contextlib.ExitStack() as stack:
             local_inputs = [stack.enter_context(inp.localize('r')).path for inp in self.input()]
             with self.output().localize("w") as tmp_local_file:

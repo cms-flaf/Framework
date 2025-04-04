@@ -5,18 +5,14 @@ import ROOT
 import datetime
 import time
 import shutil
-if __name__ == "__main__":
-    sys.path.append(os.environ['ANALYSIS_PATH'])
-    ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
-    ROOT.gInterpreter.Declare(f'#include "include/KinFitInterface.h"')
-    ROOT.gInterpreter.Declare(f'#include "include/HistHelper.h"')
-    ROOT.gInterpreter.Declare(f'#include "include/Utilities.h"')
 
-from RunKit.run_tools import ps_call
 ROOT.EnableThreadSafety()
 
-import Common.LegacyVariables as LegacyVariables
-import Common.Utilities as Utilities
+from FLAF.Common.Utilities import DeclareHeader
+from FLAF.RunKit.run_tools import ps_call
+import FLAF.Common.LegacyVariables as LegacyVariables
+import FLAF.Common.Utilities as Utilities
+
 defaultColToSave = ["entryIndex","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "X_spin", "isData"]
 scales = ['Up','Down']
 
@@ -25,8 +21,6 @@ def getKeyNames(root_file_name):
     key_names = [str(k.GetName()) for k in root_file.GetListOfKeys() ]
     root_file.Close()
     return key_names
-
-
 
 def applyLegacyVariables(dfw, global_cfg_dict, is_central=True):
     channels = global_cfg_dict['channelSelection']
@@ -140,6 +134,10 @@ if __name__ == "__main__":
     parser.add_argument('--deepTauVersion', type=str, default="v2p1")
     parser.add_argument('--channels', type=str, default=None)
     args = parser.parse_args()
+
+    for header in [ "include/KinFitInterface.h", "FLAF/include/HistHelper.h", "FLAF/include/Utilities.h" ]:
+        DeclareHeader(header)
+
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
     snapshotOptions.fLazy = True
@@ -159,21 +157,16 @@ if __name__ == "__main__":
     if args.channels:
         global_cfg_dict['channelSelection'] = args.channels.split(',') if type(args.channels) == str else args.channels
     outFileNameFinal = f'{args.outFileName}'
-    try:
-        all_files = createAnaCacheTuple(args.inFileName, args.outFileName.split('.')[0], unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion)
-        hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
-        hadd_str += ' '.join(f for f in all_files)
-        if len(all_files) > 1:
-            ps_call([hadd_str], True)
-        else:
-            shutil.copy(all_files[0],outFileNameFinal)
-        if os.path.exists(outFileNameFinal):
-                for histFile in all_files:
-                    if histFile == outFileNameFinal: continue
-                    os.remove(histFile)
-    except:
-        df = ROOT.RDataFrame(0)
-        df=df.Define("test", "return true;")
-        df.Snapshot("Events", outFileNameFinal, {"test"})
+    all_files = createAnaCacheTuple(args.inFileName, args.outFileName.split('.')[0], unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion)
+    hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
+    hadd_str += ' '.join(f for f in all_files)
+    if len(all_files) > 1:
+        ps_call([hadd_str], True)
+    else:
+        shutil.copy(all_files[0],outFileNameFinal)
+    if os.path.exists(outFileNameFinal):
+            for histFile in all_files:
+                if histFile == outFileNameFinal: continue
+                os.remove(histFile)
     executionTime = (time.time() - startTime)
     print('Execution time in seconds: ' + str(executionTime))

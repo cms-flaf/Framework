@@ -7,9 +7,9 @@ if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
 
-import Common.BaselineSelection as Baseline
-import Common.Utilities as Utilities
-import Common.triggerSel as Triggers
+import FLAF.Common.BaselineSelection as Baseline
+import FLAF.Common.Utilities as Utilities
+import FLAF.Common.triggerSel as Triggers
 import Corrections.Corrections as Corrections
 
 

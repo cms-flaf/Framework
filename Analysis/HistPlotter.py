@@ -3,13 +3,13 @@ import sys
 import os
 import array
 
-from RunKit.run_tools import ps_call
+from FLAF.RunKit.run_tools import ps_call
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
 
-import Common.Utilities as Utilities
-from Analysis.HistHelper import *
-from Analysis.HistMerger import *
+import FLAF.Common.Utilities as Utilities
+from FLAF.Analysis.HistHelper import *
+from FLAF.Analysis.HistMerger import *
 
 def GetHistName(sample_name, sample_type, uncName, unc_scale,global_cfg_dict):
     hist_names = []
@@ -237,7 +237,7 @@ if __name__ == "__main__":
             all_samples_types[bckg_sample_name]['plot'] = 'Other'
 
 
-    for sig_sample_name in sig_cfg_dict.keys():     
+    for sig_sample_name in sig_cfg_dict.keys():
         if 'sampleType' not in sig_cfg_dict[sig_sample_name].keys(): continue
         sig_sample_type = sig_cfg_dict[sig_sample_name]['sampleType']
         if sig_sample_type not in global_cfg_dict['signal_types']: continue

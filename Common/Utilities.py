@@ -93,6 +93,23 @@ def ListToVector(list, type="string"):
 		vec.push_back(item)
 	return vec
 
+rootAnaPathSet = False
+def DeclareHeader(header, verbose=0):
+    global rootAnaPathSet
+    if not rootAnaPathSet:
+        if verbose > 0:
+            print(f'Adding "{os.environ["ANALYSIS_PATH"]}" to the ROOT include path')
+        ROOT.gROOT.ProcessLine(".include "+ os.environ['ANALYSIS_PATH'])
+        rootAnaPathSet = True
+    if verbose > 0:
+        print(f'Including "{header}"')
+    if not os.path.exists(header):
+        raise RuntimeError(f'"{header}" does not exist')
+    if not ROOT.gInterpreter.Declare(f'#include "{header}"'):
+        raise RuntimeError(f"Failed to include {header}")
+    if verbose > 0:
+        print(f'Successfully included "{header}"')
+
 def generate_enum_class(cls):
     enum_string = "enum class {} : int {{\n".format(cls.__name__)
     for item in cls:

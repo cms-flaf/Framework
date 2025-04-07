@@ -298,7 +298,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         var, branches_idx = self.branch_data
         sample_config = os.path.join(self.ana_path(), 'FLAF', 'config', self.period, f'samples.yaml')
         global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
-        unc_config = os.path.join(self.ana_path(), 'FLAF', 'config', self.period, f'weights.yaml')
+        unc_config = os.path.join(self.ana_path(), 'config', self.period, f'weights.yaml')
         customisation_dict = getCustomisationSplit(self.customisations)
         channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
         #Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma

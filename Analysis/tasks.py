@@ -165,7 +165,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         region = customisation_dict['region'] if 'region' in customisation_dict.keys() else self.global_params['region_default']
         print(f'input file is {input_file.path}')
         global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
-        unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
+        unc_config = os.path.join(self.ana_path(), 'FLAF', 'config', self.period, f'weights.yaml')
         sample_type = self.samples[sample_name]['sampleType'] if sample_name != 'data' else 'data'
         HistProducerFile = os.path.join(self.ana_path(), 'FLAF', 'Analysis', 'HistProducerFile.py')
         print(f'output file is {self.output().path}')
@@ -298,7 +298,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         var, branches_idx = self.branch_data
         sample_config = os.path.join(self.ana_path(), 'FLAF', 'config', self.period, f'samples.yaml')
         global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
-        unc_config = os.path.join(self.ana_path(), 'FLAF', 'config', self.period, f'weights.yaml')
+        unc_config = os.path.join(self.ana_path(), 'FLAF', 'config',self.period, f'weights.yaml')
         customisation_dict = getCustomisationSplit(self.customisations)
         channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
         #Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
@@ -420,8 +420,7 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         #For now, this is only for bbWW, for the bbtautau we still use the AnaCahceTupleTask found in AanProd folder
         sample_name, sample_type = self.branch_data
         unc_config = os.path.join(self.ana_path(), 'FLAF', 'config',self.period, f'weights.yaml')
-        producer_anacachetuples = os.path.join(self.ana_path(), 'Analysis', 'DNN_Application.py')
-
+        producer_anacachetuples = os.path.join(self.ana_path(), 'FLAF', 'Analysis', 'hh_bbWW_AnaCacheProducer.py')
         global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')
         thread = threading.Thread(target=update_kinit_thread)
         thread.start()

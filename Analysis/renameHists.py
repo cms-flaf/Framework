@@ -11,8 +11,7 @@ if __name__ == "__main__":
 
 import FLAF.Common.Utilities as Utilities
 from FLAF.Analysis.HistHelper import *
-# from Analysis.hh_bbtautau import *
-import importlib
+from Analysis.hh_bbtautau import *
 import FLAF.Common.Setup as Setup
 
 

@@ -128,7 +128,7 @@ def GetSignalHistogram(inFileSig, channel, category, uncSource, histNamesDict,al
 
 if __name__ == "__main__":
     import argparse
-    import PlotKit.Plotter as Plotter
+    import FLAF.PlotKit.Plotter as Plotter
     import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument('--outFile', required=True)
@@ -152,9 +152,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    page_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", args.analysis, "plot/cms_stacked.yaml")
-    page_cfg_custom = os.path.join(os.environ['ANALYSIS_PATH'],f'config', args.analysis, f'plot/{args.year}.yaml') # to be fixed!!
-    hist_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", args.analysis, "plot/histograms.yaml")
+    page_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", "plot/cms_stacked.yaml")
+    page_cfg_custom = os.path.join(os.environ['ANALYSIS_PATH'],f'config', f'plot/{args.year}.yaml') # to be fixed!!
+    hist_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", "plot/histograms.yaml")
+
 
     #### config opening ####
     with open(hist_cfg, 'r') as f:
@@ -162,7 +163,7 @@ if __name__ == "__main__":
 
     with open(page_cfg_custom, 'r') as f:
         page_cfg_custom_dict = yaml.safe_load(f)
-    inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", args.analysis, "plot/inputs.yaml")
+    inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", "plot/inputs.yaml")
     with open(inputs_cfg, 'r') as f:
         inputs_cfg_dict = yaml.safe_load(f)
 

@@ -25,9 +25,6 @@ get_os_prefix() {
   fi
 }
 
-do_install_cmssw() {
-  local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
-  local this_dir="$( cd "$( dirname "$this_file" )/.." && pwd )"
 
 do_install_cmssw() {
   export SCRAM_ARCH=$1
@@ -101,12 +98,11 @@ EOF
 }
 
 install() {
-  local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
-  local this_dir="$( cd "$( dirname "$this_file" )/.." && pwd )"
-  local node_os=$1
-  local target_os=$2
-  local cmd_to_run=$3
-  local installed_flag=$4
+  local env_file="$1"
+  local node_os=$2
+  local target_os=$3
+  local cmd_to_run=$4
+  local installed_flag=$5
 
   if [ -f "$installed_flag" ]; then
     return 0
@@ -151,12 +147,12 @@ load_flaf_env() {
   local this_dir="$( cd "$( dirname "$this_file" )" && pwd )"
 
   export FLAF_PATH="$this_dir"
-  export ANALYSIS_PATH="$( cd "$this_dir/.." && pwd )"
-  export PYTHONPATH="$ANALYSIS_PATH:$ANALYSIS_PATH/inference:$PYTHONPATH"
-  export LAW_HOME="$ANALYSIS_PATH/.law"
-  export LAW_CONFIG_FILE="$ANALYSIS_PATH/config/law.cfg"
-  export ANALYSIS_DATA_PATH="$ANALYSIS_PATH/data"
-  export X509_USER_PROXY="$ANALYSIS_DATA_PATH/voms.proxy"
+  [ -z "$FLAF_ENVIRONMENT_PATH" ] && export FLAF_ENVIRONMENT_PATH="/afs/cern.ch/work/k/kandroso/public/flaf_env_2024_08"
+
+  [ -z "$LAW_HOME" ] && export LAW_HOME="$ANALYSIS_PATH/.law"
+  [ -z "$LAW_CONFIG_FILE" ] && export LAW_CONFIG_FILE="$ANALYSIS_PATH/config/law.cfg"
+  [ -z "$ANALYSIS_DATA_PATH" ] && export ANALYSIS_DATA_PATH="$ANALYSIS_PATH/data"
+  [ -z "$X509_USER_PROXY" ] && export X509_USER_PROXY="$ANALYSIS_DATA_PATH/voms.proxy"
 
   if [[ ! -d "$ANALYSIS_DATA_PATH" ]]; then
     run_cmd mkdir -p "$ANALYSIS_DATA_PATH"

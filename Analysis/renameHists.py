@@ -11,8 +11,7 @@ if __name__ == "__main__":
 
 import FLAF.Common.Utilities as Utilities
 from FLAF.Analysis.HistHelper import *
-# from Analysis.hh_bbtautau import *
-import importlib
+from Analysis.hh_bbtautau import *
 import FLAF.Common.Setup as Setup
 
 
@@ -143,6 +142,15 @@ if __name__ == "__main__":
 analysis_import = (setup.global_params['analysis_import'])
 analysis = importlib.import_module(f'{analysis_import}')
 
+
+samples_to_consider = setup.global_params['sample_types_to_merge']
+if type(samples_to_consider) == list:
+    samples_to_consider.append('data')
+    for signal_name in setup.signal_samples:
+        samples_to_consider.append(signal_name)
+
+
+    setup = Setup.Setup(args.ana_path, args.period)
 
 samples_to_consider = setup.global_params['sample_types_to_merge']
 if type(samples_to_consider) == list:

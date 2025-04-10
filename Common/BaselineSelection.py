@@ -62,6 +62,11 @@ def applyBadMETfilter(df, badMET_flag_runs, isData):
                                                 && (Jet_neEmEF > 0.9 || Jet_chEmEF > 0.9)
                                                 ) )''')
 
+        df = df.Define(f"Flag_ecalBadCalibFilter_updated", f" ( run >= {badMET_flag_runs[0]} && run <= {badMET_flag_runs[1]} ) ? Flag_badMET_calib : Flag_ecalBadCalibFilter")
+        MET_flags.remove('Flag_ecalBadCalibFilter')
+        MET_flags.append('Flag_ecalBadCalibFilter_updated')
+        return df, MET_flags
+
         df = df.Redefine(f"Flag_ecalBadCalibFilter", f" ( run >= {badMET_flag_runs[0]} && run <= {badMET_flag_runs[1]} ) ? Flag_badMET_calib : Flag_ecalBadCalibFilter")
         return df
 def DefineGenObjects(df, isData=False, isHH=False, Hbb_AK4mass_mpv=125., p4_suffix='nano'):

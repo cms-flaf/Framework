@@ -125,6 +125,9 @@ class DataFrameWrapper:
     def Define(self, varToDefine, varToCall):
         self.df = self.df.Define(f"{varToDefine}", f"{varToCall}")
 
+    def Redefine(self, varToDefine, varToCall):
+        self.df = self.df.Redefine(f"{varToDefine}", f"{varToCall}")
+
     def Filter(self, filter_str, filter_name=""):
         self.df = self.df.Filter(filter_str, filter_name)
 

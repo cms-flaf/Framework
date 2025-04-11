@@ -419,7 +419,7 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def run(self):
         #For now, this is only for bbWW, for the bbtautau we still use the AnaCahceTupleTask found in AanProd folder
         sample_name, sample_type = self.branch_data
-        unc_config = os.path.join(self.ana_path(), 'FLAF', 'config',self.period, f'weights.yaml')
+        unc_config = os.path.join(self.ana_path(), 'config',self.period, f'weights.yaml')
         producer_anacachetuples = os.path.join(self.ana_path(), 'Analysis', 'DNN_Application.py')
 
         global_config = os.path.join(self.ana_path(), self.global_params['analysis_config_area'], f'global.yaml')

@@ -96,7 +96,7 @@ class Setup:
         self.analysis_config_area= os.path.join(ana_path, user_config['analysis_config_area'])
         ana_global_config_path = os.path.join(self.analysis_config_area, 'global.yaml')
         ana_sample_config_path = os.path.join(self.analysis_config_area, period, 'samples.yaml')
-        weights_config_path = os.path.join(ana_path, 'FLAF', 'config', period, 'weights.yaml')
+        weights_config_path = os.path.join(ana_path, 'config', period, 'weights.yaml')
 
         with open(sample_config_path, 'r') as f:
             sample_config = yaml.safe_load(f)

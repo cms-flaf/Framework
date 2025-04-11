@@ -136,7 +136,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     for header in [ "include/KinFitInterface.h", "FLAF/include/HistHelper.h", "FLAF/include/Utilities.h" ]:
-        DeclareHeader(header)
+        DeclareHeader(os.environ["ANALYSIS_PATH"]+"/"+header)
 
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True

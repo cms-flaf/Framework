@@ -318,7 +318,7 @@ class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         sample_name, sample_type = self.branch_data
-        unc_config = os.path.join(self.ana_path(), 'FLAF', 'config', self.period, f'weights.yaml')
+        unc_config = os.path.join(self.ana_path(), 'config', self.period, f'weights.yaml')
         producer_anacachetuples = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'anaCacheTupleProducer.py')
         global_config = os.path.join(self.ana_path(), 'config', 'global.yaml')
         thread = threading.Thread(target=update_kinit_thread)
@@ -401,7 +401,7 @@ class DNNCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         sample_name, sample_type, input_file, ana_br_idx, spin, mass = self.branch_data
-        unc_config = os.path.join(self.ana_path(), "FLAF", "config", self.period, "weights.yaml")
+        unc_config = os.path.join(self.ana_path(), "config", self.period, "weights.yaml")
         nn_interface_script = os.path.join(self.ana_path(), "AnaProd", "NNInterface.py")
         global_config = os.path.join(self.ana_path(), "config", "global.yaml")
         in_model_dir = os.path.join(self.ana_path(), "config", "nn_models")

@@ -10,7 +10,9 @@ from FLAF.RunKit.run_tools import ps_call
 from FLAF.RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
 from FLAF.run_tools.law_customizations import Task, HTCondorWorkflow, copy_param,get_param_value
 from FLAF.AnaProd.tasks import AnaTupleTask, DataMergeTask, AnaCacheTupleTask, DataCacheMergeTask, AnaCacheTask
+from FLAF.Common.Setup import Setup
 
+import importlib
 
 unc_cfg_dict = None
 def load_unc_config(unc_cfg):
@@ -71,6 +73,15 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
+
+    def __init__(self, *args, **kwargs):
+        super(Task, self).__init__(*args, **kwargs)
+        self.setup = Setup.getGlobal(os.getenv("ANALYSIS_PATH"), self.period, self.customisations)
+
+        self.use_ana_cache = 'analysis_cache_import' in self.setup.global_params
+        if self.use_ana_cache:
+            self.ana = importlib.import_module(self.setup.global_params['analysis_cache_import'])
+
     def workflow_requires(self):
         need_data = False
         need_data_cache = False
@@ -95,14 +106,14 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             if isbbtt:
                 reqs['anaCacheTuple'] = AnaCacheTupleTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
             else:
-                reqs['analysisCache'] = AnalysisCacheTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
+                reqs['analysisCache'] = self.ana.AnalysisCacheTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
         if need_data:
             reqs['dataMergeTuple'] = DataMergeTask.req(self, branches=(),customisations=self.customisations)
         if need_data_cache:
             if isbbtt:
                 reqs['dataCacheMergeTuple'] = DataCacheMergeTask.req(self, branches=(),customisations=self.customisations)
             else:
-                reqs['analysisCacheMerge'] = AnalysisCacheMergeTask.req(self, branches=(),customisations=self.customisations)
+                reqs['analysisCacheMerge'] = self.ana.AnalysisCacheMergeTask.req(self, branches=(),customisations=self.customisations)
         return reqs
 
     def requires(self):
@@ -117,14 +128,14 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if isbbtt:
                     deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
                 else:
-                    deps.append(AnalysisCacheMergeTask.req(self, max_runtime=AnalysisCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                    deps.append(self.ana.AnalysisCacheMergeTask.req(self, max_runtime=self.ana.AnalysisCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
         else:
             deps.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
             if need_cache:
                 if isbbtt:
                     deps.append(AnaCacheTupleTask.req(self, max_runtime=AnaCacheTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
                 else:
-                    deps.append(AnalysisCacheTask.req(self, max_runtime=AnalysisCacheTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                    deps.append(self.ana.AnalysisCacheTask.req(self, max_runtime=self.ana.AnalysisCacheTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
         return deps
 
     def create_branch_map(self):

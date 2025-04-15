@@ -59,7 +59,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
 
     df = df.Define("sample_type", f"static_cast<int>(SampleType::{sample_config['sampleType']})")
     df = df.Define("sample_name", f"static_cast<int>({zlib.crc32(sample_name.encode())})")
-    applyTriggers = sample_config.get('applyTrigger', False)
+    applyTriggerFilter = sample_config.get('applyTriggerFilter', False)
     df = df.Define("period", f"static_cast<int>(Period::{period})")
     df = df.Define("X_mass", f"static_cast<int>({mass})")
     df = df.Define("X_spin", f"static_cast<int>({spin})")
@@ -93,7 +93,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
         # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters#Analysis_Recommendations_for_any
         if "MET_flags" in setup.global_params:
             dfw.Apply(Baseline.applyMETFlags, setup.global_params["MET_flags"], setup.global_params.get("badMET_flag_runs", []), isData)
-        anaTupleDef.addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, applyTriggers, setup.global_params, channels)
+        anaTupleDef.addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, applyTriggerFilter, setup.global_params, channels)
         if setup.global_params['nano_version'] == 'v12':
             dfw.DefineAndAppend("weight_L1PreFiring_Central","L1PreFiringWeight_Nom")
             dfw.DefineAndAppend("weight_L1PreFiring_ECAL_Central","L1PreFiringWeight_ECAL_Nom")

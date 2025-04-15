@@ -7,13 +7,17 @@ class Triggers():
             self.trigger_dict= yaml.safe_load(stream)
         self.deltaR_matching = deltaR_matching
     
-    def ApplyTriggers(self, df, offline_legs, isData = False, applyTriggers=False):
+    def ApplyTriggers(self, df, offline_legs, isData = False, applyTriggerFilter=False):
         hltBranches = []
         matchedObjectsBranches= []
         for path, path_dict in self.trigger_dict.items():
             path_key = 'path'
             if 'path' not in path_dict:
                 path_key += '_data' if isData else '_MC'
+            if isData:  
+                for p in path_dict[path_key]:  
+                    if p not in df.GetColumnNames():  
+                        df = df.Define(p, 'false') 
             or_paths = " || ".join(f'({p})' for p in path_dict[path_key])
             or_paths = f' ( { or_paths } ) '
             additional_conditions = [""]
@@ -26,7 +30,7 @@ class Triggers():
                     leg_dict_online= leg_tuple["online_obj"]
                     var_name_online =  f'{obj}_onlineCut_{leg_id+1}_{path}'
                     cut_vars = []
-                    cuts = [ { "cut" : leg_dict_online["cut"] } ]
+                    cuts = leg_dict_online["cuts"] if "cuts" in leg_dict_online else [ { "cut" : leg_dict_online["cut"] } ]
                     for cut_idx, online_cut in enumerate(cuts):
                         preCondition = online_cut.get('preCondition', 'true')
                         cut_var_name =  f'{obj}_onlineCut_{leg_id+1}_{path}_{cut_idx}'
@@ -46,7 +50,7 @@ class Triggers():
             hltBranches.append(hltBranch)
             df = df.Define(hltBranch, fullPathSelection)
         total_or_string = ' || '.join(hltBranches)
-        if applyTriggers:
+        if applyTriggerFilter:
             df = df.Filter(total_or_string, "trigger application")
         hltBranches.extend(matchedObjectsBranches)
         return df,hltBranches

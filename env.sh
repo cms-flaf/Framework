@@ -183,6 +183,8 @@ load_flaf_env() {
 
     export PYTHONPATH="$ANALYSIS_PATH:$HH_INFERENCE_PATH:$PYTHONPATH"
     source $HH_INFERENCE_PATH/.setups/flaf.sh
+  else
+    export PYTHONPATH="$ANALYSIS_PATH:$PYTHONPATH"
   fi
 
   if [ ! -z $ZSH_VERSION ]; then

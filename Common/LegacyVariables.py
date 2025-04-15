@@ -21,7 +21,7 @@ def Initialize(load_kinfit=True, load_svfit=True, load_mt2=True):
         headers_to_include += [ "FLAF/include/MT2.h", "FLAF/include/Lester_mt2_bisect.cpp" ]
 
     for header in headers_to_include:
-        DeclareHeader(header)
+        DeclareHeader(os.environ["ANALYSIS_PATH"]+"/"+header)
 
     tau1_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(tau1_pt,tau1_eta,tau1_phi,tau1_mass)"
     tau2_p4 = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double>>(tau2_pt,tau2_eta,tau2_phi,tau2_mass)"

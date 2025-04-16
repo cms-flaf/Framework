@@ -74,16 +74,18 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     cacheModule = None
     cacheClass = None
+    cacheDataClass = None
     def __init__(self, *args, **kwargs):
         super(HistProducerFileTask, self).__init__(*args, **kwargs)
 
         if self.cacheModule == None:
             self.use_ana_cache = 'analysis_cache_import' in self.setup.global_params
             if self.use_ana_cache:
-                file, className = self.setup.global_params['analysis_cache_import'].split(':')
+                file, className, dataClassName = self.setup.global_params['analysis_cache_import'].split(':')
                 cacheModule = importlib.import_module(file)
                 HistProducerFileTask.cacheClass = getattr(cacheModule, className)
-                
+                HistProducerFileTask.cacheDataClass = getattr(cacheModule, dataClassName)
+
     def workflow_requires(self):
         need_data = False
         need_data_cache = False
@@ -130,7 +132,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if isbbtt:
                     deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
                 else:
-                    deps.append(self.cacheClass.req(self, max_runtime=self.cacheClass.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                    deps.append(self.cacheDataClass.req(self, max_runtime=self.cacheDataClass.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
         else:
             deps.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
             if need_cache:

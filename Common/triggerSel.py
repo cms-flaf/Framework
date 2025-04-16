@@ -38,20 +38,19 @@ class Triggers():
                         cut_vars.append(cut_var_name)
                     df = df.Define(var_name_online, ' && '.join(cut_vars))
                     matching_var = f'{obj}_Matching_{leg_id+1}_{path}'
-                    df = df.Define(matching_var, f"""FindMatching( {var_name_offline}, {var_name_online}, {obj}_p4, TrigObj_p4, {self.deltaR_matching} )""")
+                    df = df.Define(matching_var, f"""FindMatching( {var_name_offline}, {var_name_online}, {obj}_p4, TrigObj_p4, {self.deltaR_matching} )""")    
             for obj in offline_legs:
                 matching_var_bool = f'{obj}_HasMatching_{path}'
-                matching_var_bool_str = " || ".join(f"({obj}_Matching_{i+1}_{path} > -1)" for i in range(len(path_dict['legs'])))
-                df = df.Define(matching_var_bool, f'({matching_var_bool_str})')
+                matching_var_bool_str = " || ".join(f"{obj}_Matching_{i+1}_{path} > -1" for i in range(len(path_dict['legs'])))
+                df = df.Define(matching_var_bool, matching_var_bool_str)
+                df = df.Redefine(matching_var_bool, f"Any({matching_var_bool}>0)")
             df = df.Define(f"HasOOMatching_{path}",  " || ".join(f'({obj}_HasMatching_{path})' for obj in offline_legs))
             fullPathSelection = f'{or_paths} &&  HasOOMatching_{path}'
             fullPathSelection += ' && '.join(additional_conditions)
             hltBranch = f'HLT_{path}'
             hltBranches.append(hltBranch)
-            print(f"fullPathSelection: {fullPathSelection}")
             df = df.Define(hltBranch, fullPathSelection)
         total_or_string = ' || '.join(hltBranches)
-        print(f"total_or_string: {total_or_string}")
         if applyTriggerFilter:
             df = df.Filter(total_or_string, "trigger application")
         hltBranches.extend(matchedObjectsBranches)

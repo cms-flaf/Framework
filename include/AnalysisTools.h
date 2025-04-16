@@ -182,6 +182,8 @@ std::string GetBinaryString(T x)
   return ss.str();
 }
 
+inline bool Any(bool x) { return x; }
+
 inline LorentzVectorM GetP4(const RVecF& pt, const RVecF& eta, const RVecF& phi, const RVecF& mass, int idx)
 {
   return LorentzVectorM(pt[idx], eta[idx], phi[idx], mass[idx]);
@@ -302,14 +304,14 @@ RVecI FindMatching(const RVecB& pre_sel_target, const RVecB& pre_sel_ref, const 
       targetIndices[targetIdx] = refIdxFound;
     }
   }
-
   return targetIndices;
 }
 
 int FindMatching(const bool pre_sel_target, const RVecB& pre_sel_ref, const LorentzVectorM& target_p4,
   const RVecLV& ref_p4, const float dR_thr)
 {
-  int matched = -1; // Only one target, so size is 1 and initialized with false
+  // RVecI matched(1,-1); // Only one target, so size is 1 and initialized with false
+  int matched=-1;
   for(size_t ref_idx = 0; ref_idx < pre_sel_ref.size(); ref_idx++) {
     if(pre_sel_ref[ref_idx] == 0) continue;
     auto dR_current = ROOT::Math::VectorUtil::DeltaR(target_p4, ref_p4[ref_idx]);

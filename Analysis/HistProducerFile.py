@@ -67,15 +67,15 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
     isCentral = 'Central' in key_2
     # print(f"key2 is {key_2}")
     histograms = {}
-    boosted_categories = global_cfg_dict['boosted_categories']
+    boosted_categories = global_cfg_dict.get('boosted_categories', [])
+    boosted_variables = global_cfg_dict.get('var_only_boosted', [])
     categories = global_cfg_dict['categories']
-    boosted_variables = global_cfg_dict['var_only_boosted']
     all_categories = categories + boosted_categories
     if args.var in boosted_variables:
         all_categories = boosted_categories
     if (args.var.startswith('b1') or args.var.startswith('b2')):
         all_categories = categories
-    unc_to_not_consider_boosted = global_cfg_dict['unc_to_not_consider_boosted']
+    unc_to_not_consider_boosted = global_cfg_dict.get('unc_to_not_consider_boosted', [])
     # if not isCentral:
     #     print(unc_to_not_consider_boosted)
 
@@ -223,8 +223,8 @@ if __name__ == "__main__":
     isData = args.dataset=='data'
     scales = global_cfg_dict['scales']
     categories = global_cfg_dict['categories']
-    boosted_categories = global_cfg_dict['boosted_categories']
-    boosted_variables = global_cfg_dict['var_only_boosted']
+    boosted_categories = global_cfg_dict.get('boosted_categories', [])
+    boosted_variables = global_cfg_dict.get('boosted_variables', [])
     all_categories = categories + boosted_categories
     if args.var in boosted_variables:
         all_categories = boosted_categories
@@ -235,8 +235,8 @@ if __name__ == "__main__":
         datasetType = 1
     if args.sampleType == 'DY':
         datasetType = 2
-    if args.sampleType in global_cfg_dict['signal_types']:
-        datasetType = 0
+    # if args.sampleType in global_cfg_dict['signal_types']:
+    #     datasetType = 0
     # print(f"datasetType is {datasetType}")
     # print()
     create_new_hist = key_not_exist or df_empty
@@ -260,6 +260,12 @@ if __name__ == "__main__":
             kwargset['isCentral'] = True
             kwargset['wantTriggerSFErrors'] = compute_rel_weights_not_data
             kwargset['whichType'] = datasetType
+        if analysis_import == "Analysis.H_mumu":
+            kwargset['region'] = args.region
+            kwargset['isData'] = isData
+            kwargset['isCentral'] = True
+            kwargset['whichType'] = datasetType
+
 
         all_dataframes = {}
         all_histograms = {}

@@ -10,7 +10,6 @@ from FLAF.RunKit.run_tools import ps_call
 from FLAF.RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
 from FLAF.run_tools.law_customizations import Task, HTCondorWorkflow, copy_param,get_param_value
 from FLAF.AnaProd.tasks import AnaTupleTask, DataMergeTask, AnaCacheTupleTask, DataCacheMergeTask, AnaCacheTask
-from FLAF.Common.Setup import Setup
 
 import importlib
 
@@ -73,17 +72,18 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
-    Cache_Module = None
+    cacheModule = None
+    cacheClass = None
     def __init__(self, *args, **kwargs):
         super(HistProducerFileTask, self).__init__(*args, **kwargs)
-        # self.setup = Setup.getGlobal(os.getenv("ANALYSIS_PATH"), self.period, self.customisations)
 
-        if self.Cache_Module == None:
+        if self.cacheModule == None:
             self.use_ana_cache = 'analysis_cache_import' in self.setup.global_params
             if self.use_ana_cache:
-                # self.ana = importlib.import_module(self.setup.global_params['analysis_cache_import'])
-                self.Cache_Module = importlib.import_module(self.setup.global_params['analysis_cache_import'])
-
+                file, className = self.setup.global_params['analysis_cache_import'].split(':')
+                cacheModule = importlib.import_module(file)
+                HistProducerFileTask.cacheClass = getattr(cacheModule, className)
+                
     def workflow_requires(self):
         need_data = False
         need_data_cache = False
@@ -108,14 +108,14 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             if isbbtt:
                 reqs['anaCacheTuple'] = AnaCacheTupleTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
             else:
-                reqs['analysisCache'] = self.Cache_Module.AnalysisCacheTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
+                reqs['analysisCache'] = self.cacheClass.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
         if need_data:
             reqs['dataMergeTuple'] = DataMergeTask.req(self, branches=(),customisations=self.customisations)
         if need_data_cache:
             if isbbtt:
                 reqs['dataCacheMergeTuple'] = DataCacheMergeTask.req(self, branches=(),customisations=self.customisations)
             else:
-                reqs['analysisCacheMerge'] = self.Cache_Module.AnalysisCacheMergeTask.req(self, branches=(),customisations=self.customisations)
+                reqs['analysisCacheMerge'] = self.cacheClass.req(self, branches=(),customisations=self.customisations)
         return reqs
 
     def requires(self):
@@ -130,14 +130,14 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if isbbtt:
                     deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
                 else:
-                    deps.append(self.Cache_Module.AnalysisCacheMergeTask.req(self, max_runtime=self.Cache_Module.AnalysisCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                    deps.append(self.cacheClass.req(self, max_runtime=self.cacheClass.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
         else:
             deps.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
             if need_cache:
                 if isbbtt:
                     deps.append(AnaCacheTupleTask.req(self, max_runtime=AnaCacheTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
                 else:
-                    deps.append(self.Cache_Module.AnalysisCacheTask.req(self, max_runtime=self.Cache_Module.AnalysisCacheTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                    deps.append(self.cacheClass.req(self, max_runtime=self.cacheClass.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
         return deps
 
     def create_branch_map(self):

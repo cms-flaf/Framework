@@ -48,8 +48,10 @@ class Triggers():
             fullPathSelection += ' && '.join(additional_conditions)
             hltBranch = f'HLT_{path}'
             hltBranches.append(hltBranch)
+            print(f"fullPathSelection: {fullPathSelection}")
             df = df.Define(hltBranch, fullPathSelection)
         total_or_string = ' || '.join(hltBranches)
+        print(f"total_or_string: {total_or_string}")
         if applyTriggerFilter:
             df = df.Filter(total_or_string, "trigger application")
         hltBranches.extend(matchedObjectsBranches)

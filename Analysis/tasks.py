@@ -75,8 +75,8 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     Cache_Module = None
     def __init__(self, *args, **kwargs):
-        super(Task, self).__init__(*args, **kwargs)
-        self.setup = Setup.getGlobal(os.getenv("ANALYSIS_PATH"), self.period, self.customisations)
+        super(HistProducerFileTask, self).__init__(*args, **kwargs)
+        # self.setup = Setup.getGlobal(os.getenv("ANALYSIS_PATH"), self.period, self.customisations)
 
         if self.Cache_Module == None:
             self.use_ana_cache = 'analysis_cache_import' in self.setup.global_params

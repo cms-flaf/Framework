@@ -264,7 +264,7 @@ if __name__ == "__main__":
             kwargset['region'] = args.region
             kwargset['isData'] = isData
             kwargset['isCentral'] = True
-            kwargset['whichType'] = datasetType
+
 
 
         all_dataframes = {}

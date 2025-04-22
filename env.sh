@@ -87,10 +87,10 @@ EOF
 
   run_cmd mkdir -p "$ANALYSIS_SOFT_PATH/bin"
   if ! [ -f "$ANALYSIS_SOFT_PATH/bin/combine" ]; then
-    run_cmd ln -s "$this_dir/run_tools/cmsExe.sh" "$ANALYSIS_SOFT_PATH/bin/combine"
+    run_cmd ln -s "$this_dir/FLAF/run_tools/cmsExe.sh" "$ANALYSIS_SOFT_PATH/bin/combine"
   fi
   if ! [ -f "$ANALYSIS_SOFT_PATH/bin/text2workspace.py" ]; then
-    run_cmd ln -s "$this_dir/run_tools/cmsExe.sh" "$ANALYSIS_SOFT_PATH/bin/text2workspace.py"
+    run_cmd ln -s "$this_dir/FLAF/run_tools/cmsExe.sh" "$ANALYSIS_SOFT_PATH/bin/text2workspace.py"
   fi
 
   run_cmd mkdir -p "$HH_INFERENCE_PATH/data"
@@ -198,7 +198,7 @@ load_flaf_env() {
   source /cvmfs/cms.cern.ch/rucio/setup-py3.sh &> /dev/null
   set -- "${current_args[@]}"
   export PATH="$ANALYSIS_SOFT_PATH/bin:$PATH"
-  alias cmsEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY FLAF_CMSSW_BASE=$FLAF_CMSSW_BASE FLAF_CMSSW_ARCH=$FLAF_CMSSW_ARCH $ANALYSIS_PATH/cmsEnv.sh"
+  alias cmsEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY FLAF_CMSSW_BASE=$FLAF_CMSSW_BASE FLAF_CMSSW_ARCH=$FLAF_CMSSW_ARCH $ANALYSIS_PATH/FLAF/cmsEnv.sh"
 }
 
 source_env_fn() {

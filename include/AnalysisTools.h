@@ -295,18 +295,6 @@ RVecI FindMatching(const RVecLV& target_p4, const RVecLV& ref_p4,const float del
   return targetIndices;
 }
 
-RVecI FindMatching(const RVecB& pre_sel_target, const RVecB& pre_sel_ref, const RVecLV& target_p4, const RVecLV& ref_p4,const float deltaR_thr){
-  RVecI targetIndices(target_p4.size(), -1);
-  for(int targetIdx =0; targetIdx<target_p4.size(); targetIdx++){
-    if(pre_sel_target[targetIdx] == 0) continue;
-    int refIdxFound = FindMatching(target_p4[targetIdx], ref_p4, deltaR_thr);
-    if(pre_sel_ref[refIdxFound] != 0) {
-      targetIndices[targetIdx] = refIdxFound;
-    }
-  }
-  return targetIndices;
-}
-
 int FindMatching(const bool pre_sel_target, const RVecB& pre_sel_ref, const LorentzVectorM& target_p4,
   const RVecLV& ref_p4, const float dR_thr)
 {
@@ -321,6 +309,15 @@ int FindMatching(const bool pre_sel_target, const RVecB& pre_sel_ref, const Lore
   }
   return matched;
 }
+
+RVecI FindMatching(const RVecB& pre_sel_target, const RVecB& pre_sel_ref, const RVecLV& target_p4, const RVecLV& ref_p4,const float deltaR_thr){
+  RVecI targetIndices(target_p4.size(), -1);
+  for(int targetIdx =0; targetIdx<target_p4.size(); targetIdx++){
+    targetIndices[targetIdx] = FindMatching(pre_sel_target[targetIdx], pre_sel_ref, target_p4[targetIdx], ref_p4, deltaR_thr);
+  }
+  return targetIndices;
+}
+
 
 RVecSetInt FindMatchingSet(const RVecB& pre_sel_target, const RVecB& pre_sel_ref, const RVecLV& target_p4,
     const RVecLV& ref_p4, const float dR_thr)

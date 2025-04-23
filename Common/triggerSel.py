@@ -45,8 +45,7 @@ class Triggers():
                 df = df.Define(matching_var_bool, matching_var_bool_str)
                 df = df.Redefine(matching_var_bool, f"Any({matching_var_bool}>0)")
                 matchedObjectsBranches.append(matching_var_bool)
-            df = df.Define(f"HasOOMatching_{path}",  " || ".join(f'({obj}_HasMatching_{path})' for obj in offline_legs))
-            fullPathSelection = f'{or_paths} &&  HasOOMatching_{path}'
+            fullPathSelection = f'{or_paths}'
             hltBranch = f'HLT_{path}'
             hltBranches.append(hltBranch)
             df = df.Define(hltBranch, fullPathSelection)

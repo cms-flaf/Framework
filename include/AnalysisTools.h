@@ -299,15 +299,19 @@ int FindMatching(const bool pre_sel_target, const RVecB& pre_sel_ref, const Lore
   const RVecLV& ref_p4, const float dR_thr)
 {
   // RVecI matched(1,-1); // Only one target, so size is 1 and initialized with false
-  int matched=-1;
-  for(size_t ref_idx = 0; ref_idx < pre_sel_ref.size(); ref_idx++) {
-    if(pre_sel_ref[ref_idx] == 0) continue;
-    auto dR_current = ROOT::Math::VectorUtil::DeltaR(target_p4, ref_p4[ref_idx]);
-    if(dR_current < dR_thr && pre_sel_target) {
-      matched = ref_idx;
+  int current_idx = -1;
+  float deltaR_min = dR_thr;
+  if(pre_sel_target){ 
+    for(size_t ref_idx = 0; ref_idx < pre_sel_ref.size(); ref_idx++) {
+      if(pre_sel_ref[ref_idx] == 0) continue;
+      auto dR_targetRef = ROOT::Math::VectorUtil::DeltaR(target_p4, ref_p4[ref_idx]);
+      if(dR_targetRef < deltaR_min) {
+        current_idx = ref_idx;
+        deltaR_min = dR_targetRef;
+      }
     }
   }
-  return matched;
+  return current_idx;
 }
 
 RVecI FindMatching(const RVecB& pre_sel_target, const RVecB& pre_sel_ref, const RVecLV& target_p4, const RVecLV& ref_p4,const float deltaR_thr){

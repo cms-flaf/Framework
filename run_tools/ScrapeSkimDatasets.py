@@ -29,7 +29,7 @@ def ScrapeSkimDatasets(input_dir, output):
 
 
       #For now we can skip signal and data
-      if dataset.startswith('DoubleMuon') or dataset.startswith('Muon') or dataset.startswith('SingleMuon') or dataset.startswith('EGamma') or dataset.startswith('MuonEG') or dataset.startswith('JetHT') or dataset.startswith('JetMET') or dataset.startswith('MET') or dataset.startswith('Tau'):
+      if dataset.startswith('DoubleMuon') or dataset.startswith('Muon') or dataset.startswith('SingleMuon') or dataset.startswith('EGamma') or dataset.startswith('MuonEG') or dataset.startswith('JetHT') or dataset.startswith('JetMET') or dataset.startswith('MET') or dataset.startswith('Tau') or dataset.startswith('Parking'):
         continue
       if dataset.startswith('GluGlutoRadion') or dataset.startswith('GluGlutoBulkGraviton'):
         continue

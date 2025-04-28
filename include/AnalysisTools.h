@@ -184,6 +184,8 @@ std::string GetBinaryString(T x)
   return ss.str();
 }
 
+inline bool Any(bool x) { return x; }
+
 inline LorentzVectorM GetP4(const RVecF& pt, const RVecF& eta, const RVecF& phi, const RVecF& mass, int idx)
 {
   return LorentzVectorM(pt[idx], eta[idx], phi[idx], mass[idx]);
@@ -294,6 +296,34 @@ RVecI FindMatching(const RVecLV& target_p4, const RVecLV& ref_p4,const float del
   }
   return targetIndices;
 }
+
+int FindMatching(const bool pre_sel_target, const RVecB& pre_sel_ref, const LorentzVectorM& target_p4,
+  const RVecLV& ref_p4, const float dR_thr)
+{
+  // RVecI matched(1,-1); // Only one target, so size is 1 and initialized with false
+  int current_idx = -1;
+  float deltaR_min = dR_thr;
+  if(pre_sel_target){ 
+    for(size_t ref_idx = 0; ref_idx < pre_sel_ref.size(); ref_idx++) {
+      if(pre_sel_ref[ref_idx] == 0) continue;
+      auto dR_targetRef = ROOT::Math::VectorUtil::DeltaR(target_p4, ref_p4[ref_idx]);
+      if(dR_targetRef < deltaR_min) {
+        current_idx = ref_idx;
+        deltaR_min = dR_targetRef;
+      }
+    }
+  }
+  return current_idx;
+}
+
+RVecI FindMatching(const RVecB& pre_sel_target, const RVecB& pre_sel_ref, const RVecLV& target_p4, const RVecLV& ref_p4,const float deltaR_thr){
+  RVecI targetIndices(target_p4.size(), -1);
+  for(int targetIdx =0; targetIdx<target_p4.size(); targetIdx++){
+    targetIndices[targetIdx] = FindMatching(pre_sel_target[targetIdx], pre_sel_ref, target_p4[targetIdx], ref_p4, deltaR_thr);
+  }
+  return targetIndices;
+}
+
 
 RVecSetInt FindMatchingSet(const RVecB& pre_sel_target, const RVecB& pre_sel_ref, const RVecLV& target_p4,
     const RVecLV& ref_p4, const float dR_thr)

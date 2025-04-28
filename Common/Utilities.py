@@ -123,7 +123,10 @@ class DataFrameWrapper:
         self.colToSave = copy.deepcopy(defaultColToSave)
 
     def Define(self, varToDefine, varToCall):
-        self.df = self.df.Define(f"{varToDefine}", f"{varToCall}")
+        self.df = self.df.Define(varToDefine, varToCall)
+
+    def Redefine(self, varToDefine, varToCall):
+        self.df = self.df.Redefine(varToDefine, varToCall)
 
     def Filter(self, filter_str, filter_name=""):
         self.df = self.df.Filter(filter_str, filter_name)

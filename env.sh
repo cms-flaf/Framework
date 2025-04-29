@@ -147,7 +147,7 @@ load_flaf_env() {
   local this_dir="$( cd "$( dirname "$this_file" )" && pwd )"
 
   export FLAF_PATH="$this_dir"
-  [ -z "$FLAF_ENVIRONMENT_PATH" ] && export FLAF_ENVIRONMENT_PATH="/afs/cern.ch/work/k/kandroso/public/flaf_env_2024_08"
+  [ -z "$FLAF_ENVIRONMENT_PATH" ] && export FLAF_ENVIRONMENT_PATH="/afs/cern.ch/work/k/kandroso/public/flaf_env_2025_04"
 
   [ -z "$LAW_HOME" ] && export LAW_HOME="$ANALYSIS_PATH/.law"
   [ -z "$LAW_CONFIG_FILE" ] && export LAW_CONFIG_FILE="$ANALYSIS_PATH/config/law.cfg"

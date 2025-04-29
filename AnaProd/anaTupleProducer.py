@@ -4,6 +4,7 @@ import sys
 import ROOT
 import shutil
 import zlib
+# import fastcrc
 
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
@@ -57,14 +58,20 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
         lumiFilter = LumiFilter(setup.global_params['lumiFile'])
         df = lumiFilter.filter(df)
 
-
     df = df.Define("sample_type", f"static_cast<int>(SampleType::{sample_config['sampleType']})")
-    df = df.Define("sample_name", f"static_cast<int>({zlib.crc32(sample_name.encode())})")
     isSignal = sample_config['sampleType'] in setup.global_params['signal_types']
     df = df.Define("period", f"static_cast<int>(Period::{period})")
-    df = df.Define("X_mass", f"static_cast<int>({mass})")
-    df = df.Define("X_spin", f"static_cast<int>({spin})")
-    df = df.Define("entryIndex", "static_cast<int>(rdfentry_)")
+    df = df.Define("X_mass", f"static_cast<int>({mass})") # this has to be moved in specific analyses def
+    df = df.Define("X_spin", f"static_cast<int>({spin})") # this has to be moved in specific analyses def
+    #  following def to be uncommented when fastcrc is available
+    # df = df.Define("FullEventId", f"""ULong64_t packed = (static_cast<ULong64_t>({fastcrc.crc16.xmodem(sample_name.encode())}) << 48) |
+    #                    (static_cast<ULong64_t>({fastcrc.crc16.xmodem(inFile.encode())}) << 32) |
+    #                    (static_cast<ULong64_t>(rdfentry_)); return packed; """)
+    #  following def to be removed when fastcrc is available
+    df = df.Define("FullEventId", f"""ULong64_t packed = (static_cast<ULong64_t>({Utilities.crc16(sample_name.encode())}) << 48) |
+                       (static_cast<ULong64_t>({Utilities.crc16(inFile.encode())}) << 32) |
+                       (static_cast<ULong64_t>(rdfentry_)); return packed; """)
+
     is_data = 'true' if isData else 'false'
     df = df.Define("isData", is_data)
     df = Baseline.CreateRecoP4(df, nano_version=setup.global_params['nano_version'])

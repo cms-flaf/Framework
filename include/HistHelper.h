@@ -28,11 +28,12 @@ using RVecF = ROOT::VecOps::RVec<float>;
 using RVecI = ROOT::VecOps::RVec<int>;
 using RVecUC = ROOT::VecOps::RVec<unsigned char>;
 using RVecUL = ROOT::VecOps::RVec<unsigned long>;
+using RVecULL = ROOT::VecOps::RVec<unsigned long long>;
 using RVecSh = ROOT::VecOps::RVec<short>;
 //using RVecB = ROOT::VecOps::RVec<bool>;
 
 namespace analysis {
-typedef std::variant<int,float,bool, unsigned long,unsigned long long,long long, long,unsigned int, RVecI, RVecF,RVecUC,RVecUL, RVecSh, double, unsigned char> MultiType; // Removed kin_fit::FitResults from the variant
+typedef std::variant<int,float,bool, unsigned long,unsigned long long,long long, long,unsigned int, RVecI, RVecF,RVecUC,RVecUL, RVecULL, RVecSh, double, unsigned char> MultiType; // Removed kin_fit::FitResults from the variant
 
 struct Entry {
   std::vector<MultiType> var_values;
@@ -60,13 +61,13 @@ template<typename T>
 };
 
 struct StopLoop {};
-static std::map<std::tuple<int, unsigned int,unsigned long long ,unsigned int>, std::shared_ptr<Entry>>& GetEntriesMap(){
-      static std::map<std::tuple<int, unsigned int,unsigned long long ,unsigned int>, std::shared_ptr<Entry>> entries;
+static std::map<std::tuple<unsigned long long, unsigned int,unsigned long long ,unsigned int>, std::shared_ptr<Entry>>& GetEntriesMap(){
+      static std::map<std::tuple<unsigned long long, unsigned int,unsigned long long ,unsigned int>, std::shared_ptr<Entry>> entries;
       return entries;
   }
 
-static std::map<std::tuple<int, unsigned int,unsigned long long ,unsigned int>, std::shared_ptr<Entry>>& GetCacheEntriesMap(){
-      static std::map<std::tuple<int, unsigned int,unsigned long long ,unsigned int>, std::shared_ptr<Entry>> cache_entries;
+static std::map<std::tuple<unsigned long long, unsigned int,unsigned long long ,unsigned int>, std::shared_ptr<Entry>>& GetCacheEntriesMap(){
+      static std::map<std::tuple<unsigned long long, unsigned int,unsigned long long ,unsigned int>, std::shared_ptr<Entry>> cache_entries;
       return cache_entries;
   }
 
@@ -78,15 +79,15 @@ struct MapCreator {
   {
       auto df_node = df_in.Define("_entry", [=](const Args& ...args) {
               auto entry = std::make_shared<Entry>(var_names.size());
-              int index = 0;
-              (void) std::initializer_list<int>{ (entry->Add(index++, args), 0)... };
+              unsigned long long index = 0;
+              (void) std::initializer_list<unsigned long long>{ (entry->Add(index++, args), 0)... };
               return entry;
           }, var_names).Define("map_placeholder", [&](const std::shared_ptr<Entry>& entry) {
-              const auto idx = entry->GetValue<int>(0);
+              const auto idx = entry->GetValue<unsigned long long>(0);
               const auto run = entry->GetValue<unsigned int>(1);
               const auto evt = entry->GetValue<unsigned long long>(2);
               const auto lumi = entry->GetValue<unsigned int>(3);
-              std::tuple<int,unsigned int,unsigned long long ,unsigned int> tupletofind = {idx,run, evt, lumi};
+              std::tuple<unsigned long long,unsigned int,unsigned long long ,unsigned int> tupletofind = {idx,run, evt, lumi};
               if(GetEntriesMap().find(tupletofind)!=GetEntriesMap().end()) {
                 //if(checkDuplicates){
                 std::cout << idx << "\t" << run << "\t" << evt << "\t" << lumi << std::endl;
@@ -113,11 +114,11 @@ struct CacheCreator {
               (void) std::initializer_list<int>{ (cache_entry->Add(index++, args), 0)... };
               return cache_entry;
           }, var_names).Define(map_name, [&](const std::shared_ptr<Entry>& cache_entry) {
-              const auto idx = cache_entry->GetValue<int>(0);
+              const auto idx = cache_entry->GetValue<unsigned long long>(0);
               const auto run = cache_entry->GetValue<unsigned int>(1);
               const auto evt = cache_entry->GetValue<unsigned long long>(2);
               const auto lumi = cache_entry->GetValue<unsigned int>(3);
-              std::tuple<int,unsigned int,unsigned long long ,unsigned int> tupletofind = {idx,run, evt, lumi};
+              std::tuple<unsigned long long,unsigned int,unsigned long long ,unsigned int> tupletofind = {idx,run, evt, lumi};
               if(GetCacheEntriesMap().find(tupletofind)!=GetCacheEntriesMap().end()) {
                 //if(checkDuplicates){
                 //std::cout << idx << "\t" << run << "\t" << evt << "\t" << lumi << std::endl;

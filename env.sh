@@ -59,7 +59,9 @@ do_install_cmssw() {
 
 do_install_inference() {
   local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
-  local this_dir="$( cd "$( dirname "$this_file" )/.." && pwd )"
+  local this_dir="$( cd "$( dirname "$this_file" )" && pwd )"
+
+  export FLAF_PATH="$this_dir"
 
   local cmb_version=$1
 
@@ -87,10 +89,10 @@ EOF
 
   run_cmd mkdir -p "$ANALYSIS_SOFT_PATH/bin"
   if ! [ -f "$ANALYSIS_SOFT_PATH/bin/combine" ]; then
-    run_cmd ln -s "$this_dir/FLAF/run_tools/cmsExe.sh" "$ANALYSIS_SOFT_PATH/bin/combine"
+    run_cmd ln -s "$FLAF_PATH/run_tools/cmsExe.sh" "$ANALYSIS_SOFT_PATH/bin/combine"
   fi
   if ! [ -f "$ANALYSIS_SOFT_PATH/bin/text2workspace.py" ]; then
-    run_cmd ln -s "$this_dir/FLAF/run_tools/cmsExe.sh" "$ANALYSIS_SOFT_PATH/bin/text2workspace.py"
+    run_cmd ln -s "$FLAF_PATH/run_tools/cmsExe.sh" "$ANALYSIS_SOFT_PATH/bin/text2workspace.py"
   fi
 
   run_cmd mkdir -p "$HH_INFERENCE_PATH/data"
@@ -142,11 +144,7 @@ install_inference() {
 }
 
 load_flaf_env() {
-  local env_file="$1"
-  local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
-  local this_dir="$( cd "$( dirname "$this_file" )" && pwd )"
 
-  export FLAF_PATH="$this_dir"
   [ -z "$FLAF_ENVIRONMENT_PATH" ] && export FLAF_ENVIRONMENT_PATH="/afs/cern.ch/work/k/kandroso/public/flaf_env_2024_08"
 
   [ -z "$LAW_HOME" ] && export LAW_HOME="$ANALYSIS_PATH/.law"
@@ -202,9 +200,6 @@ load_flaf_env() {
 }
 
 source_env_fn() {
-  local env_file="$1"
-  local cmd="$2"
-
   if [ -z "$ANALYSIS_PATH" ]; then
     echo "ANALYSIS_PATH is not set. Exiting..."
     kill -INT $$

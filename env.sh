@@ -195,6 +195,9 @@ load_flaf_env() {
 }
 
 source_env_fn() {
+  local env_file="$1"
+  local cmd="$2"
+
   local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
   local this_dir="$( cd "$( dirname "$this_file" )" && pwd )"
 

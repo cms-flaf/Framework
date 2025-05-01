@@ -58,11 +58,6 @@ do_install_cmssw() {
 }
 
 do_install_inference() {
-  local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
-  local this_dir="$( cd "$( dirname "$this_file" )" && pwd )"
-
-  export FLAF_PATH="$this_dir"
-
   local cmb_version=$1
 
   local setups_dir="$HH_INFERENCE_PATH/.setups"

@@ -58,9 +58,6 @@ do_install_cmssw() {
 }
 
 do_install_inference() {
-  local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
-  local this_dir="$( cd "$( dirname "$this_file" )/.." && pwd )"
-
   local cmb_version=$1
 
   local setups_dir="$HH_INFERENCE_PATH/.setups"
@@ -87,10 +84,10 @@ EOF
 
   run_cmd mkdir -p "$ANALYSIS_SOFT_PATH/bin"
   if ! [ -f "$ANALYSIS_SOFT_PATH/bin/combine" ]; then
-    run_cmd ln -s "$this_dir/run_tools/cmsExe.sh" "$ANALYSIS_SOFT_PATH/bin/combine"
+    run_cmd ln -s "$FLAF_PATH/run_tools/cmsExe.sh" "$ANALYSIS_SOFT_PATH/bin/combine"
   fi
   if ! [ -f "$ANALYSIS_SOFT_PATH/bin/text2workspace.py" ]; then
-    run_cmd ln -s "$this_dir/run_tools/cmsExe.sh" "$ANALYSIS_SOFT_PATH/bin/text2workspace.py"
+    run_cmd ln -s "$FLAF_PATH/run_tools/cmsExe.sh" "$ANALYSIS_SOFT_PATH/bin/text2workspace.py"
   fi
 
   run_cmd mkdir -p "$HH_INFERENCE_PATH/data"
@@ -142,11 +139,7 @@ install_inference() {
 }
 
 load_flaf_env() {
-  local env_file="$1"
-  local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
-  local this_dir="$( cd "$( dirname "$this_file" )" && pwd )"
 
-  export FLAF_PATH="$this_dir"
   [ -z "$FLAF_ENVIRONMENT_PATH" ] && export FLAF_ENVIRONMENT_PATH="/afs/cern.ch/work/k/kandroso/public/flaf_env_2024_08"
 
   [ -z "$LAW_HOME" ] && export LAW_HOME="$ANALYSIS_PATH/.law"
@@ -198,12 +191,17 @@ load_flaf_env() {
   source /cvmfs/cms.cern.ch/rucio/setup-py3.sh &> /dev/null
   set -- "${current_args[@]}"
   export PATH="$ANALYSIS_SOFT_PATH/bin:$PATH"
-  alias cmsEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY FLAF_CMSSW_BASE=$FLAF_CMSSW_BASE FLAF_CMSSW_ARCH=$FLAF_CMSSW_ARCH $ANALYSIS_PATH/cmsEnv.sh"
+  alias cmsEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY FLAF_CMSSW_BASE=$FLAF_CMSSW_BASE FLAF_CMSSW_ARCH=$FLAF_CMSSW_ARCH $FLAF_PATH/cmsEnv.sh"
 }
 
 source_env_fn() {
   local env_file="$1"
   local cmd="$2"
+
+  local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
+  local this_dir="$( cd "$( dirname "$this_file" )" && pwd )"
+
+  export FLAF_PATH="$this_dir"
 
   if [ -z "$ANALYSIS_PATH" ]; then
     echo "ANALYSIS_PATH is not set. Exiting..."

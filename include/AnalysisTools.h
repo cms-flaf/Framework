@@ -346,4 +346,30 @@ namespace v_ops{
       }
       return m;
   }
+
+  template<typename LV>
+  RVecF energy(const LV& p4){
+      RVecF en(p4.size());
+      for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+        en[p4_idx] = p4.at(p4_idx).energy();
+      }
+      return en;
+  }
+  template<typename LV>
+  RVecF Et(const LV& p4){
+      RVecF et(p4.size());
+      for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+        et[p4_idx] = p4.at(p4_idx).Et();
+      }
+      return et;
+  }
+
+}
+
+namespace eventId{
+
+  ULong64_t computeFullEventId(ULong64_t sample_name_crc, ULong64_t infile_crc, ULong64_t rdfentry) {
+    return (sample_name_crc << 48) | (static_cast<ULong64_t>(infile_crc) << 32) | rdfentry;
+  }
+
 }

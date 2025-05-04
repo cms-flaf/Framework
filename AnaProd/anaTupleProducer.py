@@ -25,7 +25,7 @@ def SelectBTagShapeSF(df,weight_name):
     df = df.Define("weight_bTagShapeSF", weight_name)
     return df
 
-def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snapshotOptions,range, evtIds,
+def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, anaCache, snapshotOptions,range, evtIds,
                    store_noncentral, compute_unc_variations, uncertainties, anaTupleDef,channels):
     start_time = datetime.datetime.now()
     compression_settings = snapshotOptions.fCompressionAlgorithm * 100 + snapshotOptions.fCompressionLevel
@@ -68,9 +68,8 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
     #                    (static_cast<ULong64_t>({fastcrc.crc16.xmodem(inFile.encode())}) << 32) |
     #                    (static_cast<ULong64_t>(rdfentry_)); return packed; """)
     #  following def to be removed when fastcrc is available
-    df = df.Define("FullEventId", f"""ULong64_t packed = (static_cast<ULong64_t>({Utilities.crc16(sample_name.encode())}) << 48) |
-                       (static_cast<ULong64_t>({Utilities.crc16(inFile.encode())}) << 32) |
-                       (static_cast<ULong64_t>(rdfentry_)); return packed; """)
+
+    df = df.Define("FullEventId", f"""eventId::computeFullEventId(static_cast<ULong64_t>({Utilities.crc16(sample_name.encode())}), static_cast<ULong64_t>({Utilities.crc16(inFile.encode())}), rdfentry_)""")
 
     is_data = 'true' if isData else 'false'
     df = df.Define("isData", is_data)
@@ -171,6 +170,7 @@ if __name__ == "__main__":
     parser.add_argument('--period', required=True, type=str)
     parser.add_argument('--inFile', required=True, type=str)
     parser.add_argument('--outDir', required=True, type=str)
+    parser.add_argument('--inFileName', required=True, type=str)
     parser.add_argument('--sample', required=True, type=str)
     parser.add_argument('--anaCache', required=True, type=str)
     parser.add_argument('--anaTupleDef', required=True, type=str)
@@ -210,6 +210,6 @@ if __name__ == "__main__":
     snapshotOptions.fMode="RECREATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
-    createAnatuple(args.inFile, args.treeName, args.outDir, setup, args.sample, anaCache, snapshotOptions,
+    createAnatuple(args.inFile, args.inFileName, args.treeName, args.outDir, setup, args.sample, anaCache, snapshotOptions,
                    args.nEvents, args.evtIds, args.store_noncentral, args.compute_unc_variations,
                    args.uncertainties.split(","), anaTupleDef,channels)

@@ -73,12 +73,9 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Event
   df_out_valid = df_out.Filter('isValid')
 
   colToSave_diff= []
-  colToNotToMakeDiff = ["period","run", "sample_type", "FullEventId", "event", "isData", "luminosityBlock","X_mass", "X_spin"]
 
-  # this will be needed as some observables that have to be copied - as X_mass/X_spin - are analysis specific
-  for col_name in optcolToNotToMakeDiff:
-    if col_name not in colNames:
-      colToNotToMakeDiff.remove(col_name)
+  colToNotToMakeDiff = [ "FullEventId"]
+
 
   condition_noDiff_list = []
   condition_Valid_list = []

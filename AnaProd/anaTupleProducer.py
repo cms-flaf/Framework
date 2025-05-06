@@ -60,6 +60,7 @@ def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, ana
 
     df = df.Define("sample_type", f"static_cast<int>(SampleType::{sample_config['sampleType']})")
     isSignal = sample_config['sampleType'] in setup.global_params['signal_types']
+    applyTriggerFilter = sample_config.get('applyTriggerFilter', True)
     df = df.Define("period", f"static_cast<int>(Period::{period})")
     df = df.Define("X_mass", f"static_cast<int>({mass})") # this has to be moved in specific analyses def
     df = df.Define("X_spin", f"static_cast<int>({spin})") # this has to be moved in specific analyses def
@@ -199,7 +200,6 @@ if __name__ == "__main__":
     channels = setup.global_params["channelSelection"]
     if args.channels:
         channels = args.channels.split(',') if type(args.channels) == str else args.channels
-    print(channels)
     anaTupleDef = Utilities.load_module(args.anaTupleDef)
     if os.path.isdir(args.outDir):
         shutil.rmtree(args.outDir)

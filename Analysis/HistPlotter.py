@@ -161,6 +161,9 @@ if __name__ == "__main__":
     with open(hist_cfg, 'r') as f:
         hist_cfg_dict = yaml.safe_load(f)
 
+    with open(page_cfg, 'r') as f:
+        page_cfg_dict = yaml.safe_load(f)
+
     with open(page_cfg_custom, 'r') as f:
         page_cfg_custom_dict = yaml.safe_load(f)
     inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", "plot","inputs.yaml")
@@ -253,7 +256,7 @@ if __name__ == "__main__":
     cat_txt = args.category.replace('_masswindow','')
     cat_txt = cat_txt.replace('_cat2','')
     cat_txt = cat_txt.replace('_cat3','')
-    custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS Private Work','scope_text':''}
+    custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS '+page_cfg_dict['scope_text']['text'],'scope_text':''}
     if args.wantData==False:
         custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS simulation', 'scope_text':''}
     inFile_root = ROOT.TFile.Open(args.inFile, "READ")

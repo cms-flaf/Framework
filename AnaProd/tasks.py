@@ -191,10 +191,10 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             outdir_anatuples = os.path.join(job_home, 'anaTuples', sample_name)
             anaTupleDef = os.path.join(self.ana_path(), self.global_params['anaTupleDef'])
             with input_file.localize("r") as local_input, anaCache_remote.localize("r") as anaCache_input:
-                centralFileName = os.path.basename(local_input.path)
+                inFileName = os.path.basename(input_file.path)
                 anatuple_cmd = [ 'python3', '-u', producer_anatuples, '--period', self.period,
                                  '--inFile', local_input.path, '--outDir', outdir_anatuples, '--sample', sample_name,
-                                 '--anaTupleDef', anaTupleDef, '--anaCache', anaCache_input.path, '--channels', channels, '--inFileName', centralFileName ]
+                                 '--anaTupleDef', anaTupleDef, '--anaCache', anaCache_input.path, '--channels', channels, '--inFileName', inFileName ]
                 if deepTauVersion!="":
                     anatuple_cmd.extend([ '--customisations', f"deepTauVersion={deepTauVersion}" ])
                 if compute_unc_variations:
@@ -202,6 +202,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if store_noncentral:
                     anatuple_cmd.append('--store-noncentral')
 
+                centralFileName = os.path.basename(local_input.path)
                 if self.test:
                     anatuple_cmd.extend(['--nEvents', '100'])
                 # ps_call(anatuple_cmd, verbose=1) # this will be uncommented when the anatuple producer will be fully independent on cmsEnv.

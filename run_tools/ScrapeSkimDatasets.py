@@ -29,7 +29,7 @@ def ScrapeSkimDatasets(input_dir, output):
 
 
       #For now we can skip signal and data
-      if dataset.startswith('DoubleMuon') or dataset.startswith('Muon') or dataset.startswith('SingleMuon') or dataset.startswith('EGamma') or dataset.startswith('MuonEG') or dataset.startswith('JetHT') or dataset.startswith('JetMET') or dataset.startswith('MET') or dataset.startswith('Tau'):
+      if dataset.startswith('DoubleMuon') or dataset.startswith('Muon') or dataset.startswith('SingleMuon') or dataset.startswith('EGamma') or dataset.startswith('MuonEG') or dataset.startswith('JetHT') or dataset.startswith('JetMET') or dataset.startswith('MET') or dataset.startswith('Tau') or dataset.startswith('Parking'):
         continue
       if dataset.startswith('GluGlutoRadion') or dataset.startswith('GluGlutoBulkGraviton'):
         continue
@@ -52,33 +52,33 @@ def ScrapeSkimDatasets(input_dir, output):
         xSec = '1.0'
         ref = 'fill me!'
         unc = ''
-        if dataset.startswith('ST_s-channel_antitop'):
-          crossSection = 'ST_s-channel_antitop'
+        if dataset.startswith('ST_s_channel_antitop'):
+          crossSection = 'ST_s_channel_antitop'
           xSec = '0.0'
           unc = ''
           ref = 'Take this from XSDB for now'
-        if dataset.startswith('ST_s-channel_top'):
-          crossSection = 'ST_s-channel_top'
+        if dataset.startswith('ST_s_channel_top'):
+          crossSection = 'ST_s_channel_top'
           xSec = '0.0'
           unc = ''
           ref = 'Take this from XSDB for now'
-        if dataset.startswith('ST_t-channel_antitop'):
-          crossSection = 'ST_t-channel_antitop'
+        if dataset.startswith('ST_t_channel_antitop'):
+          crossSection = 'ST_t_channel_antitop'
           xSec = '87.2'
           unc = '+0.9 -0.8 (scale) +1.5 -1.3(PDF+alphaS) +1.8 -1.5(Total) +0.6 -0.7(mass) +0.2 -0.2 (Ebeam) +/-0.1 (Integration)'
           ref = 'https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef'
-        if dataset.startswith('ST_t-channel_top'):
-          crossSection = 'ST_t-channel_top'
+        if dataset.startswith('ST_t_channel_top'):
+          crossSection = 'ST_t_channel_top'
           xSec = '145.0'
           unc = '+1.7 -1.1 (scale) +2.3 -1.5(PDF+alphaS) +2.8 -1.9(Total) +1.3 -0.9(mass) +0.4 -0.3 (Ebeam) +/-0.1 (Integration)'
           ref = 'https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef'
-        if dataset.startswith('ST-tW_antitop'):
-          crossSection = 'ST-tW_antitop'
+        if dataset.startswith('ST_tW_antitop'):
+          crossSection = 'ST_tW_antitop'
           xSec = '0.0'
           unc = ''
           ref = 'Take this from XSDB for now'
-        if dataset.startswith('ST-tW_top'):
-          crossSection = 'ST-tW_top'
+        if dataset.startswith('ST_tW_top'):
+          crossSection = 'ST_tW_top'
           xSec = '0.0'
           unc = ''
           ref = 'Take this from XSDB for now'
@@ -161,7 +161,7 @@ def ScrapeSkimDatasets(input_dir, output):
 
 
 
-      if dataset.startswith('WWW') or dataset.startswith('WWZ') or dataset.startswith('WZZ'):
+      if dataset.startswith('WWW') or dataset.startswith('WWZ') or dataset.startswith('WZZ') or dataset.startswith('ZZZ'):
         sampleType = 'VVV'
         xSec = '1.0'
         ref = 'fill me!'
@@ -213,11 +213,10 @@ def ScrapeSkimDatasets(input_dir, output):
           xSec: '52.23 * (0.06272)'
           ref: 'https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap'
           unc: '+4.6% -6.7% (theory) +-3.9 (TH Gaussian) +-3.2 (PDF+alpha s) +-1.9 (PDF) +-2.6 (alpha s)'
-        if dataset.startswith('GluGluHToWW'):
-          GluGluHToWWTo2L2Nu_M125:
+        if dataset.startswith('GluGluHToWWTo2L2Nu_M125'):
           xSec: '52.23 * (0.2137) * (3 * 0.1086)'
           ref: 'https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap'
-          unc: '+4.6% -6.7% (theory) +-3.9 (TH Gaussian) +-3.2 (PDF+alpha s) +-1.9 (PDF) +-2.6 (alpha s)
+          unc: '+4.6% -6.7% (theory) +-3.9 (TH Gaussian) +-3.2 (PDF+alpha s) +-1.9 (PDF) +-2.6 (alpha s)'
         if dataset.startswith('VBFHToTauTau'):
           xSec: '4.078 * (0.06272)'
           ref: 'https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap'
@@ -226,8 +225,6 @@ def ScrapeSkimDatasets(input_dir, output):
           xSec: '4.078 * (0.2137) * (3 * 0.1086)'
           ref: 'https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap'
           unc: '+0.5% -0.3% (QCD Scale) +-2.1% (PDF alpha s) +-2.1% (PDF) +-0.5 (alpha s)'
-
-
 
 
       if sampleType == 'test':

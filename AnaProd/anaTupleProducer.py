@@ -64,12 +64,6 @@ def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, ana
     df = df.Define("period", f"static_cast<int>(Period::{period})")
     df = df.Define("X_mass", f"static_cast<int>({mass})") # this has to be moved in specific analyses def
     df = df.Define("X_spin", f"static_cast<int>({spin})") # this has to be moved in specific analyses def
-    #  following def to be uncommented when fastcrc is available
-    # df = df.Define("FullEventId", f"""ULong64_t packed = (static_cast<ULong64_t>({fastcrc.crc16.xmodem(sample_name.encode())}) << 48) |
-    #                    (static_cast<ULong64_t>({fastcrc.crc16.xmodem(inFile.encode())}) << 32) |
-    #                    (static_cast<ULong64_t>(rdfentry_)); return packed; """)
-    #  following def to be removed when fastcrc is available
-
     df = df.Define("FullEventId", f"""eventId::computeFullEventId(static_cast<ULong64_t>({Utilities.crc16(sample_name.encode())}), static_cast<ULong64_t>({Utilities.crc16(inFile.encode())}), rdfentry_)""")
 
     is_data = 'true' if isData else 'false'

@@ -37,6 +37,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
     loadTF = anaTupleDef.loadTF
     loadHHBtag = anaTupleDef.loadHHBtag
     lepton_legs = anaTupleDef.lepton_legs
+    offline_legs = anaTupleDef.offline_legs
     Baseline.Initialize(loadTF, loadHHBtag)
     Corrections.initializeGlobal(setup.global_params, sample_name, isData=isData, load_corr_lib=True)
     corrections = Corrections.getGlobal()
@@ -120,7 +121,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
 
 
             weight_branches = dfw.Apply(corrections.getNormalisationCorrections, setup.global_params,
-                                        setup.samples, sample_name, lepton_legs, triggers_to_use, trigger_class, syst_name, source_name,
+                                        setup.samples, sample_name, lepton_legs, offline_legs, triggers_to_use, trigger_class, syst_name, source_name,
                                         return_variations=is_central and compute_unc_variations, isCentral=is_central,
                                         ana_cache=anaCache)
             puIDbranches = ["weight_Jet_PUJetID_Central_tmp", "weight_Jet_PUJetID_effUp_rel_tmp", "weight_Jet_PUJetID_effDown_rel_tmp"]

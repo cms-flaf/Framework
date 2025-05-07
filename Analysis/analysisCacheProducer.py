@@ -5,6 +5,7 @@ import ROOT
 import datetime
 import time
 import shutil
+import importlib
 
 ROOT.EnableThreadSafety()
 
@@ -54,7 +55,7 @@ def createCentralQuantities(df_central, central_col_types, central_columns):
     return df_central
 
 # add extra argument to this function - which payload producer to run
-def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, snapshotOptions, compute_unc_variations, deepTauVersion):
+def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, snapshotOptions, compute_unc_variations, deepTauVersion, producer_to_run):
     start_time = datetime.datetime.now()
     verbosity = ROOT.Experimental.RLogScopedVerbosity(ROOT.Detail.RDF.RDFLogChannel(), ROOT.Experimental.ELogLevel.kInfo)
     snaps = []
@@ -66,6 +67,15 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
     # below should be replaced by calling payload producer
     # LegacyVariables.Initialize()
     # applyLegacyVariables(dfw, global_cfg_dict, True)
+    
+    if producer_to_run:
+        producer_config = global_cfg_dict['payload_producers'][producer_to_run]
+        producers_file_path = global_cfg_dict['payload_producers']['path']
+        producer_name = payload_producer_config['producer_name']
+        producers_module = importlib.import_module(producers_file_path)
+        producer = getattr(producers_module, producer_name)
+        dfw = producer.run(dfw)
+
     varToSave = Utilities.ListToVector(dfw.colToSave)
     all_files.append(f'{outFileName}_Central.root')
     snaps.append(dfw.df.Snapshot(f"Events", f'{outFileName}_Central.root', varToSave, snapshotOptions))
@@ -135,6 +145,7 @@ if __name__ == "__main__":
     parser.add_argument('--compressionAlgo', type=str, default="ZLIB")
     parser.add_argument('--deepTauVersion', type=str, default="v2p1")
     parser.add_argument('--channels', type=str, default=None)
+    parser.add_argument('--producer', type=str, default=None)
     args = parser.parse_args()
 
     for header in [ "include/KinFitInterface.h", "FLAF/include/HistHelper.h", "FLAF/include/Utilities.h" ]:
@@ -159,7 +170,7 @@ if __name__ == "__main__":
     if args.channels:
         global_cfg_dict['channelSelection'] = args.channels.split(',') if type(args.channels) == str else args.channels
     outFileNameFinal = f'{args.outFileName}'
-    all_files = createAnalysisCache(args.inFileName, args.outFileName.split('.')[0], unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion)
+    all_files = createAnalysisCache(args.inFileName, args.outFileName.split('.')[0], unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion, args.producer)
     hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
     hadd_str += ' '.join(f for f in all_files)
     if len(all_files) > 1:

@@ -435,13 +435,13 @@ QCD_PT_3200:
   unc: 1.208e-06
 
 ST_s_channel_antitop_LNu:
-  crossSec: 7.246 * (1.43 / (1.43+2.278)) * (1-0.6741)
+  crossSec: 4.534 * (1-0.6741)
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef#Single_top_quark_t_channel_cross top ratio taken from XSDB, BR taken from W->LNu pdg (t->Wb 100%)
-  unc: +0.059 -0.043 (scale)
+  unc: +0.059 -0.043 (scale) # These are the combined values, as of 9May2025 they are still not available
 ST_s_channel_top_LNu:
-  crossSec: 7.246 * (2.278 / (1.43+2.278)) * (1-0.6741)
+  crossSec: 7.244 * (1-0.6741)
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef#Single_top_quark_t_channel_cross top ratio taken from XSDB, BR taken from W->LNu pdg (t->Wb 100%)
-  unc: +0.059 - 0.043 (scale)
+  unc: +0.059 - 0.043 (scale) # These are the combined values, as of 9May2025 they are still not available
 ST_t_channel_antitop:
   crossSec: '87.2'
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef

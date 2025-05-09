@@ -176,7 +176,7 @@ if __name__ == "__main__":
     categories = list(global_cfg_dict['categories'])
 
     boosted_categories = list(global_cfg_dict.get('apply_btag_shape_weights', [])) # list(global_cfg_dict['boosted_categories'])
-    QCDregions =  list(global_cfg_dict['SignRegions']) # list(global_cfg_dict['QCDRegions'])
+    QCDregions = list(global_cfg_dict['QCDRegions'])
 
     #Controlregions = list(global_cfg_dict['ControlRegions']) #Later maybe we want to separate Controls from QCDs
     global_cfg_dict['channelSelection']=args.channels.split(',')

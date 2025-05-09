@@ -15,10 +15,12 @@
 using RVecF = ROOT::VecOps::RVec<float>;
 using RVecI = ROOT::VecOps::RVec<int>;
 using RVecUC = ROOT::VecOps::RVec<unsigned char>;
+using RVecUL = ROOT::VecOps::RVec<unsigned long>;
+using RVecULL = ROOT::VecOps::RVec<unsigned long long>;
 using RVecS = ROOT::VecOps::RVec<short>;
 
 namespace analysis {
-  typedef std::variant<int,float,bool, unsigned long,unsigned long long,long,unsigned int, unsigned char, short, RVecI, RVecF,RVecUC, RVecS> MultiType;
+  typedef std::variant<int,float,bool, unsigned long,unsigned long long,long,unsigned int, unsigned char, short, RVecI, RVecF,RVecUC, RVecS, RVecUL, RVecULL> MultiType;
 
 struct Entry {
   std::vector<MultiType> var_values;
@@ -26,13 +28,13 @@ struct Entry {
   explicit Entry(size_t size) : var_values(size) {}
 
   template <typename T>
-  void Add(int index, const T& value)
+  void Add(unsigned long long index, const T& value)
   {
       var_values.at(index)= value;
   }
 
 template<typename T>
-  const T& GetValue(int idx) const
+  const T& GetValue(unsigned long long idx) const
   {
     return std::get<T>(var_values.at(idx));
   }
@@ -93,24 +95,24 @@ struct TupleMaker {
       cond_var.notify_all();
       return true;
     };
-    df_out = df_out.Define("_entryCentral", [=](Int_t entryIndexShifted) {
+    df_out = df_out.Define("_entryCentral", [=](ULong64_t FullEventIdShifted) {
       std::shared_ptr<Entry> entryCentral;
       try {
         static bool notified = notify();
         static std::shared_ptr<Entry> entry;
-        static std::set<int> processedEntries;
-        if(processedEntries.count(entryIndexShifted))
+        static std::set<unsigned long long> processedEntries;
+        if(processedEntries.count(FullEventIdShifted))
           throw std::runtime_error("Entry already processed");
-        while(!entry || entry->GetValue<int>(0)<entryIndexShifted){
+        while(!entry || entry->GetValue<unsigned long long >(0)<FullEventIdShifted){
           if(entry){
-            processedEntries.insert(entry->GetValue<int>(0));
+            processedEntries.insert(entry->GetValue<unsigned long long>(0));
             entry.reset();
           }
           if (!queue.Pop(entry)) {
             break;
           }
         }
-        if(entry && entry->GetValue<int>(0)==entryIndexShifted){
+        if(entry && entry->GetValue<unsigned long long>(0)==FullEventIdShifted){
           entryCentral=entry;
         }
       } catch (const std::exception& e) {
@@ -118,7 +120,7 @@ struct TupleMaker {
         throw;
       }
       return entryCentral;
-    }, { "entryIndex" });
+    }, { "FullEventId" });
 
     return df_out;
   }

@@ -1,0 +1,50 @@
+fs_default:
+    - 'T3_CH_CERNBOX:/store/user/yumeng/HH_bbtautau_Run3/'
+fs_anaCache:
+    - 'T3_CH_CERNBOX:/store/user/yumeng/HH_bbtautau_Run3/'
+    #- 'T3_CH_CERNBOX:/store/user/toakhter/HH_bbtautau_Run3/'
+fs_anaTuple:
+    - 'T3_CH_CERNBOX:/store/user/yumeng/HH_bbtautau_Run3/'
+    #- 'T3_CH_CERNBOX:/store/user/toakhter/HH_bbtautau_Run3/'
+fs_anaCacheTuple:
+    - 'T3_CH_CERNBOX:/store/user/yumeng/HH_bbtautau_Run3/'
+    #- 'T3_CH_CERNBOX:/store/user/toakhter/HH_bbtautau_Run3/'
+fs_histograms:
+    - 'T3_CH_CERNBOX:/store/user/yumeng/HH_bbtautau_Run3/histograms/'
+fs_plots:
+    - 'T3_CH_CERNBOX:/store/user/yumeng/php-plots/hhbbtautau/'
+fs_json:
+- 'T3_CH_CERNBOX:/store/user/yumeng/HH_bbtautau_Run3/jsonFiles/'
+
+analysis_config_area: config
+compute_unc_variations: true #tuple buidling level
+store_noncentral: true #tuple building level
+compute_unc_histograms: true
+
+vars_to_plot:
+# - tau1_pt
+# - tau2_pt
+# - PV_npvs
+- tautau_m_vis
+# - bb_m_vis
+# - bbtautau_mass
+#- b1_pt
+#- b2_pt
+#- { "name" : MT2, need_cache: true }
+
+#?delaR
+
+# - { "name": SVfit_m, need_cache: true }
+# - { "name": kinFit_m, need_cache: true }
+
+plot_unc: true
+plot_wantSignals: true
+plot_wantQCD: true
+plot_rebin: true
+plot_analysis: HH_bbtautau
+#For PlotTask: other arguments use the default values shown below.
+# --uncSource='Central'
+# --qcdregion='OS_Iso'  
+# --wantOverflow=False
+# --wantLogScale=""
+

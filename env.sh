@@ -25,7 +25,6 @@ get_os_prefix() {
   fi
 }
 
-
 do_install_cmssw() {
   export SCRAM_ARCH=$1
   local CMSSW_VER=$2
@@ -57,6 +56,17 @@ do_install_cmssw() {
   fi
 }
 
+do_install_combine() {
+  local cmb_version=$1
+  local cmb_path="$1"
+
+  echo "Compiling standalone combine..."
+  source "$FLAF_ENVIRONMENT_PATH/bin/activate"
+  run_cmd cd "$cmb_path"
+  run_cmd make -j8
+  run_cmd touch "$cmb_path/build/.installed"
+}
+
 do_install_inference() {
   local cmb_version=$1
 
@@ -82,13 +92,13 @@ export DHI_COMBINE_VERSION="$cmb_version"
 EOF
   fi
 
-  run_cmd mkdir -p "$ANALYSIS_SOFT_PATH/bin"
-  if ! [ -f "$ANALYSIS_SOFT_PATH/bin/combine" ]; then
-    run_cmd ln -s "$FLAF_PATH/run_tools/cmsExe.sh" "$ANALYSIS_SOFT_PATH/bin/combine"
-  fi
-  if ! [ -f "$ANALYSIS_SOFT_PATH/bin/text2workspace.py" ]; then
-    run_cmd ln -s "$FLAF_PATH/run_tools/cmsExe.sh" "$ANALYSIS_SOFT_PATH/bin/text2workspace.py"
-  fi
+  # run_cmd mkdir -p "$ANALYSIS_SOFT_PATH/bin"
+  # if ! [ -f "$ANALYSIS_SOFT_PATH/bin/combine" ]; then
+  #   run_cmd ln -s "$FLAF_PATH/run_tools/cmsExe.sh" "$ANALYSIS_SOFT_PATH/bin/combine"
+  # fi
+  # if ! [ -f "$ANALYSIS_SOFT_PATH/bin/text2workspace.py" ]; then
+  #   run_cmd ln -s "$FLAF_PATH/run_tools/cmsExe.sh" "$ANALYSIS_SOFT_PATH/bin/text2workspace.py"
+  # fi
 
   run_cmd mkdir -p "$HH_INFERENCE_PATH/data"
   run_cmd touch "$HH_INFERENCE_PATH/data/.installed"
@@ -130,6 +140,15 @@ install_cmssw() {
   install "$env_file" $node_os $target_os install_cmssw "$ANALYSIS_SOFT_PATH/$cmssw_version/.installed" "$scram_arch" "$cmssw_version" "$cmb_ver"
 }
 
+install_combine() {
+  local env_file="$1"
+  local node_os=$2
+  local target_os=$3
+  local cmb_path=$4
+  install "$env_file" $node_os $target_os install_combine "$cmb_path/build/.installed" "$cmb_path"
+}
+
+
 install_inference() {
   local env_file="$1"
   local node_os=$2
@@ -140,8 +159,6 @@ install_inference() {
 
 load_flaf_env() {
 
-  [ -z "$FLAF_ENVIRONMENT_PATH" ] && export FLAF_ENVIRONMENT_PATH="/afs/cern.ch/work/k/kandroso/public/flaf_env_2024_08"
-
   [ -z "$LAW_HOME" ] && export LAW_HOME="$ANALYSIS_PATH/.law"
   [ -z "$LAW_CONFIG_FILE" ] && export LAW_CONFIG_FILE="$ANALYSIS_PATH/config/law.cfg"
   [ -z "$ANALYSIS_DATA_PATH" ] && export ANALYSIS_DATA_PATH="$ANALYSIS_PATH/data"
@@ -150,6 +167,8 @@ load_flaf_env() {
   if [[ ! -d "$ANALYSIS_DATA_PATH" ]]; then
     run_cmd mkdir -p "$ANALYSIS_DATA_PATH"
   fi
+
+  source "$FLAF_ENVIRONMENT_PATH/bin/activate"
 
   local os_version=$(cat /etc/os-release | grep VERSION_ID | sed -E 's/VERSION_ID="([0-9]+).*"/\1/')
   local os_prefix=$(get_os_prefix $os_version)
@@ -160,37 +179,40 @@ load_flaf_env() {
   local target_os_prefix=$(get_os_prefix $target_os_version)
   local target_os_gt_prefix=$(get_os_prefix $target_os_version 1)
   local target_os=$target_os_prefix$target_os_version
-  local cmb_ver="v10.0.2"
-  export FLAF_CMSSW_BASE="$ANALYSIS_PATH/soft/$flaf_cmssw_ver"
+  [ -z "$FLAF_COMBINE_VERSION" ] && export FLAF_COMBINE_VERSION="v10.2.0"
+  export FLAF_CMSSW_BASE="$ANALYSIS_SOFT_PATH/$flaf_cmssw_ver"
   export FLAF_CMSSW_ARCH="${target_os_gt_prefix}${target_os_version}_amd64_gcc12"
-  install_cmssw "$env_file" $node_os $target_os $FLAF_CMSSW_ARCH $flaf_cmssw_ver $cmb_ver
+  install_cmssw "$env_file" $node_os $target_os $FLAF_CMSSW_ARCH $flaf_cmssw_ver $FLAF_COMBINE_VERSION
 
-  if [ -d "$HH_INFERENCE_PATH" ]; then
-    local cmb_cmssw_ver=$flaf_cmssw_ver
-    local cmb_scram_arch=$FLAF_CMSSW_ARCH
-
+  export PYTHONPATH="$ANALYSIS_PATH:$PYTHONPATH"
+  if [ "$FLAF_COMBINE_VERSION" != "none" ]; then
     local cmb_os_version=9
     local cmb_os_prefix=$(get_os_prefix $cmb_os_version)
     local cmb_os=$cmb_os_prefix$cmb_os_version
-    install_inference "$env_file" $node_os $cmb_os $cmb_ver
+    export FLAF_COMBINE_PATH="$FLAF_CMSSW_BASE/src/HiggsAnalysis/CombinedLimit"
+    install_combine "$env_file" $node_os $cmb_os "$FLAF_COMBINE_PATH"
 
-    export PYTHONPATH="$ANALYSIS_PATH:$HH_INFERENCE_PATH:$PYTHONPATH"
-    source $HH_INFERENCE_PATH/.setups/flaf.sh
-  else
-    export PYTHONPATH="$ANALYSIS_PATH:$PYTHONPATH"
+    export PATH="$FLAF_COMBINE_PATH/build/bin:$PATH"
+    export LD_LIBRARY_PATH="$FLAF_COMBINE_PATH/build/lib:$LD_LIBRARY_PATH"
+    export PYTHONPATH="$FLAF_COMBINE_PATH/build/lib/python:$PYTHONPATH"
+    if [ -d "$HH_INFERENCE_PATH" ]; then
+      install_inference "$env_file" $node_os $cmb_os $FLAF_COMBINE_VERSION
+      export PYTHONPATH="$HH_INFERENCE_PATH:$PYTHONPATH"
+      source $HH_INFERENCE_PATH/.setups/flaf.sh
+    fi
   fi
 
   if [ ! -z $ZSH_VERSION ]; then
     autoload bashcompinit
     bashcompinit
   fi
-  source "$FLAF_ENVIRONMENT_PATH/bin/activate"
+
   source "$( law completion )"
   current_args=( "$@" )
   set --
   source /cvmfs/cms.cern.ch/rucio/setup-py3.sh &> /dev/null
   set -- "${current_args[@]}"
-  export PATH="$ANALYSIS_SOFT_PATH/bin:$PATH"
+  #export PATH="$ANALYSIS_SOFT_PATH/bin:$PATH"
   alias cmsEnv="env -i HOME=$HOME ANALYSIS_PATH=$ANALYSIS_PATH ANALYSIS_DATA_PATH=$ANALYSIS_DATA_PATH X509_USER_PROXY=$X509_USER_PROXY FLAF_CMSSW_BASE=$FLAF_CMSSW_BASE FLAF_CMSSW_ARCH=$FLAF_CMSSW_ARCH $FLAF_PATH/cmsEnv.sh"
 }
 
@@ -201,17 +223,19 @@ source_env_fn() {
   local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
   local this_dir="$( cd "$( dirname "$this_file" )" && pwd )"
 
-  export FLAF_PATH="$this_dir"
-
   if [ -z "$ANALYSIS_PATH" ]; then
     echo "ANALYSIS_PATH is not set. Exiting..."
     kill -INT $$
   fi
 
   [ -z "$ANALYSIS_SOFT_PATH" ] && export ANALYSIS_SOFT_PATH="$ANALYSIS_PATH/soft"
+  [ -z "$FLAF_ENVIRONMENT_PATH" ] && export FLAF_ENVIRONMENT_PATH="/afs/cern.ch/work/k/kandroso/public/flaf_env_2025_04"
+  export FLAF_PATH="$this_dir"
 
   if [ "$cmd" = "install_cmssw" ]; then
     do_install_cmssw "${@:3}"
+  elif [ "$cmd" = "install_combine" ]; then
+    do_install_combine "${@:3}"
   elif [ "$cmd" = "install_inference" ]; then
     do_install_inference "${@:3}"
   else

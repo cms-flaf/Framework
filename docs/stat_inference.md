@@ -25,3 +25,12 @@
     - add `--remove-output 4,a,y` to remove previous output files
     - add `--print-status 0` to get status of the workflow (where `0` is a depth). Useful to get the output file name.
     - for more details see [cms-hh inference documentation](https://cms-hh.web.cern.ch/tools/inference/)
+
+2. Plot Pulls and Impacts
+  ```sh
+  PlotPullsAndImpacts --version dev --datacards "PATH_TO_CARDS/specific_card.txt"  --hh-model NO_STR --parameter-values r=1 --parameter-ranges r,-100,100 --method robust --PlotPullsAndImpacts-order-by-impact True --mc-stats True --PullsAndImpacts-custom-args="--expectSignal=1"
+  ```
+  Hints:
+    - Don't use datacards as *.txt because pulls should be done for each mass point separately
+    - add `--remove-output 4,a,y` to remove previous output files
+    - add `--print-status 0` to get status of the workflow (where `0` is a depth). Useful to get the output file name.

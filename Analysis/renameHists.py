@@ -165,11 +165,8 @@ if args.period.startswith('Run2'):
                 all_histnames[f"{process}_{unc_old}_{args.year}_{scale}"] = f"{process}_{new_unc}{scale}"
                 all_histnames[f"{process}_{unc_old}_{scale}"] = f"{process}_{new_unc}{scale}"
 elif args.period.startswith('Run3'):
-    print("We are in renameHists in the Run3 block")
-    print(f"Samples to consider {samples_to_consider}")
     for process in samples_to_consider:
         all_histnames[process] = process
-        print(f"And we have old unc names {list(setup.weights_config['norm'].keys()) + setup.weights_config['shape']}")
         for unc_old in setup.weights_config['norm'].keys():
             new_unc = setup.weights_config['norm'][unc_old]['name'].format(args.year)
             for scale in ['Up', 'Down']:

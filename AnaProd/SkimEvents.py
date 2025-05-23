@@ -74,7 +74,7 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Event
 
   colToSave_diff= []
 
-  colToNotToMakeDiff = [ "FullEventId"]
+  colToNotToMakeDiff = ["FullEventId"]
 
 
   condition_noDiff_list = []

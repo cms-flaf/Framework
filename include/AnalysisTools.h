@@ -398,7 +398,7 @@ namespace v_ops{
 
 namespace eventId {
 
-  ULong64_t computeFullEventId(ULong64_t sample_name_crc, ULong64_t infile_crc, ULong64_t rdfentry) {
+  ULong64_t encodeFullEventId(ULong64_t sample_name_crc, ULong64_t infile_crc, ULong64_t rdfentry) {
     if (sample_name_crc >> 16)
       throw std::runtime_error("sample_name_crc overflows 16 bits");
     if (infile_crc >> 16)

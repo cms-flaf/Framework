@@ -6,7 +6,7 @@ class Triggers():
         with open(triggerFile, "r") as stream:
             self.trigger_dict= yaml.safe_load(stream)
         self.deltaR_matching = deltaR_matching
-    
+
     def ApplyTriggers(self, df, offline_legs, isData = False, applyTriggerFilter=False):
         hltBranches = []
         matchedObjectsBranches= []
@@ -14,10 +14,10 @@ class Triggers():
             path_key = 'path'
             if 'path' not in path_dict:
                 path_key += '_data' if isData else '_MC'
-            if isData:  
-                for p in path_dict[path_key]:  
-                    if p not in df.GetColumnNames():  
-                        df = df.Define(p, 'false') 
+            if isData:
+                for p in path_dict[path_key]:
+                    if p not in df.GetColumnNames():
+                        df = df.Define(p, 'false')
             or_paths = " || ".join(f'({p})' for p in path_dict[path_key])
             or_paths = f' ( { or_paths } ) '
             for leg_id, leg_tuple in enumerate(path_dict['legs']):
@@ -37,8 +37,8 @@ class Triggers():
                         cut_vars.append(cut_var_name)
                     df = df.Define(var_name_online, ' && '.join(cut_vars))
                     matching_var = f'{obj}_Matching_{leg_id+1}_{path}'
-                    df = df.Define(matching_var, f"""FindMatching( {var_name_offline}, {var_name_online}, {obj}_p4, TrigObj_p4, {self.deltaR_matching} )""")
-                    matchedObjectsBranches.append(matching_var) 
+                    df = df.Define(matching_var, f"""FindMatching({var_name_offline}, {var_name_online}, {obj}_p4, TrigObj_p4, {self.deltaR_matching} )""")
+                    matchedObjectsBranches.append(matching_var)
             for obj in offline_legs:
                 matching_var_bool = f'{obj}_HasMatching_{path}'
                 matching_var_bool_str = " || ".join(f"{obj}_Matching_{i+1}_{path} > -1" for i in range(len(path_dict['legs'])))

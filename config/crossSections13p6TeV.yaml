@@ -253,7 +253,7 @@ VBFHToBB_M125:
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap and https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageBR for BR
   unc: +0.5% -0.3% (QCD Scale) +-2.1% (PDF alpha s) +-2.1% (PDF) +-0.5 (alpha s)
 WminusH_Hbb_Wlnu:
-  crossSec: 0.5677 *  (0.5824) * 0.1082
+  crossSec: 0.5677 * 0.5824 * 3 * 0.1086
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap and https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageBR for BR
   unc: +0.4% -0.7% (QCD scale) ±1.8% (PDF+alphas) ±1.6 (PDF) ±0.9 (alpha s)
 WminusH_Hbb_Wqq:

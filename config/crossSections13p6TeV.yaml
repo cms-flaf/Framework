@@ -265,7 +265,7 @@ WplusH_Hbb_Wlnu:
   reference: https://indico.cern.ch/event/1119741/contributions/4715908/attachments/2383849/4073592/YR4_13p6_VH_update.pdf
   unc: +0.4% -0.7% (QCD scale) ±1.8% (PDF+alphas) ±1.6 (PDF) ±0.9 (alpha s)
 WplusH_Hbb_Wqq:
-  crossSec: 0.8889 * (0.5824) *  0.673  # 1.457 (total)
+  crossSec: 0.8889 * 0.5824 * (1 - 3 * 0.1086)  # 1.457 (total)
   reference: https://indico.cern.ch/event/1119741/contributions/4715908/attachments/2383849/4073592/YR4_13p6_VH_update.pdf
   unc: +0.4% -0.7% (QCD scale) ±1.8% (PDF+alphas) ±1.6 (PDF) ±0.9 (alpha s)
 

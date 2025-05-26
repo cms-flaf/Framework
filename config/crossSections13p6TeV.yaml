@@ -257,7 +257,7 @@ WminusH_Hbb_Wlnu:
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap and https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageBR for BR
   unc: +0.4% -0.7% (QCD scale) ±1.8% (PDF+alphas) ±1.6 (PDF) ±0.9 (alpha s)
 WminusH_Hbb_Wqq:
-  crossSec: 0.5677 *  (0.5824) * 0.673
+  crossSec: 0.5677 * 0.5824 * (1 - 3 * 0.1086)
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap and https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageBR for BR
   unc: +0.4% -0.7% (QCD scale) ±1.8% (PDF+alphas) ±1.6 (PDF) ±0.9 (alpha s)
 WplusH_Hbb_Wlnu:

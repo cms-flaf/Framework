@@ -378,21 +378,6 @@ ggZH_Hbb_Zqq_ext1:
   crossSection: ggZH_Hbb_Zqq
   generator: powheg
   miniAOD: /ggZH_Hto2B_Zto2Q_M-125_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6_ext1-v3/MINIAODSIM
-GluGluHto2Mu:
-  sampleType: H
-  crossSection: GluGluHto2Mu
-  generator: powheg
-  miniAOD: /GluGluHto2Mu_M-125_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6-v1/MINIAODSIM
-TTH_Hto2Mu:
-  sampleType: H
-  crossSection: TTH_Hto2Mu
-  generator: powheg
-  miniAOD: /TTH_Hto2Mu_M-125_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6-v3/MINIAODSIM
-VBFHto2Mu:
-  sampleType: H
-  crossSection: VBFHto2Mu
-  generator: powheg
-  miniAOD: /VBFHto2Mu_M-125_TuneCP5_withDipoleRecoil_13p6TeV_powheg-pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6-v3/MINIAODSIM
 WminusH_Hbb_Wlnu:
   sampleType: H
   crossSection: WminusH_Hbb_Wlnu

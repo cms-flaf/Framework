@@ -158,7 +158,7 @@ class DataFrameBuilderBase:
         self.colNames = colNames
         self.colTypes = [str(self.df.GetColumnType(c)) for c in self.colNames]
 
-    def __init__(self, df):
+    def __init__(self, df, **kwargs):
         self.df = df
         self.colNames=[]
         self.colTypes=[]

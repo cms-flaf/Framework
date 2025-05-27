@@ -261,17 +261,11 @@ if __name__ == "__main__":
         custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS simulation', 'scope_text':''}
     inFile_root = ROOT.TFile.Open(args.inFile, "READ")
     dir_0 = inFile_root.Get(args.channel)
-    # print(f"dir_0 = {dir_0}")
     keys_0 = [str(k) for k in dir_0.GetListOfKeys()]
-    # print(f"keys = {keys_0}")
     dir_0p1 = dir_0.Get(args.qcdregion)
     keys_0p1 = [str(k) for k in dir_0p1.GetListOfKeys()]
-    # print(f"keys = {keys_0p1}")
-    # print(f"dir_0p1 = {args.qcdregion}")
     dir_1 = dir_0p1.Get(args.category)
     keys_1 = [str(k) for k in dir_1.GetListOfKeys()]
-    # print(f"keys = {keys_1}")
-    # print(f"dir_1 = {args.category}")
 
     # dir_1 = dir_0.Get(args.category) # --> uncomment if QCD regions are not included in the histograms
     #hist_cfg_dict[args.var]['max_y_sf'] = 1.4

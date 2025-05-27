@@ -70,10 +70,11 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
     
     if producer_to_run:
         producer_config = global_cfg_dict['payload_producers'][producer_to_run]
-        producers_file_path = global_cfg_dict['payload_producers']['path']
-        producer_name = payload_producer_config['producer_name']
-        producers_module = importlib.import_module(producers_file_path)
-        producer = getattr(producers_module, producer_name)
+        producers_module_name = global_cfg_dict['payload_producers']['producers_module_name']
+        producer_name = producer_config['producer_name']
+        producers_module = importlib.import_module(producers_module_name)
+        producer_class = getattr(producers_module, producer_name)
+        producer = producer_class(producer_config)
         dfw = producer.run(dfw)
 
     varToSave = Utilities.ListToVector(dfw.colToSave)
@@ -148,7 +149,10 @@ if __name__ == "__main__":
     parser.add_argument('--producer', type=str, default=None)
     args = parser.parse_args()
 
-    for header in [ "include/KinFitInterface.h", "FLAF/include/HistHelper.h", "FLAF/include/Utilities.h" ]:
+    ana_path = os.environ["ANALYSIS_PATH"]
+    # headers = [ "FLAF/include/KinFitInterface.h", "FLAF/include/HistHelper.h", "FLAF/include/Utilities.h" ]
+    headers = [ "FLAF/include/HistHelper.h", "FLAF/include/Utilities.h" ]
+    for header in headers:
         DeclareHeader(os.environ["ANALYSIS_PATH"]+"/"+header)
 
     snapshotOptions = ROOT.RDF.RSnapshotOptions()

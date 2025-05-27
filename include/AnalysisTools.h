@@ -307,7 +307,7 @@ int FindMatching(const bool pre_sel_target, const RVecB& pre_sel_ref, const Lore
   // RVecI matched(1,-1); // Only one target, so size is 1 and initialized with false
   int current_idx = -1;
   float deltaR_min = dR_thr;
-  if(pre_sel_target){ 
+  if(pre_sel_target){
     for(size_t ref_idx = 0; ref_idx < pre_sel_ref.size(); ref_idx++) {
       if(pre_sel_ref[ref_idx] == 0) continue;
       auto dR_targetRef = ROOT::Math::VectorUtil::DeltaR(target_p4, ref_p4[ref_idx]);
@@ -380,4 +380,45 @@ namespace v_ops{
       }
       return m;
   }
+
+  template<typename LV>
+  RVecF energy(const LV& p4){
+      RVecF en(p4.size());
+      for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+        en[p4_idx] = p4.at(p4_idx).energy();
+      }
+      return en;
+  }
+  template<typename LV>
+  RVecF Et(const LV& p4){
+      RVecF et(p4.size());
+      for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+        et[p4_idx] = p4.at(p4_idx).Et();
+      }
+      return et;
+  }
+
+}
+
+namespace eventId {
+
+  ULong64_t encodeFullEventId(ULong64_t sample_name_crc, ULong64_t infile_crc, ULong64_t rdfentry) {
+    if (sample_name_crc >> 16)
+      throw std::runtime_error("sample_name_crc overflows 16 bits");
+    if (infile_crc >> 16)
+      throw std::runtime_error("infile_crc overflows 16 bits");
+    if (rdfentry >> 32)
+      throw std::runtime_error("rdfentry overflows 32 bits");
+
+    return (sample_name_crc << 48) | (infile_crc << 32) | rdfentry;
+  }
+
+  std::tuple<ULong64_t, ULong64_t, ULong64_t> decodeFullEventId(ULong64_t fullEventId) {
+    ULong64_t sample_name_crc = (fullEventId >> 48) & 0xFFFF;
+    ULong64_t infile_crc = (fullEventId >> 32) & 0xFFFF;
+    ULong64_t rdfentry = fullEventId & 0xFFFFFFFF;
+
+    return std::make_tuple(sample_name_crc, infile_crc, rdfentry);
+  }
+
 }

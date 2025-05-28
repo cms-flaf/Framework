@@ -41,15 +41,12 @@ def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, ana
     lepton_legs = anaTupleDef.lepton_legs
     offline_legs = anaTupleDef.offline_legs
     Baseline.Initialize(loadTF, loadHHBtag)
-    Corrections.initializeGlobal(setup.global_params, sample_name, sample_type, isData=isData, load_corr_lib=True)
-    corrections = Corrections.getGlobal()
     triggerFile = setup.global_params.get('triggerFile')
     if triggerFile is not None:
         triggerFile = os.path.join(os.environ['ANALYSIS_PATH'], triggerFile)
         trigger_class = Triggers.Triggers(triggerFile)
     else:
         trigger_class = None
-    Baseline.Initialize(loadTF, loadHHBtag)
     Corrections.initializeGlobal(setup.global_params, sample_name, isData=isData, load_corr_lib=True, trigger_class=trigger_class)
     corrections = Corrections.getGlobal()
     df = ROOT.RDataFrame(treeName, inFile)

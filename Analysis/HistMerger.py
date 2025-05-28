@@ -78,6 +78,7 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
                         if sample_name=='data':
                             key_final = 'data'
                         obj=dir_2.Get(key_final)
+                        if not hasattr(obj, 'SetDirectory'): continue
                         obj.SetDirectory(0)
                         if not obj.IsA().InheritsFrom(ROOT.TH1.Class()): continue
                         key_total = ((channel, qcdRegion, cat), (uncSource, scale))

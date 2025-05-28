@@ -138,6 +138,13 @@ def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, ana
                         dfw.DefineAndAppend(f"{new_branch_name}_b{bjet_idx}", f"Hbb_isValid ? {puIDbranch}[b{bjet_idx}_idx] : -100.f")
                 if puIDbranch in weight_branches: weight_branches.remove(puIDbranch)
             dfw.colToSave.extend(weight_branches)
+
+        # Analysis anaTupleDef should define a legType as a leg obj
+        # But to save with RDF, it needs to be converted to an int
+        for leg_name in lepton_legs:
+            branch_name = f"{leg_name}_legType"
+            if branch_name in dfw.colToSave:
+                dfw.Redefine(branch_name, f"static_cast<int>({branch_name})")
         varToSave = Utilities.ListToVector(dfw.colToSave)
         outfile_prefix = inFile.split('/')[-1]
         outfile_prefix = outfile_prefix.split('.')[0]

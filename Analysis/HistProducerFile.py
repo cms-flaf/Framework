@@ -261,7 +261,7 @@ if __name__ == "__main__":
             kwargset['wantTriggerSFErrors'] = compute_rel_weights_not_data
             kwargset['whichType'] = datasetType
         if analysis_import == "Analysis.H_mumu":
-            kwargset['region'] = args.region
+            ROOT.gInterpreter.Declare(f'#include "include/Helper.h"') # not related to FullEvtId definition but needed for analysis specific purpose. At a certain point it will be moved to analysis specific section.
             kwargset['isData'] = isData
             kwargset['isCentral'] = True
 

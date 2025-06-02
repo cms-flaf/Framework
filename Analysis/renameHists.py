@@ -168,10 +168,12 @@ elif args.period.startswith('Run3'):
     for process in samples_to_consider:
         all_histnames[process] = process
         for unc_old in setup.weights_config['norm'].keys():
-            print(setup.weights_config)
-            print(setup.weights_config['norm'])
-            print(setup.weights_config['norm'][unc_old])
             new_unc = setup.weights_config['norm'][unc_old]['name'].format(args.year)
+            for scale in ['Up', 'Down']:
+                all_histnames[f"{process}_{unc_old}_{args.year}_{scale}"] = f"{process}_{new_unc}{scale}"
+                all_histnames[f"{process}_{unc_old}_{scale}"] = f"{process}_{new_unc}{scale}"
+        for unc_old in setup.weights_config['shape']:
+            new_unc = unc_old
             for scale in ['Up', 'Down']:
                 all_histnames[f"{process}_{unc_old}_{args.year}_{scale}"] = f"{process}_{new_unc}{scale}"
                 all_histnames[f"{process}_{unc_old}_{scale}"] = f"{process}_{new_unc}{scale}"

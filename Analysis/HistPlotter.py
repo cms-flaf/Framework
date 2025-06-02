@@ -166,7 +166,7 @@ if __name__ == "__main__":
 
     with open(page_cfg_custom, 'r') as f:
         page_cfg_custom_dict = yaml.safe_load(f)
-    inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", "plot/inputs.yaml")
+    inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", "plot","inputs.yaml")
     with open(inputs_cfg, 'r') as f:
         inputs_cfg_dict = yaml.safe_load(f)
 
@@ -261,8 +261,12 @@ if __name__ == "__main__":
         custom1= {'cat_text':cat_txt, 'ch_text':page_cfg_custom_dict['channel_text'][args.channel], 'datasim_text':'CMS simulation', 'scope_text':''}
     inFile_root = ROOT.TFile.Open(args.inFile, "READ")
     dir_0 = inFile_root.Get(args.channel)
+    keys_0 = [str(k) for k in dir_0.GetListOfKeys()]
     dir_0p1 = dir_0.Get(args.qcdregion)
+    keys_0p1 = [str(k) for k in dir_0p1.GetListOfKeys()]
     dir_1 = dir_0p1.Get(args.category)
+    keys_1 = [str(k) for k in dir_1.GetListOfKeys()]
+
     # dir_1 = dir_0.Get(args.category) # --> uncomment if QCD regions are not included in the histograms
     #hist_cfg_dict[args.var]['max_y_sf'] = 1.4
     #hist_cfg_dict[args.var]['use_log_y'] = False
@@ -291,6 +295,7 @@ if __name__ == "__main__":
         sample_type = sample_content['type']
         sample_plot_name = sample_content['plot']
         if args.uncSource != 'Central': continue # to be fixed
+
         sample_histname = (GetHistName(sample_name, sample_type, 'Central','Central', global_cfg_dict))
         if sample_histname not in dir_1.GetListOfKeys():
             print(f"ERRORE: {sample_histname} non è nelle keys")

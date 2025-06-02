@@ -38,6 +38,8 @@ col_type_dict = {
   'ROOT::VecOps::RVec<float>':'ROOT::VecOps::RVec<float>',
   'ROOT::VecOps::RVec<int>':'ROOT::VecOps::RVec<int>',
   'ROOT::VecOps::RVec<unsigned char>':'ROOT::VecOps::RVec<unsigned char>',
+  'ROOT::VecOps::RVec<unsigned long long>':'ROOT::VecOps::RVec<unsigned long long>',
+  'ROOT::VecOps::RVec<unsigned long>':'ROOT::VecOps::RVec<unsigned long>',
   'ROOT::VecOps::RVec<short>':'ROOT::VecOps::RVec<short>',
   'ROOT::VecOps::RVec<double>':'ROOT::VecOps::RVec<double>',
   }
@@ -59,8 +61,8 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Event
     createVoidTree(os.path.join(outDir, f"{treeName}_nonValid.root"), f"{treeName}_nonValid.root")
     createVoidTree(os.path.join(outDir, f"{treeName}_noDiff.root"), f"{treeName}_noDiff.root")
     return
-  entryIndexIdx = colNames.index("entryIndex")
-  colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
+  FullEventIdIdx = colNames.index("FullEventId")
+  colNames[FullEventIdIdx], colNames[0] = colNames[0], colNames[FullEventIdIdx]
   col_types = [str(df_out.GetColumnType(c)) for c in colNames]
   tuple_maker = ROOT.analysis.TupleMaker(*col_types)(ROOT.RDataFrame(treeName_central,inputFileCentral), 4)
   print("tuplemaker created")
@@ -71,7 +73,8 @@ def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Event
   df_out_valid = df_out.Filter('isValid')
 
   colToSave_diff= []
-  colToNotToMakeDiff = ["period","run", "sample_name", "sample_type", "entryIndex", "event", "isData", "luminosityBlock", "X_mass", "X_spin"]
+
+  colToNotToMakeDiff = ["FullEventId"]
 
 
   condition_noDiff_list = []

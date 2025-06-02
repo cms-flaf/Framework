@@ -78,6 +78,7 @@ def getHistDict(var, all_histograms, inFileRoot,channels, QCDregions, all_catego
                         if sample_name=='data':
                             key_final = 'data'
                         obj=dir_2.Get(key_final)
+                        if not hasattr(obj, 'SetDirectory'): continue
                         obj.SetDirectory(0)
                         if not obj.IsA().InheritsFrom(ROOT.TH1.Class()): continue
                         key_total = ((channel, qcdRegion, cat), (uncSource, scale))
@@ -176,7 +177,7 @@ if __name__ == "__main__":
     categories = list(global_cfg_dict['categories'])
 
     boosted_categories = list(global_cfg_dict.get('apply_btag_shape_weights', [])) # list(global_cfg_dict['boosted_categories'])
-    QCDregions =  list(global_cfg_dict['SignRegions']) # list(global_cfg_dict['QCDRegions'])
+    QCDregions = list(global_cfg_dict.get('QCDRegions', []))
 
     #Controlregions = list(global_cfg_dict['ControlRegions']) #Later maybe we want to separate Controls from QCDs
     global_cfg_dict['channelSelection']=args.channels.split(',')

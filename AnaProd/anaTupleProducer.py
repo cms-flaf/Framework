@@ -4,6 +4,7 @@ import sys
 import ROOT
 import shutil
 import zlib
+# import fastcrc
 
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
@@ -24,12 +25,13 @@ def SelectBTagShapeSF(df,weight_name):
     df = df.Define("weight_bTagShapeSF", weight_name)
     return df
 
-def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snapshotOptions,range, evtIds,
+def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, anaCache, snapshotOptions,range, evtIds,
                    store_noncentral, compute_unc_variations, uncertainties, anaTupleDef,channels):
     start_time = datetime.datetime.now()
     compression_settings = snapshotOptions.fCompressionAlgorithm * 100 + snapshotOptions.fCompressionLevel
     period = setup.global_params["era"]
     sample_config = setup.samples[sample_name]
+    sample_type = sample_config["sampleType"]
     mass = -1 if 'mass' not in sample_config else sample_config['mass']
     spin = -100 if 'spin' not in sample_config else sample_config['spin']
     isHH = True if mass > 0 else False
@@ -37,8 +39,9 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
     loadTF = anaTupleDef.loadTF
     loadHHBtag = anaTupleDef.loadHHBtag
     lepton_legs = anaTupleDef.lepton_legs
+    offline_legs = anaTupleDef.offline_legs
     Baseline.Initialize(loadTF, loadHHBtag)
-    Corrections.initializeGlobal(setup.global_params, sample_name, isData=isData, load_corr_lib=True)
+    Corrections.initializeGlobal(setup.global_params, sample_name, sample_type, isData=isData, load_corr_lib=True)
     corrections = Corrections.getGlobal()
     triggerFile = setup.global_params.get('triggerFile')
     if triggerFile is not None:
@@ -46,6 +49,9 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
         trigger_class = Triggers.Triggers(triggerFile)
     else:
         trigger_class = None
+    Baseline.Initialize(loadTF, loadHHBtag)
+    Corrections.initializeGlobal(setup.global_params, sample_name, isData=isData, load_corr_lib=True, trigger_class=trigger_class)
+    corrections = Corrections.getGlobal()
     df = ROOT.RDataFrame(treeName, inFile)
     ROOT.RDF.Experimental.AddProgressBar(df)
     if range is not None:
@@ -55,16 +61,14 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
     if isData and 'lumiFile' in setup.global_params:
         lumiFilter = LumiFilter(setup.global_params['lumiFile'])
         df = lumiFilter.filter(df)
-
-
     df = df.Define("sample_type", f"static_cast<int>(SampleType::{sample_config['sampleType']})")
-    df = df.Define("sample_name", f"static_cast<int>({zlib.crc32(sample_name.encode())})")
     isSignal = sample_config['sampleType'] in setup.global_params['signal_types']
     applyTriggerFilter = sample_config.get('applyTriggerFilter', True)
     df = df.Define("period", f"static_cast<int>(Period::{period})")
-    df = df.Define("X_mass", f"static_cast<int>({mass})")
-    df = df.Define("X_spin", f"static_cast<int>({spin})")
-    df = df.Define("entryIndex", "static_cast<int>(rdfentry_)")
+    df = df.Define("X_mass", f"static_cast<int>({mass})") # this has to be moved in specific analyses def
+    df = df.Define("X_spin", f"static_cast<int>({spin})") # this has to be moved in specific analyses def
+    df = df.Define("FullEventId", f"""eventId::encodeFullEventId({Utilities.crc16(sample_name.encode())}, {Utilities.crc16(inFile.encode())}, rdfentry_)""")
+
     is_data = 'true' if isData else 'false'
     df = df.Define("isData", is_data)
     df = Baseline.CreateRecoP4(df, nano_version=setup.global_params['nano_version'])
@@ -120,7 +124,7 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
 
 
             weight_branches = dfw.Apply(corrections.getNormalisationCorrections, setup.global_params,
-                                        setup.samples, sample_name, lepton_legs, triggers_to_use, syst_name, source_name,
+                                        setup.samples, sample_name, lepton_legs, offline_legs, triggers_to_use, syst_name, source_name,
                                         return_variations=is_central and compute_unc_variations, isCentral=is_central,
                                         ana_cache=anaCache)
             puIDbranches = ["weight_Jet_PUJetID_Central_tmp", "weight_Jet_PUJetID_effUp_rel_tmp", "weight_Jet_PUJetID_effDown_rel_tmp"]
@@ -134,6 +138,13 @@ def createAnatuple(inFile, treeName, outDir, setup, sample_name, anaCache, snaps
                         dfw.DefineAndAppend(f"{new_branch_name}_b{bjet_idx}", f"Hbb_isValid ? {puIDbranch}[b{bjet_idx}_idx] : -100.f")
                 if puIDbranch in weight_branches: weight_branches.remove(puIDbranch)
             dfw.colToSave.extend(weight_branches)
+
+        # Analysis anaTupleDef should define a legType as a leg obj
+        # But to save with RDF, it needs to be converted to an int
+        for leg_name in lepton_legs:
+            branch_name = f"{leg_name}_legType"
+            if branch_name in dfw.colToSave:
+                dfw.Redefine(branch_name, f"static_cast<int>({branch_name})")
         varToSave = Utilities.ListToVector(dfw.colToSave)
         outfile_prefix = inFile.split('/')[-1]
         outfile_prefix = outfile_prefix.split('.')[0]
@@ -164,6 +175,7 @@ if __name__ == "__main__":
     parser.add_argument('--period', required=True, type=str)
     parser.add_argument('--inFile', required=True, type=str)
     parser.add_argument('--outDir', required=True, type=str)
+    parser.add_argument('--inFileName', required=True, type=str)
     parser.add_argument('--sample', required=True, type=str)
     parser.add_argument('--anaCache', required=True, type=str)
     parser.add_argument('--anaTupleDef', required=True, type=str)
@@ -202,6 +214,6 @@ if __name__ == "__main__":
     snapshotOptions.fMode="RECREATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel
-    createAnatuple(args.inFile, args.treeName, args.outDir, setup, args.sample, anaCache, snapshotOptions,
+    createAnatuple(args.inFile, args.inFileName, args.treeName, args.outDir, setup, args.sample, anaCache, snapshotOptions,
                    args.nEvents, args.evtIds, args.store_noncentral, args.compute_unc_variations,
                    args.uncertainties.split(","), anaTupleDef,channels)

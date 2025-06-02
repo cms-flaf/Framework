@@ -149,18 +149,16 @@ class DataFrameWrapper:
 class DataFrameBuilderBase:
     def CreateColumnTypes(self):
         colNames = [str(c) for c in self.df.GetColumnNames()]#if 'kinFit_result' not in str(c)]
-        entryIndexIdx = colNames.index("entryIndex")
-        runIdx = colNames.index("run")
-        eventIdx = colNames.index("event")
-        lumiIdx = colNames.index("luminosityBlock")
-        colNames[entryIndexIdx], colNames[0] = colNames[0], colNames[entryIndexIdx]
-        colNames[runIdx], colNames[1] = colNames[1], colNames[runIdx]
-        colNames[eventIdx], colNames[2] = colNames[2], colNames[eventIdx]
-        colNames[lumiIdx], colNames[3] = colNames[3], colNames[lumiIdx]
+        FullEventIdIdx = 0
+        if "FullEventId" in colNames:
+            FullEventIdIdx = colNames.index("FullEventId")
+        if "entryIndex" in colNames:
+            FullEventIdIdx = colNames.index("entryIndex")
+        colNames[FullEventIdIdx], colNames[0] = colNames[0], colNames[FullEventIdIdx]
         self.colNames = colNames
         self.colTypes = [str(self.df.GetColumnType(c)) for c in self.colNames]
 
-    def __init__(self, df):
+    def __init__(self, df, **kwargs):
         self.df = df
         self.colNames=[]
         self.colTypes=[]
@@ -177,19 +175,21 @@ class DataFrameBuilderBase:
             if central_columns[central_col_idx]!=var_name_forDelta:
                 raise RuntimeError(f"CreateFromDelta: {central_columns[central_col_idx]} != {var_name_forDelta}")
             self.df = self.df.Define(f"{var_name_forDelta}", f"""analysis::FromDelta({var_name},
-                                     analysis::GetEntriesMap()[std::make_tuple(entryIndex, run, event, luminosityBlock)]->GetValue<{self.colTypes[var_idx]}>({central_col_idx}) )""")
+                                     analysis::GetEntriesMap()[FullEventId]->GetValue<{self.colTypes[var_idx]}>({central_col_idx}) )""")
             var_list.append(f"{var_name_forDelta}")
 
-    def AddMissingColumns(self,central_columns,central_col_types):
+    def AddMissingColumns(self,central_columns,central_col_types, verbose=0):
         for central_col_idx,central_col in enumerate(central_columns):
             if central_col in self.df.GetColumnNames(): continue
-            self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[std::make_tuple(entryIndex, run, event, luminosityBlock)]->GetValue<{central_col_types[central_col_idx]}>({central_col_idx})""")
+            if verbose > 0:
+                print(f"Adding missing column {central_col} of type {central_col_types[central_col_idx]}")
+            self.df = self.df.Define(central_col, f"""analysis::GetEntriesMap()[FullEventId]->GetValue<{central_col_types[central_col_idx]}>({central_col_idx})""")
 
     def AddCacheColumns(self,cache_cols,cache_col_types):
         for cache_col_idx,cache_col in enumerate(cache_cols):
             if  cache_col in self.df.GetColumnNames(): continue
             if cache_col.replace('.','_') in self.df.GetColumnNames(): continue
-            self.df = self.df.Define(cache_col.replace('.','_'), f"""analysis::GetCacheEntriesMap().at(std::make_tuple(entryIndex, run, event, luminosityBlock))->GetValue<{cache_col_types[cache_col_idx]}>({cache_col_idx})""")
+            self.df = self.df.Define(cache_col.replace('.','_'), f"""analysis::GetCacheEntriesMap().at(FullEventId)->GetValue<{cache_col_types[cache_col_idx]}>({cache_col_idx})""")
 
 
 
@@ -227,3 +227,20 @@ def load_module(module_path):
     sys.modules[module_name] = module
     spec.loader.exec_module(module)
     return module
+
+# generic function allowing to choose CRC type
+# now chosen: CRC-16-CCITT (TRUE)
+# needed temporarly until fastcrc is compatible with cmsEnv def or anatuple producer will be fully independent on cmsEnv.
+
+def crc16(data: bytes, poly: int = 0x1021 , init_val: int = 0xFFFF, reflect: bool = False) -> int:
+    crc = init_val
+    for byte in data:
+        if reflect:
+            byte = int('{:08b}'.format(byte)[::-1], 2)
+        crc ^= byte
+        for _ in range(8):
+            if crc & 0x0001:
+                crc = (crc >> 1) ^ poly
+            else:
+                crc >>= 1
+    return crc & 0xFFFF

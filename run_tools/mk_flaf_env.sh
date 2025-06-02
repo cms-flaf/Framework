@@ -30,6 +30,7 @@ install() {
     run_cmd pip install --upgrade pip
     run_cmd pip install law scinum
     run_cmd pip install https://github.com/riga/plotlib/archive/refs/heads/master.zip
+    run_cmd pip install fastcrc
 }
 
 create() {
@@ -52,17 +53,17 @@ export ROOT_INCLUDE_PATH=${env_base}/include
 export LD_LIBRARY_PATH=${env_base}/lib/python3.11/site-packages
 
 EOF
-    link_all $lcg_base/bin $env_base/bin pip pip3 pip3.11 python python3 python3.11 gosam2herwig gosam-config.py gosam.py git
+    link_all $lcg_base/bin $env_base/bin pip pip3 pip3.11 python python3 python3.11 gosam2herwig gosam-config.py gosam.py git java
     link_all $lcg_base/lib $env_base/lib/python3.11/site-packages python3.11
     link_all $lcg_base/lib/python3.11/site-packages $env_base/lib/python3.11/site-packages _distutils_hack distutils-precedence.pth pip pkg_resources setuptools graphviz py __pycache__ gosam-2.1.1_4b98559-py3.11.egg-info
-    link_all $lcg_base/lib64 $env_base/lib/python3.11/site-packages cmake libonnx_proto.a libsvm.so.2 pkgconfig ThePEG
+    link_all $lcg_base/lib64 $env_base/lib/python3.11/site-packages cmake libonnx_proto.a libsvm.so.2 pkgconfig ThePEG libavh_olo.a libff.a libqcdloop.a
     link_all $lcg_base/include $env_base/include python3.11 gosam-contrib
 }
 
 action() {
     local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
-    local env_base="/afs/cern.ch/work/k/kandroso/public/flaf_env_2024_08"
-    run_cmd "$this_file" create "$env_base" LCG_106_cuda x86_64-el9-gcc11-opt
+    local env_base="/afs/cern.ch/work/k/kandroso/public/flaf_env_2025_04"
+    run_cmd "$this_file" create "$env_base" LCG_107_cuda x86_64-el9-gcc11-opt
     run_cmd "$this_file" install "$env_base"
 }
 

@@ -4,12 +4,13 @@ import yaml
 import contextlib
 import luigi
 import threading
+import copy
 
 
 from FLAF.RunKit.run_tools import ps_call
 from FLAF.RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
 from FLAF.run_tools.law_customizations import Task, HTCondorWorkflow, copy_param,get_param_value
-from FLAF.AnaProd.tasks import AnaTupleTask, DataMergeTask, AnaCacheTupleTask, DataCacheMergeTask, AnaCacheTask
+from FLAF.AnaProd.tasks import AnaTupleTask, DataMergeTask, AnaCacheTupleTask, DataCacheMergeTask, AnaCacheTask, InputFileTask
 
 import importlib
 
@@ -86,6 +87,10 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 HistProducerFileTask.cacheDataClass = getattr(cacheModule, dataClassName)
 
     def workflow_requires(self):
+        input_file_task_complete = InputFileTask.req(self, branches=()).complete()
+        if not input_file_task_complete:
+            return { "inputFile": InputFileTask.req(self, branches=()) }
+
         need_data = False
         need_data_cache = False
         branch_set = set()
@@ -142,6 +147,16 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return deps
 
     def create_branch_map(self):
+        input_file_task_complete = InputFileTask.req(self, branches=()).complete()
+        if not input_file_task_complete:
+            self.cache_branch_map = False
+            if not hasattr(self, '_branches_backup'):
+                self._branches_backup = copy.deepcopy(self.branches)
+            return { 0: () }
+        self.cache_branch_map = True
+        if hasattr(self, '_branches_backup'):
+            self.branches = self._branches_backup
+
         n = 0
         branches = {}
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()

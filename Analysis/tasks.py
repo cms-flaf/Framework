@@ -173,6 +173,8 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return branches
 
     def output(self):
+        if len(self.branch_data) == 0:
+            return self.local_target('dummy.txt')
         sample_name, prod_br, var, need_cache = self.branch_data
         outFileName = os.path.basename(self.input()[0].path)
         prod_dir = 'prod'

@@ -402,6 +402,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
+    producer_to_run = luigi.Parameter()
 
     def workflow_requires(self):
         workflow_dict = {}
@@ -424,18 +425,13 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def output(self):
         sample_name, sample_type = self.branch_data
         outFileName = os.path.basename(self.input()[0].path)
-        # outDir = os.path.join('anaCacheTuples', self.period, sample_name, self.version)
-        # finalFile = os.path.join(outDir, outFileName)
         output_path = os.path.join('anaCacheTuples', self.period, sample_name,self.version, outFileName)#self.version, self.period, sample_name, outFileName)
         return self.remote_target(output_path, fs=self.fs_anaCacheTuple)
 
     def run(self):
         sample_name, sample_type = self.branch_data
         unc_config = os.path.join(self.ana_path(), 'config', self.period, f'weights.yaml')
-        # replace producer_anacachetuples -> analysis_cache_producer
-        # analysis_cache_producer will be coming from analysisCacheProducer.py
         analysis_cache_producer = os.path.join(self.ana_path(), 'FLAF', 'Analysis', 'analysisCacheProducer.py')
-        # producer_anacachetuples = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'anaCacheTupleProducer.py')
         global_config = os.path.join(self.ana_path(), 'config', 'global.yaml')
         thread = threading.Thread(target=update_kinit_thread)
         customisation_dict = getCustomisationSplit(self.customisations)
@@ -451,19 +447,13 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             customisation_dict = getCustomisationSplit(self.customisations)
             deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else ""
             with input_file.localize("r") as local_input, self.output().localize("w") as outFile:
-                # anaCacheTupleProducer_cmd = ['python3', producer_anacachetuples,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config, '--globalConfig', global_config, '--channels', channels ]
-                producer_to_run = self.global_params['payload_producer_to_run'] # how pass which producer to run to law task?
-                # producer_to_run = "HME"
-                analysisCacheProducer_cmd = ['python3', analysis_cache_producer,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config, '--globalConfig', global_config, '--channels', channels , '--producer', producer_to_run]
+                analysisCacheProducer_cmd = ['python3', analysis_cache_producer,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config, '--globalConfig', global_config, '--channels', channels , '--producer', self.producer_to_run]
                 if self.global_params['store_noncentral'] and sample_type != 'data':
-                    # anaCacheTupleProducer_cmd.extend(['--compute_unc_variations', 'True'])
                     analysisCacheProducer_cmd.extend(['--compute_unc_variations', 'True'])
                 if deepTauVersion!="":
-                    # anaCacheTupleProducer_cmd.extend([ '--deepTauVersion', deepTauVersion])
                     analysisCacheProducer_cmd.extend([ '--deepTauVersion', deepTauVersion])
-                # ps_call(anaCacheTupleProducer_cmd, env=self.cmssw_env, verbose=1)
                 ps_call(analysisCacheProducer_cmd, env=self.cmssw_env, verbose=1)
-            print(f"Finished producing payload for producer={producer_to_run} with name={sample_name}, type={sample_type}, file={input_file.path}")
+            print(f"Finished producing payload for producer={self.producer_to_run} with name={sample_name}, type={sample_type}, file={input_file.path}")
 
         finally:
             kInit_cond.acquire()

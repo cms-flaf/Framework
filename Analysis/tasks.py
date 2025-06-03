@@ -425,7 +425,8 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def output(self):
         sample_name, sample_type = self.branch_data
         outFileName = os.path.basename(self.input()[0].path)
-        output_path = os.path.join('anaCacheTuples', self.period, sample_name,self.version, outFileName)#self.version, self.period, sample_name, outFileName)
+        output_path = os.path.join('AnalysisCache', self.period, sample_name,self.version, self.producer_to_run, outFileName)
+        # return self.remote_target(output_path, fs=self.fs_AnalysisCache) # for some reason this line is not working even if I edit user_custom.yaml
         return self.remote_target(output_path, fs=self.fs_anaCacheTuple)
 
     def run(self):

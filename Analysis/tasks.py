@@ -410,10 +410,22 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             br_idx: AnaTupleTask.req(self, branch=br_idx)
             for br_idx, _ in self.branch_map.items()
         }
+        producer_dependencies = self.global_params["payload_producers"][self.producer_to_run]["dependencies"]
+        if producer_dependencies:
+            for dependency in producer_dependencies:
+                workflow_dict[dependency] = {
+                    br_idx: AnalysisCacheTask.req(self, branch=br_idx, producer_to_run=dependency)
+                    for br_idx, _ in self.branch_map.items()
+                }
         return workflow_dict
 
     def requires(self):
-        return [ AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default) ]
+        producer_dependencies = self.global_params["payload_producers"][self.producer_to_run]["dependencies"]
+        requires_list = [ AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default) ]
+        if producer_dependencies:
+            for dependency in producer_dependencies:
+                requires_list.append(AnalysisCacheTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, producer_to_run=dependency))
+        return requires_list
 
     def create_branch_map(self):
         branches = {}

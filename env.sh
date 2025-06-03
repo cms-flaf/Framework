@@ -159,8 +159,6 @@ install_inference() {
 
 load_flaf_env() {
 
-  [ -z "$FLAF_ENVIRONMENT_PATH" ] && export FLAF_ENVIRONMENT_PATH="/afs/cern.ch/work/k/kandroso/public/flaf_env_2025_04"
-
   [ -z "$LAW_HOME" ] && export LAW_HOME="$ANALYSIS_PATH/.law"
   [ -z "$LAW_CONFIG_FILE" ] && export LAW_CONFIG_FILE="$ANALYSIS_PATH/config/law.cfg"
   [ -z "$ANALYSIS_DATA_PATH" ] && export ANALYSIS_DATA_PATH="$ANALYSIS_PATH/data"
@@ -170,6 +168,10 @@ load_flaf_env() {
     run_cmd mkdir -p "$ANALYSIS_DATA_PATH"
   fi
 
+  if [[ ! -f "$FLAF_ENVIRONMENT_PATH/bin/activate" ]]; then
+    echo "Installing FLAF environment in $FLAF_ENVIRONMENT_PATH ..."
+    run_cmd $FLAF_PATH/run_tools/mk_flaf_env.sh "$FLAF_ENVIRONMENT_PATH"
+  fi
   source "$FLAF_ENVIRONMENT_PATH/bin/activate"
 
   local os_version=$(cat /etc/os-release | grep VERSION_ID | sed -E 's/VERSION_ID="([0-9]+).*"/\1/')
@@ -231,7 +233,7 @@ source_env_fn() {
   fi
 
   [ -z "$ANALYSIS_SOFT_PATH" ] && export ANALYSIS_SOFT_PATH="$ANALYSIS_PATH/soft"
-  [ -z "$FLAF_ENVIRONMENT_PATH" ] && export FLAF_ENVIRONMENT_PATH="/afs/cern.ch/work/k/kandroso/public/flaf_env_2025_04"
+  [ -z "$FLAF_ENVIRONMENT_PATH" ] && export FLAF_ENVIRONMENT_PATH="$ANALYSIS_SOFT_PATH/flaf_env"
   export FLAF_PATH="$this_dir"
 
   if [ "$cmd" = "install_cmssw" ]; then

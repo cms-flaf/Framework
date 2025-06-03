@@ -31,6 +31,7 @@ install() {
     run_cmd pip install law scinum
     run_cmd pip install https://github.com/riga/plotlib/archive/refs/heads/master.zip
     run_cmd pip install fastcrc
+    run_cmd pip install bayesian-optimization
 }
 
 create() {
@@ -62,20 +63,17 @@ EOF
 
 action() {
     local this_file="$( [ ! -z "$ZSH_VERSION" ] && echo "${(%):-%x}" || echo "${BASH_SOURCE[0]}" )"
-    local env_base="/afs/cern.ch/work/k/kandroso/public/flaf_env_2025_04"
+    local env_base="$1"
     run_cmd "$this_file" create "$env_base" LCG_107_cuda x86_64-el9-gcc11-opt
     run_cmd "$this_file" install "$env_base"
 }
 
-if [ "x$1" == "x" ]; then
-    action
-elif [ "x$1" == "xcreate" ]; then
+if [[ "$1" == "create" ]]; then
     create "${@:2}"
-elif [ "x$1" == "xinstall" ]; then
+elif [[ "$1" == "install" ]]; then
     install "${@:2}"
 else
-    echo "Unknown command: $1"
-    exit 1
+    action "${@:1}"
 fi
 
 exit 0

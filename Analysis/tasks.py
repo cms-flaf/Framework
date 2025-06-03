@@ -438,7 +438,7 @@ class PlotTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
         for ch in channels:
             for cat in categories:
-                rel_path = os.path.join(self.version, self.period, "plots", var, cat, f"HHbbtautau_{ch}_{var}_StackPlot.pdf")
+                rel_path = os.path.join(self.version, self.period, "plots", var, cat, f"{ch}_{var}.pdf")
                 outputs[f"{ch}_{cat}"] = self.remote_target(rel_path, fs=self.fs_plots)
         return outputs
 

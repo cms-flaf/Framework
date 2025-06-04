@@ -90,7 +90,8 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
         colNames =  dfWrapped_central.colNames
         colTypes =  dfWrapped_central.colTypes
         dfWrapped_central.df = createCentralQuantities(df_begin, colTypes, colNames)
-        if dfWrapped_central.df.Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
+        if dfWrapped_central.df.Filter("map_placeholder > 0").Count().GetValue() <= 0 : 
+            raise RuntimeError("no events passed map placeolder")
         print("finished defining central quantities")
         snapshotOptions.fLazy=False
         for uncName in unc_cfg_dict['shape']:
@@ -103,8 +104,9 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
                     dfWrapped_noDiff.AddMissingColumns(colNames, colTypes)
                     dfW_noDiff = Utilities.DataFrameWrapper(dfWrapped_noDiff.df,defaultColToSave)
-                    applyLegacyVariables(dfW_noDiff,global_cfg_dict, False)
-                    varToSave = Utilities.ListToVector(dfW_noDiff.colToSave)
+                    # applyLegacyVariables(dfW_noDiff,global_cfg_dict, False)
+                    # varToSave = Utilities.ListToVector(dfW_noDiff.colToSave)
+                    dfW_noDiff = producer.run(dfW_noDiff)
                     all_files.append(f'{outFileName}_{uncName}{scale}_noDiff.root')
                     dfW_noDiff.df.Snapshot(treeName_noDiff, f'{outFileName}_{uncName}{scale}_noDiff.root', varToSave, snapshotOptions)
                 treeName_Valid = f"{treeName}_Valid"
@@ -114,8 +116,9 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
                     dfWrapped_Valid.AddMissingColumns(colNames, colTypes)
                     dfW_Valid = Utilities.DataFrameWrapper(dfWrapped_Valid.df,defaultColToSave)
-                    applyLegacyVariables(dfW_Valid,global_cfg_dict, False)
-                    varToSave = Utilities.ListToVector(dfW_Valid.colToSave)
+                    # applyLegacyVariables(dfW_Valid,global_cfg_dict, False)
+                    # varToSave = Utilities.ListToVector(dfW_Valid.colToSave)
+                    dfW_Valid = producer.run(dfW_Valid)
                     all_files.append(f'{outFileName}_{uncName}{scale}_Valid.root')
                     dfW_Valid.df.Snapshot(treeName_Valid, f'{outFileName}_{uncName}{scale}_Valid.root', varToSave, snapshotOptions)
                 treeName_nonValid = f"{treeName}_nonValid"
@@ -124,8 +127,9 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     dfWrapped_nonValid = Utilities.DataFrameBuilderBase(df_nonValid)
                     dfWrapped_nonValid.AddMissingColumns(colNames, colTypes)
                     dfW_nonValid = Utilities.DataFrameWrapper(dfWrapped_nonValid.df,defaultColToSave)
-                    applyLegacyVariables(dfW_nonValid,global_cfg_dict, False)
-                    varToSave = Utilities.ListToVector(dfW_nonValid.colToSave)
+                    # applyLegacyVariables(dfW_nonValid,global_cfg_dict, False)
+                    # varToSave = Utilities.ListToVector(dfW_nonValid.colToSave)
+                    dfW_nonValid = producer.run(dfW_nonValid)
                     all_files.append(f'{outFileName}_{uncName}{scale}_nonValid.root')
                     dfW_nonValid.df.Snapshot(treeName_nonValid, f'{outFileName}_{uncName}{scale}_nonValid.root', varToSave, snapshotOptions)
     print(f"snaps len is {len(snaps)}")

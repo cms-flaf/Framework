@@ -69,14 +69,16 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
     # LegacyVariables.Initialize()
     # applyLegacyVariables(dfw, global_cfg_dict, True)
     
-    if producer_to_run:
-        producer_config = global_cfg_dict['payload_producers'][producer_to_run]
-        producers_module_name = global_cfg_dict['payload_producers']['producers_module_name']
-        producer_name = producer_config['producer_name']
-        producers_module = importlib.import_module(producers_module_name)
-        producer_class = getattr(producers_module, producer_name)
-        producer = producer_class(producer_config)
-        dfw = producer.run(dfw)
+    if not producer_to_run:
+        raise RuntimeError("Producer must be specified to compute analysis cache")
+
+    producer_config = global_cfg_dict['payload_producers'][producer_to_run]
+    producers_module_name = global_cfg_dict['payload_producers']['producers_module_name']
+    producer_name = producer_config['producer_name']
+    producers_module = importlib.import_module(producers_module_name)
+    producer_class = getattr(producers_module, producer_name)
+    producer = producer_class(producer_config)
+    dfw = producer.run(dfw)
 
     varToSave = Utilities.ListToVector(dfw.colToSave)
     all_files.append(f'{outFileName}_Central.root')

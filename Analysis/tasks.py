@@ -444,7 +444,7 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def run(self):
         sample_name, sample_type = self.branch_data
         unc_config = os.path.join(self.ana_path(), 'config', self.period, f'weights.yaml')
-        analysis_cache_producer = os.path.join(self.ana_path(), 'FLAF', 'Analysis', 'analysisCacheProducer.py')
+        analysis_cache_producer = os.path.join(self.ana_path(), 'FLAF', 'Analysis', 'AnalysisCacheProducer.py')
         global_config = os.path.join(self.ana_path(), 'config', 'global.yaml')
         thread = threading.Thread(target=update_kinit_thread)
         customisation_dict = getCustomisationSplit(self.customisations)

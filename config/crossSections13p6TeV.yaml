@@ -648,6 +648,18 @@ WWto2L2Nu:
   crossSec: 11.79
   reference: XSDB WWto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8 modifiedOn 2024-04-03 20:06:05
   unc: 0.004216
+WWW:
+  crossSec: 0.2328
+  reference: XSDB WWW_4F_TuneCP5_13p6TeV_amcatnlo-madspin-pythia8 modifiedOn 2024-03-02 04:47:30
+  unc: 0.0001247
+WWZ:
+  crossSec: 0.1851
+  reference: XSDB WWZ_4F_TuneCP5_13p6TeV_amcatnlo-pythia8 modifiedOn 2023-05-26 21:19:27
+  unc: 0.00009482
+WZZ:
+  crossSec: 0.06206
+  reference: XSDB WZZ_4F_TuneCP5_13p6TeV_amcatnlo-pythia8 modifiedOn 2023-05-26 21:19:28
+  unc: 3.689e-05
 WZ:
   crossSec: 29.1
   reference: XSDB WZ_TuneCP5_13p6TeV_pythia8 modifiedOn 2023-03-26 14:02:34

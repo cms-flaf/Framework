@@ -14,8 +14,7 @@ from FLAF.RunKit.run_tools import ps_call
 import FLAF.Common.LegacyVariables as LegacyVariables
 import FLAF.Common.Utilities as Utilities
 
-# defaultColToSave = ["FullEventId","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "X_spin", "isData"] # FullEventId not found
-defaultColToSave = ["luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "X_spin", "isData"]
+defaultColToSave = ["FullEventId","luminosityBlock", "run","event", "sample_type", "period", "X_mass", "X_spin", "isData"] # FullEventId not found
 scales = ['Up','Down']
 
 def getKeyNames(root_file_name):

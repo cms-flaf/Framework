@@ -78,10 +78,13 @@ class Task(law.Task):
     def fs_nnCacheTuple(self):
         return self.setup.get_fs('nnCacheTuple')
 
-
     @property
     def fs_histograms(self):
         return self.setup.get_fs('histograms')
+
+    @property
+    def fs_plots(self):
+        return self.setup.get_fs('plots')
 
     def ana_path(self):
         return os.getenv("ANALYSIS_PATH")

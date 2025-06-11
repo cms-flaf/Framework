@@ -397,6 +397,14 @@ namespace v_ops{
       }
       return et;
   }
+  template<typename LV>
+  RVecF rapidity(const LV& p4){
+      RVecF rapidity(p4.size());
+      for(int p4_idx=0;p4_idx<p4.size();++p4_idx){
+        rapidity[p4_idx] = p4.at(p4_idx).Rapidity();
+      }
+      return rapidity;
+  }
 
 }
 

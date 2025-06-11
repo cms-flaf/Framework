@@ -10,7 +10,7 @@ import copy
 from FLAF.RunKit.run_tools import ps_call
 from FLAF.RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
 from FLAF.run_tools.law_customizations import Task, HTCondorWorkflow, copy_param,get_param_value
-from FLAF.AnaProd.tasks import AnaTupleTask, DataMergeTask, DataCacheMergeTask, AnaCacheTask
+from FLAF.AnaProd.tasks import AnaTupleTask, DataMergeTask, DataCacheMergeTask, AnaCacheTask, InputFileTask
 # from FLAF.Analysis.tasks import AnalysisCacheTask
 
 import importlib
@@ -74,18 +74,18 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
-    cacheClass = None
-    cacheDataClass = None
-    def __init__(self, *args, **kwargs):
-        super(HistProducerFileTask, self).__init__(*args, **kwargs)
+    # cacheClass = None
+    # cacheDataClass = None
+    # def __init__(self, *args, **kwargs):
+    #     super(HistProducerFileTask, self).__init__(*args, **kwargs)
 
-        if self.cacheClass == None:
-            self.use_ana_cache = 'analysis_cache_import' in self.setup.global_params
-            if self.use_ana_cache:
-                file, className, dataClassName = self.setup.global_params['analysis_cache_import'].split(':')
-                cacheModule = importlib.import_module(file)
-                HistProducerFileTask.cacheClass = getattr(cacheModule, className)
-                HistProducerFileTask.cacheDataClass = getattr(cacheModule, dataClassName)
+    #     if self.cacheClass == None:
+    #         self.use_ana_cache = 'analysis_cache_import' in self.setup.global_params
+    #         if self.use_ana_cache:
+    #             file, className, dataClassName = self.setup.global_params['analysis_cache_import'].split(':')
+    #             cacheModule = importlib.import_module(file)
+    #             HistProducerFileTask.cacheClass = getattr(cacheModule, className)
+    #             HistProducerFileTask.cacheDataClass = getattr(cacheModule, dataClassName)
 
     def workflow_requires(self):
         input_file_task_complete = InputFileTask.req(self, branches=()).complete()
@@ -96,7 +96,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         need_data_cache = False
         branch_set = set()
         branch_set_cache = set()
-        for idx, (sample, br, var, need_cache) in self.branch_map.items():
+        for idx, (sample, br, var, need_cache, _) in self.branch_map.items():
             if sample == 'data':
                 need_data = True
                 if need_cache:
@@ -115,18 +115,20 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             if isbbtt:
                 reqs['anaCacheTuple'] = AnaCacheTupleTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
             else:
-                reqs['analysisCache'] = self.cacheClass.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
+                # reqs['analysisCache'] = self.cacheClass.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
+                reqs['analysisCache'] = AnalysisCacheTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
         if need_data:
             reqs['dataMergeTuple'] = DataMergeTask.req(self, branches=(),customisations=self.customisations)
         if need_data_cache:
             if isbbtt:
                 reqs['dataCacheMergeTuple'] = DataCacheMergeTask.req(self, branches=(),customisations=self.customisations)
             else:
-                reqs['analysisCacheMerge'] = self.cacheClass.req(self, branches=(),customisations=self.customisations)
+                # reqs['analysisCacheMerge'] = self.cacheClass.req(self, branches=(),customisations=self.customisations)
+                eqs['analysisCacheMerge'] = AnalysisCacheTask.req(self, branches=(),customisations=self.customisations)
         return reqs
 
     def requires(self):
-        sample_name, prod_br, var, need_cache = self.branch_data
+        sample_name, prod_br, var, need_cache, producer_name = self.branch_data
         deps = []
 
         isbbtt = 'HH_bbtautau' in self.global_params['analysis_config_area'].split('/')
@@ -137,14 +139,26 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if isbbtt:
                     deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
                 else:
-                    deps.append(self.cacheDataClass.req(self, max_runtime=self.cacheDataClass.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                    # deps.append(self.cacheDataClass.req(self, max_runtime=self.cacheDataClass.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                    deps.append(AnalysisCacheTask.req(self, 
+                                                      max_runtime=AnalysisCacheTask.max_runtime._default, 
+                                                      branch=prod_br, branches=(prod_br,),
+                                                      customisations=self.customisations),
+                                                      producer_to_run=producer_name)
         else:
             deps.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
             if need_cache:
                 if isbbtt:
                     deps.append(AnaCacheTupleTask.req(self, max_runtime=AnaCacheTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
                 else:
-                    deps.append(self.cacheClass.req(self, max_runtime=self.cacheClass.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                    # deps.append(self.cacheClass.req(self, max_runtime=self.cacheClass.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
+                    print(f"producer to run: {producer_name}")
+                    deps.append(AnalysisCacheTask.req(self, 
+                                                      max_runtime=AnalysisCacheTask.max_runtime._default, 
+                                                      branch=prod_br, 
+                                                      branches=(prod_br,),
+                                                      customisations=self.customisations),
+                                                      producer_to_run=producer_name)
         return deps
 
     def create_branch_map(self):
@@ -162,24 +176,47 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branches = {}
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
         samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
-        for var_entry in self.global_params['vars_to_plot']:
-            var_name, need_cache = parseVarEntry(var_entry)
-            for prod_br,(sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-                isData = self.samples[sample_name]['sampleType'] == 'data'
-                if sample_name not in samples_to_consider or isData: continue
-                branches[n] = (sample_name, prod_br, var_name, need_cache)
+        
+        # add variables that don't need cache
+        noncached_vars_to_plot = self.global_params['vars_to_plot']
+        if noncached_vars_to_plot:
+            for var_entry in noncached_vars_to_plot:
+                var_name, need_cache = parseVarEntry(var_entry)
+                for prod_br,(sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
+                    isData = self.samples[sample_name]['sampleType'] == 'data'
+                    if sample_name not in samples_to_consider or isData: continue
+                    branches[n] = (sample_name, prod_br, var_name, need_cache)
+                    n += 1
+                branches[n] = ('data', 0, var_name, need_cache, None)
                 n += 1
-            branches[n] = ('data', 0, var_name, need_cache)
-            n += 1
+
+        # add variables that need cache
+        cached_vars_to_plot = self.global_params['cached_vars_to_plot']
+        if cached_vars_to_plot:
+            for var_prod_dict in cached_vars_to_plot:
+                for producer_name, var_name in var_prod_dict.items():
+                    for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
+                        isData = self.samples[sample_name]['sampleType'] == 'data'
+                        if sample_name not in samples_to_consider or isData: 
+                            continue
+                        branches[n] = (sample_name, prod_br, var_name, True, producer_name)
+                        n += 1
+                branches[n] = ('data', 0, var_name, True, producer_name)
+                n += 1
+
         return branches
 
     def output(self):
         if len(self.branch_data) == 0:
             return self.local_target('dummy.txt')
-        sample_name, prod_br, var, need_cache = self.branch_data
+        sample_name, prod_br, var, need_cache, producer_name = self.branch_data
+        print(self.input())
         outFileName = os.path.basename(self.input()[0].path)
         prod_dir = 'prod'
-        output_path = os.path.join(self.version, self.period, prod_dir, var, f'{sample_name}_{outFileName}')
+        if producer_name:
+            output_path = os.path.join(self.version, self.period, prod_dir, producer_name, var, f'{sample_name}_{outFileName}')
+        else:
+            output_path = os.path.join(self.version, self.period, prod_dir, var, f'{sample_name}_{outFileName}')
         return self.remote_target(output_path,  fs=self.fs_histograms)
 
     def run(self):

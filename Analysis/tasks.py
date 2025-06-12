@@ -230,15 +230,13 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         outFileName = os.path.basename(self.input()[0].path)
         prod_dir = 'prod'
         if producer_name:
-            print(self.branch_data)
-            print(f"using {var}")
             output_path = os.path.join(self.version, self.period, prod_dir, producer_name, var, f'{sample_name}_{outFileName}')
         else:
             output_path = os.path.join(self.version, self.period, prod_dir, var, f'{sample_name}_{outFileName}')
         return self.remote_target(output_path,  fs=self.fs_histograms)
 
     def run(self):
-        sample_name, prod_br, var, need_cache = self.branch_data
+        sample_name, prod_br, var, need_cache, _ = self.branch_data
         input_file = self.input()[0]
         customisation_dict = getCustomisationSplit(self.customisations)
         channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']

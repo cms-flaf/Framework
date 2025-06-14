@@ -4,6 +4,7 @@ import os
 import math
 import shutil
 import time
+import gc
 ROOT.EnableThreadSafety()
 
 from FLAF.RunKit.run_tools import ps_call
@@ -63,10 +64,17 @@ def SaveHists(histograms, out_file, categories_to_save):
 
 def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict, unc_cfg_dict, hist_cfg_dict, global_cfg_dict, furtherCut='', verbose=False):
     dataframes = all_dataframes[key_2]
+    # for df_current in all_dataframes[key_2]:
+
+    #     print("Check making a histogram directly 2.1")
+    #     hist = df_current.Histo1D(('name', 'title', 100, 0, 100), 'lep1_pt')
+    #     print(hist.GetName())
+                                
     sample_type,uncName,scale = key_2
     isCentral = 'Central' in key_2
     # print(f"key2 is {key_2}")
     histograms = {}
+    new_dfs = {}
     boosted_categories = global_cfg_dict.get('boosted_categories', [])
     boosted_variables = global_cfg_dict.get('var_only_boosted', [])
     categories = global_cfg_dict['categories']
@@ -79,32 +87,131 @@ def GetHistogramDictFromDataframes(var, all_dataframes, key_2 , key_filter_dict,
     # if not isCentral:
     #     print(unc_to_not_consider_boosted)
 
-    for key_1,key_cut in key_filter_dict.items():
-        ch, reg, cat = key_1
-        if cat not in all_categories: continue
-        if ch not in global_cfg_dict['channels_to_consider'] : continue
-        if (key_1, key_2) in histograms.keys(): continue
 
-        if var in boosted_variables and uncName in unc_to_not_consider_boosted: continue
-        total_weight_expression = analysis.GetWeight(ch,cat,boosted_categories) if sample_type!='data' else "1"
+    # for df_current in all_dataframes[key_2]:
 
-        weight_name = "final_weight"
-        if not isCentral:
-            if type(unc_cfg_dict)==dict:
-                if uncName in unc_cfg_dict.keys() and 'expression' in unc_cfg_dict[uncName].keys():
-                    weight_name = unc_cfg_dict[uncName]['expression'].format(scale=scale)
-        if (key_1, key_2) not in histograms.keys():
-            histograms[(key_1, key_2)] = []
+    #     print("Check making a histogram directly 2.2")
+    #     hist = df_current.Histo1D(('name', 'title', 100, 0, 100), 'lep1_pt')
+    #     print(hist.GetName())
 
-        for dataframe in dataframes:
+    # for key_1,key_cut in key_filter_dict.items():
+    #     for df_current in all_dataframes[key_2]:
+
+    #         print("Check making a histogram directly 2.21")
+    #         hist = df_current.Histo1D(('name', 'title', 100, 0, 100), 'lep1_pt')
+    #         print(hist.GetName())
+
+    #     ch, reg, cat = key_1
+    #     if cat not in all_categories: continue
+    #     if ch not in global_cfg_dict['channels_to_consider'] : continue
+    #     if (key_1, key_2) in histograms.keys(): continue
+
+    #     if var in boosted_variables and uncName in unc_to_not_consider_boosted: continue
+    #     total_weight_expression = analysis.GetWeight(ch,cat,boosted_categories) if sample_type!='data' else "1"
+
+
+    #     for df_current in all_dataframes[key_2]:
+
+    #         print("Check making a histogram directly 2.25")
+    #         hist = df_current.Histo1D(('name', 'title', 100, 0, 100), 'lep1_pt')
+    #         print(hist.GetName())
+
+    #     weight_name = "final_weight"
+    #     if not isCentral:
+    #         if type(unc_cfg_dict)==dict:
+    #             if uncName in unc_cfg_dict.keys() and 'expression' in unc_cfg_dict[uncName].keys():
+    #                 weight_name = unc_cfg_dict[uncName]['expression'].format(scale=scale)
+    #     if (key_1, key_2) not in histograms.keys():
+    #         histograms[(key_1, key_2)] = []
+    #         new_dfs[(key_1, key_2)] = []
+
+
+    #     for df_current in all_dataframes[key_2]:
+
+    #         print("Check making a histogram directly 2.3")
+    #         hist = df_current.Histo1D(('name', 'title', 100, 0, 100), 'lep1_pt')
+    #         print(hist.GetName())
+
+    #     for df_current in dataframes:
+
+    #         print("Check making a histogram directly 2.4")
+    #         hist = df_current.Histo1D(('name', 'title', 100, 0, 100), 'lep1_pt')
+    #         print(hist.GetName())
+
+    #     for dataframe in dataframes:
+    #         if key_cut == '((channelId == 22) && OS_Iso && res2b_SR)': continue
+
+    #         print("Check making a histogram directly 2.5")
+    #         print(key_cut)
+    #         hist = dataframe.Histo1D(('name', 'title', 100, 0, 100), 'lep1_pt')
+    #         print(hist.GetName())
+
+
+    #         if furtherCut != '' : key_cut += f' && {furtherCut}'
+    #         dataframe_new = dataframe.Filter(key_cut)
+    #         btag_weight = analysis.GetBTagWeight(global_cfg_dict,cat,applyBtag=False) if sample_type!='data' else "1"
+    #         total_weight_expression = "*".join([total_weight_expression,btag_weight])
+    #         # dataframe_new = dataframe_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}") # no need to define it twice
+    #         dataframe_new = dataframe_new.Filter(f"{cat}")
+
+    #         print("Check making a histogram directly 3")
+    #         print(key_cut)
+    #         hist = dataframe_new.Histo1D(('name', 'title', 100, 0, 100), 'lep1_pt')
+    #         print(hist.GetName())
+
+    #         dataframe_new = dataframe_new.Define("final_weight", total_weight_expression)
+    #         dataframe_new = dataframe_new.Define("weight_for_hists", f"{weight_name}")
+    #         new_dfs[(key_1, key_2)].append(dataframe_new)
+    #         hist = dataframe_new.Histo1D(GetModel(hist_cfg_dict, var), var, "weight_for_hists")
+    #         histograms[(key_1, key_2)].append(hist)
+    #         gc.collect()
+
+
+
+
+    # This is absolutely the stupidest thing I've ever seen
+    # So for JES_TotalUp_nonValid there was an issue with SegFaults at hist making
+    # At first I thought it was a problem with JES corruption
+    # But Konstantin pointed that it was probably a memory issue in python
+    # In human words, python doesn't realize what variables are important 
+    # And since RDF does everything lazily, python is removing important variables for the cpp side
+    # I can fix the segfault if we just re-order these two for loops
+    # But this makes me mad at how stupid it is
+    for dataframe in dataframes:
+        for key_1,key_cut in key_filter_dict.items():
+
+            ch, reg, cat = key_1
+            if cat not in all_categories: continue
+            if ch not in global_cfg_dict['channels_to_consider'] : continue
+            if (key_1, key_2) in histograms.keys(): continue
+
+            if var in boosted_variables and uncName in unc_to_not_consider_boosted: continue
+            total_weight_expression = analysis.GetWeight(ch,cat,boosted_categories) if sample_type!='data' else "1"
+
+            weight_name = "final_weight"
+            if not isCentral:
+                if type(unc_cfg_dict)==dict:
+                    if uncName in unc_cfg_dict.keys() and 'expression' in unc_cfg_dict[uncName].keys():
+                        weight_name = unc_cfg_dict[uncName]['expression'].format(scale=scale)
+            if (key_1, key_2) not in histograms.keys():
+                histograms[(key_1, key_2)] = []
+                new_dfs[(key_1, key_2)] = []
+
             if furtherCut != '' : key_cut += f' && {furtherCut}'
             dataframe_new = dataframe.Filter(key_cut)
             btag_weight = analysis.GetBTagWeight(global_cfg_dict,cat,applyBtag=False) if sample_type!='data' else "1"
             total_weight_expression = "*".join([total_weight_expression,btag_weight])
             # dataframe_new = dataframe_new.Define(f"final_weight_0_{ch}_{cat}_{reg}", f"{total_weight_expression}") # no need to define it twice
             dataframe_new = dataframe_new.Filter(f"{cat}")
-            histograms[(key_1, key_2)].append(dataframe_new.Define("final_weight", total_weight_expression).Define("weight_for_hists", f"{weight_name}").Histo1D(GetModel(hist_cfg_dict, var), var, "weight_for_hists"))
-    return histograms
+
+            dataframe_new = dataframe_new.Define("final_weight", total_weight_expression)
+            dataframe_new = dataframe_new.Define("weight_for_hists", f"{weight_name}")
+            new_dfs[(key_1, key_2)].append(dataframe_new)
+            hist = dataframe_new.Histo1D(GetModel(hist_cfg_dict, var), var, "weight_for_hists")
+            histograms[(key_1, key_2)].append(hist)
+            gc.collect()
+
+    return histograms, new_dfs
 
 def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, file_keys, inFile, inFileCache, compute_variations, period, colNames, colTypes, hasCache=True, **kwargset ):
     sample_type,uncName,scale=key
@@ -124,6 +231,7 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, fil
             dfWrapped_noDiff.AddMissingColumns(colNames, colTypes)
             dfWrapped_noDiff = analysis.PrepareDfForHistograms(dfWrapped_noDiff)
             all_dataframes[key].append(dfWrapped_noDiff.df)
+
         treeName_Valid = f"{treeName}_Valid"
         if treeName_Valid in file_keys:
             # print(treeName_Valid)
@@ -132,9 +240,10 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, fil
                 dfWrapped_cache_Valid = analysis.DataFrameBuilderForHistograms(ROOT.RDataFrame(treeName_Valid,inFileCache), global_cfg_dict, period, **kwargset)
                 AddCacheColumnsInDf(dfWrapped_Valid, dfWrapped_cache_Valid,f"cache_map_{uncName}{scale}_Valid")
             dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
-            dfWrapped_Valid = analysis.PrepareDfForHistograms(dfWrapped_Valid)
             dfWrapped_Valid.AddMissingColumns(colNames, colTypes)
+            dfWrapped_Valid = analysis.PrepareDfForHistograms(dfWrapped_Valid)
             all_dataframes[key].append(dfWrapped_Valid.df)
+
         treeName_nonValid = f"{treeName}_nonValid"
         if treeName_nonValid in file_keys:
             # print(treeName_nonValid)
@@ -145,6 +254,7 @@ def GetShapeDataFrameDict(all_dataframes, global_cfg_dict, key, key_central, fil
             dfWrapped_nonValid.AddMissingColumns(colNames, colTypes)
             dfWrapped_nonValid = analysis.PrepareDfForHistograms(dfWrapped_nonValid)
             all_dataframes[key].append(dfWrapped_nonValid.df)
+
         if not all_dataframes[key]:
            all_dataframes.pop(key)
 
@@ -293,7 +403,7 @@ if __name__ == "__main__":
         if key_central not in all_dataframes:
 
             all_dataframes[key_central] = [new_dfWrapped_Central.df]
-        central_histograms = GetHistogramDictFromDataframes(args.var, all_dataframes,  key_central , key_filter_dict, unc_cfg_dict['norm'],hist_cfg_dict, global_cfg_dict, args.furtherCut, False)
+        central_histograms, central_dfs = GetHistogramDictFromDataframes(args.var, all_dataframes,  key_central , key_filter_dict, unc_cfg_dict['norm'],hist_cfg_dict, global_cfg_dict, args.furtherCut, False)
 
 
         # central quantities definition
@@ -312,11 +422,14 @@ if __name__ == "__main__":
                         all_dataframes[key_2] = []
                     all_dataframes[key_2] = [all_dataframes[key_central][0]]
                     kwargset['isCentral'] = 'Central' in key_2
-                    norm_histograms =  GetHistogramDictFromDataframes(args.var,all_dataframes, key_2, key_filter_dict,unc_cfg_dict['norm'], hist_cfg_dict, global_cfg_dict, args.furtherCut, False)
+                    norm_histograms, norm_dfs =  GetHistogramDictFromDataframes(args.var,all_dataframes, key_2, key_filter_dict,unc_cfg_dict['norm'], hist_cfg_dict, global_cfg_dict, args.furtherCut, False)
                     central_histograms.update(norm_histograms)
+                    central_dfs.update(norm_dfs)
 
         # save histograms
+        gc.collect()
         SaveHists(central_histograms, outfile, all_categories)
+        print(len(central_dfs))
 
         # shape weight  histograms
         all_dataframes_shape[key_central]=[all_dataframes[key_central][0]]
@@ -332,7 +445,7 @@ if __name__ == "__main__":
                     if all_dataframes_shape[key_2]==[] :
                         print('empty list')
                         continue
-                    shape_histograms =  GetHistogramDictFromDataframes(args.var, all_dataframes_shape, key_2 , key_filter_dict,unc_cfg_dict['shape'], hist_cfg_dict, global_cfg_dict, args.furtherCut, True)
+                    shape_histograms, shape_dfs =  GetHistogramDictFromDataframes(args.var, all_dataframes_shape, key_2 , key_filter_dict,unc_cfg_dict['shape'], hist_cfg_dict, global_cfg_dict, args.furtherCut, True)
                     SaveHists(shape_histograms, outfile,all_categories)
         outfile.Close()
 

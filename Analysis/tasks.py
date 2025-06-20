@@ -74,19 +74,6 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
-    # cacheClass = None
-    # cacheDataClass = None
-    # def __init__(self, *args, **kwargs):
-    #     super(HistProducerFileTask, self).__init__(*args, **kwargs)
-
-    #     if self.cacheClass == None:
-    #         self.use_ana_cache = 'analysis_cache_import' in self.setup.global_params
-    #         if self.use_ana_cache:
-    #             file, className, dataClassName = self.setup.global_params['analysis_cache_import'].split(':')
-    #             cacheModule = importlib.import_module(file)
-    #             HistProducerFileTask.cacheClass = getattr(cacheModule, className)
-    #             HistProducerFileTask.cacheDataClass = getattr(cacheModule, dataClassName)
-
     def workflow_requires(self):
         input_file_task_complete = InputFileTask.req(self, branches=()).complete()
         if not input_file_task_complete:
@@ -94,12 +81,8 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
         need_data = False
         need_data_cache = False
-        # branch_set = set()
-        # branch_set_cache = set()
-        # fix needed here: instead of set of required branches make it dict mapping producer -> set of branches
         dict_branch_set = {}
         dict_branch_set_cache = {}
-        # print(f"branch_map.items()={branch_map.items()}")
         for idx, (sample, br, var, need_cache, producer_name) in self.branch_map.items():
             dict_branch_set[producer_name] = set()
             dict_branch_set_cache[producer_name] = set()
@@ -108,10 +91,8 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if need_cache:
                     need_data_cache = True
             else:
-                # branch_set.add(br)
                 dict_branch_set[producer_name].add(br)
                 if need_cache:
-                    # branch_set_cache.add(br)
                     dict_branch_set_cache[producer_name].add(br)
         reqs = {}
 
@@ -125,7 +106,6 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if isbbtt:
                     reqs['anaCacheTuple'] = AnaCacheTupleTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
                 else:
-                    # reqs['analysisCache'] = self.cacheClass.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
                     reqs['analysisCache'] = AnalysisCacheTask.req(self, 
                                                                   branches=tuple(branch_set_cache),
                                                                   customisations=self.customisations,
@@ -136,7 +116,6 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if isbbtt:
                     reqs['dataCacheMergeTuple'] = DataCacheMergeTask.req(self, branches=(),customisations=self.customisations)
                 else:
-                    # reqs['analysisCacheMerge'] = self.cacheClass.req(self, branches=(),customisations=self.customisations)
                     reqs['analysisCacheMerge'] = AnalysisCacheMergeTask.req(self, 
                                                                             branches=(),
                                                                             customisations=self.customisations,
@@ -155,7 +134,6 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if isbbtt:
                     deps.append(DataCacheMergeTask.req(self, max_runtime=DataCacheMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
                 else:
-                    # deps.append(self.cacheDataClass.req(self, max_runtime=self.cacheDataClass.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
                     deps.append(AnalysisCacheTask.req(self, 
                                                       max_runtime=AnalysisCacheTask.max_runtime._default, 
                                                       branch=prod_br, branches=(prod_br,),
@@ -167,7 +145,6 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if isbbtt:
                     deps.append(AnaCacheTupleTask.req(self, max_runtime=AnaCacheTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
                 else:
-                    # deps.append(self.cacheClass.req(self, max_runtime=self.cacheClass.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations))
                     deps.append(AnalysisCacheTask.req(self, 
                                                       max_runtime=AnalysisCacheTask.max_runtime._default, 
                                                       branch=prod_br, 
@@ -192,35 +169,25 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
         samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
         
-        # add variables that don't need cache
-        noncached_vars_to_plot = self.global_params['vars_to_plot']
-        if noncached_vars_to_plot:
-            for var_entry in noncached_vars_to_plot:
-                var_name, need_cache = parseVarEntry(var_entry)
-                for prod_br,(sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-                    isData = self.samples[sample_name]['sampleType'] == 'data'
-                    if sample_name not in samples_to_consider or isData: continue
-                    branches[n] = (sample_name, prod_br, var_name, need_cache)
-                    n += 1
-                branches[n] = ('data', 0, var_name, need_cache, None)
+        # map indicating which variable needs which cache producer
+        var_produced_by = self.setup.var_producer_map
+
+        n = 0
+        branches = {}
+        anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
+        samples_to_consider = GetSamples(self.samples, self.setup.backgrounds, self.global_params['signal_types'] )
+        for var_name in self.global_params['vars_to_plot']:
+            need_cache = True if var_name in var_produced_by else False
+            producer_to_run = var_produced_by[var_name] if var_name in var_produced_by else None
+            for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
+                isData = self.samples[sample_name]['sampleType'] == 'data'
+                if sample_name not in samples_to_consider:
+                    continue
+                if isData: 
+                    branches[n] = ('data', 0, var_name, need_cache, producer_to_run)
+                else:
+                    branches[n] = (sample_name, prod_br, var_name, need_cache, producer_to_run)
                 n += 1
-
-        # add variables that need cache
-        cached_vars_to_plot = self.global_params['cached_vars_to_plot']
-        if cached_vars_to_plot:
-            for var_prod_dict in cached_vars_to_plot:
-                for producer_name, list_of_prod_vars in var_prod_dict.items():
-                    if list_of_prod_vars:
-                        for var_name in list_of_prod_vars:
-                            for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-                                isData = self.samples[sample_name]['sampleType'] == 'data'
-                                if sample_name not in samples_to_consider or isData: 
-                                    continue
-                                branches[n] = (sample_name, prod_br, var_name, True, producer_name)
-                                n += 1
-                        # branches[n] = ('data', 0, var_name, True, producer_name)
-                        # n += 1
-
         return branches
 
     def output(self):
@@ -262,12 +229,10 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                                     '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type, '--globalConfig', global_config, '--var', var, '--period', self.period, '--region', region, '--channels', channels]
             if compute_unc_histograms:
                 HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
-                #HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'False'])
             if (deepTauVersion!="2p1") and (deepTauVersion!=''):
                 HistProducerFile_cmd.extend([ '--deepTauVersion', deepTauVersion])
             if need_cache:
                 anaCache_file = self.input()[1]
-                print(anaCache_file)
                 with anaCache_file.localize("r") as local_anacache:
                     HistProducerFile_cmd.extend(['--cacheFile', local_anacache.path])
                     ps_call(HistProducerFile_cmd, verbose=1)

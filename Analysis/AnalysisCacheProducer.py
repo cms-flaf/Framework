@@ -69,7 +69,7 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
         raise RuntimeError("Producer must be specified to compute analysis cache")
 
     producer_config = global_cfg_dict['payload_producers'][producer_to_run]
-    producers_module_name = global_cfg_dict['producers_module_name']
+    producers_module_name = producer_config['producers_module_name']
     producer_name = producer_config['producer_name']
     producers_module = importlib.import_module(producers_module_name)
     producer_class = getattr(producers_module, producer_name)

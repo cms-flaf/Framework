@@ -122,6 +122,17 @@ class Setup:
                                              ana_global_config, sample_config.get('GLOBAL', {}))
         apply_customisations(self.global_params, customisations)
 
+        # create payload -> what producer delivers it
+        # will be used to check if cache is needed
+        self.var_producer_map = {}
+        payload_producers_cfg = self.global_params.get("payload_producers")
+        if payload_producers_cfg:
+            for producer_name, producer_config in payload_producers_cfg.items():
+                columns_delivered = producer_config.get("columns")
+                if columns_delivered:
+                    for col in columns_delivered:    
+                        self.var_producer_map[f"{producer_name}_{col}"] = producer_name                
+
         samples = load_parameters(ana_sample_config, sample_config, keys_to_ignore={'GLOBAL'})
         for sample_name, sample_entry in samples.items():
             if type(sample_entry) != dict:

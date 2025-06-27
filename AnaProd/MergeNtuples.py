@@ -35,19 +35,6 @@ ROOT.gInterpreter.Declare(
         events.insert(event);
         return true;
         }
-    using FullEventId_set = std::set<unsigned long>;
-    static FullEventId_set full_event_ids;
-    bool saveEvent_FullEventId(unsigned long full_event_id){
-        static std::mutex eventMap_mutex;
-        const std::lock_guard<std::mutex> lock(eventMap_mutex);
-        if(full_event_ids.find(full_event_id) != full_event_ids.end())
-            return false;
-        full_event_ids.insert(full_event_id);
-        return true;
-        }
-    void reset_FullEventId_set(){
-        full_event_ids.clear();
-    }
     """
 )
 class ObjDesc:
@@ -59,12 +46,9 @@ class ObjDesc:
 
 
 def merge_ntuples(df):
-    # if 'run' not in df.GetColumnNames() or 'luminosityBlock'  not in df.GetColumnNames() or 'event'  not in df.GetColumnNames():
-    #     return df
-    # df = df.Filter("saveEvent(run, luminosityBlock, event)")
-    if 'FullEventId' not in df.GetColumnNames():
+    if 'run' not in df.GetColumnNames() or 'luminosityBlock'  not in df.GetColumnNames() or 'event'  not in df.GetColumnNames():
         return df
-    df = df.Filter("saveEvent_FullEventId(FullEventId)")
+    df = df.Filter("saveEvent(run, luminosityBlock, event)")
     return df
 
 if __name__ == "__main__":
@@ -106,6 +90,8 @@ if __name__ == "__main__":
                 raise RuntimeError(f"Object {key_name} is of type {objType} but was previously found to be"
                                 f"of type {obj_desc.obj_type}.")
             if objType == "TTree":
+                if fileName in obj_desc.file_names:
+                    continue # When there were multiple cycles of a tree, without this catch you would append the same file multiple times
                 obj_desc.file_names.append(fileName)
             else:
                 if obj_desc.ref_obj is None:
@@ -127,22 +113,23 @@ if __name__ == "__main__":
     for fileName, file in inputFiles:
         file.Close()
 
+
+
     for obj_name, obj_desc in objects.items():
         print(f"At writing for {obj_name} {obj_desc}")
         if obj_desc.obj_type != "TTree":
             continue
+        print(f"Loading {obj_name}, {obj_desc.file_names}")
         df = ROOT.RDataFrame(obj_name, obj_desc.file_names)
         print(f"initially there are {df.Count().GetValue()} events")
         df = merge_ntuples(df)
         df.Snapshot(obj_name, tmpFileName, df.GetColumnNames(), snapshotOptions)
-        ROOT.gInterpreter.ProcessLine("reset_FullEventId_set();") # Need to call reset so the next obj (TreeName) will have a fresh set
         #if df.Count().GetValue()==0: not_empty_files=False
     #print(tmpFileName)
     if args.useUproot:
         ConvertUproot.toUproot(tmpFileName, args.outFile)
         #if os.path.exists(args.outFile):
         #    os.remove(tmpFileName)
-
 
     if args.outFiles != None and len(args.outFiles) > 0:
         for obj_name, obj_desc in objects.items():

@@ -88,7 +88,6 @@ if __name__ == "__main__":
     inputFiles = [ (fileName, ROOT.TFile(fileName, "READ")) for fileName in args.inputFile ]
     objects = {}
     for fileName, file in inputFiles:
-        print(f"File {fileName} has keys {file.GetListOfKeys()}")
         for key in file.GetListOfKeys():
             key_name = key.GetName()
             obj = key.ReadObj()

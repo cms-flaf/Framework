@@ -1,9 +1,11 @@
 import os
 import re
 import yaml
+import json
 
 from FLAF.RunKit.envToJson import get_cmsenv
 from FLAF.RunKit.law_wlcg import WLCGFileSystem
+from FLAF.RunKit.grid_tools import gfal_ls
 
 def select_items(all_items, filters):
     def name_match(name, pattern):
@@ -143,6 +145,9 @@ class Setup:
 
         self.signal_samples = [ key for key in self.samples if self.samples[key]['sampleType'] in self.global_params['signal_types'] ]
 
+        self.anaTupleMerge_Strategy = {}
+
+
     def get_fs(self, fs_name):
         if fs_name not in self.fs_dict:
             full_fs_name = f'fs_{fs_name}'
@@ -196,3 +201,17 @@ class Setup:
         if key not in Setup._global_instances:
             Setup._global_instances[key] = Setup(ana_path, period, customisations)
         return Setup._global_instances[key]
+
+
+
+    def getAnaTupleMergeStrategy(self, sample_name, remote_file):
+        if sample_name in self.anaTupleMerge_Strategy.keys():
+            return self.anaTupleMerge_Strategy[sample_name]
+        else:
+            with remote_file.localize('r') as f:
+                with open(f.path, 'r') as this_file:
+                    json_dict = json.load(this_file)
+                    sample_dict = json_dict
+                    self.anaTupleMerge_Strategy[sample_name] = sample_dict
+            return self.anaTupleMerge_Strategy[sample_name]
+            

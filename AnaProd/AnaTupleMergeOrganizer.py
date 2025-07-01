@@ -40,8 +40,13 @@ if __name__ == "__main__":
     for this_json in all_files:
         with open(this_json, 'r') as file:
             data = json.load(file)
-            print("Loaded data")
-            print(data)
+
+            nEvents = data['nEvents_Filtered']
+            nEventsCounter += nEvents
+            sample_name = data['sample_name']
+            file_name = os.path.join(sample_name, data['nano_file_name'])
+            input_file_list.append(file_name)
+
             if nEventsCounter > args.nEventsPerFile and not args.isData:
                 output_file_list.append(f'anaTuple_{nFileCounter}.root')
                 hadd_dict['merge_strategy'].append({'inputs': input_file_list, 'outputs': output_file_list})
@@ -50,14 +55,14 @@ if __name__ == "__main__":
                 output_file_list = []
                 input_file_list = []
 
-            nEvents = data['nEvents_Filtered']
-            nEventsCounter += nEvents
-            sample_name = data['sample_name']
-            file_name = os.path.join(sample_name, data['nano_file_name'])
-            input_file_list.append(file_name)
-
-        #Append whatever is leftover
+    #Append whatever is leftover
+    if len(input_file_list) > 0 and not args.isData:
+        # Had leftover files, so we need to add them to the output
+        output_file_list.append(f'anaTuple_{nFileCounter}.root')
+        nFileCounter += 1
         hadd_dict['merge_strategy'].append({'inputs': input_file_list, 'outputs': output_file_list})
+        input_file_list = []
+        output_file_list = []
 
 
 

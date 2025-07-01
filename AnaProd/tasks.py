@@ -6,6 +6,7 @@ import os
 import shutil
 import threading
 import yaml
+import datetime
 
 
 from FLAF.RunKit.run_tools import ps_call, natural_sort
@@ -265,56 +266,60 @@ class AnaTupleMergeOrganizerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
     def workflow_requires(self):
+        AnaTuple_map = AnaTupleTask.req(self,branch=-1, branches=()).create_branch_map()
         branch_set = set()
-        for br_idx, (sample_id, sample_name, sample_type, idx_list) in self.branch_map.items():
-            branch_set.update(idx_list)
-        branches = tuple(branch_set)
-        deps = { "AnaTupleTask": AnaTupleTask.req(self, branches=branches,customisations=self.customisations) }
+        for idx, (sample_name, sample_type) in self.branch_map.items():
+            for br_idx, (anaTuple_sample_id, anaTuple_sample_name, anaTuple_sample_type, anaTuple_input_file) in AnaTuple_map.items():
+                if (sample_name == anaTuple_sample_name) or (sample_type == 'data' and anaTuple_sample_type == 'data'):
+                    branch_set.add(br_idx)
+
+        deps = { "AnaTupleTask": AnaTupleTask.req(self, branches=tuple(branch_set), customisations=self.customisations) }
         return deps
 
 
     def requires(self):
-        sample_id, sample_name, sample_type, idx_list  = self.branch_data
+        sample_name, sample_type  = self.branch_data
+        AnaTuple_map = AnaTupleTask.req(self,branch=-1, branches=()).create_branch_map()
+        branch_set = set()
+        for br_idx, (anaTuple_sample_id, anaTuple_sample_name, anaTuple_sample_type, anaTuple_input_file) in AnaTuple_map.items():
+            if (sample_name == anaTuple_sample_name) or (sample_type == 'data' and anaTuple_sample_type == 'data'):
+                branch_set.add(br_idx)
+
         reqs = [
-                AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default,
-                                                 branch=dep_br, branches=(dep_br,),customisations=self.customisations)
-                for dep_br in idx_list
+                AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br,
+                                                 branches=(prod_br,), customisations=self.customisations) for prod_br in tuple(branch_set)
             ]
         return reqs
 
 
     def create_branch_map(self):
         branches = {}
-        AnaTuple_map = AnaTupleTask.req(self,branch=-1, branches=()).create_branch_map()
-        all_samples = {}
-        for br_idx, (sample_id, sample_name, sample_type, input_file) in AnaTuple_map.items():
-            sample_key = sample_name
-            if sample_type == 'data': 
-                sample_key = 'data'
-            if sample_key not in all_samples:
-                all_samples[sample_key] = {'sample_id': sample_id, 'sample_type': sample_type, 'branch_idx_list': []}
-            all_samples[sample_key]['branch_idx_list'].append(br_idx)
         k = 0
-        for sample_name, sample_entry in all_samples.items():
-            sample_id = sample_entry['sample_id']
-            sample_type = sample_entry['sample_type']
-            branch_idx_list = sample_entry['branch_idx_list']
-            branches[k] = (sample_id, sample_name, sample_type, branch_idx_list)
+        data_done = False
+        for sample_id, sample_name in self.iter_samples():
+            sample_type = self.samples[sample_name]['sampleType']
+            if sample_type == 'data':
+                if data_done: continue # Will have multiple data samples, but only need one branch
+                sample_name = 'data'
+                data_done = True
+            branches[k] = (sample_name, sample_type)
             k += 1
         return branches
-    
 
 
     def output(self):
-        sample_id, sample_name, sample_type, idx_list  = self.branch_data
+        sample_name, sample_type  = self.branch_data
         output_name = 'merged_plan.json'
         output_path = os.path.join('AnaTupleMergeOrganizer', self.version, self.period, sample_name, output_name)
-        local_path = os.path.join(os.getcwd(), )
+        # This is a problem for a --remove-output task, it crashes since the 'output' is only the local or something
+        # With this current state, you need to do the --remove-output command twice
+        if self.local_target('merge_cache', f'{sample_name}.json').exists():
+            return [ self.local_target('merge_cache', f'{sample_name}.json') ]
         return [ self.remote_target(output_path,  fs=self.fs_anaTuple), self.local_target('merge_cache', f'{sample_name}.json') ]
 
 
     def run(self):
-        sample_id, sample_name, sample_type, idx_list  = self.branch_data
+        sample_name, sample_type  = self.branch_data
         AnaTupleMergeOrganizer = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'AnaTupleMergeOrganizer.py')
         with contextlib.ExitStack() as stack:
             local_inputs = [stack.enter_context(inp[1].localize('r')).path for inp in self.input()]
@@ -347,6 +352,10 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
 
     def workflow_requires(self):
+        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        if not merge_organization_complete:
+            return { "AnaTupleMergeOrganizerTask": AnaTupleMergeOrganizerTask.req(self, branches=()) }
+
         branch_set = set()
         for idx, sample_names in self.branch_map.items():
             branch_set.update([idx])
@@ -354,7 +363,7 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def requires(self):
         # Need both the AnaTupleTask for the input ROOT file, and the AnaTupleMergeOrganizerTask for the json structure
-        sample_id, sample_name, sample_type, input_file_list, output_file_list = self.branch_data
+        sample_name, sample_type, input_file_list, output_file_list = self.branch_data
         anaTuple_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
         anaTupleMergeOrganizer_branch_map = AnaTupleMergeOrganizerTask.req(self, branch=-1, branches=()).create_branch_map()
         required_branches = []
@@ -362,30 +371,39 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             if anaTuple_sample_name == sample_name or (sample_type == 'data' and anaTuple_sample_type == 'data'):
                 if file_location.path[1:] in input_file_list: #[1:] to remove the first '/' in the pathway
                     required_branches.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
-        for prod_br, (Merge_sample_id, Merge_sample_name, Merge_sample_type, branch_idx_list) in anaTupleMergeOrganizer_branch_map.items():
+        for prod_br, (Merge_sample_name, Merge_sample_type) in anaTupleMergeOrganizer_branch_map.items():
             if Merge_sample_name == sample_name:
                 required_branches.append(AnaTupleMergeOrganizerTask.req(self, max_runtime=AnaTupleMergeOrganizerTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
         return required_branches
     
     
     def create_branch_map(self):
+        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        if not merge_organization_complete:
+            self.cache_branch_map = False
+            if not hasattr(self, '_branches_backup'):
+                self._branches_backup = copy.deepcopy(self.branches)
+            return { 0: () }
         branches = {}
         nBranch = 0
         organizer_branch_map = AnaTupleMergeOrganizerTask.req(self,branch=-1, branches=()).create_branch_map()
-        for nJob, (sample_id, sample_name, sample_type, branch_list) in organizer_branch_map.items():
+        for nJob, (sample_name, sample_type) in organizer_branch_map.items():
             # This function cannot run if the json doesn't exist yet, so the branch map breaks when the output isn't already there
-            this_sample_dict = self.setup.getAnaTupleMergeStrategy(sample_name, AnaTupleMergeOrganizerTask.req(self,branch=nJob, branches=()).output()[1]) # Get output[1] for the local file version
+            this_sample_dict = self.setup.getAnaTupleMergeStrategy(sample_name, AnaTupleMergeOrganizerTask.req(self,branch=nJob, branches=()).output()[-1]) # Get output[-1] for the local file version
             # We probably want to return None for a json that doesn't exist or something, right now if an expected branch is not there this entire task will fail
             for this_dict in this_sample_dict['merge_strategy']:
                 input_file_list = this_dict['inputs']
                 output_file_list = this_dict['outputs']
-                branches[nBranch] = (sample_id, sample_name, sample_type, input_file_list, output_file_list)
+                branches[nBranch] = (sample_name, sample_type, input_file_list, output_file_list)
                 nBranch += 1
         return branches
 
 
     def output(self, force_pre_output=False):
-        sample_id, sample_name, sample_type, input_file_list, output_file_list = self.branch_data
+        if len(self.branch_data) == 0:
+            return self.local_target('dummy.txt')
+        
+        sample_name, sample_type, input_file_list, output_file_list = self.branch_data
         output_path_string = os.path.join('anaTuples', self.version, self.period, sample_name, '{}')
         outputs = [ output_path_string.format(out_file) for out_file in output_file_list ]
         return [ self.remote_target(out_path, fs=self.fs_anaTuple) for out_path in outputs ]
@@ -393,7 +411,7 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         producer_Merge = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'MergeNtuples.py')
-        sample_id, sample_name, sample_type, input_file_list, output_file_list = self.branch_data
+        sample_name, sample_type, input_file_list, output_file_list = self.branch_data
         input_list_remote_target = [ inp[0] for inp in self.input()[:-1] ]
         with contextlib.ExitStack() as stack:
             print(f"Starting localize of {len(input_list_remote_target)} inputs")
@@ -403,9 +421,8 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             Merge_cmd.extend(local_inputs)
             ps_call(Merge_cmd,verbose=1)
 
-        delete_after_merge = False
+        delete_after_merge = True
         if delete_after_merge:
-            # I am not ready to delete my files yet while developing
             print(f"Finished merging, lets delete remote targets")
             for remote_target in input_list_remote_target:
                 remote_target.remove()

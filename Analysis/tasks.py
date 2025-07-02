@@ -74,9 +74,9 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
     def workflow_requires(self):
-        input_file_task_complete = InputFileTask.req(self, branches=()).complete()
-        if not input_file_task_complete:
-            return { "inputFile": InputFileTask.req(self, branches=()) }
+        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        if not merge_organization_complete:
+            return { "AnaTupleMergeOrganizerTask": AnaTupleMergeOrganizerTask.req(self, branches=()) }
 
         branch_set = set()
         branch_set_cache = set()
@@ -222,6 +222,10 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
     def workflow_requires(self):
+        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        if not merge_organization_complete:
+            return { "AnaTupleMergeOrganizerTask": AnaTupleMergeOrganizerTask.req(self, branches=()) }
+
         branch_set = set()
         for br_idx, (sample_name, dep_br_list, var_list) in self.branch_map.items():
             branch_set.update(dep_br_list)
@@ -287,6 +291,10 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
 
     def workflow_requires(self):
+        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        if not merge_organization_complete:
+            return { "AnaTupleMergeOrganizerTask": AnaTupleMergeOrganizerTask.req(self, branches=()) }
+            
         histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations).create_branch_map()
         all_samples = {}
         branches = {}

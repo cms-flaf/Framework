@@ -229,14 +229,12 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 
     def requires(self):
-        print("Doing sample requires")
         sample_name, dep_br_list, var_list = self.branch_data
         reqs = [
                 HistProducerFileTask.req(self, max_runtime=HistProducerFileTask.max_runtime._default,
                                                  branch=dep_br, branches=(dep_br,),customisations=self.customisations)
                 for dep_br in dep_br_list
             ]
-        print(f"Finished sample requires {sample_name}")
         return reqs
 
 
@@ -271,7 +269,7 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         with contextlib.ExitStack() as stack:
             for idx, var in enumerate(var_list):
                 local_inputs = [stack.enter_context((inp[idx]).localize('r')).path for inp in self.input()] # HistFile now has a list of outputs, get the index input
-                with self.output().localize("w") as tmp_local_file:
+                with (self.output()[idx]).localize("w") as tmp_local_file:
                     HistProducerSample_cmd = ['python3', HistProducerSample,'--outFile', tmp_local_file.path]#, '--remove-files', 'True']
                     HistProducerSample_cmd.extend(local_inputs)
                     ps_call(HistProducerSample_cmd,verbose=1)
@@ -284,10 +282,11 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations).create_branch_map()
         all_samples = {}
         branches = {}
-        for br_idx, (smpl_name, idx_list, var) in histProducerSample_map.items():
-            if var not in all_samples:
-                all_samples[var] = []
-            all_samples[var].append(br_idx)
+        for br_idx, (smpl_name, idx_list, var_list) in histProducerSample_map.items():
+            for var in var_list:
+                if var not in all_samples:
+                    all_samples[var] = []
+                all_samples[var].append(br_idx)
 
         new_branchset = set()
         for var in all_samples.keys():
@@ -306,15 +305,15 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branches = {}
         for br_idx, (smpl_name, idx_list, var_list) in histProducerSample_map.items():
             for idx, var in enumerate(var_list):
-                var_key = f"{var}_{idx}"
+                var_key = f"{var}:{idx}"
                 if var_key not in all_samples:
                     all_samples[var_key] = []
                 all_samples[var_key].append(br_idx)
         k=0
         for n, key in enumerate(all_samples.items()):
             var_key, branches_idx = key
-            var = var_key.split('_')[0]  # Get the variable name without the index
-            idx = var_key.split('_')[1]  # Get the index without the variable name
+            var = var_key.split(':')[0]  # Get the variable name without the index
+            idx = var_key.split(':')[1]  # Get the index without the variable name
             branches[k] = (var, idx, branches_idx)
             k+=1
         return branches

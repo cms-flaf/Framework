@@ -574,77 +574,77 @@ QCD_PT_1000_MuEnrichedPt5:
   generator: pythia8
   miniAOD: /QCD_PT-1000_MuEnrichedPt5_TuneCP5_13p6TeV_pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6-v2/MINIAODSIM
 QCD_PT_15to30:
-  sampleType: QCDMu
+  sampleType: QCD_PT
   crossSection: QCD_PT_15to30
   generator: pythia8
   miniAOD: /QCD_PT-15to30_TuneCP5_13p6TeV_pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/MINIAODSIM
 QCD_PT_30to50:
-  sampleType: QCDMu
+  sampleType: QCD_PT
   crossSection: QCD_PT_30to50
   generator: pythia8
   miniAOD: /QCD_PT-30to50_TuneCP5_13p6TeV_pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/MINIAODSIM
 QCD_PT_50to80:
-  sampleType: QCDMu
+  sampleType: QCD_PT
   crossSection: QCD_PT_50to80
   generator: pythia8
   miniAOD: /QCD_PT-50to80_TuneCP5_13p6TeV_pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6-v2/MINIAODSIM
 QCD_PT_80to120:
-  sampleType: QCDMu
+  sampleType: QCD_PT
   crossSection: QCD_PT_80to120
   generator: pythia8
   miniAOD: /QCD_PT-80to120_TuneCP5_13p6TeV_pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6-v2/MINIAODSIM
 QCD_PT_120to170:
-  sampleType: QCDMu
+  sampleType: QCD_PT
   crossSection: QCD_PT_120to170
   generator: pythia8
   miniAOD: /QCD_PT-120to170_TuneCP5_13p6TeV_pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/MINIAODSIM
 QCD_PT_170to300:
-  sampleType: QCDMu
+  sampleType: QCD_PT
   crossSection: QCD_PT_170to300
   generator: pythia8
   miniAOD: /QCD_PT-170to300_TuneCP5_13p6TeV_pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/MINIAODSIM
 QCD_PT_300to470:
-  sampleType: QCDMu
+  sampleType: QCD_PT
   crossSection: QCD_PT_300to470
   generator: pythia8
   miniAOD: /QCD_PT-300to470_TuneCP5_13p6TeV_pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/MINIAODSIM
 QCD_PT_470to600:
-  sampleType: QCDMu
+  sampleType: QCD_PT
   crossSection: QCD_PT_470to600
   generator: pythia8
   miniAOD: /QCD_PT-470to600_TuneCP5_13p6TeV_pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/MINIAODSIM
 QCD_PT_600to800:
-  sampleType: QCDMu
+  sampleType: QCD_PT
   crossSection: QCD_PT_600to800
   generator: pythia8
   miniAOD: /QCD_PT-600to800_TuneCP5_13p6TeV_pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/MINIAODSIM
 QCD_PT_800to1000:
-  sampleType: QCDMu
+  sampleType: QCD_PT
   crossSection: QCD_PT_800to1000
   generator: pythia8
   miniAOD: /QCD_PT-800to1000_TuneCP5_13p6TeV_pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/MINIAODSIM
 QCD_PT_1000to1400:
-  sampleType: QCDMu
+  sampleType: QCD_PT
   crossSection: QCD_PT_1000to1400
   generator: pythia8
   miniAOD: /QCD_PT-1000to1400_TuneCP5_13p6TeV_pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/MINIAODSIM
 QCD_PT_1400to1800:
-  sampleType: QCDMu
+  sampleType: QCD_PT
   crossSection: QCD_PT_1400to1800
   generator: pythia8
   miniAOD: /QCD_PT-1400to1800_TuneCP5_13p6TeV_pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/MINIAODSIM
 QCD_PT_1800to2400:
-  sampleType: QCDMu
+  sampleType: QCD_PT
   crossSection: QCD_PT_1800to2400
   generator: pythia8
   miniAOD: /QCD_PT-1800to2400_TuneCP5_13p6TeV_pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/MINIAODSIM
 QCD_PT_2400to3200:
-  sampleType: QCDMu
+  sampleType: QCD_PT
   crossSection: QCD_PT_2400to3200
   generator: pythia8
   miniAOD: /QCD_PT-2400to3200_TuneCP5_13p6TeV_pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/MINIAODSIM
 QCD_PT_3200:
-  sampleType: QCDMu
+  sampleType: QCD_PT
   crossSection: QCD_PT_3200
   generator: pythia8
   miniAOD: /QCD_PT-3200_TuneCP5_13p6TeV_pythia8/Run3Summer22EEMiniAODv4-130X_mcRun3_2022_realistic_postEE_v6_ext1-v2/MINIAODSIM

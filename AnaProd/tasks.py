@@ -474,69 +474,7 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 dataMerge_cmd.extend(local_inputs)
                 ps_call(dataMerge_cmd,verbose=1)
 
-class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
-    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
-
-    def workflow_requires(self):
-        workflow_dict = {}
-        workflow_dict["anaTuple"] = {
-            br_idx: AnaTupleTask.req(self, branch=br_idx)
-            for br_idx, _ in self.branch_map.items()
-        }
-        return workflow_dict
-
-    def requires(self):
-        return [ AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default) ]
-
-    def create_branch_map(self):
-        branches = {}
-        anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).branch_map
-        for br_idx, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-            branches[br_idx] = (sample_name, sample_type)
-        return branches
-
-    def output(self):
-        sample_name, sample_type = self.branch_data
-        outFileName = os.path.basename(self.input()[0].path)
-        # outDir = os.path.join('anaCacheTuples', self.period, sample_name, self.version)
-        # finalFile = os.path.join(outDir, outFileName)
-        output_path = os.path.join('anaCacheTuples', self.period, sample_name,self.version, outFileName)#self.version, self.period, sample_name, outFileName)
-        return self.remote_target(output_path, fs=self.fs_anaCacheTuple)
-
-    def run(self):
-        sample_name, sample_type = self.branch_data
-        unc_config = os.path.join(self.ana_path(), 'config', self.period, f'weights.yaml')
-        producer_anacachetuples = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'anaCacheTupleProducer.py')
-        global_config = os.path.join(self.ana_path(), 'config', 'global.yaml')
-        thread = threading.Thread(target=update_kinit_thread)
-        customisation_dict = getCustomisationSplit(self.customisations)
-        channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
-        #Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
-        if type(channels) == list:
-            channels = ','.join(channels)
-        thread.start()
-        try:
-            job_home, remove_job_home = self.law_job_home()
-            input_file = self.input()[0]
-            print(f"considering sample {sample_name}, {sample_type} and file {input_file.path}")
-            customisation_dict = getCustomisationSplit(self.customisations)
-            deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else ""
-            with input_file.localize("r") as local_input, self.output().localize("w") as outFile:
-                anaCacheTupleProducer_cmd = ['python3', producer_anacachetuples,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config, '--globalConfig', global_config, '--channels', channels ]
-                if self.global_params['store_noncentral'] and sample_type != 'data':
-                    anaCacheTupleProducer_cmd.extend(['--compute_unc_variations', 'True'])
-                if deepTauVersion!="":
-                    anaCacheTupleProducer_cmd.extend([ '--deepTauVersion', deepTauVersion])
-                ps_call(anaCacheTupleProducer_cmd, env=self.cmssw_env, verbose=1)
-            print(f"finished to produce anacachetuple")
-
-        finally:
-            kInit_cond.acquire()
-            kInit_cond.notify_all()
-            kInit_cond.release()
-            thread.join()
-
+# rename AnaCacheTupeTask one to AnalysisCahceTask and move to FLAF/Analysis/tasks.py
 
 
 class DNNCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):

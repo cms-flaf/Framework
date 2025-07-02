@@ -121,12 +121,13 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 
     def create_branch_map(self):
-        input_file_task_complete = InputFileTask.req(self, branches=()).complete()
-        if not input_file_task_complete:
+        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        if not merge_organization_complete:
             self.cache_branch_map = False
             if not hasattr(self, '_branches_backup'):
                 self._branches_backup = copy.deepcopy(self.branches)
             return { 0: () }
+
         self.cache_branch_map = True
         if hasattr(self, '_branches_backup'):
             self.branches = self._branches_backup
@@ -240,6 +241,12 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 
     def create_branch_map(self):
+        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        if not merge_organization_complete:
+            self.cache_branch_map = False
+            if not hasattr(self, '_branches_backup'):
+                self._branches_backup = copy.deepcopy(self.branches)
+            return { 0: () }
         branches = {}
         histProducerFile_map = HistProducerFileTask.req(self,branch=-1, branches=()).create_branch_map()
         all_samples = {}
@@ -301,6 +308,12 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return deps
 
     def create_branch_map(self):
+        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        if not merge_organization_complete:
+            self.cache_branch_map = False
+            if not hasattr(self, '_branches_backup'):
+                self._branches_backup = copy.deepcopy(self.branches)
+            return { 0: () }
         histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations).create_branch_map()
         all_samples = {}
         branches = {}

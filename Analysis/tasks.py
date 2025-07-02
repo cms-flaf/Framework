@@ -136,7 +136,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         producer_list = []
     
         for var_name in self.global_params['vars_to_plot']:
-            need_cache = True if var_name in vars_produced_by else False
+            need_cache = True if var_name in var_produced_by else False
             producer_to_run = var_produced_by[var_name] if var_name in var_produced_by else None
             var_list.append(var_name)
             need_cache_list.append(need_cache)
@@ -187,7 +187,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         print(f'output files are {output_file_paths}')
         compute_unc_histograms = customisation_dict['compute_unc_histograms']=='True' if 'compute_unc_histograms' in customisation_dict.keys() else self.global_params.get('compute_unc_histograms', False)
         with input_file.localize("r") as local_input:
-            for var, need_cache, producer_name, output in zip(var_list, need_cache_list, produer_list, self.output()):
+            for var, need_cache, producer_name, output in zip(var_list, need_cache_list, producer_list, self.output()):
                 print(f"Starting var {var} with need_cache {need_cache}")
                 with output.localize("w") as local_output:
                     HistProducerFile_cmd = [ 'python3', HistProducerFile,
@@ -237,7 +237,7 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         histProducerFile_map = HistProducerFileTask.req(self,branch=-1, branches=()).create_branch_map()
         all_samples = {}
         samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
-        for n_branch, (sample_name, prod_br, var_list, need_cache_list, input_index)  in histProducerFile_map.items():
+        for n_branch, (sample_name, prod_br, var_list, need_cache_list, producer_list, input_index)  in histProducerFile_map.items():
             if sample_name not in samples_to_consider: continue
             if sample_name not in all_samples:
                 all_samples[sample_name] = []

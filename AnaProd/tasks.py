@@ -416,7 +416,7 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             Merge_cmd.extend(local_inputs)
             ps_call(Merge_cmd,verbose=1)
 
-        delete_after_merge = True
+        delete_after_merge = False # Right now this causes crashes due to dependencies
         if delete_after_merge:
             print(f"Finished merging, lets delete remote targets")
             for remote_target in input_list_remote_target:

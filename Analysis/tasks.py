@@ -90,8 +90,6 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             req_dict['AnalysisCacheTask'] = [ AnalysisCacheTask.req(self, branches=(), customisations=self.customisations, producer_to_run=producer_name) for producer_name in producer_list if producer_name is not None ]
             return req_dict
 
-        print("Got to the workflow_requires of HistProducer after teh whole merge completion thing")
-
         branch_set = set()
         branch_set_cache = set()
         producer_set = set()

@@ -87,7 +87,7 @@ def apply_customisations(config_dict, customisations):
 
 class Setup:
     _global_instances = {}
-    def __init__(self, ana_path, period, customisations=None):
+    def __init__(self, ana_path, period, sample=None, customisations=None):
         self.ana_path = ana_path
         self.period = period
 
@@ -140,6 +140,8 @@ class Setup:
             if type(sample_entry) != dict:
                 raise RuntimeError(f'Invalid sample definition period="{period}", sample_name="{sample_name}"')
         selected_samples = select_items(samples.keys(), self.global_params.get('sampleSelection', []))
+        if sample: # If you define a user cample, then only that sample is selected
+            selected_samples = [s for s in selected_samples if s == sample]
         self.samples = { key : samples[key] for key in selected_samples }
 
         self.fs_dict = {}
@@ -207,10 +209,10 @@ class Setup:
         return self.backgrounds_
 
     @staticmethod
-    def getGlobal(ana_path, period, customisations=None):
-        key = (ana_path, period, customisations)
+    def getGlobal(ana_path, period, sample, customisations=None):
+        key = (ana_path, period, sample, customisations)
         if key not in Setup._global_instances:
-            Setup._global_instances[key] = Setup(ana_path, period, customisations)
+            Setup._global_instances[key] = Setup(ana_path, period, sample, customisations)
         return Setup._global_instances[key]
 
 

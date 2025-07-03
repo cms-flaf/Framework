@@ -478,7 +478,7 @@ class PlotTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         plot_analysis     = customisation_dict.get('plot_analysis', self.global_params.get('plot_analysis', ''))
 
         remote_in = (
-            self.remote_target(os.path.join(ver, era, "merged", var, "tmp", f"all_histograms_{var}_hadded.root"), fs=self.fs_histograms)
+            self.remote_target(os.path.join(ver, era, "merged", var, f"{var}.root"), fs=self.fs_histograms)
             if plot_unc else self.input()
         )
 

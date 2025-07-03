@@ -16,16 +16,6 @@ from FLAF.Common.Utilities import SerializeObjectToString
 from FLAF.AnaProd.anaCacheProducer import addAnaCaches
 
 
-def GetSamples(samples, backgrounds, signals=['GluGluToRadion','GluGluToBulkGraviton']):
-    global samples_to_consider
-    samples_to_consider = ['data']
-
-    for sample_name in samples.keys():
-        sample_type = samples[sample_name]['sampleType']
-        if sample_type in signals or sample_name in backgrounds:
-            samples_to_consider.append(sample_name)
-    return samples_to_consider
-
 
 def getCustomisationSplit(customisations):
     customisation_dict = {}
@@ -266,6 +256,11 @@ class AnaTupleMergeOrganizerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
     def workflow_requires(self):
+        input_file_task_complete = InputFileTask.req(self, branches=()).complete()
+        if not input_file_task_complete:
+            return { "anaTuple" : AnaTupleTask.req(self, branches=()),
+                     "inputFile": InputFileTask.req(self, branches=()) }
+
         AnaTuple_map = AnaTupleTask.req(self,branch=-1, branches=()).create_branch_map()
         branch_set = set()
         for idx, (sample_name, sample_type) in self.branch_map.items():
@@ -335,7 +330,7 @@ class AnaTupleMergeOrganizerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                         shutil.copy(tmp_local_file.path, tmp_local_file2.path)
                         return
                     
-                nEventsPerFile = 200_000
+                nEventsPerFile = 100_000
                 AnaTupleMergeOrganizer_cmd = ['python3', AnaTupleMergeOrganizer,'--outFile', tmp_local_file.path]#, '--remove-files', 'True']
                 AnaTupleMergeOrganizer_cmd.extend(['--nEventsPerFile', f'{nEventsPerFile}'])
                 if sample_name == 'data': 

@@ -76,7 +76,10 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def workflow_requires(self):
         merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
         if not merge_organization_complete:
-            return { "AnaTupleMergeOrganizerTask": AnaTupleMergeOrganizerTask.req(self, branches=()) }
+            return { 
+                "AnaTupleMergeOrganizerTask": AnaTupleMergeOrganizerTask.req(self, branches=()), 
+                "AnaTupleMergeTask": AnaTupleMergeTask.req(self, branches=())
+            }
 
         branch_set = set()
         branch_set_cache = set()
@@ -224,7 +227,10 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def workflow_requires(self):
         merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
         if not merge_organization_complete:
-            return { "AnaTupleMergeOrganizerTask": AnaTupleMergeOrganizerTask.req(self, branches=()) }
+            return { 
+                "AnaTupleMergeOrganizerTask": AnaTupleMergeOrganizerTask.req(self, branches=()),
+                "HistProducerFileTask": HistProducerFileTask.req(self, branches=())
+            }
 
         branch_set = set()
         for br_idx, (sample_name, dep_br_list, var_list) in self.branch_map.items():

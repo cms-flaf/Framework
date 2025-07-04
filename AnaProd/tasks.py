@@ -330,14 +330,14 @@ class AnaTupleFileListTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                         return
                     
                 nEventsPerFile = 100_000
-                AnaTupleMergeOrganizer_cmd = ['python3', AnaTupleMergeOrganizer,'--outFile', tmp_local_file.path]#, '--remove-files', 'True']
-                AnaTupleMergeOrganizer_cmd.extend(['--nEventsPerFile', f'{nEventsPerFile}'])
+                AnaTupleFileList_cmd = ['python3', AnaTupleFileList,'--outFile', tmp_local_file.path]#, '--remove-files', 'True']
+                AnaTupleFileList_cmd.extend(['--nEventsPerFile', f'{nEventsPerFile}'])
                 if sample_name == 'data': 
-                    AnaTupleMergeOrganizer_cmd.extend(['--isData', 'True'])
-                    AnaTupleMergeOrganizer_cmd.extend(['--lumi', f'{self.setup.global_params["luminosity"]}'])
-                    AnaTupleMergeOrganizer_cmd.extend(['--nPbPerFile', f'{self.setup.global_params.get("nPbPerFile", 10_000)}'])
-                AnaTupleMergeOrganizer_cmd.extend(local_inputs)
-                ps_call(AnaTupleMergeOrganizer_cmd,verbose=1)
+                    AnaTupleFileList_cmd.extend(['--isData', 'True'])
+                    AnaTupleFileList_cmd.extend(['--lumi', f'{self.setup.global_params["luminosity"]}'])
+                    AnaTupleFileList_cmd.extend(['--nPbPerFile', f'{self.setup.global_params.get("nPbPerFile", 10_000)}'])
+                AnaTupleFileList_cmd.extend(local_inputs)
+                ps_call(AnaTupleFileList_cmd,verbose=1)
 
                 with local_output.localize("w") as tmp_local_file2:
                     shutil.copy(tmp_local_file.path, tmp_local_file2.path)
@@ -360,13 +360,13 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         # Need both the AnaTupleTask for the input ROOT file, and the AnaTupleFileListTask for the json structure
         sample_name, sample_type, input_file_list, output_file_list = self.branch_data
         anaTuple_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
-        anaTupleMergeOrganizer_branch_map = AnaTupleFileListTask.req(self, branch=-1, branches=()).create_branch_map()
+        AnaTupleFileList_branch_map = AnaTupleFileListTask.req(self, branch=-1, branches=()).create_branch_map()
         required_branches = []
         for prod_br, (anaTuple_sample_id, anaTuple_sample_name, anaTuple_sample_type, file_location) in anaTuple_branch_map.items():
             if anaTuple_sample_name == sample_name or (sample_type == 'data' and anaTuple_sample_type == 'data'):
                 if file_location.path[1:] in input_file_list: #[1:] to remove the first '/' in the pathway
                     required_branches.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
-        for prod_br, (Merge_sample_name, Merge_sample_type) in anaTupleMergeOrganizer_branch_map.items():
+        for prod_br, (Merge_sample_name, Merge_sample_type) in AnaTupleFileList_branch_map.items():
             if Merge_sample_name == sample_name:
                 required_branches.append(AnaTupleFileListTask.req(self, max_runtime=AnaTupleFileListTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
         return required_branches

@@ -335,7 +335,9 @@ class AnaTupleMergeOrganizerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if sample_name == 'data': 
                     AnaTupleMergeOrganizer_cmd.extend(['--isData', 'True'])
                     AnaTupleMergeOrganizer_cmd.extend(['--lumi', f'{self.setup.global_params["luminosity"]}'])
-                    AnaTupleMergeOrganizer_cmd.extend(['--nPbPerFile', f'{self.setup.global_params["nPbPerFile"]}'])
+                    if hasattr(self.setup.global_params, 'nPbPerFile'): 
+                        # If nPbPerFile is defined, use it, else use the default 1_000
+                        AnaTupleMergeOrganizer_cmd.extend(['--nPbPerFile', f'{self.setup.global_params["nPbPerFile"]}'])
                 AnaTupleMergeOrganizer_cmd.extend(local_inputs)
                 ps_call(AnaTupleMergeOrganizer_cmd,verbose=1)
 

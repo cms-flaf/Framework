@@ -96,7 +96,6 @@ def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, ana
     reports = []
     outfilesNames = []
     k=0
-    nEventsAfterFilter = 0
     print(f"syst_dict={syst_dict}")
     for syst_name, source_name in syst_dict.items():
         if source_name not in uncertainties and "all" not in uncertainties: continue

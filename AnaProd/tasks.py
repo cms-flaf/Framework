@@ -250,7 +250,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 
 
-class AnaTupleMergeOrganizerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+class AnaTupleFileListTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
@@ -304,7 +304,7 @@ class AnaTupleMergeOrganizerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def output(self):
         sample_name, sample_type  = self.branch_data
         output_name = 'merged_plan.json'
-        output_path = os.path.join('AnaTupleMergeOrganizer', self.version, self.period, sample_name, output_name)
+        output_path = os.path.join('AnaTupleFileList', self.version, self.period, sample_name, output_name)
         # This is a problem for a --remove-output task, it crashes since the 'output' is only the local or something
         # With this current state, you need to do the --remove-output command twice
         if self.local_target('merge_cache', f'{sample_name}.json').exists():
@@ -314,7 +314,7 @@ class AnaTupleMergeOrganizerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         sample_name, sample_type  = self.branch_data
-        AnaTupleMergeOrganizer = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'AnaTupleMergeOrganizer.py')
+        AnaTupleFileList = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'AnaTupleFileList.py')
         with contextlib.ExitStack() as stack:
             local_inputs = [stack.enter_context(inp[1].localize('r')).path for inp in self.input()]
 
@@ -347,20 +347,20 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
 
     def workflow_requires(self):
-        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
-            return { "AnaTupleMergeOrganizerTask": AnaTupleMergeOrganizerTask.req(self, branches=()) }
+            return { "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()) }
 
         branch_set = set()
         for idx, sample_names in self.branch_map.items():
             branch_set.update([idx])
-        return { "AnaTupleMergeOrganizerTask" : AnaTupleMergeOrganizerTask.req(self, branches=tuple(branch_set)), "AnaTupleTask": AnaTupleTask.req(self, branches=tuple(branch_set),customisations=self.customisations) }
+        return { "AnaTupleFileListTask" : AnaTupleFileListTask.req(self, branches=tuple(branch_set)), "AnaTupleTask": AnaTupleTask.req(self, branches=tuple(branch_set),customisations=self.customisations) }
 
     def requires(self):
-        # Need both the AnaTupleTask for the input ROOT file, and the AnaTupleMergeOrganizerTask for the json structure
+        # Need both the AnaTupleTask for the input ROOT file, and the AnaTupleFileListTask for the json structure
         sample_name, sample_type, input_file_list, output_file_list = self.branch_data
         anaTuple_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
-        anaTupleMergeOrganizer_branch_map = AnaTupleMergeOrganizerTask.req(self, branch=-1, branches=()).create_branch_map()
+        anaTupleMergeOrganizer_branch_map = AnaTupleFileListTask.req(self, branch=-1, branches=()).create_branch_map()
         required_branches = []
         for prod_br, (anaTuple_sample_id, anaTuple_sample_name, anaTuple_sample_type, file_location) in anaTuple_branch_map.items():
             if anaTuple_sample_name == sample_name or (sample_type == 'data' and anaTuple_sample_type == 'data'):
@@ -368,12 +368,12 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     required_branches.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
         for prod_br, (Merge_sample_name, Merge_sample_type) in anaTupleMergeOrganizer_branch_map.items():
             if Merge_sample_name == sample_name:
-                required_branches.append(AnaTupleMergeOrganizerTask.req(self, max_runtime=AnaTupleMergeOrganizerTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
+                required_branches.append(AnaTupleFileListTask.req(self, max_runtime=AnaTupleFileListTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
         return required_branches
     
     
     def create_branch_map(self):
-        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
             self.cache_branch_map = False
             if not hasattr(self, '_branches_backup'):
@@ -382,10 +382,10 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         self.cache_branch_map = True
         branches = {}
         nBranch = 0
-        organizer_branch_map = AnaTupleMergeOrganizerTask.req(self,branch=-1, branches=()).create_branch_map()
+        organizer_branch_map = AnaTupleFileListTask.req(self,branch=-1, branches=()).create_branch_map()
         for nJob, (sample_name, sample_type) in organizer_branch_map.items():
             # This function cannot run if the json doesn't exist yet, so the branch map breaks when the output isn't already there
-            this_sample_dict = self.setup.getAnaTupleFileList(sample_name, AnaTupleMergeOrganizerTask.req(self,branch=nJob, branches=()).output()[-1]) # Get output[-1] for the local file version
+            this_sample_dict = self.setup.getAnaTupleFileList(sample_name, AnaTupleFileListTask.req(self,branch=nJob, branches=()).output()[-1]) # Get output[-1] for the local file version
             # We probably want to return None for a json that doesn't exist or something, right now if an expected branch is not there this entire task will fail
             for this_dict in this_sample_dict['merge_strategy']:
                 input_file_list = this_dict['inputs']

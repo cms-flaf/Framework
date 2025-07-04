@@ -10,7 +10,7 @@ import copy
 from FLAF.RunKit.run_tools import ps_call
 from FLAF.RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
 from FLAF.run_tools.law_customizations import Task, HTCondorWorkflow, copy_param,get_param_value
-from FLAF.AnaProd.tasks import AnaTupleTask, DataMergeTask, DataCacheMergeTask, AnaCacheTask, InputFileTask, AnaTupleMergeOrganizerTask, AnaTupleMergeTask
+from FLAF.AnaProd.tasks import AnaTupleTask, DataMergeTask, DataCacheMergeTask, AnaCacheTask, InputFileTask, AnaTupleFileListTask, AnaTupleMergeTask
 
 import importlib
 
@@ -74,10 +74,10 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 2)
 
     def workflow_requires(self):
-        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
             req_dict = { 
-                "AnaTupleMergeOrganizerTask": AnaTupleMergeOrganizerTask.req(self, branches=()), 
+                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()), 
                 "AnaTupleMergeTask": AnaTupleMergeTask.req(self, branches=())
             }
             # Get all the producers to require for this dummy branch
@@ -133,7 +133,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 
     def create_branch_map(self):
-        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
             self.cache_branch_map = False
             if not hasattr(self, '_branches_backup'):
@@ -234,10 +234,10 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
     def workflow_requires(self):
-        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
             return { 
-                "AnaTupleMergeOrganizerTask": AnaTupleMergeOrganizerTask.req(self, branches=()),
+                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()),
                 "HistProducerFileTask": HistProducerFileTask.req(self, branches=())
             }
 
@@ -260,7 +260,7 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 
     def create_branch_map(self):
-        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
             self.cache_branch_map = False
             if not hasattr(self, '_branches_backup'):
@@ -307,9 +307,9 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
 
     def workflow_requires(self):
-        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
-            return { "AnaTupleMergeOrganizerTask": AnaTupleMergeOrganizerTask.req(self, branches=()) }
+            return { "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()) }
             
         histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations).create_branch_map()
         all_samples = {}
@@ -332,7 +332,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return deps
 
     def create_branch_map(self):
-        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
             self.cache_branch_map = False
             if not hasattr(self, '_branches_backup'):
@@ -458,10 +458,10 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     producer_to_run = luigi.Parameter()
 
     def workflow_requires(self):
-        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
             req_dict = { 
-                "AnaTupleMergeOrganizerTask": AnaTupleMergeOrganizerTask.req(self, branches=()), 
+                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()), 
                 "AnaTupleMergeTask": AnaTupleMergeTask.req(self, branches=())
             }
             # Get all the producers to require for this dummy branch
@@ -498,7 +498,7 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return requires_list
 
     def create_branch_map(self):
-        merge_organization_complete = AnaTupleMergeOrganizerTask.req(self, branches=()).complete()
+        merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
             self.cache_branch_map = False
             if not hasattr(self, '_branches_backup'):

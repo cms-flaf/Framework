@@ -132,6 +132,8 @@ if __name__ == "__main__":
         #    os.remove(tmpFileName)
 
     if args.outFiles != None and len(args.outFiles) > 0:
+        if len(args.outFiles) > 1 and len(objects) > 1:
+            raise RuntimeError("Cannot split multiple objects into multiple files, please use a single object or a single file.")
         for obj_name, obj_desc in objects.items():
             print(f"At splitting for {obj_name} {obj_desc}")
             # We want to make this general to also split MC later, but these object names could cause an issue?

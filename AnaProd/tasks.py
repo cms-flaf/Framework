@@ -6,7 +6,6 @@ import os
 import shutil
 import threading
 import yaml
-import datetime
 
 
 from FLAF.RunKit.run_tools import ps_call, natural_sort
@@ -380,6 +379,7 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             if not hasattr(self, '_branches_backup'):
                 self._branches_backup = copy.deepcopy(self.branches)
             return { 0: () }
+        self.cache_branch_map = True
         branches = {}
         nBranch = 0
         organizer_branch_map = AnaTupleMergeOrganizerTask.req(self,branch=-1, branches=()).create_branch_map()

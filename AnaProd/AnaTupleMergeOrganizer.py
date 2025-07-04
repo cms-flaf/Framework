@@ -23,7 +23,7 @@ if __name__ == "__main__":
     parser.add_argument('--nEventsPerFile', required=False, type=int, default=100_000)
     parser.add_argument('--isData', required=False, type=bool, default=False)
     parser.add_argument('--lumi', required=False, type=float, default=None)
-
+    parser.add_argument('--nPbPerFile', required=False, type=int, default=1_000)  # 1fb-1 per split data file
 
     args = parser.parse_args()
 
@@ -67,14 +67,16 @@ if __name__ == "__main__":
 
 
     # If data, then just do the lumi look-up and calculate the nFiles for splitting
-    if args.isData and hasattr(args, 'lumi'):
-        nPbPerFile = 1_000 # 1fb-1 per split data file 
-        lumi = args.lumi
-        nFiles = int(lumi/nPbPerFile)
-        for nFileCounter in range(nFiles):
-            output_file_list.append(f'anaTuple_{nFileCounter}.root')
-        hadd_dict['merge_strategy'].append({'inputs': input_file_list, 'outputs': output_file_list})
-
+    if args.isData:
+        if hasattr(args, 'lumi') and hasattr(args, 'nPbPerFile'):
+            nPbPerFile = args.nPbPerFile
+            lumi = args.lumi
+            nFiles = int(lumi/nPbPerFile)
+            for nFileCounter in range(nFiles):
+                output_file_list.append(f'anaTuple_{nFileCounter}.root')
+            hadd_dict['merge_strategy'].append({'inputs': input_file_list, 'outputs': output_file_list})
+        else:
+            raise ValueError("For data, you need to provide --lumi and --nPbPerFile arguments.")
 
     jsonName = args.outFile
     with open(jsonName, 'w') as fp:

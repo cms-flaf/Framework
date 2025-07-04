@@ -385,7 +385,7 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         organizer_branch_map = AnaTupleMergeOrganizerTask.req(self,branch=-1, branches=()).create_branch_map()
         for nJob, (sample_name, sample_type) in organizer_branch_map.items():
             # This function cannot run if the json doesn't exist yet, so the branch map breaks when the output isn't already there
-            this_sample_dict = self.setup.getAnaTupleMergeStrategy(sample_name, AnaTupleMergeOrganizerTask.req(self,branch=nJob, branches=()).output()[-1]) # Get output[-1] for the local file version
+            this_sample_dict = self.setup.getAnaTupleFileList(sample_name, AnaTupleMergeOrganizerTask.req(self,branch=nJob, branches=()).output()[-1]) # Get output[-1] for the local file version
             # We probably want to return None for a json that doesn't exist or something, right now if an expected branch is not there this entire task will fail
             for this_dict in this_sample_dict['merge_strategy']:
                 input_file_list = this_dict['inputs']

@@ -140,8 +140,8 @@ class Setup:
             if type(sample_entry) != dict:
                 raise RuntimeError(f'Invalid sample definition period="{period}", sample_name="{sample_name}"')
         selected_samples = select_items(samples.keys(), self.global_params.get('sampleSelection', []))
-        if sample: # If you define a user cample, then only that sample is selected
-            selected_samples = [s for s in selected_samples if s == sample]
+        if sample: # If you define a user sample, then only that sample is selected
+            selected_samples = select_items(selected_samples, ['drop ^.*', f'keep {sample}'])
         self.samples = { key : samples[key] for key in selected_samples }
 
         self.fs_dict = {}
@@ -158,7 +158,7 @@ class Setup:
 
         self.signal_samples = [ key for key in self.samples if self.samples[key]['sampleType'] in self.global_params['signal_types'] ]
 
-        self.anaTupleMerge_Strategy = {}
+        self.anaTupleFiles = {}
 
 
     def get_fs(self, fs_name):
@@ -217,14 +217,14 @@ class Setup:
 
 
 
-    def getAnaTupleMergeStrategy(self, sample_name, remote_file):
-        if sample_name in self.anaTupleMerge_Strategy.keys():
-            return self.anaTupleMerge_Strategy[sample_name]
+    def getAnaTupleFileList(self, sample_name, remote_file):
+        if sample_name in self.anaTupleFiles.keys():
+            return self.anaTupleFiles[sample_name]
         else:
             with remote_file.localize('r') as f:
                 with open(f.path, 'r') as this_file:
                     json_dict = json.load(this_file)
                     sample_dict = json_dict
-                    self.anaTupleMerge_Strategy[sample_name] = sample_dict
-            return self.anaTupleMerge_Strategy[sample_name]
+                    self.anaTupleFiles[sample_name] = sample_dict
+            return self.anaTupleFiles[sample_name]
             

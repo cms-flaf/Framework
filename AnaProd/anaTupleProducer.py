@@ -53,16 +53,16 @@ def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, ana
     df = ROOT.RDataFrame(treeName, inFile)
     json_dict_for_cache = {}
     nEventsInFile = df.Count().GetValue() # If range exists, it only loads that number of events -- does this mean the same file could be loaded by multiple anaTuple jobs? This could be an issue for normalizing later
-    lumis = df.Take["unsigned int"]("luminosityBlock")
-    runs = df.Take["unsigned int"]("run")
-    lumis_val = lumis.GetValue()
-    runs_val = runs.GetValue()
-    run_lumi = [ f"{run}:{lumi}" for run,lumi in zip(runs_val,lumis_val) ]
-    unique_run_lumi = list(set(run_lumi))
+    # lumis = df.Take["unsigned int"]("luminosityBlock")
+    # runs = df.Take["unsigned int"]("run")
+    # lumis_val = lumis.GetValue()
+    # runs_val = runs.GetValue()
+    # run_lumi = [ f"{run}:{lumi}" for run,lumi in zip(runs_val,lumis_val) ]
+    # unique_run_lumi = list(set(run_lumi))
     json_dict_for_cache['nano_file_name'] = inFileName
     json_dict_for_cache['nEvents'] = nEventsInFile
     json_dict_for_cache['sample_name'] = sample_name
-    if isData: json_dict_for_cache['RunLumi'] = unique_run_lumi
+    # if isData: json_dict_for_cache['RunLumi'] = unique_run_lumi
     ROOT.RDF.Experimental.AddProgressBar(df)
     if range is not None:
         df = df.Range(range)
@@ -96,6 +96,7 @@ def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, ana
     reports = []
     outfilesNames = []
     k=0
+    nEventsAfterFilter = 0
     print(f"syst_dict={syst_dict}")
     for syst_name, source_name in syst_dict.items():
         if source_name not in uncertainties and "all" not in uncertainties: continue
@@ -164,8 +165,7 @@ def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, ana
         snaps.append(dfw.df.Snapshot(f"Events", outFileName, varToSave, snapshotOptions))
 
         if is_central:
-            nEventsAfterFilter = dfw.df.Count().GetValue()
-            json_dict_for_cache['nEvents_Filtered'] = nEventsAfterFilter
+            nEventsAfterFilter = dfw.df.Count()#.GetValue()
     if snapshotOptions.fLazy == True:
         ROOT.RDF.RunGraphs(snaps)
     hist_time = ROOT.TH1D(f"time", f"time", 1, 0, 1)
@@ -186,6 +186,8 @@ def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, ana
         jsonName = f"{inFileName.split('.')[0]}.json"
     jsonName = os.path.join(outDir, f"{jsonName}")
 
+    # Move GetValue() to here so it only runs loop once (after the snaps list)
+    json_dict_for_cache['nEvents_Filtered'] = nEventsAfterFilter.GetValue()
     with open(jsonName, 'w') as fp:
         json.dump(json_dict_for_cache, fp)
 

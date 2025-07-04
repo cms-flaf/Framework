@@ -87,7 +87,7 @@ def apply_customisations(config_dict, customisations):
 
 class Setup:
     _global_instances = {}
-    def __init__(self, ana_path, period, sample=None, customisations=None):
+    def __init__(self, ana_path, period, sample="", customisations=None):
         self.ana_path = ana_path
         self.period = period
 

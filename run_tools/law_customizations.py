@@ -38,7 +38,7 @@ class Task(law.Task):
     period = luigi.Parameter()
     customisations =luigi.Parameter(default="")
     test = luigi.BoolParameter(default=False)
-    sample = luigi.Parameter(default=None)
+    sample = luigi.Parameter(default="")
 
     def __init__(self, *args, **kwargs):
         super(Task, self).__init__(*args, **kwargs)

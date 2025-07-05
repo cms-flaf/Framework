@@ -267,6 +267,8 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 self._branches_backup = copy.deepcopy(self.branches)
             return { 0: () }
         self.cache_branch_map = True
+        if hasattr(self, '_branches_backup'):
+            self.branches = self._branches_backup
         branches = {}
         histProducerFile_map = HistProducerFileTask.req(self,branch=-1, branches=()).create_branch_map()
         all_samples = {}
@@ -341,6 +343,8 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 self._branches_backup = copy.deepcopy(self.branches)
             return { 0: () }
         self.cache_branch_map = True
+        if hasattr(self, '_branches_backup'):
+            self.branches = self._branches_backup
         histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations).create_branch_map()
         all_samples = {}
         branches = {}
@@ -508,6 +512,8 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             return { 0: () }
         branches = {}
         self.cache_branch_map = True
+        if hasattr(self, '_branches_backup'):
+            self.branches = self._branches_backup
         anaProd_branch_map = AnaTupleMergeTask.req(self, branch=-1, branches=()).branch_map
         for br_idx, (sample_name, sample_type, input_file_list, output_file_list) in anaProd_branch_map.items():
             branches[br_idx] = (sample_name, sample_type, len(output_file_list))

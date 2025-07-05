@@ -382,6 +382,8 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 self._branches_backup = copy.deepcopy(self.branches)
             return { 0: () }
         self.cache_branch_map = True
+        if hasattr(self, '_branches_backup'):
+            self.branches = self._branches_backup
         branches = {}
         nBranch = 0
         organizer_branch_map = AnaTupleFileListTask.req(self,branch=-1, branches=()).create_branch_map()

@@ -300,6 +300,7 @@ if __name__ == "__main__":
         compute_variations = ( args.compute_unc_variations or args.compute_rel_weights ) and args.dataset != 'data'
         if compute_variations:
             all_dataframes[key_central][0] = createCentralQuantities(all_dataframes[key_central][0], col_types_central, col_names_central)
+            # If original count is already 0, then you don't need to raise error
             if all_dataframes[key_central][0].Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
         # norm weight histograms
 

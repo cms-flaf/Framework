@@ -58,6 +58,7 @@ if __name__ == "__main__":
   syst_trees = []
   k=0
   for systFile in all_files:
+    if not systFile.endswith('root'): continue
     if args.test and k>=10 :
       #print(systFile)
       continue

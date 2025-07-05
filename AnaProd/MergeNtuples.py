@@ -103,7 +103,9 @@ if __name__ == "__main__":
     if args.useUproot:
         tmpFileName+= '.tmp.root'
     compression = ROOT.CompressionSettings(snapshotOptions.fCompressionAlgorithm, snapshotOptions.fCompressionLevel)
-    outputFile = ROOT.TFile(tmpFileName, "RECREATE", "", compression)
+    # Set final output file name for the TH1's, use only first one now since TH1 can't be split into multiple files
+    report_file_name = args.outFiles[0] if args.outFiles is not None and len(args.outFiles) > 0 else tmpFileName
+    outputFile = ROOT.TFile(report_file_name, "RECREATE", "", compression)
     for obj_name, obj_desc in objects.items():
         if obj_desc.obj_type != "TH1":
             continue
@@ -114,6 +116,9 @@ if __name__ == "__main__":
         file.Close()
 
 
+    # Delete tmp file if it exists
+    outputFile = ROOT.TFile(tmpFileName, "RECREATE", "", compression)
+    outputFile.Close()
 
     for obj_name, obj_desc in objects.items():
         print(f"At writing for {obj_name} {obj_desc}")

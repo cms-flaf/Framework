@@ -69,9 +69,10 @@ if __name__ == "__main__":
     # If data, then just do the lumi look-up and calculate the nFiles for splitting
     if args.isData:
         if hasattr(args, 'lumi') and hasattr(args, 'nPbPerFile'):
+            print("Inside the final data part")
             nPbPerFile = args.nPbPerFile
             lumi = args.lumi
-            nFiles = int(lumi/nPbPerFile)
+            nFiles = int(lumi/nPbPerFile)+1 # Need to add 1 since int will floor the division
             for nFileCounter in range(nFiles):
                 output_file_list.append(f'anaTuple_{nFileCounter}.root')
             hadd_dict['merge_strategy'].append({'inputs': input_file_list, 'outputs': output_file_list})

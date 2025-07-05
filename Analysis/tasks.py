@@ -283,6 +283,8 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return branches
 
     def output(self):
+        if len(self.branch_data) == 0:
+            return self.local_target('dummy.txt')
         sample_name, idx_list, var_list  = self.branch_data
         split_dir = 'split'
         return_list = []

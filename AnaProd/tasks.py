@@ -316,20 +316,22 @@ class AnaTupleFileListTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         sample_name, sample_type  = self.branch_data
         AnaTupleFileList = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'AnaTupleFileList.py')
         with contextlib.ExitStack() as stack:
-            local_inputs = [stack.enter_context(inp[1].localize('r')).path for inp in self.input()]
-
             remote_output = self.output()[0]
             local_output = self.output()[1]
 
-            with remote_output.localize("w") as tmp_local_file:
-                # Check if remote already exists, if so then just copy and return
-                if remote_output.exists():
-                    print("Hey remote already exists! Don't run again, just copy to local")
-                    with local_output.localize("w") as tmp_local_file2:
+            # Check if remote already exists, if so then just copy and return
+            if remote_output.exists():
+                print("Hey remote already exists! Don't run again, just copy to local")
+                with local_output.localize("w") as tmp_local_file2:
+                    with remote_output.localize("r") as tmp_local_file:
                         shutil.copy(tmp_local_file.path, tmp_local_file2.path)
                         return
-                    
-                nEventsPerFile = 100_000
+                
+            print("Localizing inputs")
+            local_inputs = [stack.enter_context(inp[1].localize('r')).path for inp in self.input()]
+
+            with remote_output.localize("w") as tmp_local_file:                    
+                nEventsPerFile = self.setup.global_params.get('nEventsPerFile', 100_000)
                 AnaTupleFileList_cmd = ['python3', AnaTupleFileList,'--outFile', tmp_local_file.path]#, '--remove-files', 'True']
                 AnaTupleFileList_cmd.extend(['--nEventsPerFile', f'{nEventsPerFile}'])
                 if sample_name == 'data': 
@@ -417,7 +419,7 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             Merge_cmd.extend(local_inputs)
             ps_call(Merge_cmd,verbose=1)
 
-        delete_after_merge = True # Right now this causes crashes due to dependencies
+        delete_after_merge = True
         if delete_after_merge:
             print(f"Finished merging, lets delete remote targets")
             for remote_target in input_list_remote_target:

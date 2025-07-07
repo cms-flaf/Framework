@@ -38,10 +38,11 @@ class Task(law.Task):
     period = luigi.Parameter()
     customisations =luigi.Parameter(default="")
     test = luigi.BoolParameter(default=False)
+    sample = luigi.Parameter(default="")
 
     def __init__(self, *args, **kwargs):
         super(Task, self).__init__(*args, **kwargs)
-        self.setup = Setup.getGlobal(os.getenv("ANALYSIS_PATH"), self.period, self.customisations)
+        self.setup = Setup.getGlobal(os.getenv("ANALYSIS_PATH"), self.period, self.sample, self.customisations)
 
     def store_parts(self):
         return (self.__class__.__name__, self.version, self.period)

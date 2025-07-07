@@ -5,6 +5,8 @@ import ROOT
 import shutil
 import zlib
 # import fastcrc
+import json
+
 
 if __name__ == "__main__":
     sys.path.append(os.environ['ANALYSIS_PATH'])
@@ -26,7 +28,7 @@ def SelectBTagShapeSF(df,weight_name):
     return df
 
 def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, anaCache, snapshotOptions,range, evtIds,
-                   store_noncentral, compute_unc_variations, uncertainties, anaTupleDef,channels):
+                   store_noncentral, compute_unc_variations, uncertainties, anaTupleDef,channels, jsonName=None):
     start_time = datetime.datetime.now()
     compression_settings = snapshotOptions.fCompressionAlgorithm * 100 + snapshotOptions.fCompressionLevel
     period = setup.global_params["era"]
@@ -49,6 +51,18 @@ def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, ana
     Corrections.initializeGlobal(setup.global_params, sample_name, isData=isData, load_corr_lib=True, trigger_class=trigger_class)
     corrections = Corrections.getGlobal()
     df = ROOT.RDataFrame(treeName, inFile)
+    json_dict_for_cache = {}
+    nEventsInFile = df.Count().GetValue() # If range exists, it only loads that number of events -- does this mean the same file could be loaded by multiple anaTuple jobs? This could be an issue for normalizing later
+    # lumis = df.Take["unsigned int"]("luminosityBlock")
+    # runs = df.Take["unsigned int"]("run")
+    # lumis_val = lumis.GetValue()
+    # runs_val = runs.GetValue()
+    # run_lumi = [ f"{run}:{lumi}" for run,lumi in zip(runs_val,lumis_val) ]
+    # unique_run_lumi = list(set(run_lumi))
+    json_dict_for_cache['nano_file_name'] = inFileName
+    json_dict_for_cache['nEvents'] = nEventsInFile
+    json_dict_for_cache['sample_name'] = sample_name
+    # if isData: json_dict_for_cache['RunLumi'] = unique_run_lumi
     ROOT.RDF.Experimental.AddProgressBar(df)
     if range is not None:
         df = df.Range(range)
@@ -63,7 +77,7 @@ def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, ana
     df = df.Define("period", f"static_cast<int>(Period::{period})")
     df = df.Define("X_mass", f"static_cast<int>({mass})") # this has to be moved in specific analyses def
     df = df.Define("X_spin", f"static_cast<int>({spin})") # this has to be moved in specific analyses def
-    df = df.Define("FullEventId", f"""eventId::encodeFullEventId({Utilities.crc16(sample_name.encode())}, {Utilities.crc16(inFile.encode())}, rdfentry_)""")
+    df = df.Define("FullEventId", f"""eventId::encodeFullEventId({Utilities.crc16(sample_name.encode())}, {Utilities.crc16(inFileName.encode())}, rdfentry_)""")
 
     is_data = 'true' if isData else 'false'
     df = df.Define("isData", is_data)
@@ -148,6 +162,9 @@ def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, ana
         outfilesNames.append(outFileName)
         reports.append(dfw.df.Report())
         snaps.append(dfw.df.Snapshot(f"Events", outFileName, varToSave, snapshotOptions))
+
+        if is_central:
+            nEventsAfterFilter = dfw.df.Count()#.GetValue()
     if snapshotOptions.fLazy == True:
         ROOT.RDF.RunGraphs(snaps)
     hist_time = ROOT.TH1D(f"time", f"time", 1, 0, 1)
@@ -162,6 +179,16 @@ def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, ana
         outputRootFile.Close()
         # if print_cutflow:
         #     report.Print()
+
+    # Dump 
+    if jsonName == None:
+        jsonName = f"{inFileName.split('.')[0]}.json"
+    jsonName = os.path.join(outDir, f"{jsonName}")
+
+    # Move GetValue() to here so it only runs loop once (after the snaps list)
+    json_dict_for_cache['nEvents_Filtered'] = nEventsAfterFilter.GetValue()
+    with open(jsonName, 'w') as fp:
+        json.dump(json_dict_for_cache, fp)
 
 if __name__ == "__main__":
     import argparse
@@ -187,6 +214,7 @@ if __name__ == "__main__":
     parser.add_argument('--channels', type=str, default=None)
     parser.add_argument('--nEvents', type=int, default=None)
     parser.add_argument('--evtIds', type=str, default='')
+    parser.add_argument('--jsonName', type=str, default=None)
 
     args = parser.parse_args()
 
@@ -212,4 +240,4 @@ if __name__ == "__main__":
     snapshotOptions.fCompressionLevel = args.compressionLevel
     createAnatuple(args.inFile, args.inFileName, args.treeName, args.outDir, setup, args.sample, anaCache, snapshotOptions,
                    args.nEvents, args.evtIds, args.store_noncentral, args.compute_unc_variations,
-                   args.uncertainties.split(","), anaTupleDef,channels)
+                   args.uncertainties.split(","), anaTupleDef, channels, jsonName=args.jsonName)

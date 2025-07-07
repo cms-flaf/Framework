@@ -5,6 +5,7 @@ import ROOT
 import datetime
 import time
 import shutil
+import importlib
 
 ROOT.EnableThreadSafety()
 
@@ -13,7 +14,7 @@ from FLAF.RunKit.run_tools import ps_call
 import FLAF.Common.LegacyVariables as LegacyVariables
 import FLAF.Common.Utilities as Utilities
 
-defaultColToSave = ["FullEventId","luminosityBlock", "run","event", "sample_type", "sample_name", "period", "X_mass", "X_spin", "isData"]
+defaultColToSave = ["FullEventId"] 
 scales = ['Up','Down']
 
 def getKeyNames(root_file_name):
@@ -53,7 +54,8 @@ def createCentralQuantities(df_central, central_col_types, central_columns):
     df_central = map_creator.processCentral(ROOT.RDF.AsRNode(df_central), Utilities.ListToVector(central_columns))
     return df_central
 
-def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, snapshotOptions, compute_unc_variations, deepTauVersion):
+# add extra argument to this function - which payload producer to run
+def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, snapshotOptions, compute_unc_variations, deepTauVersion, producer_to_run):
     start_time = datetime.datetime.now()
     verbosity = ROOT.Experimental.RLogScopedVerbosity(ROOT.Detail.RDF.RDFLogChannel(), ROOT.Experimental.ELogLevel.kInfo)
     snaps = []
@@ -62,8 +64,18 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
     df = ROOT.RDataFrame('Events', inFileName)
     df_begin = df
     dfw = Utilities.DataFrameWrapper(df_begin,defaultColToSave)
-    LegacyVariables.Initialize()
-    applyLegacyVariables(dfw, global_cfg_dict, True)
+    
+    if not producer_to_run:
+        raise RuntimeError("Producer must be specified to compute analysis cache")
+
+    producer_config = global_cfg_dict['payload_producers'][producer_to_run]
+    producers_module_name = producer_config['producers_module_name']
+    producer_name = producer_config['producer_name']
+    producers_module = importlib.import_module(producers_module_name)
+    producer_class = getattr(producers_module, producer_name)
+    producer = producer_class(producer_config)
+    dfw = producer.run(dfw)
+
     varToSave = Utilities.ListToVector(dfw.colToSave)
     all_files.append(f'{outFileName}_Central.root')
     snaps.append(dfw.df.Snapshot(f"Events", f'{outFileName}_Central.root', varToSave, snapshotOptions))
@@ -74,7 +86,8 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
         colNames =  dfWrapped_central.colNames
         colTypes =  dfWrapped_central.colTypes
         dfWrapped_central.df = createCentralQuantities(df_begin, colTypes, colNames)
-        if dfWrapped_central.df.Filter("map_placeholder > 0").Count().GetValue() <= 0 : raise RuntimeError("no events passed map placeolder")
+        if dfWrapped_central.df.Filter("map_placeholder > 0").Count().GetValue() <= 0 : 
+            raise RuntimeError("no events passed map placeolder")
         print("finished defining central quantities")
         snapshotOptions.fLazy=False
         for uncName in unc_cfg_dict['shape']:
@@ -87,8 +100,7 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
                     dfWrapped_noDiff.AddMissingColumns(colNames, colTypes)
                     dfW_noDiff = Utilities.DataFrameWrapper(dfWrapped_noDiff.df,defaultColToSave)
-                    applyLegacyVariables(dfW_noDiff,global_cfg_dict, False)
-                    varToSave = Utilities.ListToVector(dfW_noDiff.colToSave)
+                    dfW_noDiff = producer.run(dfW_noDiff)
                     all_files.append(f'{outFileName}_{uncName}{scale}_noDiff.root')
                     dfW_noDiff.df.Snapshot(treeName_noDiff, f'{outFileName}_{uncName}{scale}_noDiff.root', varToSave, snapshotOptions)
                 treeName_Valid = f"{treeName}_Valid"
@@ -98,8 +110,7 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
                     dfWrapped_Valid.AddMissingColumns(colNames, colTypes)
                     dfW_Valid = Utilities.DataFrameWrapper(dfWrapped_Valid.df,defaultColToSave)
-                    applyLegacyVariables(dfW_Valid,global_cfg_dict, False)
-                    varToSave = Utilities.ListToVector(dfW_Valid.colToSave)
+                    dfW_Valid = producer.run(dfW_Valid)
                     all_files.append(f'{outFileName}_{uncName}{scale}_Valid.root')
                     dfW_Valid.df.Snapshot(treeName_Valid, f'{outFileName}_{uncName}{scale}_Valid.root', varToSave, snapshotOptions)
                 treeName_nonValid = f"{treeName}_nonValid"
@@ -108,8 +119,7 @@ def createAnaCacheTuple(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     dfWrapped_nonValid = Utilities.DataFrameBuilderBase(df_nonValid)
                     dfWrapped_nonValid.AddMissingColumns(colNames, colTypes)
                     dfW_nonValid = Utilities.DataFrameWrapper(dfWrapped_nonValid.df,defaultColToSave)
-                    applyLegacyVariables(dfW_nonValid,global_cfg_dict, False)
-                    varToSave = Utilities.ListToVector(dfW_nonValid.colToSave)
+                    dfW_nonValid = producer.run(dfW_nonValid)
                     all_files.append(f'{outFileName}_{uncName}{scale}_nonValid.root')
                     dfW_nonValid.df.Snapshot(treeName_nonValid, f'{outFileName}_{uncName}{scale}_nonValid.root', varToSave, snapshotOptions)
     print(f"snaps len is {len(snaps)}")
@@ -133,9 +143,13 @@ if __name__ == "__main__":
     parser.add_argument('--compressionAlgo', type=str, default="ZLIB")
     parser.add_argument('--deepTauVersion', type=str, default="v2p1")
     parser.add_argument('--channels', type=str, default=None)
+    parser.add_argument('--producer', type=str, default=None)
     args = parser.parse_args()
 
-    for header in [ "include/KinFitInterface.h", "FLAF/include/HistHelper.h", "FLAF/include/Utilities.h" ]:
+    ana_path = os.environ["ANALYSIS_PATH"]
+    # headers = [ "FLAF/include/KinFitInterface.h", "FLAF/include/HistHelper.h", "FLAF/include/Utilities.h" ]
+    headers = [ "FLAF/include/HistHelper.h", "FLAF/include/Utilities.h" ]
+    for header in headers:
         DeclareHeader(os.environ["ANALYSIS_PATH"]+"/"+header)
 
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
@@ -157,7 +171,7 @@ if __name__ == "__main__":
     if args.channels:
         global_cfg_dict['channelSelection'] = args.channels.split(',') if type(args.channels) == str else args.channels
     outFileNameFinal = f'{args.outFileName}'
-    all_files = createAnaCacheTuple(args.inFileName, args.outFileName.split('.')[0], unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion)
+    all_files = createAnalysisCache(args.inFileName, args.outFileName.split('.')[0], unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion, args.producer)
     hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
     hadd_str += ' '.join(f for f in all_files)
     if len(all_files) > 1:

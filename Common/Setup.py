@@ -1,9 +1,11 @@
 import os
 import re
 import yaml
+import json
 
 from FLAF.RunKit.envToJson import get_cmsenv
 from FLAF.RunKit.law_wlcg import WLCGFileSystem
+from FLAF.RunKit.grid_tools import gfal_ls
 
 def select_items(all_items, filters):
     def name_match(name, pattern):
@@ -85,7 +87,7 @@ def apply_customisations(config_dict, customisations):
 
 class Setup:
     _global_instances = {}
-    def __init__(self, ana_path, period, customisations=None):
+    def __init__(self, ana_path, period, sample="", customisations=None):
         self.ana_path = ana_path
         self.period = period
 
@@ -122,11 +124,24 @@ class Setup:
                                              ana_global_config, sample_config.get('GLOBAL', {}))
         apply_customisations(self.global_params, customisations)
 
+        # create payload -> what producer delivers it
+        # will be used to check if cache is needed
+        self.var_producer_map = {}
+        payload_producers_cfg = self.global_params.get("payload_producers")
+        if payload_producers_cfg:
+            for producer_name, producer_config in payload_producers_cfg.items():
+                columns_delivered = producer_config.get("columns")
+                if columns_delivered:
+                    for col in columns_delivered:    
+                        self.var_producer_map[f"{producer_name}_{col}"] = producer_name                
+
         samples = load_parameters(ana_sample_config, sample_config, keys_to_ignore={'GLOBAL'})
         for sample_name, sample_entry in samples.items():
             if type(sample_entry) != dict:
                 raise RuntimeError(f'Invalid sample definition period="{period}", sample_name="{sample_name}"')
         selected_samples = select_items(samples.keys(), self.global_params.get('sampleSelection', []))
+        if sample: # If you define a user sample, then only that sample is selected
+            selected_samples = select_items(selected_samples, ['drop ^.*', f'keep {sample}'])
         self.samples = { key : samples[key] for key in selected_samples }
 
         self.fs_dict = {}
@@ -142,6 +157,9 @@ class Setup:
         self.cmssw_env_ = None
 
         self.signal_samples = [ key for key in self.samples if self.samples[key]['sampleType'] in self.global_params['signal_types'] ]
+
+        self.anaTupleFiles = {}
+
 
     def get_fs(self, fs_name):
         if fs_name not in self.fs_dict:
@@ -191,8 +209,22 @@ class Setup:
         return self.backgrounds_
 
     @staticmethod
-    def getGlobal(ana_path, period, customisations=None):
-        key = (ana_path, period, customisations)
+    def getGlobal(ana_path, period, sample, customisations=None):
+        key = (ana_path, period, sample, customisations)
         if key not in Setup._global_instances:
-            Setup._global_instances[key] = Setup(ana_path, period, customisations)
+            Setup._global_instances[key] = Setup(ana_path, period, sample, customisations)
         return Setup._global_instances[key]
+
+
+
+    def getAnaTupleFileList(self, sample_name, remote_file):
+        if sample_name in self.anaTupleFiles.keys():
+            return self.anaTupleFiles[sample_name]
+        else:
+            with remote_file.localize('r') as f:
+                with open(f.path, 'r') as this_file:
+                    json_dict = json.load(this_file)
+                    sample_dict = json_dict
+                    self.anaTupleFiles[sample_name] = sample_dict
+            return self.anaTupleFiles[sample_name]
+            

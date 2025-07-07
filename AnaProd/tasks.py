@@ -16,6 +16,7 @@ from FLAF.AnaProd.anaCacheProducer import addAnaCaches
 from FLAF.RunKit.law_wlcg import WLCGFileSystem
 
 
+
 def getCustomisationSplit(customisations):
     customisation_dict = {}
     if customisations is None or len(customisations) == 0: return {}
@@ -185,11 +186,14 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             return self.local_target('dummy.txt')
         sample_id, sample_name, sample_type, input_file = self.branch_data
         output_name = os.path.basename(input_file.path)
-        output_path = os.path.join('anaTuples', self.version, self.period, sample_name, output_name)
-        return self.remote_target(output_path, fs=self.fs_anaTuple)
+        json_name = f"{output_name.split('.')[0]}.json"
+        output_path = os.path.join('anaTuples', self.version, self.period, sample_name, 'split', output_name)
+        json_path = os.path.join('anaTuples', self.version, self.period, sample_name, 'split', json_name)
+        return [ self.remote_target(output_path, fs=self.fs_anaTuple), self.remote_target(json_path, fs=self.fs_anaTuple) ]
 
     def run(self):
         sample_id, sample_name, sample_type, input_file = self.branch_data
+        jsonName = f"{os.path.basename(input_file.path).split('.')[0]}.json"
         producer_anatuples = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'anaTupleProducer.py')
         producer_skimtuples = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'SkimProducer.py')
         thread = threading.Thread(target=update_kinit_thread)
@@ -212,9 +216,11 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             anaTupleDef = os.path.join(self.ana_path(), self.global_params['anaTupleDef'])
             with input_file.localize("r") as local_input, anaCache_remote.localize("r") as anaCache_input:
                 inFileName = os.path.basename(input_file.path)
+                print(f"inFileName {inFileName}")
                 anatuple_cmd = [ 'python3', '-u', producer_anatuples, '--period', self.period,
                                  '--inFile', local_input.path, '--outDir', outdir_anatuples, '--sample', sample_name,
-                                 '--anaTupleDef', anaTupleDef, '--anaCache', anaCache_input.path, '--channels', channels, '--inFileName', inFileName ]
+                                 '--anaTupleDef', anaTupleDef, '--anaCache', anaCache_input.path, '--channels', channels, '--inFileName', inFileName,
+                                 '--jsonName', jsonName ]
                 if deepTauVersion!="":
                     anatuple_cmd.extend([ '--customisations', f"deepTauVersion={deepTauVersion}" ])
                 if compute_unc_variations:
@@ -234,6 +240,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
             if self.test: print(f"outFileName is {outFileName}")
             tmpFile = os.path.join(outdir_skimtuples, outFileName)
+            tmpjsonFile = os.path.join(outdir_anatuples, jsonName)
             if sample_type!='data':
                 skimtuple_cmd = [ 'python', producer_skimtuples, '--inputDir', outdir_anatuples,
                                   '--centralFile',centralFileName, '--workingDir', outdir_skimtuples,
@@ -244,18 +251,206 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             else:
                 tmpFile = os.path.join(outdir_anatuples, centralFileName)
 
-            with self.output().localize("w") as tmp_local_file:
+            nano_output = self.output()[0]
+            json_output = self.output()[1]
+            with nano_output.localize("w") as tmp_local_file:
                 out_local_path = tmp_local_file.path
                 shutil.move(tmpFile, out_local_path)
+            with json_output.localize("w") as tmp_local_file:
+                out_local_path = tmp_local_file.path
+                shutil.move(tmpjsonFile, out_local_path)
 
             if remove_job_home:
                 shutil.rmtree(job_home)
-            print(f'anaTuple for sample {sample_name} is created in {self.output().uri()}')
         finally:
             kInit_cond.acquire()
             kInit_cond.notify_all()
             kInit_cond.release()
             thread.join()
+
+
+
+class AnaTupleFileListTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
+    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
+
+    def workflow_requires(self):
+        input_file_task_complete = InputFileTask.req(self, branches=()).complete()
+        if not input_file_task_complete:
+            return { "anaTuple" : AnaTupleTask.req(self, branches=()),
+                     "inputFile": InputFileTask.req(self, branches=()) }
+
+        AnaTuple_map = AnaTupleTask.req(self,branch=-1, branches=()).create_branch_map()
+        branch_set = set()
+        for idx, (sample_name, sample_type) in self.branch_map.items():
+            for br_idx, (anaTuple_sample_id, anaTuple_sample_name, anaTuple_sample_type, anaTuple_input_file) in AnaTuple_map.items():
+                if (sample_name == anaTuple_sample_name) or (sample_type == 'data' and anaTuple_sample_type == 'data'):
+                    branch_set.add(br_idx)
+
+        deps = { "AnaTupleTask": AnaTupleTask.req(self, branches=tuple(branch_set), customisations=self.customisations) }
+        return deps
+
+
+    def requires(self):
+        sample_name, sample_type  = self.branch_data
+        AnaTuple_map = AnaTupleTask.req(self,branch=-1, branches=()).create_branch_map()
+        branch_set = set()
+        for br_idx, (anaTuple_sample_id, anaTuple_sample_name, anaTuple_sample_type, anaTuple_input_file) in AnaTuple_map.items():
+            if (sample_name == anaTuple_sample_name) or (sample_type == 'data' and anaTuple_sample_type == 'data'):
+                branch_set.add(br_idx)
+
+        reqs = [
+                AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br,
+                                                 branches=(prod_br,), customisations=self.customisations) for prod_br in tuple(branch_set)
+            ]
+        return reqs
+
+
+    def create_branch_map(self):
+        branches = {}
+        k = 0
+        data_done = False
+        for sample_id, sample_name in self.iter_samples():
+            sample_type = self.samples[sample_name]['sampleType']
+            if sample_type == 'data':
+                if data_done: continue # Will have multiple data samples, but only need one branch
+                sample_name = 'data'
+                data_done = True
+            branches[k] = (sample_name, sample_type)
+            k += 1
+        return branches
+
+
+    def output(self):
+        sample_name, sample_type  = self.branch_data
+        output_name = 'merged_plan.json'
+        output_path = os.path.join('AnaTupleFileList', self.version, self.period, sample_name, output_name)
+        # This is a problem for a --remove-output task, it crashes since the 'output' is only the local or something
+        # With this current state, you need to do the --remove-output command twice
+        if self.local_target('merge_cache', f'{sample_name}.json').exists():
+            return [ self.local_target('merge_cache', f'{sample_name}.json') ]
+        return [ self.remote_target(output_path,  fs=self.fs_anaTuple), self.local_target('merge_cache', f'{sample_name}.json') ]
+
+
+    def run(self):
+        sample_name, sample_type  = self.branch_data
+        AnaTupleFileList = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'AnaTupleFileList.py')
+        with contextlib.ExitStack() as stack:
+            remote_output = self.output()[0]
+            local_output = self.output()[1]
+
+            # Check if remote already exists, if so then just copy and return
+            if remote_output.exists():
+                print("Hey remote already exists! Don't run again, just copy to local")
+                with local_output.localize("w") as tmp_local_file2:
+                    with remote_output.localize("r") as tmp_local_file:
+                        shutil.copy(tmp_local_file.path, tmp_local_file2.path)
+                        return
+                
+            print("Localizing inputs")
+            local_inputs = [stack.enter_context(inp[1].localize('r')).path for inp in self.input()]
+
+            with remote_output.localize("w") as tmp_local_file:                    
+                nEventsPerFile = self.setup.global_params.get('nEventsPerFile', 100_000)
+                AnaTupleFileList_cmd = ['python3', AnaTupleFileList,'--outFile', tmp_local_file.path]#, '--remove-files', 'True']
+                AnaTupleFileList_cmd.extend(['--nEventsPerFile', f'{nEventsPerFile}'])
+                if sample_name == 'data': 
+                    AnaTupleFileList_cmd.extend(['--isData', 'True'])
+                    AnaTupleFileList_cmd.extend(['--lumi', f'{self.setup.global_params["luminosity"]}'])
+                    AnaTupleFileList_cmd.extend(['--nPbPerFile', f'{self.setup.global_params.get("nPbPerFile", 10_000)}'])
+                AnaTupleFileList_cmd.extend(local_inputs)
+                ps_call(AnaTupleFileList_cmd,verbose=1)
+
+                with local_output.localize("w") as tmp_local_file2:
+                    shutil.copy(tmp_local_file.path, tmp_local_file2.path)
+
+
+class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
+
+    def workflow_requires(self):
+        merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
+        if not merge_organization_complete:
+            return { "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()) }
+
+        branch_set = set()
+        for idx, sample_names in self.branch_map.items():
+            branch_set.update([idx])
+        return { "AnaTupleFileListTask" : AnaTupleFileListTask.req(self, branches=tuple(branch_set)), "AnaTupleTask": AnaTupleTask.req(self, branches=tuple(branch_set),customisations=self.customisations) }
+
+    def requires(self):
+        # Need both the AnaTupleTask for the input ROOT file, and the AnaTupleFileListTask for the json structure
+        sample_name, sample_type, input_file_list, output_file_list = self.branch_data
+        anaTuple_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
+        AnaTupleFileList_branch_map = AnaTupleFileListTask.req(self, branch=-1, branches=()).create_branch_map()
+        required_branches = []
+        for prod_br, (anaTuple_sample_id, anaTuple_sample_name, anaTuple_sample_type, file_location) in anaTuple_branch_map.items():
+            if anaTuple_sample_name == sample_name or (sample_type == 'data' and anaTuple_sample_type == 'data'):
+                if file_location.path[1:] in input_file_list: #[1:] to remove the first '/' in the pathway
+                    required_branches.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
+        for prod_br, (Merge_sample_name, Merge_sample_type) in AnaTupleFileList_branch_map.items():
+            if Merge_sample_name == sample_name:
+                required_branches.append(AnaTupleFileListTask.req(self, max_runtime=AnaTupleFileListTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
+        return required_branches
+    
+    
+    def create_branch_map(self):
+        merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
+        if not merge_organization_complete:
+            self.cache_branch_map = False
+            if not hasattr(self, '_branches_backup'):
+                self._branches_backup = copy.deepcopy(self.branches)
+            return { 0: () }
+        self.cache_branch_map = True
+        if hasattr(self, '_branches_backup'):
+            self.branches = self._branches_backup
+        branches = {}
+        nBranch = 0
+        organizer_branch_map = AnaTupleFileListTask.req(self,branch=-1, branches=()).create_branch_map()
+        for nJob, (sample_name, sample_type) in organizer_branch_map.items():
+            # This function cannot run if the json doesn't exist yet, so the branch map breaks when the output isn't already there
+            this_sample_dict = self.setup.getAnaTupleFileList(sample_name, AnaTupleFileListTask.req(self,branch=nJob, branches=()).output()[-1]) # Get output[-1] for the local file version
+            # We probably want to return None for a json that doesn't exist or something, right now if an expected branch is not there this entire task will fail
+            for this_dict in this_sample_dict['merge_strategy']:
+                input_file_list = this_dict['inputs']
+                output_file_list = this_dict['outputs']
+                branches[nBranch] = (sample_name, sample_type, input_file_list, output_file_list)
+                nBranch += 1
+        return branches
+
+
+    def output(self, force_pre_output=False):
+        if len(self.branch_data) == 0:
+            return self.local_target('dummy.txt')
+        
+        sample_name, sample_type, input_file_list, output_file_list = self.branch_data
+        output_path_string = os.path.join('anaTuples', self.version, self.period, sample_name, '{}')
+        outputs = [ output_path_string.format(out_file) for out_file in output_file_list ]
+        return [ self.remote_target(out_path, fs=self.fs_anaTuple) for out_path in outputs ]
+
+
+    def run(self):
+        producer_Merge = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'MergeNtuples.py')
+        sample_name, sample_type, input_file_list, output_file_list = self.branch_data
+        input_list_remote_target = [ inp[0] for inp in self.input()[:-1] ]
+        with contextlib.ExitStack() as stack:
+            print(f"Starting localize of {len(input_list_remote_target)} inputs")
+            local_inputs = [stack.enter_context(inp.localize('r')).path for inp in input_list_remote_target]
+            output_files = [ stack.enter_context(output.localize("w")).path for output in self.output() ]
+            Merge_cmd = [ 'python3', producer_Merge, '--outFiles', *output_files, '--outFile', 'tmp_data.root']
+            Merge_cmd.extend(local_inputs)
+            ps_call(Merge_cmd,verbose=1)
+
+        delete_after_merge = True
+        if delete_after_merge:
+            print(f"Finished merging, lets delete remote targets")
+            for remote_target in input_list_remote_target:
+                remote_target.remove()
+                with remote_target.localize("w") as tmp_local_file:
+                    tmp_local_file.touch() # Create a dummy to avoid dependency crashes
+
+
+
 
 class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
@@ -264,18 +459,18 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branch_set = set()
         for idx, prod_branches in self.branch_map.items():
             branch_set.update(prod_branches)
-        return { "anaTuple" : AnaTupleTask.req(self, branches=tuple(branch_set)) }
+        return { "anaTuple" : AnaTupleMergeTask.req(self, branches=tuple(branch_set)) }
 
     def requires(self):
         return [
-            AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,))
+            AnaTupleMergeTask.req(self, max_runtime=AnaTupleMergeTask.max_runtime._default, branch=prod_br, branches=(prod_br,))
             for prod_br in self.branch_data
         ]
 
     def create_branch_map(self):
-        anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
+        anaProd_branch_map = AnaTupleMergeTask.req(self, branch=-1, branches=()).create_branch_map()
         prod_branches = []
-        for prod_br, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
+        for prod_br, (sample_id, sample_name, sample_type, output_file_name, input_file_list) in anaProd_branch_map.items():
             if sample_type != "data": continue
             prod_branches.append(prod_br)
         return { 0: prod_branches }
@@ -301,69 +496,7 @@ class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 dataMerge_cmd.extend(local_inputs)
                 ps_call(dataMerge_cmd,verbose=1)
 
-class AnaCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
-    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
-
-    def workflow_requires(self):
-        workflow_dict = {}
-        workflow_dict["anaTuple"] = {
-            br_idx: AnaTupleTask.req(self, branch=br_idx)
-            for br_idx, _ in self.branch_map.items()
-        }
-        return workflow_dict
-
-    def requires(self):
-        return [ AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default) ]
-
-    def create_branch_map(self):
-        branches = {}
-        anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).branch_map
-        for br_idx, (sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
-            branches[br_idx] = (sample_name, sample_type)
-        return branches
-
-    def output(self):
-        sample_name, sample_type = self.branch_data
-        outFileName = os.path.basename(self.input()[0].path)
-        # outDir = os.path.join('anaCacheTuples', self.period, sample_name, self.version)
-        # finalFile = os.path.join(outDir, outFileName)
-        output_path = os.path.join('anaCacheTuples', self.period, sample_name,self.version, outFileName)#self.version, self.period, sample_name, outFileName)
-        return self.remote_target(output_path, fs=self.fs_anaCacheTuple)
-
-    def run(self):
-        sample_name, sample_type = self.branch_data
-        unc_config = os.path.join(self.ana_path(), 'config', self.period, f'weights.yaml')
-        producer_anacachetuples = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'anaCacheTupleProducer.py')
-        global_config = os.path.join(self.ana_path(), 'config', 'global.yaml')
-        thread = threading.Thread(target=update_kinit_thread)
-        customisation_dict = getCustomisationSplit(self.customisations)
-        channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
-        #Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
-        if type(channels) == list:
-            channels = ','.join(channels)
-        thread.start()
-        try:
-            job_home, remove_job_home = self.law_job_home()
-            input_file = self.input()[0]
-            print(f"considering sample {sample_name}, {sample_type} and file {input_file.path}")
-            customisation_dict = getCustomisationSplit(self.customisations)
-            deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else ""
-            with input_file.localize("r") as local_input, self.output().localize("w") as outFile:
-                anaCacheTupleProducer_cmd = ['python3', producer_anacachetuples,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config, '--globalConfig', global_config, '--channels', channels ]
-                if self.global_params['store_noncentral'] and sample_type != 'data':
-                    anaCacheTupleProducer_cmd.extend(['--compute_unc_variations', 'True'])
-                if deepTauVersion!="":
-                    anaCacheTupleProducer_cmd.extend([ '--deepTauVersion', deepTauVersion])
-                ps_call(anaCacheTupleProducer_cmd, env=self.cmssw_env, verbose=1)
-            print(f"finished to produce anacachetuple")
-
-        finally:
-            kInit_cond.acquire()
-            kInit_cond.notify_all()
-            kInit_cond.release()
-            thread.join()
-
+# rename AnaCacheTupeTask one to AnalysisCahceTask and move to FLAF/Analysis/tasks.py
 
 
 class DNNCacheTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):

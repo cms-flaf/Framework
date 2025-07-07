@@ -57,6 +57,7 @@ if __name__ == "__main__":
     parser.add_argument('inputFile', nargs='+', type=str)
     parser.add_argument('--outFile', required=True, type=str)
     parser.add_argument('--useUproot', type=bool, default=False)
+    parser.add_argument('--outFiles', required=False, nargs='+', type=str, default=None)
     args = parser.parse_args()
     headers_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -89,6 +90,8 @@ if __name__ == "__main__":
                 raise RuntimeError(f"Object {key_name} is of type {objType} but was previously found to be"
                                 f"of type {obj_desc.obj_type}.")
             if objType == "TTree":
+                if fileName in obj_desc.file_names:
+                    continue # When there were multiple cycles of a tree, without this catch you would append the same file multiple times
                 obj_desc.file_names.append(fileName)
             else:
                 if obj_desc.ref_obj is None:
@@ -100,7 +103,9 @@ if __name__ == "__main__":
     if args.useUproot:
         tmpFileName+= '.tmp.root'
     compression = ROOT.CompressionSettings(snapshotOptions.fCompressionAlgorithm, snapshotOptions.fCompressionLevel)
-    outputFile = ROOT.TFile(tmpFileName, "RECREATE", "", compression)
+    # Set final output file name for the TH1's, use only first one now since TH1 can't be split into multiple files
+    report_file_name = args.outFiles[0] if args.outFiles is not None and len(args.outFiles) > 0 else tmpFileName
+    outputFile = ROOT.TFile(report_file_name, "RECREATE", "", compression)
     for obj_name, obj_desc in objects.items():
         if obj_desc.obj_type != "TH1":
             continue
@@ -110,9 +115,16 @@ if __name__ == "__main__":
     for fileName, file in inputFiles:
         file.Close()
 
+
+    # Delete tmp file if it exists
+    outputFile = ROOT.TFile(tmpFileName, "RECREATE", "", compression)
+    outputFile.Close()
+
     for obj_name, obj_desc in objects.items():
+        print(f"At writing for {obj_name} {obj_desc}")
         if obj_desc.obj_type != "TTree":
             continue
+        print(f"Loading {obj_name}, {obj_desc.file_names}")
         df = ROOT.RDataFrame(obj_name, obj_desc.file_names)
         print(f"initially there are {df.Count().GetValue()} events")
         df = merge_ntuples(df)
@@ -123,3 +135,24 @@ if __name__ == "__main__":
         ConvertUproot.toUproot(tmpFileName, args.outFile)
         #if os.path.exists(args.outFile):
         #    os.remove(tmpFileName)
+
+    if args.outFiles != None and len(args.outFiles) > 0:
+        if len(args.outFiles) > 1 and len(objects) > 1:
+            raise RuntimeError("Cannot split multiple objects into multiple files, please use a single object or a single file.")
+        for obj_name, obj_desc in objects.items():
+            print(f"At splitting for {obj_name} {obj_desc}")
+            # We want to make this general to also split MC later, but these object names could cause an issue?
+            # Is there an edge case where a Events_JERUp event might go to file1, but the Event event might go to file0?
+            # For now, this doesn't exist as MC is handle as one outFile per job -- only data has multiple outFiles
+            if obj_desc.obj_type != "TTree":
+                continue
+            df = ROOT.RDataFrame(obj_name, tmpFileName)
+            nFiles = len(args.outFiles)
+            nEvents = df.Count().GetValue()
+            nEventsPerFile = int(nEvents/nFiles)+1 # Add 1 to take care of int() always flooring
+            print(f"Going to make int({nEvents}/{nFiles}) {nEventsPerFile} events per file")
+            range_start = 0
+            for outFileName in args.outFiles:
+                df_split = df.Range(range_start, range_start+nEventsPerFile)
+                df_split.Snapshot(obj_name, outFileName, df_split.GetColumnNames(), snapshotOptions)
+                range_start += nEventsPerFile

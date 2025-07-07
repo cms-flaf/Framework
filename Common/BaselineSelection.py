@@ -7,8 +7,8 @@ initialized = False
 ana_reco_object_collections = {
     "v12": [ "Electron", "Muon", "Tau", "Jet", "FatJet", "MET", "PuppiMET", "DeepMETResponseTune",
              "DeepMETResolutionTune", "SubJet" ],
-    "v14": [ "Electron", "Muon", "Tau", "Jet", "FatJet", "PFMET", "PuppiMET", "DeepMETResponseTune",
-             "DeepMETResolutionTune", "SubJet" ],
+    "v14": [ "Electron", "Muon", "Tau", "Jet", "FatJet",  "PuppiMET", #"DeepMETResponseTune","PFMET", "DeepMETResolutionTune",
+              "SubJet" ],
 }
 deepTauVersions = {"2p1":"2017", "2p5":"2018"}
 

@@ -156,11 +156,10 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         self.cache_branch_map = True
         if hasattr(self, '_branches_backup'):
             self.branches = self._branches_backup
-
         n = 0
         branches = {}
         anaProd_branch_map = AnaTupleTask.req(self, branch=-1, branches=()).create_branch_map()
-        samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'] )
+        samples_to_consider = GetSamples(self.samples, self.setup.backgrounds,self.global_params['signal_types'])
         for var_entry in self.global_params['vars_to_plot']:
             var_name, need_cache = parseVarEntry(var_entry)
             for prod_br,(sample_id, sample_name, sample_type, input_file) in anaProd_branch_map.items():
@@ -189,6 +188,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         #Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
         if type(channels) == list:
             channels = ','.join(channels)
+        print("D")
         #bbww does not use a deepTauVersion
         deepTauVersion = ''
         isbbtt = 'HH_bbtautau' in self.global_params['analysis_config_area'].split('/')
@@ -418,10 +418,10 @@ class PlotTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
     n_cpus      = copy_param(HTCondorWorkflow.n_cpus, 1)
 
-    def workflow_requires(self):        
+    def workflow_requires(self):
         merge_map = MergeTask.req(self, branch=-1, branches=(), customisations=self.customisations).create_branch_map()
         return {"merge": MergeTask.req(self,branches=tuple(merge_map.keys()),customisations=self.customisations,)}
-    
+
     def create_branch_map(self):
         branches = {}
         merge_map = MergeTask.req(self, branch=-1, branches=(), customisations=self.customisations).create_branch_map()
@@ -446,7 +446,7 @@ class PlotTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         channels = customisation_dict.get('channels', self.global_params['channelSelection'])
         if isinstance(channels, str):
             channels = channels.split(',')
-        
+
         base_cats = self.global_params.get('categories') or []
         boosted_cats = self.global_params.get('boosted_categories') or []
         categories = base_cats + boosted_cats

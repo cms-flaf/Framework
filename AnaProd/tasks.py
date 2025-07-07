@@ -13,6 +13,7 @@ from FLAF.RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
 from FLAF.run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
 from FLAF.Common.Utilities import SerializeObjectToString
 from FLAF.AnaProd.anaCacheProducer import addAnaCaches
+from FLAF.RunKit.law_wlcg import WLCGFileSystem
 
 
 def getCustomisationSplit(customisations):
@@ -49,7 +50,15 @@ class InputFileTask(Task, law.LocalWorkflow):
         print(f'Creating inputFile for sample {sample_name} into {self.output().path}')
         with self.output().localize("w") as out_local_file:
             input_files = []
-            for file in natural_sort(self.fs_nanoAOD.listdir(sample_name)):
+            isPrivate = self.samples[sample_name].get("isPrivate", False)
+            dir_to_list = sample_name
+            fs_nanoAOD = self.fs_nanoAOD
+            if isPrivate:
+                fs_nanoAOD = WLCGFileSystem(self.samples[sample_name]["fs_nanoAOD_private"])
+                dir_to_list = self.samples[sample_name]["dir_to_list"]
+            # print(f"is private? {isPrivate}")
+            # print("path to private nano ", self.samples[sample_name]["fs_nanoAOD_private"])
+            for file in natural_sort(fs_nanoAOD.listdir(dir_to_list)):
                 if file.endswith(".root"):
                     input_files.append(file)
             with open(out_local_file.path, 'w') as inputFileTxt:
@@ -76,7 +85,8 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branches = {}
         for sample_id, sample_name in self.iter_samples():
             isData = self.samples[sample_name]['sampleType'] == 'data'
-            branches[sample_id] = (sample_name, isData)
+            isPrivateNano = self.samples[sample_name].get('isPrivate', False)
+            branches[sample_id] = (sample_name, isData, isPrivateNano)
         return branches
 
     def requires(self):
@@ -86,12 +96,12 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return { "inputFile": InputFileTask.req(self) }
 
     def output(self):
-        sample_name, isData = self.branch_data
+        sample_name, isData, isPrivateNano = self.branch_data
         return self.remote_target('anaCache', self.period, f'{sample_name}.yaml', fs=self.fs_anaCache)
 
     def run(self):
-        sample_name, isData = self.branch_data
-        if isData:
+        sample_name, isData, isPrivateNano = self.branch_data
+        if isData or isPrivateNano:
             self.output().touch()
             return
         print(f'Creating anaCache for sample {sample_name} into {self.output().uri()}')
@@ -137,9 +147,19 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         for sample_id, sample_name in self.iter_samples():
             input_file_list = InputFileTask.req(self, branch=sample_id, branches=(sample_id,)).output().path
             input_files = InputFileTask.load_input_files(input_file_list, sample_name)
+            isPrivate = self.samples[sample_name].get("isPrivate", False)
+
+            if isPrivate:
+                dir_to_list = self.samples[sample_name]["dir_to_list"]
+                input_files = InputFileTask.load_input_files(input_file_list, dir_to_list)
             for input_file in input_files:
-                branches[branch_idx] = (sample_id, sample_name, self.samples[sample_name]['sampleType'],
-                                        self.remote_target(input_file, fs=self.fs_nanoAOD))
+                # print(input_file)
+                fs_nanoAOD = self.fs_nanoAOD
+                if isPrivate:
+                    fs_nanoAOD = WLCGFileSystem(self.samples[sample_name]["fs_nanoAOD_private"])
+                fileintot = self.remote_target(input_file, fs=fs_nanoAOD)
+                # print(fileintot)
+                branches[branch_idx] = (sample_id, sample_name, self.samples[sample_name]['sampleType'],fileintot)
                 branch_idx += 1
         return branches
 

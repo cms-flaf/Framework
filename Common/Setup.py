@@ -132,8 +132,8 @@ class Setup:
             for producer_name, producer_config in payload_producers_cfg.items():
                 columns_delivered = producer_config.get("columns")
                 if columns_delivered:
-                    for col in columns_delivered:    
-                        self.var_producer_map[f"{producer_name}_{col}"] = producer_name                
+                    for col in columns_delivered:
+                        self.var_producer_map[f"{producer_name}_{col}"] = producer_name
 
         samples = load_parameters(ana_sample_config, sample_config, keys_to_ignore={'GLOBAL'})
         for sample_name, sample_entry in samples.items():
@@ -160,6 +160,9 @@ class Setup:
 
         self.anaTupleFiles = {}
 
+
+    def get_custom_fs(self, fs_name_private=None, fs_default=None):
+        return WLCGFileSystem(fs_name_private) if fs_name_private else fs_default
 
     def get_fs(self, fs_name):
         if fs_name not in self.fs_dict:
@@ -227,4 +230,4 @@ class Setup:
                     sample_dict = json_dict
                     self.anaTupleFiles[sample_name] = sample_dict
             return self.anaTupleFiles[sample_name]
-            
+

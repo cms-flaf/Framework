@@ -156,14 +156,11 @@ if __name__ == "__main__":
     page_cfg_custom = os.path.join(os.environ['ANALYSIS_PATH'],f'config', f'plot/{args.year}.yaml') # to be fixed!!
     hist_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", "plot/histograms.yaml")
 
-
     #### config opening ####
     with open(hist_cfg, 'r') as f:
         hist_cfg_dict = yaml.safe_load(f)
-
     with open(page_cfg, 'r') as f:
         page_cfg_dict = yaml.safe_load(f)
-
     with open(page_cfg_custom, 'r') as f:
         page_cfg_custom_dict = yaml.safe_load(f)
     inputs_cfg = os.path.join(os.environ['ANALYSIS_PATH'],"config", "plot","inputs.yaml")
@@ -176,7 +173,6 @@ if __name__ == "__main__":
             index_to_remove.append(inputs_cfg_dict.index(dicti))
         elif args.wantData == False and dicti['name'] == 'data':
             index_to_remove.append(inputs_cfg_dict.index(dicti))
-
 
     index_to_remove.sort(reverse=True)
 
@@ -192,7 +188,6 @@ if __name__ == "__main__":
 
     with open(args.globalConfig, 'r') as f:
         global_cfg_dict = yaml.safe_load(f)
-
 
     samples_to_plot = [k['name'] for k in inputs_cfg_dict]
     all_histlist = {}
@@ -266,7 +261,6 @@ if __name__ == "__main__":
     keys_0p1 = [str(k) for k in dir_0p1.GetListOfKeys()]
     dir_1 = dir_0p1.Get(args.category)
     keys_1 = [str(k) for k in dir_1.GetListOfKeys()]
-
     # dir_1 = dir_0.Get(args.category) # --> uncomment if QCD regions are not included in the histograms
     #hist_cfg_dict[args.var]['max_y_sf'] = 1.4
     #hist_cfg_dict[args.var]['use_log_y'] = False

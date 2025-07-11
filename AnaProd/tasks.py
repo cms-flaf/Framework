@@ -15,8 +15,6 @@ from FLAF.Common.Utilities import SerializeObjectToString
 from FLAF.AnaProd.anaCacheProducer import addAnaCaches
 from FLAF.RunKit.law_wlcg import WLCGFileSystem
 
-def get_fs_private(fs_name_private=None, fs_nanoAOD_default=None):
-    return WLCGFileSystem(fs_name_private) if fs_name_private else fs_nanoAOD_default
 
 
 
@@ -54,7 +52,7 @@ class InputFileTask(Task, law.LocalWorkflow):
         print(f'Creating inputFile for sample {sample_name} into {self.output().path}')
         with self.output().localize("w") as out_local_file:
             input_files = []
-            fs_nanoAOD = get_fs_private(self.samples[sample_name].get("fs_nanoAOD", None), self.fs_nanoAOD)
+            fs_nanoAOD = self.setup.get_custom_fs(self.samples[sample_name].get("fs_nanoAOD", None), self.fs_nanoAOD)
             if fs_nanoAOD is None:
                 raise RuntimeError(f'fs_nanoAOD is not defined for sample {sample_name}')
             dir_to_list = self.samples[sample_name].get("dir_to_list", sample_name)
@@ -85,8 +83,7 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branches = {}
         for sample_id, sample_name in self.iter_samples():
             isData = self.samples[sample_name]['sampleType'] == 'data'
-            isPrivateNano = True if self.samples[sample_name].get('fs_nanoAOD', None) else False
-            branches[sample_id] = (sample_name, isData, isPrivateNano)
+            branches[sample_id] = (sample_name, isData)
         return branches
 
     def requires(self):
@@ -96,12 +93,12 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return { "inputFile": InputFileTask.req(self) }
 
     def output(self):
-        sample_name, isData, isPrivateNano = self.branch_data
+        sample_name, isData = self.branch_data
         return self.remote_target('anaCache', self.period, f'{sample_name}.yaml', fs=self.fs_anaCache)
 
     def run(self):
-        sample_name, isData, isPrivateNano = self.branch_data
-        if isData or isPrivateNano:
+        sample_name, isData = self.branch_data
+        if isData:
             self.output().touch()
             return
         print(f'Creating anaCache for sample {sample_name} into {self.output().uri()}')
@@ -111,7 +108,7 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         generator_name = self.samples[sample_name]['generator'] if not isData else ''
         global_params_str = SerializeObjectToString(self.global_params)
         n_inputs = len(input_files)
-        fs_nanoAOD = get_fs_private(self.samples[sample_name].get("fs_nanoAOD", None), self.fs_nanoAOD)
+        fs_nanoAOD = self.setup.get_custom_fs(self.samples[sample_name].get("fs_nanoAOD", None), self.fs_nanoAOD)
         if fs_nanoAOD is None:
             raise RuntimeError(f'fs_nanoAOD is not defined for sample {sample_name}')
 
@@ -149,7 +146,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branch_idx = 0
         branches = {}
         for sample_id, sample_name in self.iter_samples():
-            fs_nanoAOD = get_fs_private(self.samples[sample_name].get("fs_nanoAOD", None), self.fs_nanoAOD)
+            fs_nanoAOD = self.setup.get_custom_fs(self.samples[sample_name].get("fs_nanoAOD", None), self.fs_nanoAOD)
             dir_to_list = self.samples[sample_name].get("dir_to_list", sample_name)
             input_file_list = InputFileTask.req(self, branch=sample_id, branches=(sample_id,)).output().path
             input_files = InputFileTask.load_input_files(input_file_list, dir_to_list)
@@ -337,7 +334,6 @@ class AnaTupleFileListTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         with contextlib.ExitStack() as stack:
             remote_output = self.output()[0]
             local_output = self.output()[1]
-
             # Check if remote already exists, if so then just copy and return
             if remote_output.exists():
                 print("Hey remote already exists! Don't run again, just copy to local")
@@ -348,7 +344,6 @@ class AnaTupleFileListTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
             print("Localizing inputs")
             local_inputs = [stack.enter_context(inp[1].localize('r')).path for inp in self.input()]
-
             with remote_output.localize("w") as tmp_local_file:
                 nEventsPerFile = self.setup.global_params.get('nEventsPerFile', 100_000)
                 AnaTupleFileList_cmd = ['python3', AnaTupleFileList,'--outFile', tmp_local_file.path]#, '--remove-files', 'True']
@@ -371,11 +366,10 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
             return { "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()) }
-
         branch_set = set()
         for idx, sample_names in self.branch_map.items():
             branch_set.update([idx])
-        return { "AnaTupleFileListTask" : AnaTupleFileListTask.req(self, branches=tuple(branch_set)), "AnaTupleTask": AnaTupleTask.req(self, branches=tuple(branch_set),customisations=self.customisations) }
+        return { "AnaTupleFileListTask" : AnaTupleFileListTask.req(self, branches=tuple(branch_set)), "AnaTupleTask": AnaTupleTask.req(self, branches=tuple(branch_set),customisations=self.customisations) } # needed AnaTupleTask? it has not in the corresponding files...
 
     def requires(self):
         # Need both the AnaTupleTask for the input ROOT file, and the AnaTupleFileListTask for the json structure
@@ -385,8 +379,11 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         required_branches = []
         for prod_br, (anaTuple_sample_id, anaTuple_sample_name, anaTuple_sample_type, file_location) in anaTuple_branch_map.items():
             if anaTuple_sample_name == sample_name or (sample_type == 'data' and anaTuple_sample_type == 'data'):
-                if file_location.path[1:] in input_file_list: #[1:] to remove the first '/' in the pathway
-                    required_branches.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
+                for sub_path in file_location.path.split('/'):
+                    sub_path_complete = sample_name + '/' + sub_path
+                    if sub_path_complete in input_file_list: #[1:] to remove the first '/' in the pathway
+                        required_branches.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
+                        continue
         for prod_br, (Merge_sample_name, Merge_sample_type) in AnaTupleFileList_branch_map.items():
             if Merge_sample_name == sample_name:
                 required_branches.append(AnaTupleFileListTask.req(self, max_runtime=AnaTupleFileListTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
@@ -408,7 +405,8 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         organizer_branch_map = AnaTupleFileListTask.req(self,branch=-1, branches=()).create_branch_map()
         for nJob, (sample_name, sample_type) in organizer_branch_map.items():
             # This function cannot run if the json doesn't exist yet, so the branch map breaks when the output isn't already there
-            this_sample_dict = self.setup.getAnaTupleFileList(sample_name, AnaTupleFileListTask.req(self,branch=nJob, branches=()).output()[-1]) # Get output[-1] for the local file version
+            this_sample_dict = self.setup.getAnaTupleFileList(sample_name, AnaTupleFileListTask.req(self,branch=nJob, branches=()).output()[-1])
+            # Get output[-1] for the local file version
             # We probably want to return None for a json that doesn't exist or something, right now if an expected branch is not there this entire task will fail
             for this_dict in this_sample_dict['merge_strategy']:
                 input_file_list = this_dict['inputs']
@@ -421,7 +419,6 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def output(self, force_pre_output=False):
         if len(self.branch_data) == 0:
             return self.local_target('dummy.txt')
-
         sample_name, sample_type, input_file_list, output_file_list = self.branch_data
         output_path_string = os.path.join('anaTuples', self.version, self.period, sample_name, '{}')
         outputs = [ output_path_string.format(out_file) for out_file in output_file_list ]
@@ -432,6 +429,7 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         producer_Merge = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'MergeNtuples.py')
         sample_name, sample_type, input_file_list, output_file_list = self.branch_data
         input_list_remote_target = [ inp[0] for inp in self.input()[:-1] ]
+
         with contextlib.ExitStack() as stack:
             print(f"Starting localize of {len(input_list_remote_target)} inputs")
             local_inputs = [stack.enter_context(inp.localize('r')).path for inp in input_list_remote_target]

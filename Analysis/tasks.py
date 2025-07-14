@@ -129,6 +129,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 for producer_name in (p for p in producer_list if p is not None):
                     deps.append(AnalysisCacheTask.req(self, max_runtime=AnalysisCacheTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations, producer_to_run=producer_name))
         return deps
+        
 
 
 
@@ -460,7 +461,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
-    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 2)
+    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 4)
     producer_to_run = luigi.Parameter()
 
     def workflow_requires(self):

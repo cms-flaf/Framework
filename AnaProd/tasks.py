@@ -13,7 +13,6 @@ from FLAF.RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
 from FLAF.run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
 from FLAF.Common.Utilities import SerializeObjectToString
 from FLAF.AnaProd.anaCacheProducer import addAnaCaches
-from FLAF.RunKit.law_wlcg import WLCGFileSystem
 
 
 
@@ -146,7 +145,12 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branch_idx = 0
         branches = {}
         for sample_id, sample_name in self.iter_samples():
+            print(sample_name)
+            print(self.fs_nanoAOD)
+            print(self.samples[sample_name].get("fs_nanoAOD", None))
             fs_nanoAOD = self.setup.get_custom_fs(self.samples[sample_name].get("fs_nanoAOD", None), self.fs_nanoAOD)
+            print(fs_nanoAOD)
+            print()
             dir_to_list = self.samples[sample_name].get("dir_to_list", sample_name)
             input_file_list = InputFileTask.req(self, branch=sample_id, branches=(sample_id,)).output().path
             input_files = InputFileTask.load_input_files(input_file_list, dir_to_list)

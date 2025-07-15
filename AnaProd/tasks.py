@@ -254,6 +254,10 @@ class AnaTupleFileListTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
+    def __init__(self, *args, **kwargs):
+        kwargs['workflow'] = 'local'
+        super(AnaTupleFileListTask, self).__init__(*args, **kwargs)
+
     def workflow_requires(self):
         input_file_task_complete = InputFileTask.req(self, branches=()).complete()
         if not input_file_task_complete:

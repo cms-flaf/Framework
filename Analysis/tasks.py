@@ -100,7 +100,6 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 for producer_name in (p for p in producer_list if p is not None):
                     producer_set.add(producer_name)
         reqs = {}
-
         isbbtt = 'HH_bbtautau' in self.global_params['analysis_config_area'].split('/')
 
         if len(branch_set) > 0:
@@ -130,9 +129,6 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     deps.append(AnalysisCacheTask.req(self, max_runtime=AnalysisCacheTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations, producer_to_run=producer_name))
         return deps
         
-
-
-
     def create_branch_map(self):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
@@ -460,9 +456,19 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 ps_call(RenameHistsProducer_cmd,verbose=1)
 
 class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
-    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 4)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
+    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
     producer_to_run = luigi.Parameter()
+
+    # Need to override this from HTCondorWorkflow to have separate data pathways for different cache tasks
+    def htcondor_output_directory(self):
+        return law.LocalDirectoryTarget(os.path.join(self.local_path(), self.producer_to_run))
+
+    def __init__(self, *args, **kwargs):
+        # Needed to get the config and ht_condor_pathways figured out
+        super(AnalysisCacheTask, self).__init__(*args, **kwargs)
+        self.n_cpus = self.global_params["payload_producers"][self.producer_to_run].get('n_cpus', 1)
+        self.max_runtime = self.global_params["payload_producers"][self.producer_to_run].get('max_runtime', 2.0)
 
     def workflow_requires(self):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
@@ -501,7 +507,7 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         requires_list = [ AnaTupleMergeTask.req(self, max_runtime=AnaTupleMergeTask.max_runtime._default) ]
         if producer_dependencies:
             for dependency in producer_dependencies:
-                requires_list.append(AnalysisCacheTask.req(self, max_runtime=AnaTupleMergeTask.max_runtime._default, producer_to_run=dependency))
+                requires_list.append(AnalysisCacheTask.req(self, producer_to_run=dependency))
         return requires_list
 
     def create_branch_map(self):
@@ -527,7 +533,7 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return_list = []
         for idx in range(nInputs):
             outFileName = os.path.basename(self.input()[0][idx].path)
-            output_path = os.path.join('AnalysisCache', self.period, sample_name,self.version, self.producer_to_run, outFileName)
+            output_path = os.path.join('AnalysisCache', self.version, self.period, sample_name, self.producer_to_run, outFileName)
             return_list.append(self.remote_target(output_path, fs=self.fs_anaCacheTuple))
         # return self.remote_target(output_path, fs=self.fs_AnalysisCache) # for some reason this line is not working even if I edit user_custom.yaml
         # return self.remote_target(output_path, fs=self.fs_anaCacheTuple)

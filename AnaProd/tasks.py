@@ -255,7 +255,7 @@ class AnaTupleFileListTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
 
     def __init__(self, *args, **kwargs):
-        kwargs['workflow'] = 'local'
+        # kwargs['workflow'] = 'local' # This might not be the best idea, has ~100 datasets to go over and localize, probably faster on condor
         super(AnaTupleFileListTask, self).__init__(*args, **kwargs)
 
     def workflow_requires(self):

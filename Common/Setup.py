@@ -216,11 +216,6 @@ class Setup:
 
         return self.fs_dict[fs_name]
 
-    # Il metodo get_custom_fs originale può essere rimosso o integrato,
-    # poiché la logica è ora gestita da get_fs con custom_paths.
-    # def get_custom_fs(self, fs_name_private=None, fs_default=None):
-    #     return WLCGFileSystem(fs_name_private) if fs_name_private else fs_default
-
     @property
     def cmssw_env(self):
         if self.cmssw_env_ is None:

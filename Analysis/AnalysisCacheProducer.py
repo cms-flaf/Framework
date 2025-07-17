@@ -6,6 +6,8 @@ import datetime
 import time
 import shutil
 import importlib
+import uproot
+import awkward as ak
 
 ROOT.EnableThreadSafety()
 
@@ -54,6 +56,27 @@ def createCentralQuantities(df_central, central_col_types, central_columns):
     df_central = map_creator.processCentral(ROOT.RDF.AsRNode(df_central), Utilities.ListToVector(central_columns))
     return df_central
 
+def run_producer(producer, dfw, producer_config, outFileName, treeName):
+    if producer_config.get('awkward_based', False):
+        dfw = producer.prepare_dfw(dfw)
+        vars_to_save = producer.vars_to_save
+        dfw.df.Snapshot(f'tmp', f'tmp.root', vars_to_save, snapshotOptions)
+        final_array = None
+        for array in uproot.iterate('tmp.root:tmp', step_size='50MB'): # For DNN, this translates to ~300_000 events
+            new_array = producer.run(array)
+            if final_array is None:
+                final_array = new_array
+            else:
+                final_array = ak.concatenate([final_array, new_array])
+        with uproot.recreate(outFileName) as outfile:
+            outfile[treeName] = final_array
+
+    else:
+        dfw = producer.run(dfw)
+        varToSave = Utilities.ListToVector(dfw.colToSave)
+        dfw.df.Snapshot(treeName, outFileName, varToSave, snapshotOptions)
+
+
 # add extra argument to this function - which payload producer to run
 def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, snapshotOptions, compute_unc_variations, deepTauVersion, producer_to_run):
     start_time = datetime.datetime.now()
@@ -74,12 +97,8 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
     producers_module = importlib.import_module(producers_module_name)
     producer_class = getattr(producers_module, producer_name)
     producer = producer_class(producer_config, producer_to_run)
-    dfw = producer.run(dfw)
-
-    varToSave = Utilities.ListToVector(dfw.colToSave)
+    run_producer(producer, dfw, producer_config, f'{outFileName}_Central.root', 'Events')
     all_files.append(f'{outFileName}_Central.root')
-    snaps.append(dfw.df.Snapshot(f"Events", f'{outFileName}_Central.root', varToSave, snapshotOptions))
-    print("append the central snapshot")
 
     if compute_unc_variations:
         dfWrapped_central = Utilities.DataFrameBuilderBase(df_begin)
@@ -89,7 +108,6 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
         if dfWrapped_central.df.Filter("map_placeholder > 0").Count().GetValue() <= 0 : 
             raise RuntimeError("no events passed map placeolder")
         print("finished defining central quantities")
-        snapshotOptions.fLazy=False
         for uncName in unc_cfg_dict['shape']:
             for scale in scales:
                 treeName = f"Events_{uncName}{scale}"
@@ -100,9 +118,8 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
                     dfWrapped_noDiff.AddMissingColumns(colNames, colTypes)
                     dfW_noDiff = Utilities.DataFrameWrapper(dfWrapped_noDiff.df,defaultColToSave)
-                    dfW_noDiff = producer.run(dfW_noDiff)
+                    run_producer(producer, dfW_noDiff, producer_config, f'{outFileName}_{uncName}{scale}_noDiff.root', treeName_noDiff)
                     all_files.append(f'{outFileName}_{uncName}{scale}_noDiff.root')
-                    dfW_noDiff.df.Snapshot(treeName_noDiff, f'{outFileName}_{uncName}{scale}_noDiff.root', varToSave, snapshotOptions)
                 treeName_Valid = f"{treeName}_Valid"
                 if treeName_Valid in file_keys:
                     df_Valid = ROOT.RDataFrame(treeName_Valid, inFileName)
@@ -110,23 +127,16 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
                     dfWrapped_Valid.AddMissingColumns(colNames, colTypes)
                     dfW_Valid = Utilities.DataFrameWrapper(dfWrapped_Valid.df,defaultColToSave)
-                    dfW_Valid = producer.run(dfW_Valid)
+                    run_producer(producer, dfW_Valid, producer_config, f'{outFileName}_{uncName}{scale}_Valid.root', treeName_Valid)
                     all_files.append(f'{outFileName}_{uncName}{scale}_Valid.root')
-                    dfW_Valid.df.Snapshot(treeName_Valid, f'{outFileName}_{uncName}{scale}_Valid.root', varToSave, snapshotOptions)
                 treeName_nonValid = f"{treeName}_nonValid"
                 if treeName_nonValid in file_keys:
                     df_nonValid = ROOT.RDataFrame(treeName_nonValid, inFileName)
                     dfWrapped_nonValid = Utilities.DataFrameBuilderBase(df_nonValid)
                     dfWrapped_nonValid.AddMissingColumns(colNames, colTypes)
                     dfW_nonValid = Utilities.DataFrameWrapper(dfWrapped_nonValid.df,defaultColToSave)
-                    dfW_nonValid = producer.run(dfW_nonValid)
+                    run_producer(producer, dfW_nonValid, producer_config, f'{outFileName}_{uncName}{scale}_nonValid.root', treeName_nonValid)
                     all_files.append(f'{outFileName}_{uncName}{scale}_nonValid.root')
-                    dfW_nonValid.df.Snapshot(treeName_nonValid, f'{outFileName}_{uncName}{scale}_nonValid.root', varToSave, snapshotOptions)
-    print(f"snaps len is {len(snaps)}")
-    snapshotOptions.fLazy = True
-    if snapshotOptions.fLazy == True:
-        print("going to rungraph")
-        ROOT.RDF.RunGraphs(snaps)
     return all_files
 
 
@@ -154,7 +164,7 @@ if __name__ == "__main__":
 
     snapshotOptions = ROOT.RDF.RSnapshotOptions()
     snapshotOptions.fOverwriteIfExists=True
-    snapshotOptions.fLazy = True
+    snapshotOptions.fLazy = False
     snapshotOptions.fMode="RECREATE"
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'k' + args.compressionAlgo)
     snapshotOptions.fCompressionLevel = args.compressionLevel

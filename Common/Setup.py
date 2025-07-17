@@ -160,27 +160,72 @@ class Setup:
 
         self.anaTupleFiles = {}
 
+    def _create_fs_instance(self, path_or_paths):
+        """
+        Crea un'istanza di FileSystem (WLCGFileSystem o LocalFileSystem)
+        basandosi sul percorso o sui percorsi forniti.
+        Gestisce sia stringhe che liste di percorsi.
+        """
+        if isinstance(path_or_paths, list):
+            # Se è una lista, usiamo il primo percorso per creare l'FS.
+            # Potresti estendere qui per un "MultiFileSystem" se necessario.
+            if not path_or_paths:
+                raise ValueError("List of paths cannot be empty.")
+            path = path_or_paths[0]
+        elif isinstance(path_or_paths, str):
+            path = path_or_paths
+        else:
+            raise TypeError(f"Unsupported path type: {type(path_or_paths)}. Expected str or list of str.")
 
-    def get_custom_fs(self, fs_name_private=None, fs_default=None):
-        return WLCGFileSystem(fs_name_private) if fs_name_private else fs_default
+        if path.startswith('/'): # Presumiamo che i percorsi assoluti come /afs/cern.ch/user/... siano locali
+            # Possiamo distinguere ulteriormente qui se /afs è specifico per un tipo di FS locale.
+            # Per semplicità, consideriamo tutti i percorsi assoluti come LocalFileSystem.
+            # Potresti aggiungere logica qui per distinguere tra /afs, /tmp, ecc.
+            print(f"DEBUG: Path '{path}' recognized as a local file system.")
+            return LocalFileSystem(path)
+        else:
+            # Tutti gli altri percorsi, inclusi quelli che iniziano con protocolli (es. root://)
+            # o nomi logici, saranno gestiti da WLCGFileSystem.
+            print(f"DEBUG: Path '{path}' recognized as a WLCG/remote file system.")
+            return WLCGFileSystem(path_or_paths) # Passa il valore originale, WLCGFileSystem potrebbe gestirlo meglio
 
-    def get_fs(self, fs_name):
-        if fs_name not in self.fs_dict:
+
+    def get_fs(self, fs_name, custom_paths=None):
+        if fs_name in self.fs_dict:
+            return self.fs_dict[fs_name]
+        fs_instance = None
+        # search for custom paths --> should it become a list (?)
+        if custom_paths is not None:
+            try:
+                fs_instance = self._create_fs_instance(custom_paths)
+                # print(f"Custom path for {fs_name}: {custom_paths}")
+            except (TypeError, ValueError) as e:
+                print(f"Error = {e}.")
+                fs_instance = None
+
+        # tries with global params --> same as before
+        if fs_instance is None:
             full_fs_name = f'fs_{fs_name}'
             if full_fs_name in self.global_params:
-                name_cand = None
-                if type(self.global_params[full_fs_name]) == str:
-                    name_cand = self.global_params[full_fs_name]
-                elif len(self.global_params[full_fs_name]) == 1:
-                    name_cand = self.global_params[full_fs_name][0]
-                if name_cand is not None and name_cand.startswith('/'):
-                    self.fs_dict[fs_name] = name_cand
-                else:
-                    self.fs_dict[fs_name] = WLCGFileSystem(self.global_params[full_fs_name])
+                param_value = self.global_params[full_fs_name]
+                try:
+                    fs_instance = self._create_fs_instance(param_value)
+                    # print(f"global param path for {fs_name}: {param_value}")
+                except (TypeError, ValueError) as e:
+                    print(f"Error = {e}.")
+                    raise RuntimeError(f"Invalid FS configuration for '{fs_name}' in global_params.")
             else:
                 if fs_name == 'default':
-                    raise RuntimeError(f'No default file system defined')
-                self.fs_dict[fs_name] = self.get_fs('default')
+                    raise RuntimeError(f'No default file system defined in global_params or via custom_paths. '
+                                       f'Please define "fs_default" in your configuration or provide a custom_paths for "default".')
+                print(f"DEBUG: '{fs_name}' not found in global params or custom paths. Falling back to 'default' FS.")
+                fs_instance = self.get_fs('default')
+
+        # if nothing works, nothing works
+        if fs_instance is None:
+            raise RuntimeError(f"Could not determine file system for '{fs_name}'.")
+        self.fs_dict[fs_name] = fs_instance
+
         return self.fs_dict[fs_name]
 
     @property

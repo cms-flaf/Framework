@@ -51,7 +51,9 @@ class InputFileTask(Task, law.LocalWorkflow):
         print(f'Creating inputFile for sample {sample_name} into {self.output().path}')
         with self.output().localize("w") as out_local_file:
             input_files = []
-            fs_nanoAOD = self.setup.get_custom_fs(self.samples[sample_name].get("fs_nanoAOD", None), self.fs_nanoAOD)
+            fs_nanoAOD = self.fs_nanoAOD
+            if self.samples[sample_name].get("fs_nanoAOD", None) is not None:
+                fs_nanoAOD =  self.setup.get_fs("fs_nanoAOD", self.samples[sample_name]["fs_nanoAOD"])
             if fs_nanoAOD is None:
                 raise RuntimeError(f'fs_nanoAOD is not defined for sample {sample_name}')
             dir_to_list = self.samples[sample_name].get("dir_to_list", sample_name)
@@ -97,22 +99,25 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         sample_name, isData = self.branch_data
-        if isData:
+        if isData or self.samples[sample_name].get("fs_nanoAOD", None) is not None:
             self.output().touch()
             return
         print(f'Creating anaCache for sample {sample_name} into {self.output().uri()}')
         producer = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'anaCacheProducer.py')
-        input_files = InputFileTask.load_input_files(self.input()[0].path, sample_name)
+        dir_to_list = self.samples[sample_name].get("dir_to_list", sample_name)
+        input_files = InputFileTask.load_input_files(self.input()[0].path, dir_to_list)
         ana_caches = []
         generator_name = self.samples[sample_name]['generator'] if not isData else ''
         global_params_str = SerializeObjectToString(self.global_params)
         n_inputs = len(input_files)
-        fs_nanoAOD = self.setup.get_custom_fs(self.samples[sample_name].get("fs_nanoAOD", None), self.fs_nanoAOD)
+        fs_nanoAOD = self.fs_nanoAOD
+        if self.samples[sample_name].get("fs_nanoAOD", None) is not None:
+            fs_nanoAOD =  self.setup.get_fs("fs_nanoAOD", self.samples[sample_name]["fs_nanoAOD"])
         if fs_nanoAOD is None:
             raise RuntimeError(f'fs_nanoAOD is not defined for sample {sample_name}')
 
         for input_idx, input_file in enumerate(input_files):
-            input_target = self.remote_target(input_file, fs=self.fs_nanoAOD)
+            input_target = self.remote_target(input_file, fs=fs_nanoAOD)
             print(f'[{input_idx+1}/{n_inputs}] {input_target.uri()}')
             with input_target.localize("r") as input_local:
                 returncode, output, err = ps_call([ 'python3', producer, '--input-files', input_local.path,
@@ -145,12 +150,9 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         branch_idx = 0
         branches = {}
         for sample_id, sample_name in self.iter_samples():
-            print(sample_name)
-            print(self.fs_nanoAOD)
-            print(self.samples[sample_name].get("fs_nanoAOD", None))
-            fs_nanoAOD = self.setup.get_custom_fs(self.samples[sample_name].get("fs_nanoAOD", None), self.fs_nanoAOD)
-            print(fs_nanoAOD)
-            print()
+            fs_nanoAOD = self.fs_nanoAOD
+            if self.samples[sample_name].get("fs_nanoAOD", None) is not None:
+                fs_nanoAOD =  self.setup.get_fs("fs_nanoAOD", self.samples[sample_name]["fs_nanoAOD"])
             dir_to_list = self.samples[sample_name].get("dir_to_list", sample_name)
             input_file_list = InputFileTask.req(self, branch=sample_id, branches=(sample_id,)).output().path
             input_files = InputFileTask.load_input_files(input_file_list, dir_to_list)

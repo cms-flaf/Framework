@@ -143,9 +143,9 @@ DYto2L_M_50_PTLL_600_2J_amcatnloFXFX:
   unc: 0.0003334
 
 DYToMuMu-M105-180_13p6TeV_MiNNLO_pythia8:
-  crossSec: 2219.0 # just as example
-  reference: ccccc
-  unc: 0.2327
+  crossSec: 48.60
+  reference: internal from private prod
+  unc: 0.01
 DYto2Mu_MLL_10to50_powheg:
   crossSec: 6744.0
   reference: XSDB DYto2Mu_MLL-10to50_TuneCP5_13p6TeV_powheg-pythia8 modifiedOn 2024-04-03 19:20:02
@@ -233,6 +233,27 @@ DYto2TautoMuTauh_M_50_madgraphMLM:
   reference: XSDB DYto2TautoMuTauh_M-50_TuneCP5_13p6TeV_madgraphMLM-pythia8 modifiedOn 2023-03-26 13:56:19
   unc: 0.5212
 
+
+LLJJ_SM_M105-160_MJJ120_13p6TeV_dipole:
+  crossSec: 0.06
+  reference: internal from private prod
+  unc:
+
+
+LLJJ_SM_M105-160_MJJ120_13p6TeV_dipole_vbffilter:
+  crossSec: 0.06
+  reference: internal from private prod
+  unc:
+
+LLJJ_SM_M-50_MJJ120_13p6TeV_dipole:
+  crossSec: 0.88
+  reference: internal from private prod
+  unc:
+
+LLJJ_SM_M-50_MJJ120_13p6TeV_herwig7:
+  crossSec: 0.88
+  reference: internal from private prod
+  unc:
 
 GluGluHto2Mu:
   crossSec: 52.23 * (0.0002176)

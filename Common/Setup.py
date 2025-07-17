@@ -161,14 +161,7 @@ class Setup:
         self.anaTupleFiles = {}
 
     def _create_fs_instance(self, path_or_paths):
-        """
-        Crea un'istanza di FileSystem (WLCGFileSystem o LocalFileSystem)
-        basandosi sul percorso o sui percorsi forniti.
-        Gestisce sia stringhe che liste di percorsi.
-        """
         if isinstance(path_or_paths, list):
-            # Se è una lista, usiamo il primo percorso per creare l'FS.
-            # Potresti estendere qui per un "MultiFileSystem" se necessario.
             if not path_or_paths:
                 raise ValueError("List of paths cannot be empty.")
             path = path_or_paths[0]
@@ -177,17 +170,12 @@ class Setup:
         else:
             raise TypeError(f"Unsupported path type: {type(path_or_paths)}. Expected str or list of str.")
 
-        if path.startswith('/'): # Presumiamo che i percorsi assoluti come /afs/cern.ch/user/... siano locali
-            # Possiamo distinguere ulteriormente qui se /afs è specifico per un tipo di FS locale.
-            # Per semplicità, consideriamo tutti i percorsi assoluti come LocalFileSystem.
-            # Potresti aggiungere logica qui per distinguere tra /afs, /tmp, ecc.
-            print(f"DEBUG: Path '{path}' recognized as a local file system.")
-            return LocalFileSystem(path)
+        if path.startswith('/'):
+            # print(f"DEBUG: Path '{path}' recognized as a local file system.")
+            return path
         else:
-            # Tutti gli altri percorsi, inclusi quelli che iniziano con protocolli (es. root://)
-            # o nomi logici, saranno gestiti da WLCGFileSystem.
-            print(f"DEBUG: Path '{path}' recognized as a WLCG/remote file system.")
-            return WLCGFileSystem(path_or_paths) # Passa il valore originale, WLCGFileSystem potrebbe gestirlo meglio
+            # print(f"DEBUG: Path '{path}' recognized as a WLCG/remote file system.")
+            return WLCGFileSystem(path_or_paths)
 
 
     def get_fs(self, fs_name, custom_paths=None):
@@ -227,6 +215,11 @@ class Setup:
         self.fs_dict[fs_name] = fs_instance
 
         return self.fs_dict[fs_name]
+
+    # Il metodo get_custom_fs originale può essere rimosso o integrato,
+    # poiché la logica è ora gestita da get_fs con custom_paths.
+    # def get_custom_fs(self, fs_name_private=None, fs_default=None):
+    #     return WLCGFileSystem(fs_name_private) if fs_name_private else fs_default
 
     @property
     def cmssw_env(self):

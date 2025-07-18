@@ -179,14 +179,11 @@ class Setup:
 
 
     def get_fs(self, fs_name, custom_paths=None):
-        if fs_name in self.fs_dict:
-            return self.fs_dict[fs_name]
         fs_instance = None
         # search for custom paths --> should it become a list (?)
         if custom_paths is not None:
             try:
                 fs_instance = self._create_fs_instance(custom_paths)
-                # print(f"Custom path for {fs_name}: {custom_paths}")
             except (TypeError, ValueError) as e:
                 print(f"Error = {e}.")
                 fs_instance = None

@@ -60,6 +60,10 @@ class Task(law.Task):
         return self.setup.global_params
 
     @property
+    def fs_custom(self, fs_custom=None, fs_default=None):
+        return self.setup.get_custom_fs(fs_custom, fs_default)
+
+    @property
     def fs_nanoAOD(self):
         return self.setup.get_fs('nanoAOD')
 

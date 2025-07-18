@@ -114,3 +114,8 @@ def CreateRecoP4(df, suffix='nano', nano_version="v12"):
             df = df.Define(f"{obj}_idx", f"CreateIndexes({obj}_pt.size())")
             df = df.Define(f"{obj}_p4{suffix}", f"GetP4({obj}_pt, {obj}_eta, {obj}_phi, {obj}_mass, {obj}_idx)")
     return df
+
+def Jet_insideVetoRegion(df):
+    df = df.Define(f"Jet_vetoMapLooseRegion_presel", "Jet_pt > 15 && ( Jet_jetId & 2 ) && Jet_chHEF + Jet_neHEF < 0.9 ") #  (Jet_puId > 0 || Jet_pt >50) &&  for CHS jets
+    df = df.Define(f"Jet_vetoMapLooseRegion", " RemoveOverlaps(Jet_p4, Jet_vetoMapLooseRegion_presel, Muon_p4, 0.2)")
+    return df

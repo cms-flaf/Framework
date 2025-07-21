@@ -154,7 +154,6 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             if self.samples[sample_name].get("fs_nanoAOD", None) is not None:
                 fs_nanoAOD =  self.setup.get_fs("fs_nanoAOD", self.samples[sample_name]["fs_nanoAOD"])
             dir_to_list = self.samples[sample_name].get("dir_to_list", sample_name)
-
             input_file_list = InputFileTask.req(self, branch=sample_id, branches=(sample_id,)).output().path
             input_files = InputFileTask.load_input_files(input_file_list, dir_to_list)
             if fs_nanoAOD is None:
@@ -201,7 +200,6 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         thread.start()
         anaCache_remote = self.input()[0]
         customisation_dict = getCustomisationSplit(self.customisations)
-        print(jsonName)
         channels = customisation_dict['channels'] if 'channels' in customisation_dict.keys() else self.global_params['channelSelection']
         if type(channels) == list: channels = ','.join(channels)
         store_noncentral = customisation_dict['store_noncentral']=='True' if 'store_noncentral' in customisation_dict.keys() else self.global_params.get('store_noncentral', False)

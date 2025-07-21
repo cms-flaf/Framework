@@ -161,27 +161,28 @@ class Setup:
         self.anaTupleFiles = {}
 
     def _create_fs_instance(self, path_or_paths):
+        path_to_check = None
         if isinstance(path_or_paths, list):
             if not path_or_paths:
                 raise ValueError("List of paths cannot be empty.")
-            path = path_or_paths[0]
+            path_to_check = path_or_paths[0] # Usa il primo per determinare il tipo di FS
         elif isinstance(path_or_paths, str):
-            path = path_or_paths
+            path_to_check = path_or_paths
         else:
             raise TypeError(f"Unsupported path type: {type(path_or_paths)}. Expected str or list of str.")
 
-        if path.startswith('/'):
-            # print(f"DEBUG: Path '{path}' recognized as a local file system.")
-            return path
+        if path_to_check.startswith('/'):
+            return LocalFileSystem(path_to_check)
         else:
-            # print(f"DEBUG: Path '{path}' recognized as a WLCG/remote file system.")
             return WLCGFileSystem(path_or_paths)
 
 
     def get_fs(self, fs_name, custom_paths=None):
         fs_instance = None
-        # search for custom paths --> should it become a list (?)
-        if custom_paths is not None:
+        if custom_paths is None:
+            if fs_name in self.fs_dict.keys():
+                return self.fs_dict[fs_name]
+        else:
             try:
                 fs_instance = self._create_fs_instance(custom_paths)
             except (TypeError, ValueError) as e:
@@ -203,7 +204,7 @@ class Setup:
                 if fs_name == 'default':
                     raise RuntimeError(f'No default file system defined in global_params or via custom_paths. '
                                        f'Please define "fs_default" in your configuration or provide a custom_paths for "default".')
-                print(f"DEBUG: '{fs_name}' not found in global params or custom paths. Falling back to 'default' FS.")
+                # print(f"DEBUG: '{fs_name}' not found in global params or custom paths. Falling back to 'default' FS.")
                 fs_instance = self.get_fs('default')
 
         # if nothing works, nothing works

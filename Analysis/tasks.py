@@ -205,6 +205,10 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             ana_cache_input_counter = 1 # When we have multiple anaCache payloads, then we need to get the correct input for each one
             for var, need_cache, producer_name, output in zip(var_list, need_cache_list, producer_list, self.output()):
                 print(f"Starting var {var} with need_cache {need_cache}")
+                if output.exists():
+                    print(f"Output for {var} {producer_name} {output} already exists! Continue")
+                    ana_cache_input_counter += 1 # Index to the next ana cache input for next time
+                    continue
                 with output.localize("w") as local_output:
                     HistProducerFile_cmd = [ 'python3', HistProducerFile,
                                             '--inFile', local_input.path, '--outFileName',local_output.path,
@@ -497,7 +501,7 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         if producer_dependencies:
             for dependency in producer_dependencies:
                 workflow_dict[dependency] = {
-                    br_idx: AnalysisCacheTask.req(self, branch=br_idx, producer_to_run=dependency)
+                    br_idx: AnalysisCacheTask.req(self, branch=br_idx, customisations=self.customisations, producer_to_run=dependency)
                     for br_idx, _ in self.branch_map.items()
                 }
         return workflow_dict
@@ -566,10 +570,8 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     if deepTauVersion!="":
                         analysisCacheProducer_cmd.extend([ '--deepTauVersion', deepTauVersion])
                     # Check if cmssw env is required
-                    if self.global_params['payload_producers'][self.producer_to_run].get('cmssw_env', False):
-                        ps_call(analysisCacheProducer_cmd, env=self.cmssw_env, verbose=1)
-                    else:
-                        ps_call(analysisCacheProducer_cmd, verbose=1)
+                    prod_env = self.cmssw_env if self.global_params['payload_producers'][self.producer_to_run].get('cmssw_env', False) else None
+                    ps_call(analysisCacheProducer_cmd, env=prod_env, verbose=1)
                 print(f"Finished producing payload for producer={self.producer_to_run} with name={sample_name}, type={sample_type}, file={input_file.path}")
 
         finally:

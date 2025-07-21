@@ -191,7 +191,6 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         #Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
         if type(channels) == list:
             channels = ','.join(channels)
-        print("D")
         #bbww does not use a deepTauVersion
         deepTauVersion = ''
         isbbtt = 'HH_bbtautau' in self.global_params['analysis_config_area'].split('/')

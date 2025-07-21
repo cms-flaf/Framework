@@ -462,7 +462,7 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     # Need to override this from HTCondorWorkflow to have separate data pathways for different cache tasks
     def htcondor_output_directory(self):
-        return law.LocalDirectoryTarget(os.path.join(self.local_path(), self.producer_to_run))
+        return law.LocalDirectoryTarget(self.local_path(self.producer_to_run))
 
     def __init__(self, *args, **kwargs):
         # Needed to get the config and ht_condor_pathways figured out

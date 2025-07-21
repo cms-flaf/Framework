@@ -85,6 +85,13 @@ def run_producer(producer, dfw, producer_config, outFileName, treeName):
 
     else:
         dfw = producer.run(dfw)
+        for col in dfw.colToSave:
+            if col not in producer_config.get('columns', []):
+                print(f"Extra save col {col}")
+        for col in producer_config.get('columns', []):
+            if col not in dfw.colToSave:
+                print(f"Missing save col {col}")
+        if 'FullEventId' not in dfw.colToSave: dfw.colToSave.append('FullEventId')
         varToSave = Utilities.ListToVector(dfw.colToSave)
         dfw.df.Snapshot(treeName, outFileName, varToSave, snapshotOptions)
 

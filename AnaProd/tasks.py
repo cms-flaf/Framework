@@ -355,12 +355,12 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def workflow_requires(self):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
-            return { "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()) }
+            return { "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=(), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default) }
 
         branch_set = set()
         for idx, sample_names in self.branch_map.items():
             branch_set.update([idx])
-        return { "AnaTupleFileListTask" : AnaTupleFileListTask.req(self, branches=tuple(branch_set)), "AnaTupleTask": AnaTupleTask.req(self, branches=tuple(branch_set),customisations=self.customisations) }
+        return { "AnaTupleFileListTask" : AnaTupleFileListTask.req(self, branches=tuple(branch_set), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default), "AnaTupleTask": AnaTupleTask.req(self, branches=tuple(branch_set),customisations=self.customisations) }
 
     def requires(self):
         # Need both the AnaTupleTask for the input ROOT file, and the AnaTupleFileListTask for the json structure
@@ -374,7 +374,7 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     required_branches.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
         for prod_br, (Merge_sample_name, Merge_sample_type) in AnaTupleFileList_branch_map.items():
             if Merge_sample_name == sample_name:
-                required_branches.append(AnaTupleFileListTask.req(self, max_runtime=AnaTupleFileListTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
+                required_branches.append(AnaTupleFileListTask.req(self, max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default, branch=prod_br, branches=(prod_br,)))
         return required_branches
     
     

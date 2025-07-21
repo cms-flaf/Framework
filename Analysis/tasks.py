@@ -77,8 +77,8 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
             req_dict = { 
-                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()), 
-                "AnaTupleMergeTask": AnaTupleMergeTask.req(self, branches=())
+                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=(), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default), 
+                "AnaTupleMergeTask": AnaTupleMergeTask.req(self, branches=(), max_runtime=AnaTupleMergeTask.max_runtime._default, n_cpus=AnaTupleMergeTask.n_cpus._default)
             }
             # Get all the producers to require for this dummy branch
             producer_set = set()
@@ -103,7 +103,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         isbbtt = 'HH_bbtautau' in self.global_params['analysis_config_area'].split('/')
 
         if len(branch_set) > 0:
-            reqs['anaTuple'] = AnaTupleMergeTask.req(self, branches=tuple(branch_set),customisations=self.customisations)
+            reqs['anaTuple'] = AnaTupleMergeTask.req(self, branches=tuple(branch_set),customisations=self.customisations, max_runtime=AnaTupleMergeTask.max_runtime._default, n_cpus=AnaTupleMergeTask.n_cpus._default)
         if len(branch_set_cache) > 0:
             if isbbtt:
                 reqs['anaCacheTuple'] = AnaCacheTupleTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
@@ -238,7 +238,7 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
             return { 
-                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()),
+                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=(), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default),
                 "HistProducerFileTask": HistProducerFileTask.req(self, branches=())
             }
 
@@ -317,7 +317,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def workflow_requires(self):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
-            return { "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()) }
+            return { "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=(), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default) }
             
         histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations).create_branch_map()
         all_samples = {}
@@ -482,8 +482,8 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
             req_dict = { 
-                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()), 
-                "AnaTupleMergeTask": AnaTupleMergeTask.req(self, branches=())
+                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=(), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default), 
+                "AnaTupleMergeTask": AnaTupleMergeTask.req(self, branches=(), max_runtime=AnaTupleMergeTask.max_runtime._default, n_cpus=AnaTupleMergeTask.n_cpus._default)
             }
             # Get all the producers to require for this dummy branch
             producer_requires_set = set()
@@ -498,7 +498,7 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
         workflow_dict = {}
         workflow_dict["anaTuple"] = {
-            br_idx: AnaTupleMergeTask.req(self, branch=br_idx)
+            br_idx: AnaTupleMergeTask.req(self, branch=br_idx, max_runtime=AnaTupleMergeTask.max_runtime._default, n_cpus=AnaTupleMergeTask.n_cpus._default)
             for br_idx, _ in self.branch_map.items()
         }
         producer_dependencies = self.global_params["payload_producers"][self.producer_to_run]["dependencies"]

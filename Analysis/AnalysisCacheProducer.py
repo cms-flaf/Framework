@@ -190,7 +190,7 @@ if __name__ == "__main__":
     unc_cfg_dict = {}
 
     uprootCompression = getattr(uproot, args.compressionAlgo)
-    uprootCompression = getattr(uprootCompression, args.compressionLevel)
+    uprootCompression = uprootCompression(args.compressionLevel)
 
     with open(args.uncConfig, 'r') as f:
         unc_cfg_dict = yaml.safe_load(f)

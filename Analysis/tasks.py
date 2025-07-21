@@ -301,6 +301,9 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         HistProducerSample = os.path.join(self.ana_path(), 'FLAF', 'Analysis', 'HistProducerSample.py')
         with contextlib.ExitStack() as stack:
             for idx, var in enumerate(var_list):
+                if (self.output()[idx]).exists():
+                    print(f"Output for {var} {self.ouptut()[idx]} already exists! Continue")
+                    continue
                 local_inputs = [stack.enter_context((inp[idx]).localize('r')).path for inp in self.input()] # HistFile now has a list of outputs, get the index input
                 with (self.output()[idx]).localize("w") as tmp_local_file:
                     HistProducerSample_cmd = ['python3', HistProducerSample,'--outFile', tmp_local_file.path]#, '--remove-files', 'True']

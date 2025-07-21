@@ -566,10 +566,8 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     if deepTauVersion!="":
                         analysisCacheProducer_cmd.extend([ '--deepTauVersion', deepTauVersion])
                     # Check if cmssw env is required
-                    if self.global_params['payload_producers'][self.producer_to_run].get('cmssw_env', False):
-                        ps_call(analysisCacheProducer_cmd, env=self.cmssw_env, verbose=1)
-                    else:
-                        ps_call(analysisCacheProducer_cmd, verbose=1)
+                    prod_env = self.cmssw_env if self.global_params['payload_producers'][self.producer_to_run].get('cmssw_env', False) else None
+                    ps_call(analysisCacheProducer_cmd, env=prod_env, verbose=1)
                 print(f"Finished producing payload for producer={self.producer_to_run} with name={sample_name}, type={sample_type}, file={input_file.path}")
 
         finally:

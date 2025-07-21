@@ -634,8 +634,7 @@ class PlotTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def create_branch_map(self):
         branches = {}
         merge_map = MergeTask.req(self, branch=-1, branches=(), customisations=self.customisations).create_branch_map()
-
-        for k, (_, (var, _)) in enumerate(merge_map.items()):
+        for k, (_, (var, _, _)) in enumerate(merge_map.items()):
             branches[k] = var
         return branches
 

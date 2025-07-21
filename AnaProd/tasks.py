@@ -210,7 +210,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
                 centralFileName = os.path.basename(local_input.path)
                 if self.test:
-                    anatuple_cmd.extend(['--nEvents', '100'])
+                    anatuple_cmd.extend(['--nEvents', '1000'])
                 # ps_call(anatuple_cmd, verbose=1) # this will be uncommented when the anatuple producer will be fully independent on cmsEnv.
                 ps_call(anatuple_cmd, env=self.cmssw_env, verbose=1)
 
@@ -271,7 +271,7 @@ class AnaTupleFileListTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if (sample_name == anaTuple_sample_name) or (sample_type == 'data' and anaTuple_sample_type == 'data'):
                     branch_set.add(br_idx)
 
-        deps = { "AnaTupleTask": AnaTupleTask.req(self, branches=tuple(branch_set), customisations=self.customisations) }
+        deps = { "AnaTupleTask": AnaTupleTask.req(self, branches=tuple(branch_set), max_runtime=AnaTupleTask.max_runtime._default, n_cpus=AnaTupleTask.n_cpus._default, customisations=self.customisations) }
         return deps
 
 
@@ -311,9 +311,9 @@ class AnaTupleFileListTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         output_path = os.path.join('AnaTupleFileList', self.version, self.period, sample_name, output_name)
         # This is a problem for a --remove-output task, it crashes since the 'output' is only the local or something
         # With this current state, you need to do the --remove-output command twice
-        if self.local_target('merge_cache', f'{sample_name}.json').exists():
-            return [ self.local_target('merge_cache', f'{sample_name}.json') ]
-        return [ self.remote_target(output_path,  fs=self.fs_anaTuple), self.local_target('merge_cache', f'{sample_name}.json') ]
+        if self.local_target(output_path).exists():
+            return [ self.local_target(output_path) ]
+        return [ self.remote_target(output_path,  fs=self.fs_anaTuple), self.local_target(output_path) ]
 
 
     def run(self):
@@ -355,12 +355,12 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def workflow_requires(self):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
-            return { "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()) }
+            return { "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=(), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default) }
 
         branch_set = set()
         for idx, sample_names in self.branch_map.items():
             branch_set.update([idx])
-        return { "AnaTupleFileListTask" : AnaTupleFileListTask.req(self, branches=tuple(branch_set)), "AnaTupleTask": AnaTupleTask.req(self, branches=tuple(branch_set),customisations=self.customisations) }
+        return { "AnaTupleFileListTask" : AnaTupleFileListTask.req(self, branches=tuple(branch_set), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default), "AnaTupleTask": AnaTupleTask.req(self, branches=tuple(branch_set),customisations=self.customisations) }
 
     def requires(self):
         # Need both the AnaTupleTask for the input ROOT file, and the AnaTupleFileListTask for the json structure
@@ -374,7 +374,7 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     required_branches.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
         for prod_br, (Merge_sample_name, Merge_sample_type) in AnaTupleFileList_branch_map.items():
             if Merge_sample_name == sample_name:
-                required_branches.append(AnaTupleFileListTask.req(self, max_runtime=AnaTupleFileListTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
+                required_branches.append(AnaTupleFileListTask.req(self, max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default, branch=prod_br, branches=(prod_br,)))
         return required_branches
     
     

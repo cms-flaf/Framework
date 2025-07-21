@@ -73,7 +73,7 @@ def run_producer(producer, dfw, producer_config, outFileName, treeName):
                 final_array = new_array
             else:
                 final_array = ak.concatenate([final_array, new_array])
-        with uproot.recreate(outFileName) as outfile:
+        with uproot.recreate(outFileName, compression=uproot.ZLIB(4)) as outfile:
             outfile[treeName] = final_array
 
     else:

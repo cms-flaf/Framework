@@ -74,21 +74,23 @@ def run_producer(producer, dfw, producer_config, outFileName, treeName, snapshot
             else:
                 final_array = ak.concatenate([final_array, new_array])
         # Check output looks correct
-        for col in producer_config.get('columns', []):
+        column_names = [ f"{producer_config['name']}_{col}" for col in producer_config.get('columns', []) ]
+        for col in column_names:
             if col not in array.fields:
-                print(f"Expected column {col} not found in your payload array!")
+                print(f"Expected column {producer_config['name']}_{col} not found in your payload array!")
         for col in array.fields:
-            if col not in producer_config.get('columns', []):
+            if col not in column_names:
                 print(f"Extra col {col}")
         with uproot.recreate(outFileName, compression=uproot.ZLIB(4)) as outfile:
             outfile[treeName] = final_array
 
     else:
         dfw = producer.run(dfw)
+        column_names = [ f"{producer_config['name']}_{col}" for col in producer_config.get('columns', []) ]
         for col in dfw.colToSave:
-            if col not in producer_config.get('columns', []):
+            if col not in column_names:
                 print(f"Extra save col {col}")
-        for col in producer_config.get('columns', []):
+        for col in column_names:
             if col not in dfw.colToSave:
                 print(f"Missing save col {col}")
         if 'FullEventId' not in dfw.colToSave: dfw.colToSave.append('FullEventId')

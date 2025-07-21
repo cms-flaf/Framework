@@ -60,6 +60,7 @@ def run_producer(producer, dfw, producer_config, outFileName, treeName):
     if producer_config.get('awkward_based', False):
         dfw = producer.prepare_dfw(dfw)
         vars_to_save = producer.vars_to_save
+        if 'FullEventId' not in vars_to_save: vars_to_save.append('FullEventId')            
         dfw.df.Snapshot(f'tmp', f'tmp.root', vars_to_save, snapshotOptions)
         final_array = None
         for array in uproot.iterate('tmp.root:tmp', step_size='50MB'): # For DNN, this translates to ~300_000 events

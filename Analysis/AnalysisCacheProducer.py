@@ -58,12 +58,16 @@ def createCentralQuantities(df_central, central_col_types, central_columns):
 
 def run_producer(producer, dfw, producer_config, outFileName, treeName):
     if producer_config.get('awkward_based', False):
-        dfw = producer.prepare_dfw(dfw)
-        vars_to_save = producer.vars_to_save
-        if 'FullEventId' not in vars_to_save: vars_to_save.append('FullEventId')            
-        dfw.df.Snapshot(f'tmp', f'tmp.root', vars_to_save, snapshotOptions)
+        vars_to_save = []
+        if hasattr(producer, 'prepare_dfw'): 
+            dfw = producer.prepare_dfw(dfw)
+            vars_to_save = producer.vars_to_save
+        if 'FullEventId' not in vars_to_save: vars_to_save.append('FullEventId')      
+        work_dir = producer_config.get('work_dir', 'tmp')      
+        dfw.df.Snapshot(f'tmp', os.path.join(work_dir, 'tmp.root'), vars_to_save, snapshotOptions)
         final_array = None
-        for array in uproot.iterate('tmp.root:tmp', step_size='50MB'): # For DNN, this translates to ~300_000 events
+        uproot_stepsize = producer_config.get('uproot_stepsize', '100MB')
+        for array in uproot.iterate('tmp.root:tmp', step_size=uproot_stepsize): # For DNN 50MB translates to ~300_000 events
             new_array = producer.run(array)
             if final_array is None:
                 final_array = new_array

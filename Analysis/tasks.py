@@ -642,7 +642,7 @@ class PlotTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         var = self.branch_data
 
         merge_map = MergeTask.req(self, branch=-1, branches=(), customisations=self.customisations).create_branch_map()
-        merge_branch = next(br for br, (v, _) in merge_map.items() if v == var)
+        merge_branch = next(br for br, (v, _, _) in merge_map.items() if v == var)
 
         return MergeTask.req(self,branch=merge_branch,customisations=self.customisations,max_runtime=MergeTask.max_runtime._default,)
 

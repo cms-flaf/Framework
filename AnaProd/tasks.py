@@ -210,7 +210,7 @@ class AnaTupleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
                 centralFileName = os.path.basename(local_input.path)
                 if self.test:
-                    anatuple_cmd.extend(['--nEvents', '100'])
+                    anatuple_cmd.extend(['--nEvents', '1000'])
                 # ps_call(anatuple_cmd, verbose=1) # this will be uncommented when the anatuple producer will be fully independent on cmsEnv.
                 ps_call(anatuple_cmd, env=self.cmssw_env, verbose=1)
 
@@ -271,7 +271,7 @@ class AnaTupleFileListTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 if (sample_name == anaTuple_sample_name) or (sample_type == 'data' and anaTuple_sample_type == 'data'):
                     branch_set.add(br_idx)
 
-        deps = { "AnaTupleTask": AnaTupleTask.req(self, branches=tuple(branch_set), customisations=self.customisations) }
+        deps = { "AnaTupleTask": AnaTupleTask.req(self, branches=tuple(branch_set), max_runtime=AnaTupleTask.max_runtime._default, n_cpus=AnaTupleTask.n_cpus._default, customisations=self.customisations) }
         return deps
 
 
@@ -311,9 +311,9 @@ class AnaTupleFileListTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         output_path = os.path.join('AnaTupleFileList', self.version, self.period, sample_name, output_name)
         # This is a problem for a --remove-output task, it crashes since the 'output' is only the local or something
         # With this current state, you need to do the --remove-output command twice
-        if self.local_target('merge_cache', f'{sample_name}.json').exists():
-            return [ self.local_target('merge_cache', f'{sample_name}.json') ]
-        return [ self.remote_target(output_path,  fs=self.fs_anaTuple), self.local_target('merge_cache', f'{sample_name}.json') ]
+        if self.local_target(output_path).exists():
+            return [ self.local_target(output_path) ]
+        return [ self.remote_target(output_path,  fs=self.fs_anaTuple), self.local_target(output_path) ]
 
 
     def run(self):

@@ -142,6 +142,11 @@ DYto2L_M_50_PTLL_600_2J_amcatnloFXFX:
   reference: XSDB DYto2L-2Jets_MLL-50_PTLL-600_2J_TuneCP5_13p6TeV_amcatnloFXFX-pythia8 modifiedOn 2024-04-03 19:19:36
   unc: 0.0003334
 
+DYto2Mu_MLL_105to160_amcatnloFXFX:
+  crossSec: 49.21
+  reference: XSDB DYto2Mu-2Jets_MLL-105To160_TuneCP5_13p6TeV_amcatnloFXFX-pythia8 modifiedOn 2024-12-20 07:59:27
+  unc: 0.209
+
 DYToMuMu-M105-180_13p6TeV_MiNNLO_pythia8:
   crossSec: 48.60
   reference: internal from private prod

@@ -61,23 +61,24 @@ def run_producer(producer, dfw, producer_config, outFileName, treeName, snapshot
         vars_to_save = []
         if hasattr(producer, 'prepare_dfw'): 
             dfw = producer.prepare_dfw(dfw)
-            vars_to_save = producer.vars_to_save
-        if 'FullEventId' not in vars_to_save: vars_to_save.append('FullEventId')      
-        work_dir = producer_config.get('work_dir', 'tmp')      
+            vars_to_save = list(producer.vars_to_save)
+        if 'FullEventId' not in vars_to_save: vars_to_save.append('FullEventId')  
+        work_dir = producer_config.get('work_dir', 'tmp')    
+        os.makedirs(work_dir, exist_ok=True)  
         dfw.df.Snapshot(f'tmp', os.path.join(work_dir, 'tmp.root'), vars_to_save, snapshotOptions)
         final_array = None
         uproot_stepsize = producer_config.get('uproot_stepsize', '100MB')
-        for array in uproot.iterate('tmp.root:tmp', step_size=uproot_stepsize): # For DNN 50MB translates to ~300_000 events
+        for array in uproot.iterate(f"{os.path.join(work_dir, 'tmp.root')}:tmp", step_size=uproot_stepsize): # For DNN 50MB translates to ~300_000 events
             new_array = producer.run(array)
             if final_array is None:
                 final_array = new_array
             else:
                 final_array = ak.concatenate([final_array, new_array])
         # Check output looks correct
-        column_names = [ f"{producer_config['name']}_{col}" for col in producer_config.get('columns', []) ]
+        column_names = [ f"{producer.payload_name}_{col}" for col in producer_config.get('columns', []) ]
         for col in column_names:
             if col not in array.fields:
-                print(f"Expected column {producer_config['name']}_{col} not found in your payload array!")
+                print(f"Expected column {producer.payload_name}_{col} not found in your payload array!")
         for col in array.fields:
             if col not in column_names:
                 print(f"Extra col {col}")
@@ -86,7 +87,7 @@ def run_producer(producer, dfw, producer_config, outFileName, treeName, snapshot
 
     else:
         dfw = producer.run(dfw)
-        column_names = [ f"{producer_config['name']}_{col}" for col in producer_config.get('columns', []) ]
+        column_names = [ f"{producer.payload_name}_{col}" for col in producer_config.get('columns', []) ]
         for col in dfw.colToSave:
             if col not in column_names:
                 print(f"Extra save col {col}")

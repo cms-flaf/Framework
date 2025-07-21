@@ -73,6 +73,13 @@ def run_producer(producer, dfw, producer_config, outFileName, treeName):
                 final_array = new_array
             else:
                 final_array = ak.concatenate([final_array, new_array])
+        # Check output looks correct
+        for col in producer_config.get('columns', []):
+            if col not in array.fields:
+                print(f"Expected column {col} not found in your payload array!")
+        for col in array.fields:
+            if col not in producer_config.get('columns', []):
+                print(f"Extra col {col}")
         with uproot.recreate(outFileName, compression=uproot.ZLIB(4)) as outfile:
             outfile[treeName] = final_array
 

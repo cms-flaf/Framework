@@ -136,8 +136,15 @@ if __name__ == "__main__":
         #if os.path.exists(args.outFile):
         #    os.remove(tmpFileName)
 
+    nTTrees = 0
+    for obj_name, obj_desc in objects.items():
+        if obj_desc.obj_type == "TTree":
+            nTTrees += 1
+
     if args.outFiles != None and len(args.outFiles) > 0:
-        if len(args.outFiles) > 1 and len(objects) > 1:
+        if len(args.outFiles) > 1 and nTTrees > 1: # Need this instead of objects, data was failing becuse it contained Report and Time
+            for obj_name, obj_desc in objects.items():
+                print(obj_name, obj_desc.obj_type)
             raise RuntimeError("Cannot split multiple objects into multiple files, please use a single object or a single file.")
         for obj_name, obj_desc in objects.items():
             print(f"At splitting for {obj_name} {obj_desc}")

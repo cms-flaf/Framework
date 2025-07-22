@@ -73,7 +73,7 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
     producer_name = producer_config['producer_name']
     producers_module = importlib.import_module(producers_module_name)
     producer_class = getattr(producers_module, producer_name)
-    producer = producer_class(producer_config)
+    producer = producer_class(producer_config, producer_to_run)
     dfw = producer.run(dfw)
 
     varToSave = Utilities.ListToVector(dfw.colToSave)

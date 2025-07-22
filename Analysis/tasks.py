@@ -77,8 +77,8 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
             req_dict = {
-                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()),
-                "AnaTupleMergeTask": AnaTupleMergeTask.req(self, branches=())
+                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=(), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default),
+                "AnaTupleMergeTask": AnaTupleMergeTask.req(self, branches=(), max_runtime=AnaTupleMergeTask.max_runtime._default, n_cpus=AnaTupleMergeTask.n_cpus._default)
             }
             # Get all the producers to require for this dummy branch
             producer_set = set()
@@ -100,11 +100,10 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 for producer_name in (p for p in producer_list if p is not None):
                     producer_set.add(producer_name)
         reqs = {}
-
         isbbtt = 'HH_bbtautau' in self.global_params['analysis_config_area'].split('/')
 
         if len(branch_set) > 0:
-            reqs['anaTuple'] = AnaTupleMergeTask.req(self, branches=tuple(branch_set),customisations=self.customisations)
+            reqs['anaTuple'] = AnaTupleMergeTask.req(self, branches=tuple(branch_set),customisations=self.customisations, max_runtime=AnaTupleMergeTask.max_runtime._default, n_cpus=AnaTupleMergeTask.n_cpus._default)
         if len(branch_set_cache) > 0:
             if isbbtt:
                 reqs['anaCacheTuple'] = AnaCacheTupleTask.req(self, branches=tuple(branch_set_cache),customisations=self.customisations)
@@ -129,8 +128,6 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 for producer_name in (p for p in producer_list if p is not None):
                     deps.append(AnalysisCacheTask.req(self, max_runtime=AnalysisCacheTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations, producer_to_run=producer_name))
         return deps
-
-
 
     def create_branch_map(self):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
@@ -237,7 +234,7 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
             return {
-                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()),
+                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=(), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default),
                 "HistProducerFileTask": HistProducerFileTask.req(self, branches=())
             }
 
@@ -459,16 +456,26 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 ps_call(RenameHistsProducer_cmd,verbose=1)
 
 class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 30.0)
-    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 2)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
+    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 1)
     producer_to_run = luigi.Parameter()
+
+    # Need to override this from HTCondorWorkflow to have separate data pathways for different cache tasks
+    def htcondor_output_directory(self):
+        return law.LocalDirectoryTarget(self.local_path(self.producer_to_run))
+
+    def __init__(self, *args, **kwargs):
+        # Needed to get the config and ht_condor_pathways figured out
+        super(AnalysisCacheTask, self).__init__(*args, **kwargs)
+        self.n_cpus = self.global_params["payload_producers"][self.producer_to_run].get('n_cpus', 1)
+        self.max_runtime = self.global_params["payload_producers"][self.producer_to_run].get('max_runtime', 2.0)
 
     def workflow_requires(self):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
             req_dict = {
-                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()),
-                "AnaTupleMergeTask": AnaTupleMergeTask.req(self, branches=())
+                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=(), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default),
+                "AnaTupleMergeTask": AnaTupleMergeTask.req(self, branches=(), max_runtime=AnaTupleMergeTask.max_runtime._default, n_cpus=AnaTupleMergeTask.n_cpus._default)
             }
             # Get all the producers to require for this dummy branch
             producer_requires_set = set()
@@ -483,14 +490,14 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
         workflow_dict = {}
         workflow_dict["anaTuple"] = {
-            br_idx: AnaTupleMergeTask.req(self, branch=br_idx)
+            br_idx: AnaTupleMergeTask.req(self, branch=br_idx, max_runtime=AnaTupleMergeTask.max_runtime._default, n_cpus=AnaTupleMergeTask.n_cpus._default)
             for br_idx, _ in self.branch_map.items()
         }
         producer_dependencies = self.global_params["payload_producers"][self.producer_to_run]["dependencies"]
         if producer_dependencies:
             for dependency in producer_dependencies:
                 workflow_dict[dependency] = {
-                    br_idx: AnalysisCacheTask.req(self, branch=br_idx, producer_to_run=dependency)
+                    br_idx: AnalysisCacheTask.req(self, branch=br_idx, customisations=self.customisations, producer_to_run=dependency)
                     for br_idx, _ in self.branch_map.items()
                 }
         return workflow_dict
@@ -500,7 +507,7 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         requires_list = [ AnaTupleMergeTask.req(self, max_runtime=AnaTupleMergeTask.max_runtime._default) ]
         if producer_dependencies:
             for dependency in producer_dependencies:
-                requires_list.append(AnalysisCacheTask.req(self, max_runtime=AnaTupleMergeTask.max_runtime._default, producer_to_run=dependency))
+                requires_list.append(AnalysisCacheTask.req(self, producer_to_run=dependency))
         return requires_list
 
     def create_branch_map(self):
@@ -526,7 +533,7 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return_list = []
         for idx in range(nInputs):
             outFileName = os.path.basename(self.input()[0][idx].path)
-            output_path = os.path.join('AnalysisCache', self.period, sample_name,self.version, self.producer_to_run, outFileName)
+            output_path = os.path.join('AnalysisCache', self.version, self.period, sample_name, self.producer_to_run, outFileName)
             return_list.append(self.remote_target(output_path, fs=self.fs_anaCacheTuple))
         # return self.remote_target(output_path, fs=self.fs_AnalysisCache) # for some reason this line is not working even if I edit user_custom.yaml
         # return self.remote_target(output_path, fs=self.fs_anaCacheTuple)
@@ -558,7 +565,9 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                         analysisCacheProducer_cmd.extend(['--compute_unc_variations', 'True'])
                     if deepTauVersion!="":
                         analysisCacheProducer_cmd.extend([ '--deepTauVersion', deepTauVersion])
-                    ps_call(analysisCacheProducer_cmd, env=self.cmssw_env, verbose=1)
+                    # Check if cmssw env is required
+                    prod_env = self.cmssw_env if self.global_params['payload_producers'][self.producer_to_run].get('cmssw_env', False) else None
+                    ps_call(analysisCacheProducer_cmd, env=prod_env, verbose=1)
                 print(f"Finished producing payload for producer={self.producer_to_run} with name={sample_name}, type={sample_type}, file={input_file.path}")
 
         finally:

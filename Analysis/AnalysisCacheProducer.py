@@ -56,7 +56,15 @@ def createCentralQuantities(df_central, central_col_types, central_columns):
     df_central = map_creator.processCentral(ROOT.RDF.AsRNode(df_central), Utilities.ListToVector(central_columns))
     return df_central
 
+def check_columns(expected_columns, columns_to_save, available_columns):
+    if expected_columns != columns_to_save:
+        raise Exception(f"Mismatch between expected columns and save columns {expected_columns} : {columns_to_save}")
+    if not set(columns_to_save).issubset(set(available_columns)):
+        raise Exception(f"Missing a column to save from available columns {columns_to_save} : {available_columns}")
+
 def run_producer(producer, dfw, producer_config, outFileName, treeName, snapshotOptions, uprootCompression, workingDir):
+    if 'FullEventId' not in dfw.colToSave: dfw.colToSave.append('FullEventId')
+    expected_columns = f"{producer.payload_name}_{col}" for col in producer_config['columns'] + [ 'FullEventId' ]
     if producer_config.get('awkward_based', False):
         vars_to_save = []
         if hasattr(producer, 'prepare_dfw'): 
@@ -72,29 +80,13 @@ def run_producer(producer, dfw, producer_config, outFileName, treeName, snapshot
                 final_array = new_array
             else:
                 final_array = ak.concatenate([final_array, new_array])
-        # Check output looks correct
-        if 'FullEventId' not in dfw.colToSave: dfw.colToSave.append('FullEventId')
-        for colToSave in producer.cols_to_save:
-            dfw.colToSave.append(colToSave)
-        for col in dfw.colToSave: # Check that expected columns to save are available
-            if col not in final_array.fields:
-                raise Exception(f"Col {col} missing from final array {final_array.fields}")
-        for col in final_array.fields: # Check that there aren't extra columns that will be saved
-            if col not in dfw.colToSave:
-                raise Exception(f"Extra col {col} in missing from cols to save {dfw.colToSave}")
+        check_columns(expected_columns, final_array.fields, final_array.fields)
         with uproot.recreate(outFileName, compression=uprootCompression) as outfile:
             outfile[treeName] = final_array
 
     else:
         dfw = producer.run(dfw)
-        column_names = [ f"{producer.payload_name}_{col}" for col in producer_config.get('columns', []) ] # Expected columns for payload
-        if 'FullEventId' not in dfw.colToSave: dfw.colToSave.append('FullEventId')
-        for col in dfw.colToSave:
-            if col not in column_names:
-                raise Exception(f"Extra column {col} found in AnalysisCache {column_names}")
-        for col in column_names:
-            if col not in dfw.colToSave:
-                raise Exception(f"Missing column {col} in AnalysisCache {dfw.colToSave}")
+        check_columns(expected_columns, dfw.colToSave, dfw.GetColumnNames())
         varToSave = Utilities.ListToVector(dfw.colToSave)
         dfw.df.Snapshot(treeName, outFileName, varToSave, snapshotOptions)
 

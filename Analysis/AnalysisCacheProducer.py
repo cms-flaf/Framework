@@ -61,7 +61,7 @@ def run_producer(producer, dfw, producer_config, outFileName, treeName, snapshot
         vars_to_save = []
         if hasattr(producer, 'prepare_dfw'): 
             dfw = producer.prepare_dfw(dfw)
-            vars_to_save = list(producer.vars_to_save)
+        vars_to_save = list(producer.vars_to_save)
         if 'FullEventId' not in vars_to_save: vars_to_save.append('FullEventId')  
         dfw.df.Snapshot(f'tmp', os.path.join(workingDir, 'tmp.root'), vars_to_save, snapshotOptions)
         final_array = None
@@ -73,26 +73,28 @@ def run_producer(producer, dfw, producer_config, outFileName, treeName, snapshot
             else:
                 final_array = ak.concatenate([final_array, new_array])
         # Check output looks correct
-        column_names = [ f"{producer.payload_name}_{col}" for col in producer_config.get('columns', []) ]
-        for col in column_names:
-            if col not in array.fields:
-                print(f"Expected column {producer.payload_name}_{col} not found in your payload array!")
-        for col in array.fields:
-            if col not in column_names:
-                print(f"Extra col {col}")
+        if 'FullEventId' not in dfw.colToSave: dfw.colToSave.append('FullEventId')
+        for colToSave in producer.cols_to_save:
+            dfw.colToSave.append(colToSave)
+        for col in dfw.colToSave: # Check that expected columns to save are available
+            if col not in final_array.fields:
+                raise Exception(f"Col {col} missing from final array {final_array.fields}")
+        for col in final_array.fields: # Check that there aren't extra columns that will be saved
+            if col not in dfw.colToSave:
+                raise Exception(f"Extra col {col} in missing from cols to save {dfw.colToSave}")
         with uproot.recreate(outFileName, compression=uprootCompression) as outfile:
             outfile[treeName] = final_array
 
     else:
         dfw = producer.run(dfw)
-        column_names = [ f"{producer.payload_name}_{col}" for col in producer_config.get('columns', []) ]
+        column_names = [ f"{producer.payload_name}_{col}" for col in producer_config.get('columns', []) ] # Expected columns for payload
+        if 'FullEventId' not in dfw.colToSave: dfw.colToSave.append('FullEventId')
         for col in dfw.colToSave:
             if col not in column_names:
-                print(f"Extra save col {col}")
+                raise Exception(f"Extra column {col} found in AnalysisCache {column_names}")
         for col in column_names:
             if col not in dfw.colToSave:
-                print(f"Missing save col {col}")
-        if 'FullEventId' not in dfw.colToSave: dfw.colToSave.append('FullEventId')
+                raise Exception(f"Missing column {col} in AnalysisCache {dfw.colToSave}")
         varToSave = Utilities.ListToVector(dfw.colToSave)
         dfw.df.Snapshot(treeName, outFileName, varToSave, snapshotOptions)
 
@@ -201,16 +203,11 @@ if __name__ == "__main__":
     with open(args.globalConfig, 'r') as f:
         global_cfg_dict = yaml.safe_load(f)
 
-    if os.path.exists(args.workingDir):
-        shutil.rmtree(args.workingDir)
-    if not os.path.isdir(args.workingDir):
-        os.makedirs(args.workingDir)
-
     startTime = time.time()
     if args.channels:
         global_cfg_dict['channelSelection'] = args.channels.split(',') if type(args.channels) == str else args.channels
     outFileNameFinal = f'{args.outFileName}'
-    all_files = createAnalysisCache(args.inFileName, args.outFileName.split('.')[0], unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion, args.producer, uprootCompression, args.workingDir)
+    all_files = createAnalysisCache(args.inFileName, args.outFileName, unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion, args.producer, uprootCompression, args.workingDir)
     hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
     hadd_str += ' '.join(f for f in all_files)
     if len(all_files) > 1:

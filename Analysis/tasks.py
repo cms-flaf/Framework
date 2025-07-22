@@ -472,7 +472,6 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def htcondor_output_directory(self):
         return law.LocalDirectoryTarget(self.local_path(self.producer_to_run))
 
-
     def __init__(self, *args, **kwargs):
         # Needed to get the config and ht_condor_pathways figured out
         super(AnalysisCacheTask, self).__init__(*args, **kwargs)

@@ -57,14 +57,14 @@ def createCentralQuantities(df_central, central_col_types, central_columns):
     return df_central
 
 def check_columns(expected_columns, columns_to_save, available_columns):
-    if expected_columns != columns_to_save:
+    if expected_columns.sort() != columns_to_save.sort():
         raise Exception(f"Mismatch between expected columns and save columns {expected_columns} : {columns_to_save}")
     if not set(columns_to_save).issubset(set(available_columns)):
         raise Exception(f"Missing a column to save from available columns {columns_to_save} : {available_columns}")
 
 def run_producer(producer, dfw, producer_config, outFileName, treeName, snapshotOptions, uprootCompression, workingDir):
     if 'FullEventId' not in dfw.colToSave: dfw.colToSave.append('FullEventId')
-    expected_columns = f"{producer.payload_name}_{col}" for col in producer_config['columns'] + [ 'FullEventId' ]
+    expected_columns = [ f"{producer.payload_name}_{col}" for col in producer_config['columns'] ] + [ 'FullEventId' ]
     if producer_config.get('awkward_based', False):
         vars_to_save = []
         if hasattr(producer, 'prepare_dfw'): 
@@ -86,7 +86,7 @@ def run_producer(producer, dfw, producer_config, outFileName, treeName, snapshot
 
     else:
         dfw = producer.run(dfw)
-        check_columns(expected_columns, dfw.colToSave, dfw.GetColumnNames())
+        check_columns(expected_columns, dfw.colToSave, dfw.df.GetColumnNames())
         varToSave = Utilities.ListToVector(dfw.colToSave)
         dfw.df.Snapshot(treeName, outFileName, varToSave, snapshotOptions)
 

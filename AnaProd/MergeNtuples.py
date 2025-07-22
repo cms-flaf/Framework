@@ -69,16 +69,7 @@ if __name__ == "__main__":
     snapshotOptions.fCompressionAlgorithm = getattr(ROOT.ROOT, 'kZLIB')
     snapshotOptions.fCompressionLevel = 4
     not_empty_files = True
-    inputFiles = []
-    for fileName in args.inputFile:
-        try:
-            fileOpened = ROOT.TFile.Open(fileName)
-            if fileOpened is None or fileOpened.IsZombie():
-                print(f"File {fileName} is zombie or could not be opened, skipping.")
-                continue
-        except:
-            continue
-        inputFiles.append((fileName, fileOpened))
+    inputFiles = [ (fileName, ROOT.TFile(fileName, "READ")) for fileName in args.inputFile ]
     objects = {}
     for fileName, file in inputFiles:
         for key in file.GetListOfKeys():

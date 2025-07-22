@@ -546,7 +546,7 @@ TTtoLNu2Q:
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO#Updated_reference_cross_sections
   unc: +22.6 -33.4 (scale) +/-  22.8 (PDF alphas) -24.6 +25.4 (mass) (to be multiplied by the BR)
 
-TTZToQQ:
+TTZ_Zto2Q:
   crossSec: 0.6603
   reference: XSDB TTZ-ZtoQQ-1Jets_TuneCP5_13p6TeV_amcatnloFXFX-pythia8 modifiedOn 2024-04-03 19:49:29
   unc: 0.003767
@@ -702,7 +702,7 @@ WZto3LNu_amcatnloFXFX:
   crossSec: 5.315
   reference: XSDB WZto3LNu-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8 modifiedOn 2024-04-03 20:06:16
   unc: 0.01577
-WZto3LNu_powheg:
+WZtoL3Nu_powheg:
   crossSec: 4.924
   reference: XSDB WZto3LNu_TuneCP5_13p6TeV_powheg-pythia8 modifiedOn 2024-04-03 20:06:18
   unc: 0.00237

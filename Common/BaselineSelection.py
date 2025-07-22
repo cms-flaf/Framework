@@ -8,8 +8,6 @@ ana_reco_object_collections = {
     "v12": [ "Electron", "Muon", "Tau", "Jet", "FatJet", "MET", "PuppiMET", "DeepMETResponseTune",
              "DeepMETResolutionTune", "SubJet" ],
     "v14": [ "Electron", "Muon", "Tau", "Jet", "FatJet", "PFMET", "PuppiMET", "DeepMETResponseTune",
-             "DeepMETResolutionTune", "SubJet" ],
-    "v15": [ "Electron", "Muon", "Tau", "Jet", "FatJet", "PFMET", "PuppiMET", "DeepMETResponseTune",
              "DeepMETResolutionTune", "SubJet" ]
 }
 deepTauVersions = {"2p1":"2017", "2p5":"2018"}
@@ -119,6 +117,5 @@ def CreateRecoP4(df, suffix='nano', nano_version="v12"):
 
 def ApplyJetVetoMap(df):
     df = df.Define(f"Jet_vetoMapLooseRegion_presel", "Jet_pt > 15 && ( Jet_jetId & 2 ) && Jet_chHEF + Jet_neHEF < 0.9 && Jet_isInsideVetoRegion") #  (Jet_puId > 0 || Jet_pt >50) &&  for CHS jets
-    df = df.Define(f"Jet_vetoMapLooseRegion", " RemoveOverlaps(Jet_p4, Jet_vetoMapLooseRegion_presel, Muon_p4, 0.2)")
-    df = df.Define(f"Jet_VetoMap", "Jet_p4[Jet_vetoMapLooseRegion]")
+    df = df.Define(f"Jet_vetoMap", " RemoveOverlaps(Jet_p4, Jet_vetoMapLooseRegion_presel, Muon_p4, 0.2)")
     return df

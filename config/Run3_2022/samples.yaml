@@ -805,7 +805,7 @@ TTZH:
   sampleType: TTVV
 
 TTZ_Zto2Q:
-  crossSection: TTZtoQQ
+  crossSection: TTZ_Zto2Q
   generator: amcatnloFXFX
   miniAOD: /TTZ-ZtoQQ-1Jets_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
   sampleType: TTV

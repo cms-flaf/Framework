@@ -115,7 +115,10 @@ def CreateRecoP4(df, suffix='nano', nano_version="v12"):
             df = df.Define(f"{obj}_p4{suffix}", f"GetP4({obj}_pt, {obj}_eta, {obj}_phi, {obj}_mass, {obj}_idx)")
     return df
 
-def ApplyJetVetoMap(df):
-    df = df.Define(f"Jet_vetoMapLooseRegion_presel", "Jet_pt > 15 && ( Jet_jetId & 2 ) && Jet_chHEF + Jet_neHEF < 0.9 && Jet_isInsideVetoRegion") #  (Jet_puId > 0 || Jet_pt >50) &&  for CHS jets
-    df = df.Define(f"Jet_vetoMap", " RemoveOverlaps(Jet_p4, Jet_vetoMapLooseRegion_presel, Muon_p4, 0.2)")
+def ApplyJetVetoMap(df, apply_filter=True):
+    df = df.Define(f"Jet_vetoMapLooseRegion_presel", "Jet_pt > 15 && ( Jet_jetId & 2 ) && Jet_chHEF + Jet_neHEF < 0.9 && Jet_isInsideAllowedRegion") #  (Jet_puId > 0 || Jet_pt >50) &&  for CHS jets
+    df = df.Define(f"Muon_p4_pfCand","Muon_p4[Muon_isPFcand]")
+    df = df.Define(f"Jet_vetoMap", " RemoveOverlaps(Jet_p4, Jet_vetoMapLooseRegion_presel, Muon_p4_pfCand, 0.2)")
+    if apply_filter :
+        return df.Filter(f"Jet_p4[Jet_vetoMap].size()>0")
     return df

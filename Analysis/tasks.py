@@ -5,6 +5,7 @@ import contextlib
 import luigi
 import threading
 import copy
+import shutil
 
 
 from FLAF.RunKit.run_tools import ps_call
@@ -561,6 +562,7 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         thread.start()
         try:
             job_home, remove_job_home = self.law_job_home()
+            print(f"At job_home {job_home}")
             for idx in range(nInputs):
                 input_file = self.input()[0][idx]
                 output_file = self.output()[idx]
@@ -568,7 +570,8 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 customisation_dict = getCustomisationSplit(self.customisations)
                 deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else ""
                 with input_file.localize("r") as local_input, output_file.localize("w") as outFile:
-                    analysisCacheProducer_cmd = ['python3', analysis_cache_producer,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config, '--globalConfig', global_config, '--channels', channels , '--producer', self.producer_to_run]
+                    workingDir = os.path.join(job_home, 'analysisCache', sample_name)
+                    analysisCacheProducer_cmd = ['python3', analysis_cache_producer,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config, '--globalConfig', global_config, '--channels', channels , '--producer', self.producer_to_run, '--workingDir', workingDir]
                     if self.global_params['store_noncentral'] and sample_type != 'data':
                         analysisCacheProducer_cmd.extend(['--compute_unc_variations', 'True'])
                     if deepTauVersion!="":
@@ -577,6 +580,8 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     prod_env = self.cmssw_env if self.global_params['payload_producers'][self.producer_to_run].get('cmssw_env', False) else None
                     ps_call(analysisCacheProducer_cmd, env=prod_env, verbose=1)
                 print(f"Finished producing payload for producer={self.producer_to_run} with name={sample_name}, type={sample_type}, file={input_file.path}")
+            if remove_job_home:
+                shutil.rmtree(job_home)
 
         finally:
             kInit_cond.acquire()

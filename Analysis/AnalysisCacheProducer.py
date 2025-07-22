@@ -56,19 +56,17 @@ def createCentralQuantities(df_central, central_col_types, central_columns):
     df_central = map_creator.processCentral(ROOT.RDF.AsRNode(df_central), Utilities.ListToVector(central_columns))
     return df_central
 
-def run_producer(producer, dfw, producer_config, outFileName, treeName, snapshotOptions, uprootCompression):
+def run_producer(producer, dfw, producer_config, outFileName, treeName, snapshotOptions, uprootCompression, workingDir):
     if producer_config.get('awkward_based', False):
         vars_to_save = []
         if hasattr(producer, 'prepare_dfw'): 
             dfw = producer.prepare_dfw(dfw)
             vars_to_save = list(producer.vars_to_save)
         if 'FullEventId' not in vars_to_save: vars_to_save.append('FullEventId')  
-        work_dir = producer_config.get('work_dir', 'tmp')    
-        os.makedirs(work_dir, exist_ok=True)  
-        dfw.df.Snapshot(f'tmp', os.path.join(work_dir, 'tmp.root'), vars_to_save, snapshotOptions)
+        dfw.df.Snapshot(f'tmp', os.path.join(workingDir, 'tmp.root'), vars_to_save, snapshotOptions)
         final_array = None
         uproot_stepsize = producer_config.get('uproot_stepsize', '100MB')
-        for array in uproot.iterate(f"{os.path.join(work_dir, 'tmp.root')}:tmp", step_size=uproot_stepsize): # For DNN 50MB translates to ~300_000 events
+        for array in uproot.iterate(f"{os.path.join(workingDir, 'tmp.root')}:tmp", step_size=uproot_stepsize): # For DNN 50MB translates to ~300_000 events
             new_array = producer.run(array)
             if final_array is None:
                 final_array = new_array
@@ -82,7 +80,7 @@ def run_producer(producer, dfw, producer_config, outFileName, treeName, snapshot
         for col in array.fields:
             if col not in column_names:
                 print(f"Extra col {col}")
-        with uproot.recreate(outFileName, compression=uproot.ZLIB(4)) as outfile:
+        with uproot.recreate(outFileName, compression=uprootCompression) as outfile:
             outfile[treeName] = final_array
 
     else:
@@ -100,7 +98,7 @@ def run_producer(producer, dfw, producer_config, outFileName, treeName, snapshot
 
 
 # add extra argument to this function - which payload producer to run
-def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, snapshotOptions, compute_unc_variations, deepTauVersion, producer_to_run, uprootCompression):
+def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, snapshotOptions, compute_unc_variations, deepTauVersion, producer_to_run, uprootCompression, workingDir):
     start_time = datetime.datetime.now()
     verbosity = ROOT.Experimental.RLogScopedVerbosity(ROOT.Detail.RDF.RDFLogChannel(), ROOT.Experimental.ELogLevel.kInfo)
     snaps = []
@@ -119,7 +117,7 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
     producers_module = importlib.import_module(producers_module_name)
     producer_class = getattr(producers_module, producer_name)
     producer = producer_class(producer_config, producer_to_run)
-    run_producer(producer, dfw, producer_config, f'{outFileName}_Central.root', 'Events', snapshotOptions, uprootCompression)
+    run_producer(producer, dfw, producer_config, f'{outFileName}_Central.root', 'Events', snapshotOptions, uprootCompression, workingDir)
     all_files.append(f'{outFileName}_Central.root')
 
     if compute_unc_variations:
@@ -140,7 +138,7 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
                     dfWrapped_noDiff.AddMissingColumns(colNames, colTypes)
                     dfW_noDiff = Utilities.DataFrameWrapper(dfWrapped_noDiff.df,defaultColToSave)
-                    run_producer(producer, dfW_noDiff, producer_config, f'{outFileName}_{uncName}{scale}_noDiff.root', treeName_noDiff, snapshotOptions, uprootCompression)
+                    run_producer(producer, dfW_noDiff, producer_config, f'{outFileName}_{uncName}{scale}_noDiff.root', treeName_noDiff, snapshotOptions, uprootCompression, workingDir)
                     all_files.append(f'{outFileName}_{uncName}{scale}_noDiff.root')
                 treeName_Valid = f"{treeName}_Valid"
                 if treeName_Valid in file_keys:
@@ -149,7 +147,7 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
                     dfWrapped_Valid.AddMissingColumns(colNames, colTypes)
                     dfW_Valid = Utilities.DataFrameWrapper(dfWrapped_Valid.df,defaultColToSave)
-                    run_producer(producer, dfW_Valid, producer_config, f'{outFileName}_{uncName}{scale}_Valid.root', treeName_Valid, snapshotOptions, uprootCompression)
+                    run_producer(producer, dfW_Valid, producer_config, f'{outFileName}_{uncName}{scale}_Valid.root', treeName_Valid, snapshotOptions, uprootCompression, workingDir)
                     all_files.append(f'{outFileName}_{uncName}{scale}_Valid.root')
                 treeName_nonValid = f"{treeName}_nonValid"
                 if treeName_nonValid in file_keys:
@@ -157,7 +155,7 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     dfWrapped_nonValid = Utilities.DataFrameBuilderBase(df_nonValid)
                     dfWrapped_nonValid.AddMissingColumns(colNames, colTypes)
                     dfW_nonValid = Utilities.DataFrameWrapper(dfWrapped_nonValid.df,defaultColToSave)
-                    run_producer(producer, dfW_nonValid, producer_config, f'{outFileName}_{uncName}{scale}_nonValid.root', treeName_nonValid, snapshotOptions, uprootCompression)
+                    run_producer(producer, dfW_nonValid, producer_config, f'{outFileName}_{uncName}{scale}_nonValid.root', treeName_nonValid, snapshotOptions, uprootCompression, workingDir)
                     all_files.append(f'{outFileName}_{uncName}{scale}_nonValid.root')
     return all_files
 
@@ -176,6 +174,7 @@ if __name__ == "__main__":
     parser.add_argument('--deepTauVersion', type=str, default="v2p1")
     parser.add_argument('--channels', type=str, default=None)
     parser.add_argument('--producer', type=str, default=None)
+    parser.add_argument('--workingDir', required=True, type=str)
     args = parser.parse_args()
 
     ana_path = os.environ["ANALYSIS_PATH"]
@@ -202,11 +201,16 @@ if __name__ == "__main__":
     with open(args.globalConfig, 'r') as f:
         global_cfg_dict = yaml.safe_load(f)
 
+    if os.path.exists(args.workingDir):
+        shutil.rmtree(args.workingDir)
+    if not os.path.isdir(args.workingDir):
+        os.makedirs(args.workingDir)
+
     startTime = time.time()
     if args.channels:
         global_cfg_dict['channelSelection'] = args.channels.split(',') if type(args.channels) == str else args.channels
     outFileNameFinal = f'{args.outFileName}'
-    all_files = createAnalysisCache(args.inFileName, args.outFileName.split('.')[0], unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion, args.producer, uprootCompression)
+    all_files = createAnalysisCache(args.inFileName, args.outFileName.split('.')[0], unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion, args.producer, uprootCompression, args.workingDir)
     hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
     hadd_str += ' '.join(f for f in all_files)
     if len(all_files) > 1:

@@ -5,6 +5,7 @@ import contextlib
 import luigi
 import threading
 import copy
+import shutil
 
 
 from FLAF.RunKit.run_tools import ps_call
@@ -201,30 +202,39 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         output_file_paths = [ out.path for out in self.output()]
         print(f'output files are {output_file_paths}')
         compute_unc_histograms = customisation_dict['compute_unc_histograms']=='True' if 'compute_unc_histograms' in customisation_dict.keys() else self.global_params.get('compute_unc_histograms', False)
+        job_home, remove_job_home = self.law_job_home()
         with input_file.localize("r") as local_input:
             ana_cache_input_counter = 1 # When we have multiple anaCache payloads, then we need to get the correct input for each one
             for var, need_cache, producer_name, output in zip(var_list, need_cache_list, producer_list, self.output()):
                 print(f"Starting var {var} with need_cache {need_cache}")
-                with output.localize("w") as local_output:
-                    HistProducerFile_cmd = [ 'python3', HistProducerFile,
-                                            '--inFile', local_input.path, '--outFileName',local_output.path,
-                                            '--dataset', sample_name, '--uncConfig', unc_config,
-                                            '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type, '--globalConfig', global_config, '--var', var, '--period', self.period, '--region', region, '--channels', channels]
-                    if compute_unc_histograms:
-                        HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
-                        #HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'False'])
-                    if (deepTauVersion!="2p1") and (deepTauVersion!=''):
-                        HistProducerFile_cmd.extend([ '--deepTauVersion', deepTauVersion])
-                    if need_cache:
-                        anaCache_file = self.input()[ana_cache_input_counter][input_index]
-                        ana_cache_input_counter += 1 # Index to the next ana cache input for next time
-                        with anaCache_file.localize("r") as local_anacache:
-                            HistProducerFile_cmd.extend(['--cacheFile', local_anacache.path])
-                            ps_call(HistProducerFile_cmd, verbose=1)
-                    else:
+                if output.exists():
+                    print(f"Output for {var} {producer_name} {output} already exists! Continue")
+                    ana_cache_input_counter += 1 # Index to the next ana cache input for next time
+                    continue
+                tmpFile = os.path.join(job_home, f'HistProducerFileTask.root')
+                HistProducerFile_cmd = [ 'python3', HistProducerFile,
+                                        '--inFile', local_input.path, '--outFileName', tmpFile,
+                                        '--dataset', sample_name, '--uncConfig', unc_config,
+                                        '--histConfig', self.setup.hist_config_path, '--sampleType', sample_type, '--globalConfig', global_config, '--var', var, '--period', self.period, '--region', region, '--channels', channels]
+                if compute_unc_histograms:
+                    HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'True'])
+                    #HistProducerFile_cmd.extend(['--compute_rel_weights', 'True', '--compute_unc_variations', 'False'])
+                if (deepTauVersion!="2p1") and (deepTauVersion!=''):
+                    HistProducerFile_cmd.extend([ '--deepTauVersion', deepTauVersion])
+                if need_cache:
+                    anaCache_file = self.input()[ana_cache_input_counter][input_index]
+                    ana_cache_input_counter += 1 # Index to the next ana cache input for next time
+                    with anaCache_file.localize("r") as local_anacache:
+                        HistProducerFile_cmd.extend(['--cacheFile', local_anacache.path])
                         ps_call(HistProducerFile_cmd, verbose=1)
+                else:
+                    ps_call(HistProducerFile_cmd, verbose=1)
 
-
+                with output.localize("w") as local_output:
+                    out_local_path = local_output.path
+                    shutil.move(tmpFile, out_local_path)
+        if remove_job_home:
+            shutil.rmtree(job_home)
 
 class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
@@ -295,13 +305,23 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def run(self):
         sample_name, idx_list, var_list  = self.branch_data
         HistProducerSample = os.path.join(self.ana_path(), 'FLAF', 'Analysis', 'HistProducerSample.py')
+        job_home, remove_job_home = self.law_job_home()
         with contextlib.ExitStack() as stack:
             for idx, var in enumerate(var_list):
+                if (self.output()[idx]).exists():
+                    print(f"Output for {var} {self.ouptut()[idx]} already exists! Continue")
+                    continue
                 local_inputs = [stack.enter_context((inp[idx]).localize('r')).path for inp in self.input()] # HistFile now has a list of outputs, get the index input
+                tmpFile = os.path.join(job_home, f'HistProducerFileTask.root')
+                HistProducerSample_cmd = ['python3', HistProducerSample,'--outFile', tmpFile]#, '--remove-files', 'True']
+                HistProducerSample_cmd.extend(local_inputs)
+                ps_call(HistProducerSample_cmd,verbose=1)
+
                 with (self.output()[idx]).localize("w") as tmp_local_file:
-                    HistProducerSample_cmd = ['python3', HistProducerSample,'--outFile', tmp_local_file.path]#, '--remove-files', 'True']
-                    HistProducerSample_cmd.extend(local_inputs)
-                    ps_call(HistProducerSample_cmd,verbose=1)
+                    out_local_path = tmp_local_file.path
+                    shutil.move(tmpFile, out_local_path)
+        if remove_job_home:
+            shutil.rmtree(job_home)
 
 
 class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
@@ -310,7 +330,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def workflow_requires(self):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
-            return { "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=()) }
+            return { "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=(), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default) }
 
         histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations).create_branch_map()
         all_samples = {}
@@ -553,14 +573,18 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         thread.start()
         try:
             job_home, remove_job_home = self.law_job_home()
+            print(f"At job_home {job_home}")
             for idx in range(nInputs):
+                if len(self.input()) > 1:
+                    raise NotImplementedError("Using multiple inputs per analysis job is not yet implemented")
                 input_file = self.input()[0][idx]
                 output_file = self.output()[idx]
                 print(f"considering sample {sample_name}, {sample_type} and file {input_file.path}")
                 customisation_dict = getCustomisationSplit(self.customisations)
                 deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else ""
-                with input_file.localize("r") as local_input, output_file.localize("w") as outFile:
-                    analysisCacheProducer_cmd = ['python3', analysis_cache_producer,'--inFileName', local_input.path, '--outFileName', outFile.path,  '--uncConfig', unc_config, '--globalConfig', global_config, '--channels', channels , '--producer', self.producer_to_run]
+                tmpFile = os.path.join(job_home, f'HistProducerFileTask.root')
+                with input_file.localize("r") as local_input:
+                    analysisCacheProducer_cmd = ['python3', analysis_cache_producer,'--inFileName', local_input.path, '--outFileName', tmpFile,  '--uncConfig', unc_config, '--globalConfig', global_config, '--channels', channels , '--producer', self.producer_to_run, '--workingDir', job_home]
                     if self.global_params['store_noncentral'] and sample_type != 'data':
                         analysisCacheProducer_cmd.extend(['--compute_unc_variations', 'True'])
                     if deepTauVersion!="":
@@ -569,6 +593,11 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     prod_env = self.cmssw_env if self.global_params['payload_producers'][self.producer_to_run].get('cmssw_env', False) else None
                     ps_call(analysisCacheProducer_cmd, env=prod_env, verbose=1)
                 print(f"Finished producing payload for producer={self.producer_to_run} with name={sample_name}, type={sample_type}, file={input_file.path}")
+                with output_file.localize("w") as tmp_local_file:
+                    out_local_path = tmp_local_file.path
+                    shutil.move(tmpFile, out_local_path)
+            if remove_job_home:
+                shutil.rmtree(job_home)
 
         finally:
             kInit_cond.acquire()
@@ -626,8 +655,7 @@ class PlotTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def create_branch_map(self):
         branches = {}
         merge_map = MergeTask.req(self, branch=-1, branches=(), customisations=self.customisations).create_branch_map()
-
-        for k, (_, (var, _)) in enumerate(merge_map.items()):
+        for k, (_, (var, _, _)) in enumerate(merge_map.items()):
             branches[k] = var
         return branches
 
@@ -635,7 +663,7 @@ class PlotTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         var = self.branch_data
 
         merge_map = MergeTask.req(self, branch=-1, branches=(), customisations=self.customisations).create_branch_map()
-        merge_branch = next(br for br, (v, _) in merge_map.items() if v == var)
+        merge_branch = next(br for br, (v, _, _) in merge_map.items() if v == var)
 
         return MergeTask.req(self,branch=merge_branch,customisations=self.customisations,max_runtime=MergeTask.max_runtime._default,)
 

@@ -353,19 +353,26 @@ class AnaTupleFileListTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
             print("Localizing inputs")
             local_inputs = [stack.enter_context(inp[1].localize('r')).path for inp in self.input()]
+
+            job_home, remove_job_home = self.law_job_home()
+            tmpFile = os.path.join(job_home, f'AnaTupleFileList_tmp.json')
+            nEventsPerFile = self.setup.global_params.get('nEventsPerFile', 100_000)
+            AnaTupleFileList_cmd = ['python3', AnaTupleFileList,'--outFile', tmpFile]#, '--remove-files', 'True']
+            AnaTupleFileList_cmd.extend(['--nEventsPerFile', f'{nEventsPerFile}'])
+            if sample_name == 'data':
+                AnaTupleFileList_cmd.extend(['--isData', 'True'])
+                AnaTupleFileList_cmd.extend(['--lumi', f'{self.setup.global_params["luminosity"]}'])
+                AnaTupleFileList_cmd.extend(['--nPbPerFile', f'{self.setup.global_params.get("nPbPerFile", 10_000)}'])
+            AnaTupleFileList_cmd.extend(local_inputs)
+            ps_call(AnaTupleFileList_cmd,verbose=1)
+
             with remote_output.localize("w") as tmp_local_file:
-                nEventsPerFile = self.setup.global_params.get('nEventsPerFile', 100_000)
-                AnaTupleFileList_cmd = ['python3', AnaTupleFileList,'--outFile', tmp_local_file.path]#, '--remove-files', 'True']
-                AnaTupleFileList_cmd.extend(['--nEventsPerFile', f'{nEventsPerFile}'])
-                if sample_name == 'data':
-                    AnaTupleFileList_cmd.extend(['--isData', 'True'])
-                    AnaTupleFileList_cmd.extend(['--lumi', f'{self.setup.global_params["luminosity"]}'])
-                    AnaTupleFileList_cmd.extend(['--nPbPerFile', f'{self.setup.global_params.get("nPbPerFile", 10_000)}'])
-                AnaTupleFileList_cmd.extend(local_inputs)
-                ps_call(AnaTupleFileList_cmd,verbose=1)
+                out_local_path = tmp_local_file.path
+                shutil.move(tmpFile, out_local_path)
 
                 with local_output.localize("w") as tmp_local_file2:
                     shutil.copy(tmp_local_file.path, tmp_local_file2.path)
+
 
 class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
@@ -435,13 +442,19 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         producer_Merge = os.path.join(self.ana_path(), 'FLAF', 'AnaProd', 'MergeNtuples.py')
         sample_name, sample_type, input_file_list, output_file_list = self.branch_data
         input_list_remote_target = [ inp[0] for inp in self.input()[:-1] ]
+        job_home, remove_job_home = self.law_job_home()
+        tmpFiles = [ os.path.join(job_home, f'AnaTupleMergeTask_tmp{i}.root') for i in range(len(self.output())) ]
         with contextlib.ExitStack() as stack:
             print(f"Starting localize of {len(input_list_remote_target)} inputs")
             local_inputs = [stack.enter_context(inp.localize('r')).path for inp in input_list_remote_target]
-            output_files = [ stack.enter_context(output.localize("w")).path for output in self.output() ]
-            Merge_cmd = [ 'python3', producer_Merge, '--outFiles', *output_files, '--outFile', 'tmp_data.root']
+            Merge_cmd = [ 'python3', producer_Merge, '--outFiles', *tmpFiles, '--outFile', 'tmp_data.root']
             Merge_cmd.extend(local_inputs)
             ps_call(Merge_cmd,verbose=1)
+
+        for outFile, tmpFile in zip(self.output(), tmpFiles):
+            with outFile.localize("w") as tmp_local_file:
+                out_local_path = tmp_local_file.path
+                shutil.move(tmpFile, out_local_path)
 
         delete_after_merge = True
         if delete_after_merge:
@@ -451,7 +464,8 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 with remote_target.localize("w") as tmp_local_file:
                     tmp_local_file.touch() # Create a dummy to avoid dependency crashes
 
-
+        if remove_job_home:
+            shutil.rmtree(job_home)
 
 
 class DataMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):

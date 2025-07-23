@@ -81,10 +81,10 @@ def getNewBins(bins):
     else:
         n_bins, bin_range = bins.split('|')
         start,stop = bin_range.split(':')
-        bin_width = (int(stop) - int(start))/int(n_bins)
+        bin_width = (float(stop) - float(start))/int(n_bins)
         final_bins = []
-        bin_center = int(start)
-        while bin_center >= int(start) and bin_center <= int(stop):
+        bin_center = float(start)
+        while bin_center >= float(start) and bin_center <= float(stop):
             final_bins.append(bin_center)
             bin_center = bin_center + bin_width
     return final_bins

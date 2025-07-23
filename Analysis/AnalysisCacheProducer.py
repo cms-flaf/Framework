@@ -57,7 +57,7 @@ def createCentralQuantities(df_central, central_col_types, central_columns):
     return df_central
 
 def check_columns(expected_columns, columns_to_save, available_columns):
-    if expected_columns.sort() != columns_to_save.sort():
+    if set(expected_columns) != set(columns_to_save):
         raise Exception(f"Mismatch between expected columns and save columns {expected_columns} : {columns_to_save}")
     if not set(columns_to_save).issubset(set(available_columns)):
         raise Exception(f"Missing a column to save from available columns {columns_to_save} : {available_columns}")

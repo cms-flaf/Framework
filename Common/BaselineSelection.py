@@ -7,8 +7,8 @@ initialized = False
 ana_reco_object_collections = {
     "v12": [ "Electron", "Muon", "Tau", "Jet", "FatJet", "MET", "PuppiMET", "DeepMETResponseTune",
              "DeepMETResolutionTune", "SubJet" ],
-    "v14": [ "Electron", "Muon", "Tau", "Jet", "FatJet", "PFMET", "PuppiMET", "DeepMETResponseTune",
-             "DeepMETResolutionTune", "SubJet" ]
+    "v14": [ "Electron", "Muon", "Tau", "Jet", "FatJet", "SubJet" "PFMET", "PuppiMET", "DeepMETResponseTune",
+             "DeepMETResolutionTune",  ]
 }
 deepTauVersions = {"2p1":"2017", "2p5":"2018"}
 
@@ -130,5 +130,5 @@ def ApplyJetVetoMap(df, apply_filter=True):
     df = df.Define(f"Muon_p4_pfCand","Muon_p4[Muon_isPFcand]")
     df = df.Define(f"Jet_vetoMap", " RemoveOverlaps(Jet_p4, Jet_vetoMapLooseRegion_presel, Muon_p4_pfCand, 0.2)")
     if apply_filter :
-        return df.Filter(f"Jet_p4[Jet_vetoMap].size()==0")
+        return df.Filter(f"Jet_p4[Jet_vetoMap].size()==0", "Jet Veto Map filter")
     return df

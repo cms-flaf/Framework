@@ -172,7 +172,7 @@ class Setup:
             raise TypeError(f"Unsupported path type: {type(path_or_paths)}. Expected str or list of str.")
 
         if path_to_check.startswith('/'):
-            path_to_check
+            return path_to_check
         else:
             return WLCGFileSystem(path_or_paths)
 

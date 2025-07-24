@@ -53,7 +53,7 @@ class InputFileTask(Task, law.LocalWorkflow):
             input_files = []
             fs_nanoAOD = self.fs_nanoAOD
             if self.samples[sample_name].get("fs_nanoAOD", None) is not None:
-                fs_nanoAOD =  self.setup.get_fs("fs_nanoAOD", self.samples[sample_name]["fs_nanoAOD"])
+                fs_nanoAOD =  self.setup.get_fs(f"fs_nanoAOD_{sample_name}", self.samples[sample_name]["fs_nanoAOD"])
             if fs_nanoAOD is None:
                 raise RuntimeError(f'fs_nanoAOD is not defined for sample {sample_name}')
             dir_to_list = self.samples[sample_name].get("dir_to_list", sample_name)

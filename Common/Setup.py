@@ -179,40 +179,41 @@ class Setup:
 
     def get_fs(self, fs_name, custom_paths=None):
         fs_instance = None
-        if custom_paths is None:
-            if fs_name in self.fs_dict.keys():
-                return self.fs_dict[fs_name]
-        else:
+
+        if fs_name in self.fs_dict:
+            return self.fs_dict[fs_name]
+
+        if custom_paths is not None:
             try:
                 fs_instance = self._create_fs_instance(custom_paths)
+                self.fs_dict[fs_name] = fs_instance  # cache it
+                return fs_instance
             except (TypeError, ValueError) as e:
                 print(f"Error = {e}.")
                 fs_instance = None
 
-        # tries with global params --> same as before
         if fs_instance is None:
             full_fs_name = f'fs_{fs_name}'
             if full_fs_name in self.global_params:
                 param_value = self.global_params[full_fs_name]
                 try:
                     fs_instance = self._create_fs_instance(param_value)
-                    # print(f"global param path for {fs_name}: {param_value}")
                 except (TypeError, ValueError) as e:
                     print(f"Error = {e}.")
                     raise RuntimeError(f"Invalid FS configuration for '{fs_name}' in global_params.")
             else:
                 if fs_name == 'default':
                     raise RuntimeError(f'No default file system defined in global_params or via custom_paths. '
-                                       f'Please define "fs_default" in your configuration or provide a custom_paths for "default".')
-                # print(f"DEBUG: '{fs_name}' not found in global params or custom paths. Falling back to 'default' FS.")
+                                        f'Please define "fs_default" in your configuration or provide a custom_paths for "default".')
                 fs_instance = self.get_fs('default')
 
-        # if nothing works, nothing works
-        if fs_instance is None:
-            raise RuntimeError(f"Could not determine file system for '{fs_name}'.")
-        self.fs_dict[fs_name] = fs_instance
+            # if nothing works, nothing works
+            if fs_instance is None:
+                raise RuntimeError(f"Could not determine file system for '{fs_name}'.")
+            self.fs_dict[fs_name] = fs_instance
 
-        return self.fs_dict[fs_name]
+            return self.fs_dict[fs_name]
+
 
     @property
     def cmssw_env(self):

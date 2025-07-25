@@ -401,10 +401,15 @@ class AnaTupleMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         required_branches = []
         for prod_br, (anaTuple_sample_id, anaTuple_sample_name, anaTuple_sample_type, file_location) in anaTuple_branch_map.items():
             if anaTuple_sample_name == sample_name or (sample_type == 'data' and anaTuple_sample_type == 'data'):
-                if file_location.path[1:] in input_file_list: #[1:] to remove the first '/' in the pathway
+                # print(f"{anaTuple_sample_name}, {sample_name} are the same, thus including:")
+                file_name = file_location.path.split('/')[-1]
+                # print(input_file_list)
+                # print(f"anaTuple_sample_name/file_name  = {anaTuple_sample_name}/{file_name}  in input_fileList? ", f"{anaTuple_sample_name}/{file_name}" in input_file_list)
+                if f"{anaTuple_sample_name}/{file_name}" in input_file_list: #[1:] to remove the first '/' in the pathway
                     required_branches.append(AnaTupleTask.req(self, max_runtime=AnaTupleTask.max_runtime._default, branch=prod_br, branches=(prod_br,)))
         for prod_br, (Merge_sample_name, Merge_sample_type) in AnaTupleFileList_branch_map.items():
             if Merge_sample_name == sample_name:
+                # print(f"including {Merge_sample_name} which is same than {sample_name}")
                 required_branches.append(AnaTupleFileListTask.req(self, max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default, branch=prod_br, branches=(prod_br,)))
         return required_branches
 

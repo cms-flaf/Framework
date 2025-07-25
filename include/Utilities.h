@@ -15,6 +15,8 @@ using RVecI = ROOT::VecOps::RVec<int>;
 using RVecUC = ROOT::VecOps::RVec<unsigned char>;
 using RVecUL = ROOT::VecOps::RVec<unsigned long>;
 using RVecULL = ROOT::VecOps::RVec<unsigned long long>;
+using RVecS = ROOT::VecOps::RVec<short>;
+using RVecB = ROOT::VecOps::RVec<bool>;
 
 
 namespace detail {

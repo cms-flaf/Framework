@@ -219,7 +219,7 @@ class DataFrameBuilderBase:
                 f"""analysis::GetEntriesMap()[FullEventId]->GetValue<{central_col_types[central_col_idx]}>({central_col_idx})""",
             )
 
-    def AddCacheColumns(self, cache_cols, cache_col_types):
+    def AddCacheColumns(self, cache_cols, cache_col_types, cache_name):
         for cache_col_idx, cache_col in enumerate(cache_cols):
             if cache_col in self.df.GetColumnNames():
                 continue
@@ -227,7 +227,7 @@ class DataFrameBuilderBase:
                 continue
             self.df = self.df.Define(
                 cache_col.replace(".", "_"),
-                f"""analysis::GetCacheEntriesMap().at(FullEventId)->GetValue<{cache_col_types[cache_col_idx]}>({cache_col_idx})""",
+                f"""analysis::GetCacheEntriesMap("{cache_name}").at(FullEventId)->GetValue<{cache_col_types[cache_col_idx]}>({cache_col_idx})""",
             )
 
 
@@ -269,22 +269,6 @@ def load_module(module_path):
     sys.modules[module_name] = module
     spec.loader.exec_module(module)
     return module
-
-
-def getCustomisationSplit(customisations):
-    customisation_dict = {}
-    if customisations is None or len(customisations) == 0:
-        return {}
-    if type(customisations) == str:
-        customisations = customisations.split(";")
-    if type(customisations) != list:
-        raise RuntimeError(f"Invalid type of customisations: {type(customisations)}")
-    for customisation in customisations:
-        substrings = customisation.split("=")
-        if len(substrings) != 2:
-            raise RuntimeError("len of substring is not 2!")
-        customisation_dict[substrings[0]] = substrings[1]
-    return customisation_dict
 
 
 # generic function allowing to choose CRC type

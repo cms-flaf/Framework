@@ -108,6 +108,7 @@ def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, ana
         # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters#Analysis_Recommendations_for_any
         if "MET_flags" in setup.global_params:
             dfw.Apply(Baseline.applyMETFlags, setup.global_params["MET_flags"], setup.global_params.get("badMET_flag_runs", []), isData)
+
         anaTupleDef.addAllVariables(dfw, syst_name, isData, trigger_class, lepton_legs, isSignal, applyTriggerFilter, setup.global_params, channels)
         if setup.global_params['nano_version'] == 'v12':
             dfw.DefineAndAppend("weight_L1PreFiring_Central","L1PreFiringWeight_Nom")
@@ -180,7 +181,7 @@ def createAnatuple(inFile, inFileName, treeName, outDir, setup, sample_name, ana
         # if print_cutflow:
         #     report.Print()
 
-    # Dump 
+    # Dump
     if jsonName == None:
         jsonName = f"{inFileName.split('.')[0]}.json"
     jsonName = os.path.join(outDir, f"{jsonName}")

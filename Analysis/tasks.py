@@ -77,8 +77,8 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def workflow_requires(self):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
-            req_dict = { 
-                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=(), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default), 
+            req_dict = {
+                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=(), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default),
                 "AnaTupleMergeTask": AnaTupleMergeTask.req(self, branches=(), max_runtime=AnaTupleMergeTask.max_runtime._default, n_cpus=AnaTupleMergeTask.n_cpus._default)
             }
             # Get all the producers to require for this dummy branch
@@ -129,7 +129,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 for producer_name in (p for p in producer_list if p is not None):
                     deps.append(AnalysisCacheTask.req(self, max_runtime=AnalysisCacheTask.max_runtime._default, branch=prod_br, branches=(prod_br,),customisations=self.customisations, producer_to_run=producer_name))
         return deps
-        
+
     def create_branch_map(self):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
@@ -143,7 +143,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
         # map indicating which variable needs which cache producer
         var_produced_by = self.setup.var_producer_map
-        
+
         n = 0
         branches = {}
         anaProd_branch_map = AnaTupleMergeTask.req(self, branch=-1, branches=()).create_branch_map()
@@ -151,7 +151,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         var_list = []
         need_cache_list = []
         producer_list = []
-    
+
         for var_name in self.global_params['vars_to_plot']:
             need_cache = True if var_name in var_produced_by else False
             producer_to_run = var_produced_by[var_name] if var_name in var_produced_by else None
@@ -243,7 +243,7 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def workflow_requires(self):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
-            return { 
+            return {
                 "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=(), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default),
                 "HistProducerFileTask": HistProducerFileTask.req(self, branches=())
             }
@@ -331,7 +331,7 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
             return { "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=(), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default) }
-            
+
         histProducerSample_map = HistProducerSampleTask.req(self,branch=-1, branches=(),customisations=self.customisations).create_branch_map()
         all_samples = {}
         branches = {}
@@ -493,8 +493,8 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     def workflow_requires(self):
         merge_organization_complete = AnaTupleFileListTask.req(self, branches=()).complete()
         if not merge_organization_complete:
-            req_dict = { 
-                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=(), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default), 
+            req_dict = {
+                "AnaTupleFileListTask": AnaTupleFileListTask.req(self, branches=(), max_runtime=AnaTupleFileListTask.max_runtime._default, n_cpus=AnaTupleFileListTask.n_cpus._default),
                 "AnaTupleMergeTask": AnaTupleMergeTask.req(self, branches=(), max_runtime=AnaTupleMergeTask.max_runtime._default, n_cpus=AnaTupleMergeTask.n_cpus._default)
             }
             # Get all the producers to require for this dummy branch
@@ -643,15 +643,15 @@ class AnalysisCacheMergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 dataMerge_cmd.extend(local_inputs)
                 #print(dataMerge_cmd)
                 ps_call(dataMerge_cmd, verbose=1)
-                
+
 class PlotTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 2.0)
     n_cpus      = copy_param(HTCondorWorkflow.n_cpus, 1)
 
-    def workflow_requires(self):        
+    def workflow_requires(self):
         merge_map = MergeTask.req(self, branch=-1, branches=(), customisations=self.customisations).create_branch_map()
         return {"merge": MergeTask.req(self,branches=tuple(merge_map.keys()),customisations=self.customisations,)}
-    
+
     def create_branch_map(self):
         branches = {}
         merge_map = MergeTask.req(self, branch=-1, branches=(), customisations=self.customisations).create_branch_map()
@@ -675,7 +675,7 @@ class PlotTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         channels = customisation_dict.get('channels', self.global_params['channelSelection'])
         if isinstance(channels, str):
             channels = channels.split(',')
-        
+
         base_cats = self.global_params.get('categories') or []
         boosted_cats = self.global_params.get('boosted_categories') or []
         categories = base_cats + boosted_cats

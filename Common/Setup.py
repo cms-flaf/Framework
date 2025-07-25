@@ -132,8 +132,8 @@ class Setup:
             for producer_name, producer_config in payload_producers_cfg.items():
                 columns_delivered = producer_config.get("columns")
                 if columns_delivered:
-                    for col in columns_delivered:    
-                        self.var_producer_map[f"{producer_name}_{col}"] = producer_name                
+                    for col in columns_delivered:
+                        self.var_producer_map[f"{producer_name}_{col}"] = producer_name
 
         samples = load_parameters(ana_sample_config, sample_config, keys_to_ignore={'GLOBAL'})
         for sample_name, sample_entry in samples.items():
@@ -160,25 +160,60 @@ class Setup:
 
         self.anaTupleFiles = {}
 
+    def _create_fs_instance(self, path_or_paths):
+        path_to_check = None
+        if isinstance(path_or_paths, list):
+            if not path_or_paths:
+                raise ValueError("List of paths cannot be empty.")
+            path_to_check = path_or_paths[0] # Usa il primo per determinare il tipo di FS
+        elif isinstance(path_or_paths, str):
+            path_to_check = path_or_paths
+        else:
+            raise TypeError(f"Unsupported path type: {type(path_or_paths)}. Expected str or list of str.")
 
-    def get_fs(self, fs_name):
-        if fs_name not in self.fs_dict:
+        if path_to_check.startswith('/'):
+            return path_to_check
+        else:
+            return WLCGFileSystem(path_or_paths)
+
+
+    def get_fs(self, fs_name, custom_paths=None):
+        fs_instance = None
+
+        if fs_name in self.fs_dict:
+            return self.fs_dict[fs_name]
+
+        if custom_paths is not None:
+            try:
+                fs_instance = self._create_fs_instance(custom_paths)
+                self.fs_dict[fs_name] = fs_instance  # cache it
+                return fs_instance
+            except (TypeError, ValueError) as e:
+                print(f"Error = {e}.")
+                fs_instance = None
+
+        if fs_instance is None:
             full_fs_name = f'fs_{fs_name}'
             if full_fs_name in self.global_params:
-                name_cand = None
-                if type(self.global_params[full_fs_name]) == str:
-                    name_cand = self.global_params[full_fs_name]
-                elif len(self.global_params[full_fs_name]) == 1:
-                    name_cand = self.global_params[full_fs_name][0]
-                if name_cand is not None and name_cand.startswith('/'):
-                    self.fs_dict[fs_name] = name_cand
-                else:
-                    self.fs_dict[fs_name] = WLCGFileSystem(self.global_params[full_fs_name])
+                param_value = self.global_params[full_fs_name]
+                try:
+                    fs_instance = self._create_fs_instance(param_value)
+                except (TypeError, ValueError) as e:
+                    print(f"Error = {e}.")
+                    raise RuntimeError(f"Invalid FS configuration for '{fs_name}' in global_params.")
             else:
                 if fs_name == 'default':
-                    raise RuntimeError(f'No default file system defined')
-                self.fs_dict[fs_name] = self.get_fs('default')
-        return self.fs_dict[fs_name]
+                    raise RuntimeError(f'No default file system defined in global_params or via custom_paths. '
+                                        f'Please define "fs_default" in your configuration or provide a custom_paths for "default".')
+                fs_instance = self.get_fs('default')
+
+            # if nothing works, nothing works
+            if fs_instance is None:
+                raise RuntimeError(f"Could not determine file system for '{fs_name}'.")
+            self.fs_dict[fs_name] = fs_instance
+
+            return self.fs_dict[fs_name]
+
 
     @property
     def cmssw_env(self):
@@ -227,4 +262,4 @@ class Setup:
                     sample_dict = json_dict
                     self.anaTupleFiles[sample_name] = sample_dict
             return self.anaTupleFiles[sample_name]
-            
+

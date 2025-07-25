@@ -588,6 +588,9 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     print(f"Task has cache input files {local_cache_files}")
                     output_file = self.output()[idx]
                     print(f"considering sample {sample_name}, {sample_type} and file {input_file.path}")
+                    if output_file.exists():
+                        print(f"Output file {output_file} already exists, continue")
+                        continue
                     customisation_dict = getCustomisationSplit(self.customisations)
                     deepTauVersion = customisation_dict['deepTauVersion'] if 'deepTauVersion' in customisation_dict.keys() else ""
                     tmpFile = os.path.join(job_home, f'HistProducerFileTask.root')

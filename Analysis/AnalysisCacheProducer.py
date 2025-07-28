@@ -131,10 +131,10 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
     all_files.append(f'{outFileName}_Central.root')
 
     if compute_unc_variations:
-        dfWrapped_central = Utilities.DataFrameBuilderBase(dfw.df)
+        dfWrapped_central = Utilities.DataFrameBuilderBase(df)
         colNames =  dfWrapped_central.colNames
         colTypes =  dfWrapped_central.colTypes
-        dfWrapped_central.df = createCentralQuantities(dfw.df, colTypes, colNames)
+        dfWrapped_central.df = createCentralQuantities(df, colTypes, colNames)
         if dfWrapped_central.df.Filter("map_placeholder > 0").Count().GetValue() <= 0 : 
             raise RuntimeError("no events passed map placeolder")
         print("finished defining central quantities")

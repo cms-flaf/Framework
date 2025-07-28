@@ -11,25 +11,9 @@ import yaml
 from FLAF.RunKit.run_tools import ps_call, natural_sort
 from FLAF.RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
 from FLAF.run_tools.law_customizations import Task, HTCondorWorkflow, copy_param, get_param_value
-from FLAF.Common.Utilities import SerializeObjectToString
+from FLAF.Common.Utilities import SerializeObjectToString,getCustomisationSplit
 from FLAF.AnaProd.anaCacheProducer import addAnaCaches
 
-
-
-
-def getCustomisationSplit(customisations):
-    customisation_dict = {}
-    if customisations is None or len(customisations) == 0: return {}
-    if type(customisations) == str:
-        customisations = customisations.split(';')
-    if type(customisations) != list:
-        raise RuntimeError(f'Invalid type of customisations: {type(customisations)}')
-    for customisation in customisations:
-        substrings = customisation.split('=')
-        if len(substrings) != 2 :
-            raise RuntimeError("len of substring is not 2!")
-        customisation_dict[substrings[0]] = substrings[1]
-    return customisation_dict
 
 class InputFileTask(Task, law.LocalWorkflow):
     def __init__(self, *args, **kwargs):
@@ -103,7 +87,7 @@ class AnaCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
     def run(self):
         sample_name, isData = self.branch_data
-        if isData or self.samples[sample_name].get("fs_nanoAOD", None) is not None:
+        if isData:
             self.output().touch()
             return
         print(f'Creating anaCache for sample {sample_name} into {self.output().uri()}')

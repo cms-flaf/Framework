@@ -12,7 +12,7 @@ from FLAF.RunKit.run_tools import ps_call
 from FLAF.RunKit.crabLaw import cond as kInit_cond, update_kinit_thread
 from FLAF.run_tools.law_customizations import Task, HTCondorWorkflow, copy_param,get_param_value
 from FLAF.AnaProd.tasks import AnaTupleTask, DataMergeTask, DataCacheMergeTask, AnaCacheTask, InputFileTask, AnaTupleFileListTask, AnaTupleMergeTask
-
+from FLAF.Common.Utilities import getCustomisationSplit
 import importlib
 
 unc_cfg_dict = None
@@ -54,20 +54,6 @@ def GetSamples(samples, backgrounds, signals=['GluGluToRadion','GluGluToBulkGrav
         if sample_type in signals or sample_name in backgrounds:
             samples_to_consider.append(sample_name)
     return samples_to_consider
-
-def getCustomisationSplit(customisations):
-    customisation_dict = {}
-    if customisations is None or len(customisations) == 0: return {}
-    if type(customisations) == str:
-        customisations = customisations.split(';')
-    if type(customisations) != list:
-        raise RuntimeError(f'Invalid type of customisations: {type(customisations)}')
-    for customisation in customisations:
-        substrings = customisation.split('=')
-        if len(substrings) != 2 :
-            raise RuntimeError("len of substring is not 2!")
-        customisation_dict[substrings[0]] = substrings[1]
-    return customisation_dict
 
 
 class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):

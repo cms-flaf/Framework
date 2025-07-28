@@ -93,9 +93,9 @@ def run_producer(producer, dfw, producer_config, outFileName, treeName, snapshot
 
 
 def merge_cache_files(inFileName, cacheFileNames, treeName):
-    if len(cacheFileNames) == 0:
-        return inFileName
     dfw = Utilities.DataFrameBuilderBase(ROOT.RDataFrame(treeName, inFileName))
+    if len(cacheFileNames) == 0:
+        return dfw.df
     for i, cacheFileName in enumerate(cacheFileNames):
         cache = Utilities.DataFrameBuilderBase(ROOT.RDataFrame(treeName, cacheFileName))
         AddCacheColumnsInDf(dfw, cache, f"cache_map_Central_{i}", f"_cache_entry_{i}")

@@ -66,9 +66,9 @@ static std::map<unsigned long long, std::shared_ptr<Entry>>& GetEntriesMap(){
       return entries;
   }
 
-static std::map<unsigned long long, std::shared_ptr<Entry>>& GetCacheEntriesMap(){
-      static std::map<unsigned long long, std::shared_ptr<Entry>> cache_entries;
-      return cache_entries;
+static std::map<unsigned long long, std::shared_ptr<Entry>>& GetCacheEntriesMap(const std::string& cache_name){
+      static std::map<std::string, std::map<unsigned long long, std::shared_ptr<Entry>>> cache_entries;
+      return cache_entries[cache_name];
   }
 
 template<typename ...Args>
@@ -99,25 +99,25 @@ struct MapCreator {
 template<typename ...Args>
 struct CacheCreator {
 
-  ROOT::RDF::RNode processCache(ROOT::RDF::RNode df_in, const std::vector<std::string>& var_names,const std::string& map_name)
+  ROOT::RDF::RNode processCache(ROOT::RDF::RNode df_in, const std::vector<std::string>& var_names,const std::string& map_name, const std::string& entry_name, bool checkDuplicates=true)
   {
-      auto df_node = df_in.Define("_cache_entry", [=](const Args& ...args) {
+      auto df_node = df_in.Define(entry_name, [=](const Args& ...args) {
               auto cache_entry = std::make_shared<Entry>(var_names.size());
               int index = 0;
               (void) std::initializer_list<int>{ (cache_entry->Add(index++, args), 0)... };
               return cache_entry;
           }, var_names).Define(map_name, [&](const std::shared_ptr<Entry>& cache_entry) {
               const auto idx = cache_entry->GetValue<unsigned long long>(0);
-              if(GetCacheEntriesMap().find(idx)!=GetCacheEntriesMap().end()) {
-                //if(checkDuplicates){
-                //std::cout << idx << "\t" << run << "\t" << evt << "\t" << lumi << std::endl;
-                //throw std::runtime_error("Duplicate cache_entry for index " + std::to_string(idx));
-                //}
-                GetCacheEntriesMap().at(idx) = cache_entry;
+              if(GetCacheEntriesMap(map_name).find(idx)!=GetCacheEntriesMap(map_name).end()) {
+                if(checkDuplicates){
+                std::cout << idx << std::endl;
+                throw std::runtime_error("Duplicate cache_entry for index " + std::to_string(idx));
+                }
+                GetCacheEntriesMap(map_name).at(idx) = cache_entry;
               }
-              GetCacheEntriesMap().emplace(idx,cache_entry);
+              GetCacheEntriesMap(map_name).emplace(idx,cache_entry);
               return true;
-              }, {"_cache_entry"});
+              }, {entry_name});
       return df_node;
   }
 };

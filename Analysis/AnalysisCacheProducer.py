@@ -92,67 +92,15 @@ def run_producer(producer, dfw, producer_config, outFileName, treeName, snapshot
         dfw.df.Snapshot(treeName, outFileName, varToSave, snapshotOptions)
 
 
-def merge_cache_files(inFileName, cacheFileNames, file_keys, workingDir):
-    # Merge all cache files into a super-cache!
-    snapshotOptions_local = ROOT.RDF.RSnapshotOptions()
-    snapshotOptions_local.fOverwriteIfExists=True
-    snapshotOptions_local.fMode="UPDATE"
+def merge_cache_files(inFileName, cacheFileNames, treeName):
     if len(cacheFileNames) == 0:
         return inFileName
-    nCaches = len(cacheFileNames)
-    combo_file_name = os.path.join(workingDir, 'tmp{i}_combo.root')
-    dfw_cache_main = Utilities.DataFrameBuilderBase(ROOT.RDataFrame('Events', inFileName))
-    colNames =  dfw_cache_main.colNames
-    colTypes =  dfw_cache_main.colTypes
-    dfw_cache_main.df.Snapshot('Events', combo_file_name.format(i = 0), colNames, snapshotOptions_local)
-    for key in file_keys:
-        if key.startswith('Events_'):
-            dfw_cache_main = Utilities.DataFrameBuilderBase(ROOT.RDataFrame(key, inFileName))
-            tmp_colNames = dfw_cache_main.colNames
-            dfw_cache_main.df.Snapshot(key, combo_file_name.format(i = 0), tmp_colNames, snapshotOptions_local)
+    dfw = Utilities.DataFrameBuilderBase(ROOT.RDataFrame(treeName, inFileName))
     for i, cacheFileName in enumerate(cacheFileNames):
-        combo_dfw = Utilities.DataFrameBuilderBase(ROOT.RDataFrame('Events', combo_file_name.format(i = i)))
-        cache_branches_to_save = set()
-        cache_branches_to_save.update(combo_dfw.colNames)
-        tmp_cache = Utilities.DataFrameBuilderBase(ROOT.RDataFrame('Events', cacheFileName))
-        cache_branches_to_save.update(tmp_cache.colNames)
-        AddCacheColumnsInDf(combo_dfw, tmp_cache, "cache_map_Central")
-        combo_dfw.df.Snapshot('Events', combo_file_name.format(i = i+1), cache_branches_to_save, snapshotOptions_local)
-    for uncName in unc_cfg_dict['shape']:
-        for scale in scales:
-            treeName = f"Events_{uncName}{scale}"
-            treeName_noDiff = f"{treeName}_noDiff"
-            if treeName_noDiff in file_keys:
-                for i, cacheFileName in enumerate(cacheFileNames):
-                    dfw_cache_main = Utilities.DataFrameBuilderBase(ROOT.RDataFrame(treeName_noDiff, combo_file_name.format(i = i)))
-                    cache_branches_to_save = set()
-                    cache_branches_to_save.update(dfw_cache_main.colNames)
-                    tmp_cache = Utilities.DataFrameBuilderBase(ROOT.RDataFrame(treeName_noDiff, cacheFileName))
-                    cache_branches_to_save.update(tmp_cache.colNames)
-                    AddCacheColumnsInDf(dfw_cache_main, tmp_cache, "cache_map_Central")
-                    dfw_cache_main.df.Snapshot(treeName_noDiff, combo_file_name.format(i = i+1), cache_branches_to_save, snapshotOptions_local)
-            treeName_Valid = f"{treeName}_Valid"
-            if treeName_Valid in file_keys:
-                for i, cacheFileName in enumerate(cacheFileNames):
-                    dfw_cache_main = Utilities.DataFrameBuilderBase(ROOT.RDataFrame(treeName_Valid, combo_file_name.format(i = i)))
-                    cache_branches_to_save = set()
-                    cache_branches_to_save.update(dfw_cache_main.colNames)
-                    tmp_cache = Utilities.DataFrameBuilderBase(ROOT.RDataFrame(treeName_Valid, cacheFileName))
-                    cache_branches_to_save.update(tmp_cache.colNames)
-                    AddCacheColumnsInDf(dfw_cache_main, tmp_cache, "cache_map_Central")
-                    dfw_cache_main.df.Snapshot(treeName_Valid, combo_file_name.format(i = i+1), cache_branches_to_save, snapshotOptions_local)
-            treeName_nonValid = f"{treeName}_nonValid"
-            if treeName_nonValid in file_keys:
-                for i, cacheFileName in enumerate(cacheFileNames):
-                    dfw_cache_main = Utilities.DataFrameBuilderBase(ROOT.RDataFrame(treeName_nonValid, combo_file_name.format(i = i)))
-                    cache_branches_to_save = set()
-                    cache_branches_to_save.update(dfw_cache_main.colNames)
-                    tmp_cache = Utilities.DataFrameBuilderBase(ROOT.RDataFrame(treeName_nonValid, cacheFileName))
-                    cache_branches_to_save.update(tmp_cache.colNames)
-                    AddCacheColumnsInDf(dfw_cache_main, tmp_cache, "cache_map_Central")
-                    dfw_cache_main.df.Snapshot(treeName_nonValid, combo_file_name.format(i = i+1), cache_branches_to_save, snapshotOptions_local)
+        cache = Utilities.DataFrameBuilderBase(ROOT.RDataFrame(treeName, cacheFileName))
+        AddCacheColumnsInDf(dfw, cache, f"cache_map_Central_{i}", f"_cache_entry_{i}")
+    return dfw.df
 
-    return combo_file_name.format(i = nCaches)
 
 
 # add extra argument to this function - which payload producer to run
@@ -163,14 +111,12 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
     all_files = []
     file_keys = getKeyNames(inFileName)
 
-    total_combo_file = merge_cache_files(inFileName, cacheFileNames, file_keys, workingDir)
-    inFileName = total_combo_file
-    print("Loading new file")
-    print(inFileName)
+    df = merge_cache_files(inFileName, cacheFileNames, 'Events')
+    dfw = Utilities.DataFrameWrapper(df,defaultColToSave)
 
-    df = ROOT.RDataFrame('Events', inFileName)
-    df_begin = df
-    dfw = Utilities.DataFrameWrapper(df_begin,defaultColToSave)
+    # df = ROOT.RDataFrame('Events', inFileName)
+    # df_begin = df
+    # dfw = Utilities.DataFrameWrapper(df_begin,defaultColToSave)
     
     if not producer_to_run:
         raise RuntimeError("Producer must be specified to compute analysis cache")
@@ -185,10 +131,10 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
     all_files.append(f'{outFileName}_Central.root')
 
     if compute_unc_variations:
-        dfWrapped_central = Utilities.DataFrameBuilderBase(df_begin)
+        dfWrapped_central = Utilities.DataFrameBuilderBase(dfw.df)
         colNames =  dfWrapped_central.colNames
         colTypes =  dfWrapped_central.colTypes
-        dfWrapped_central.df = createCentralQuantities(df_begin, colTypes, colNames)
+        dfWrapped_central.df = createCentralQuantities(dfw.df, colTypes, colNames)
         if dfWrapped_central.df.Filter("map_placeholder > 0").Count().GetValue() <= 0 : 
             raise RuntimeError("no events passed map placeolder")
         print("finished defining central quantities")
@@ -197,7 +143,7 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                 treeName = f"Events_{uncName}{scale}"
                 treeName_noDiff = f"{treeName}_noDiff"
                 if treeName_noDiff in file_keys:
-                    df_noDiff = ROOT.RDataFrame(treeName_noDiff, inFileName)
+                    df_noDiff = merge_cache_files(inFileName, cacheFileNames, treeName_noDiff)
                     dfWrapped_noDiff = Utilities.DataFrameBuilderBase(df_noDiff)
                     dfWrapped_noDiff.CreateFromDelta(colNames, colTypes)
                     dfWrapped_noDiff.AddMissingColumns(colNames, colTypes)
@@ -206,7 +152,7 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     all_files.append(f'{outFileName}_{uncName}{scale}_noDiff.root')
                 treeName_Valid = f"{treeName}_Valid"
                 if treeName_Valid in file_keys:
-                    df_Valid = ROOT.RDataFrame(treeName_Valid, inFileName)
+                    df_Valid = merge_cache_files(inFileName, cacheFileNames, treeName_Valid)
                     dfWrapped_Valid = Utilities.DataFrameBuilderBase(df_Valid)
                     dfWrapped_Valid.CreateFromDelta(colNames, colTypes)
                     dfWrapped_Valid.AddMissingColumns(colNames, colTypes)
@@ -215,7 +161,7 @@ def createAnalysisCache(inFileName, outFileName, unc_cfg_dict, global_cfg_dict, 
                     all_files.append(f'{outFileName}_{uncName}{scale}_Valid.root')
                 treeName_nonValid = f"{treeName}_nonValid"
                 if treeName_nonValid in file_keys:
-                    df_nonValid = ROOT.RDataFrame(treeName_nonValid, inFileName)
+                    df_nonValid = merge_cache_files(inFileName, cacheFileNames, treeName_nonValid)
                     dfWrapped_nonValid = Utilities.DataFrameBuilderBase(df_nonValid)
                     dfWrapped_nonValid.AddMissingColumns(colNames, colTypes)
                     dfW_nonValid = Utilities.DataFrameWrapper(dfWrapped_nonValid.df,defaultColToSave)

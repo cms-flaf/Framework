@@ -47,7 +47,7 @@ ROOT::VecOps::RVec<float> GetBinValue(const ROOT::VecOps::RVec<T>& bins, const s
 }
 """)
 def SaveHist(key, outFile, histogram, hist_name):
-    dir_name = '/'.join(key_1)
+    dir_name = '/'.join(key)
     dir_ptr = Utilities.mkdir(outFile,dir_name)
     # merged_hist = hist_list[0].GetValue()
     # for hist in hist_list[1:] :
@@ -57,7 +57,7 @@ def SaveHist(key, outFile, histogram, hist_name):
     # if not isCentral:
     #     hist_name+=f"_{uncName}{scale}"
     # #print(dir_name, hist_name)
-    dir_ptr.WriteTObject(histogram, hist_name, "Overwrite")
+    dir_ptr.WriteTObject(histogram.GetValue(), hist_name, "Overwrite")
 
 def GetHist(rdf, hist_cfg_dict, var, filter_to_apply):
     edges_vector = GetBinVec(hist_cfg_dict, var)
@@ -75,20 +75,21 @@ if __name__ == "__main__":
     import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument('--period', required=True, type=str)
-    parser.add_argument('--inFile', required=True, type=str)
+    parser.add_argument('--inDir', required=True, type=str)
     parser.add_argument('--outFile', required=True, type=str)
     parser.add_argument('--histConfig', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str) # currently not needed, maybe in future
     parser.add_argument('--customisations', type=str, default=None)
     parser.add_argument('--treeName', required=False, type=str, default="Events")
     parser.add_argument('--channels', type=str, default=None)
+    parser.add_argument('--furtherCut', type=str, default=None)
     args = parser.parse_args()
 
     setup = Setup.getGlobal(os.environ['ANALYSIS_PATH'], args.period, args.customisations)
 
     analysis_import = (setup.global_params['analysis_import'])
     analysis = importlib.import_module(f'{analysis_import}')
-    rdf = ROOT.RDataFrame(args.treeName, args.inFile)
+    rdf = ROOT.RDataFrame(args.treeName, f'{args.inDir}/*.root')
 
     hist_cfg_dict = {}
     with open(args.histConfig, 'r') as f:
@@ -109,7 +110,7 @@ if __name__ == "__main__":
             key_new = key
             filter_to_apply = key_filter_dict[key]
             further_cuts = []
-            if args.furtherCut not None:
+            if args.furtherCut is not None:
                 further_cuts = args.furtherCut.split(',')
             if further_cuts:
                 for further_cut in further_cuts:

@@ -162,7 +162,7 @@ class HistTupleProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         input = self.input()[0][input_index]
         outFileName = os.path.basename(input.path)
         output_path = os.path.join('histTuples', self.version, self.period, sample_name, outFileName)
-        return self.remote_target(output_path, fs=self.fs_histograms)
+        return self.remote_target(output_path, fs=self.fs_HistTuple)
 
     def run(self):
         sample_name, prod_br, need_cache_global, producer_list, input_index= self.branch_data
@@ -181,9 +181,7 @@ class HistTupleProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         print(f'output file is {outFile}')
         compute_unc_histograms = customisation_dict['compute_unc_histograms']=='True' if 'compute_unc_histograms' in customisation_dict.keys() else self.global_params.get('compute_unc_histograms', False)
         job_home, remove_job_home = self.law_job_home()
-        output = self.output()[0].path
-        print(f"output is {output}")
-        print(f"producer list is {producer_list}")
+        output = self.output()
         for  producer_name in producer_list:
             print(f"producer name is {producer_name}")
             with input_file.localize("r") as local_input:

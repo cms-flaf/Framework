@@ -102,7 +102,7 @@ def GetBinVec(hist_cfg, var):
         n_bins, bin_range = x_bins.split('|')
         start,stop = bin_range.split(':')
         edges = np.linspace(float(start), float(stop), int(n_bins)).tolist()
-        print(len(edges))
+        # print(len(edges))
         x_bins_vec=Utilities.ListToVector(edges, "float")
     return x_bins_vec
 

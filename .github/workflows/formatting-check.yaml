@@ -1,8 +1,15 @@
 name: Formatting Check
 
 on:
+  push:
+    branches: [ "main" ]
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [ "opened", "synchronize", "reopened", "labeled" ]
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   formatting-check:

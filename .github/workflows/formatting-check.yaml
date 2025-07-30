@@ -43,7 +43,7 @@ jobs:
 
       - name: Check Python formatting
         run: |
-          echo "${{ steps.changed-files.outputs.files }}" | tr ' ' '\n' | grep '\.py$' | xargs -r black --check
+          echo "${{ steps.changed-files.outputs.files }}" | tr ' ' '\n' | grep '\.py$' | xargs -r black --check --diff
 
       - name: Check C++ formatting
         run: |

@@ -88,21 +88,12 @@ namespace analysis {
     return ::detail::DeltaImpl<T>::Delta(shifted, central);
   }
 
-  // Specializzazione per bool (per compatibilità diretta)
-  template<>
-  bool Delta<bool>(const bool& shifted, const bool& central) {
-    return shifted == central;
-  }
 
   template<typename T>
   T FromDelta(const T& delta, const T& central) {
     return ::detail::DeltaImpl<T>::FromDelta(delta, central);
   }
 
-  template<>
-  bool FromDelta<bool>(const bool& delta, const bool& central) {
-    return delta ? central : !central;
-  }
 
   template<typename T>
   bool IsSame(const T& shifted, const T& central) {

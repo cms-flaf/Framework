@@ -25,6 +25,7 @@ struct FitResults {
 }*/
 
 using RVecF = ROOT::VecOps::RVec<float>;
+using RVecB = ROOT::VecOps::RVec<bool>;
 using RVecI = ROOT::VecOps::RVec<int>;
 using RVecUC = ROOT::VecOps::RVec<unsigned char>;
 using RVecUL = ROOT::VecOps::RVec<unsigned long>;
@@ -33,7 +34,7 @@ using RVecSh = ROOT::VecOps::RVec<short>;
 //using RVecB = ROOT::VecOps::RVec<bool>;
 
 namespace analysis {
-typedef std::variant<int,float,bool, unsigned long,unsigned long long,long long, long,unsigned int, RVecI, RVecF,RVecUC,RVecUL, RVecULL, RVecSh, double, unsigned char> MultiType; // Removed kin_fit::FitResults from the variant
+typedef std::variant<int,float,bool, unsigned long,unsigned long long,long long, long,unsigned int, RVecI, RVecF,RVecUC,RVecUL, RVecULL, RVecSh, RVecB, double, unsigned char, char> MultiType; // Removed kin_fit::FitResults from the variant
 
 struct Entry {
   std::vector<MultiType> var_values;

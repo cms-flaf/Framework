@@ -216,7 +216,8 @@ if __name__ == "__main__":
     if args.channels:
         global_cfg_dict['channelSelection'] = args.channels.split(',') if type(args.channels) == str else args.channels
     outFileNameFinal = f'{args.outFileName}'
-    all_files = createAnalysisCache(args.inFileName, args.outFileName, unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion, args.producer, uprootCompression, args.workingDir, args.cacheFileNames.split(','))
+    cacheFileNames = args.cacheFileNames.split(',') if args.cacheFileNames else ''
+    all_files = createAnalysisCache(args.inFileName, args.outFileName, unc_cfg_dict, global_cfg_dict, snapshotOptions, args.compute_unc_variations, args.deepTauVersion, args.producer, uprootCompression, args.workingDir, cacheFileNames)
     hadd_str = f'hadd -f209 -n10 {outFileNameFinal} '
     hadd_str += ' '.join(f for f in all_files)
     if len(all_files) > 1:

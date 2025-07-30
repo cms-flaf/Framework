@@ -1,0 +1,48 @@
+name: Formatting Check
+
+on:
+  pull_request:
+    types: [ "opened", "synchronize", "reopened", "labeled" ]
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  formatting-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install black
+        run: pip install black
+
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install clang-format
+
+      - name: Get changed files
+        id: changed-files
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const files = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            const changedFiles = files.data.map(file => file.filename);
+            core.setOutput('files', changedFiles.join(' '));
+
+      - name: Check Python formatting
+        run: |
+          echo "${{ steps.changed-files.outputs.files }}" | tr ' ' '\n' | grep '\.py$' | xargs -r black --check --diff
+
+      - name: Check C++ formatting
+        run: |
+          echo "${{ steps.changed-files.outputs.files }}" | tr ' ' '\n' | grep -E '\.(cpp|h|hpp|cc)$' | xargs -r clang-format --dry-run --Werror

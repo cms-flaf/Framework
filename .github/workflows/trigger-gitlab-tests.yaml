@@ -1,8 +1,8 @@
-name: Formatting Check
+name: Trigger GitLab Tests
 
 on:
   issue_comment:
-    types: [ "created" ]
+    types: [ "created", "edited" ]
 
 permissions:
   contents: read
@@ -11,7 +11,7 @@ jobs:
   parse-pr-comment:
     runs-on: ubuntu-latest
     steps:
-      - name: Check PR conditions
+      - name: Trigger GitLab Pipeline
         id: check-conditions
         uses: actions/github-script@v6
         env:
@@ -31,7 +31,7 @@ jobs:
               "akhter-towsifa"
             ];
 
-            const prNumber = context.payload.pull_request?.number;
+            const prNumber = github.event.issue.number;
             if (!prNumber) {
               console.log('Not a PR event. Skipping.');
               return;

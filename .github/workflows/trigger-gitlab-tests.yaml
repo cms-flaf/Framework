@@ -153,7 +153,7 @@ jobs:
                 message = `[pipeline#${pipelineId}](${pipelineUrl}) started`;
                 const url = `https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/comments`;
                 const headers = {
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${process.env.FLAF_GITHUB_TOKEN}`,
                   'Accept': 'application/vnd.github.v3+json',
                   'Content-Type': 'application/json'
                 };

@@ -1,0 +1,192 @@
+name: Formatting Check
+
+on:
+  issue_comment:
+    types: [ "created" ]
+
+permissions:
+  contents: read
+
+jobs:
+  parse-pr-comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR conditions
+        id: check-conditions
+        uses: actions/github-script@v6
+        env:
+          FLAF_INTEGRATION_TOKEN: ${{ secrets.FLAF_INTEGRATION_TOKEN }}
+          FLAF_GITHUB_TOKEN: ${{ secrets.FLAF_GITHUB_TOKEN }}
+        with:
+          script: |
+            const whitelistUsers = [
+              "kandrosov",
+              "aebid",
+              "valeriadamante",
+              "acagnotta",
+              "ahmad3213",
+              "abolshov",
+              "Sayan-Dhani",
+              "prabhatsolanki",
+              "akhter-towsifa"
+            ];
+
+            const prNumber = context.payload.pull_request?.number;
+            if (!prNumber) {
+              console.log('Not a PR event. Skipping.');
+              return;
+            }
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const commentsResponse = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: prNumber,
+              sort: 'created',
+              direction: 'desc',
+              per_page: 1,
+            });
+            const comments = commentsResponse.data;
+            if (comments.length === 0) {
+              console.log('No comments found. Skipping.');
+              return;
+            }
+
+            const latestComment = comments[0];
+            if (!(latestComment.body.startsWith('@cms-flaf-bot please test') &&
+                whitelistUsers.includes(latestComment.user.login))) {
+              console.log('Conditions not met. Skipping.');
+              return
+            }
+
+            var variables = {
+              "HH_bbWW_version": "main"
+              "HH_bbtautau_version": "main"
+              "H_mumu_version": "main"
+              "FLAF_version": "default"
+              "Corrections_version": "default"
+              "HH_bbWW_active": "1"
+              "HH_bbtautau_active": "1"
+              "H_mumu_active": "1"
+            };
+
+            const defaultVariables = JSON.parse(JSON.stringify(variables));
+
+            variables["FLAF_version"] = "PR_" + prNumber.toString();
+            var all_ok = true;
+            for(var entry in latestComment.body.split('\n')) {
+              entry = entry.trim();
+              if(entry.length == 0 || entry.startsWith('@flaf-bot please test')) continue;
+              var parsed = false;
+              if(entry.startsWith('- ')) {
+                var parts = entry.substring(2).split('=');
+                if(parts.length == 2) {
+                  var key = parts[0].trim();
+                  var value = parts[1].trim();
+                  if(key in variables) {
+                    variables[key] = value;
+                    parsed = true;
+                  } else {
+                    console.log(`Unknown variable: ${key}`);
+                  }
+                }
+              }
+              if(!parsed) {
+                console.log(`Invalid entry format: ${entry}`);
+                all_ok = false;
+                break;
+              }
+            }
+
+            if(!all_ok) {
+              console.log('Invalid comment format. Skipping.');
+              return;
+            }
+
+            console.log('Conditions met. Creating data.');
+
+            let packages = Object.keys(values).filter(key => key.endsWith('_version')).map(key => key.slice(0, -8));
+            let rootPackages = Object.keys(values).filter(key => key.endsWith('_active')).map(key => key.slice(0, -7));
+            let data = {
+              'token': '****',
+              'ref': ref
+            };
+            for (const [key, value] of Object.entries(variables)) {
+              data[`variables[${key}]`] = value;
+            }
+
+            let workflowNameItems = [];
+            let sortedRootPackages = [...rootPackages].sort();
+            for (let pkg of sortedRootPackages) {
+              if (values[`${pkg}_active`] === '1') {
+                workflowNameItems.push(`${pkg}=${values[`${pkg}_version`]}`);
+              }
+            }
+            let sortedPackages = [...packages].sort();
+            for (let pkg of sortedPackages) {
+              if (!rootPackages.includes(pkg)) {
+                workflowNameItems.push(`${pkg}=${values[`${pkg}_version`]}`);
+              }
+            }
+            data['variables[WORKFLOW_NAME]'] = workflowNameItems.join(' ');
+
+            console.log("Triggering pipeline with the following data:");
+            for (let key in data) {
+              console.log(`\t${key}: ${data[key]}`);
+            }
+
+            data['token'] = process.env.FLAF_INTEGRATION_TOKEN;
+            let formData = new URLSearchParams();
+            for (let key in data) {
+              formData.append(key, data[key]);
+            }
+
+            try {
+              const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+              });
+
+              if (response.status === 201) {
+                console.log("Pipeline triggered successfully.");
+                const responseData = await response.json();
+                console.log(responseData);
+
+                pipelineId = responseData['id'];
+                pipelineUrl = responseData['web_url']
+                message = `[pipeline#${piepelineId}](${pipelineUrl}) started`;
+                const url = `https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/comments`;
+                const headers = {
+                  'Authorization': `Bearer ${token}`,
+                  'Accept': 'application/vnd.github.v3+json',
+                  'Content-Type': 'application/json'
+                };
+                const body = JSON.stringify({ body: message });
+
+                try {
+                  const response = await fetch(url, {
+                    method: 'POST',
+                    headers: headers,
+                    body: body
+                  });
+
+                  if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                  }
+
+                  const data = await response.json();
+                  console.log('Comment posted successfully:', data);
+                } catch (error) {
+                  console.error('Error posting comment:', error);
+                }
+              } else {
+                console.log(`Failed to trigger pipeline: ${response.status}`);
+                const responseText = await response.text();
+                console.log(responseText);
+              }
+            } catch (error) {
+              console.error('Error triggering pipeline:', error);
+            }

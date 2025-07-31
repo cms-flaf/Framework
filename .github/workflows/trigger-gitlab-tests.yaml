@@ -150,7 +150,7 @@ jobs:
 
                 pipelineId = responseData['id'];
                 pipelineUrl = responseData['web_url']
-                message = `[pipeline#${piepelineId}](${pipelineUrl}) started`;
+                message = `[pipeline#${pipelineId}](${pipelineUrl}) started`;
                 const url = `https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/comments`;
                 const headers = {
                   'Authorization': `Bearer ${token}`,

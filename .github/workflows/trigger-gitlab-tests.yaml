@@ -103,7 +103,7 @@ jobs:
             let rootPackages = Object.keys(variables).filter(key => key.endsWith('_active')).map(key => key.slice(0, -7));
             let data = {
               'token': '****',
-              'ref': ref
+              'ref': 'master'
             };
             for (const [key, value] of Object.entries(variables)) {
               data[`variables[${key}]`] = value;

@@ -158,7 +158,7 @@ jobs:
               throw new Error(`Failed to trigger pipeline: ${response.status} - ${responseText}`);
             }
       - name: Post comment
-        if: steps.trigger-gitlab-pipeline.send_message == 'true'
+        if: steps.trigger-gitlab-pipeline.outputs.send_message == 'true'
         id: post-comment
         env:
           FLAF_GITHUB_TOKEN: ${{ secrets.FLAF_GITHUB_TOKEN }}

@@ -31,7 +31,7 @@ jobs:
               "akhter-towsifa"
             ];
 
-            const prNumber = github.event.issue.number;
+            const prNumber = context.payload.issue?.number;
             if (!prNumber) {
               console.log('Not a PR event. Skipping.');
               return;

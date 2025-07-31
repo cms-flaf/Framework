@@ -153,7 +153,7 @@ jobs:
               const { Octokit } = require("@octokit/rest");
               const octokit = new Octokit({auth: process.env.FLAF_GITHUB_TOKEN});
 
-              const response = await octokit.request(`POST /repos/${owner}/${repo}/issues/${prNumber}/comments`, {
+              const ghResponse = await octokit.request(`POST /repos/${owner}/${repo}/issues/${prNumber}/comments`, {
                 owner: owner,
                 repo: repo,
                 issue_number: prNumber,
@@ -163,11 +163,11 @@ jobs:
                 }
               });
 
-              if (!response.ok) {
-                throw new Error(`HTTP error. Status: ${response.status}`);
+              if (!ghResponse.ok) {
+                throw new Error(`HTTP error. Status: ${ghResponse.status}`);
               }
 
-              const data = await response.json();
+              const data = await ghResponse.json();
               console.log('Comment posted successfully:', data);
             } else {
               console.log(`Failed to trigger pipeline: ${response.status}`);

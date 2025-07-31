@@ -173,5 +173,5 @@ jobs:
               console.log(`Failed to trigger pipeline: ${response.status}`);
               const responseText = await response.text();
               console.log(responseText);
-              raise new Error(`Failed to trigger pipeline: ${response.status} - ${responseText}`);
+              throw new Error(`Failed to trigger pipeline: ${response.status} - ${responseText}`);
             }

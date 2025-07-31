@@ -150,7 +150,7 @@ jobs:
               pipelineId = responseData['id'];
               pipelineUrl = responseData['web_url']
               message = `[pipeline#${pipelineId}](${pipelineUrl}) started`;
-              import { Octokit } from "@octokit/rest";
+              const { Octokit } = require("@octokit/rest");
               const octokit = new Octokit({auth: process.env.FLAF_GITHUB_TOKEN});
 
               const response = await octokit.request(`POST /repos/${owner}/${repo}/issues/${prNumber}/comments`, {

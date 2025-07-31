@@ -31,12 +31,13 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const files = await github.rest.pulls.listFiles({
+            const files = await github.paginate(github.rest.pulls.listFiles, {
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.issue.number,
+              pull_number: context.payload.pull_request.number,
             });
-            const changedFiles = files.data.map(file => file.filename);
+            console.log(`Total files changed: ${files.length}`);
+            const changedFiles = files.map(file => file.filename);
             core.setOutput('files', changedFiles.join(' '));
 
       - name: Check Python formatting

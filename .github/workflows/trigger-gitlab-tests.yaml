@@ -12,11 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger GitLab Pipeline
-        id: check-conditions
+        id: trigger-gitlab-pipeline
         uses: actions/github-script@v6
-        env:
-          FLAF_INTEGRATION_TOKEN: ${{ secrets.FLAF_INTEGRATION_TOKEN }}
-          FLAF_GITHUB_TOKEN: ${{ secrets.FLAF_GITHUB_TOKEN }}
         with:
           script: |
             const whitelistUsers = [
@@ -129,7 +126,7 @@ jobs:
               console.log(`\t${key}: ${data[key]}`);
             }
 
-            data['token'] = process.env.FLAF_INTEGRATION_TOKEN;
+            data['token'] = secrets.FLAF_INTEGRATION_TOKEN;
             let formData = new URLSearchParams();
             for (let key in data) {
               formData.append(key, data[key]);
@@ -150,28 +147,22 @@ jobs:
               pipelineId = responseData['id'];
               pipelineUrl = responseData['web_url']
               message = `[pipeline#${pipelineId}](${pipelineUrl}) started`;
-              const { Octokit } = require("@octokit/rest");
-              const octokit = new Octokit({auth: process.env.FLAF_GITHUB_TOKEN});
-
-              const ghResponse = await octokit.request(`POST /repos/${owner}/${repo}/issues/${prNumber}/comments`, {
-                owner: owner,
-                repo: repo,
-                issue_number: prNumber,
-                body: message,
-                headers: {
-                  'X-GitHub-Api-Version': '2022-11-28'
-                }
-              });
-
-              if (!ghResponse.ok) {
-                throw new Error(`HTTP error. Status: ${ghResponse.status}`);
-              }
-
-              const data = await ghResponse.json();
-              console.log('Comment posted successfully:', data);
+              core.setOutput('send_message', 'true');
+              core.setOutput('message', message);
             } else {
               console.log(`Failed to trigger pipeline: ${response.status}`);
               const responseText = await response.text();
               console.log(responseText);
               throw new Error(`Failed to trigger pipeline: ${response.status} - ${responseText}`);
             }
+      - name: Post comment
+        if: steps.trigger-gitlab-pipeline.send_message == 'true'
+        id: post-comment
+        run: |
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.FLAF_GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/${{ github.repository_owner }}/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments \
+            -d '{"body": "${{ steps.trigger-gitlab-pipeline.outputs.message }}"}'

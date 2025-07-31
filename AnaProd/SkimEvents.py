@@ -42,6 +42,8 @@ col_type_dict = {
   'ROOT::VecOps::RVec<unsigned long>':'ROOT::VecOps::RVec<unsigned long>',
   'ROOT::VecOps::RVec<short>':'ROOT::VecOps::RVec<short>',
   'ROOT::VecOps::RVec<double>':'ROOT::VecOps::RVec<double>',
+  "ROOT::VecOps::RVec<Float_t>": "ROOT::VecOps::RVec<float>",
+  "ROOT::VecOps::RVec<Int_t>": "ROOT::VecOps::RVec<int>",
   }
 def make_df(inputFileCentral,inputFileShifted,outDir,treeName,treeName_in='Events',treeName_central='Events'):
   df_central = ROOT.RDataFrame(treeName_central, inputFileCentral)

@@ -94,7 +94,7 @@ jobs:
 
             if(!all_ok) {
               console.log('Invalid comment format. Skipping.');
-              return 1;
+              return;
             }
 
             console.log('Conditions met. Creating data.');
@@ -135,53 +135,43 @@ jobs:
               formData.append(key, data[key]);
             }
 
-            try {
-              const url = 'https://gitlab.cern.ch/api/v4/projects/210600/trigger/pipeline';
-              const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData
+            const url = 'https://gitlab.cern.ch/api/v4/projects/210600/trigger/pipeline';
+            const response = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: formData
+            });
+
+            if (response.status === 201) {
+              console.log("Pipeline triggered successfully.");
+              const responseData = await response.json();
+              console.log(responseData);
+
+              pipelineId = responseData['id'];
+              pipelineUrl = responseData['web_url']
+              message = `[pipeline#${pipelineId}](${pipelineUrl}) started`;
+              import { Octokit } from "@octokit/rest";
+              const octokit = new Octokit({auth: process.env.FLAF_GITHUB_TOKEN});
+
+              const response = await octokit.request(`POST /repos/${owner}/${repo}/issues/${prNumber}/comments`, {
+                owner: owner,
+                repo: repo,
+                issue_number: prNumber,
+                body: message,
+                headers: {
+                  'X-GitHub-Api-Version': '2022-11-28'
+                }
               });
 
-              if (response.status === 201) {
-                console.log("Pipeline triggered successfully.");
-                const responseData = await response.json();
-                console.log(responseData);
-
-                pipelineId = responseData['id'];
-                pipelineUrl = responseData['web_url']
-                message = `[pipeline#${pipelineId}](${pipelineUrl}) started`;
-                try {
-
-                  const octokit = new Octokit({auth: process.env.FLAF_GITHUB_TOKEN});
-
-                  const response = await octokit.request(`POST /repos/${owner}/${repo}/issues/${prNumber}/comments`, {
-                    owner: owner,
-                    repo: repo,
-                    issue_number: prNumber,
-                    body: message,
-                    headers: {
-                      'X-GitHub-Api-Version': '2022-11-28'
-                    }
-                  });
-
-                  if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                  }
-
-                  const data = await response.json();
-                  console.log('Comment posted successfully:', data);
-                } catch (error) {
-                  console.error('Error posting comment:', error);
-                  return 1;
-                }
-              } else {
-                console.log(`Failed to trigger pipeline: ${response.status}`);
-                const responseText = await response.text();
-                console.log(responseText);
-                return 1;
+              if (!response.ok) {
+                throw new Error(`HTTP error. Status: ${response.status}`);
               }
-            } catch (error) {
-              console.error('Error triggering pipeline:', error);
-              return 1;
+
+              const data = await response.json();
+              console.log('Comment posted successfully:', data);
+            } else {
+              console.log(`Failed to trigger pipeline: ${response.status}`);
+              const responseText = await response.text();
+              console.log(responseText);
+              raise new Error(`Failed to trigger pipeline: ${response.status} - ${responseText}`);
             }

@@ -69,7 +69,7 @@ jobs:
             var all_ok = true;
             for(var entry in commentBody.split('\n')) {
               entry = entry.trim();
-              if(entry.length == 0 || entry.startsWith(expectedHeader)) continue;
+              if(!entry || entry.length == 0 || entry.startsWith(expectedHeader)) continue;
               var parsed = false;
               if(entry.startsWith('- ')) {
                 var parts = entry.substring(2).split('=');

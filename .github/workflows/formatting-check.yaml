@@ -20,12 +20,6 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install black
-        run: pip install black
-
-      - name: Install clang-format
-        run: sudo apt-get update && sudo apt-get install clang-format
-
       - name: Get changed files
         id: changed-files
         uses: actions/github-script@v6
@@ -40,9 +34,22 @@ jobs:
             const changedFiles = files.map(file => file.filename);
             core.setOutput('files', changedFiles.join(' '));
 
+      - name: Install black
+        run: pip install black
+
       - name: Check Python formatting
         run: |
           echo "${{ steps.changed-files.outputs.files }}" | tr ' ' '\n' | grep '\.py$' | xargs -r black --check --diff
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Check YAML formatting
+        run: |
+          echo "${{ steps.changed-files.outputs.files }}" | tr ' ' '\n' | grep -E '\.(yaml|yml|yamllint)$' | xargs -r yamllint -s -c .yamllint
+
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install clang-format
 
       - name: Check C++ formatting
         run: |

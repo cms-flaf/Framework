@@ -1,0 +1,11 @@
+extends: default
+
+rules:
+    document-start: disable
+    line-length: disable
+    indentation:
+        spaces: 4
+        indent-sequences: consistent
+    float-values:
+        require-numeral-before-decimal: false
+    octal-values: enable

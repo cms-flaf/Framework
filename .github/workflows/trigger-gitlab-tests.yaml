@@ -163,7 +163,7 @@ jobs:
         env:
           FLAF_GITHUB_TOKEN: ${{ secrets.FLAF_GITHUB_TOKEN }}
         run: |
-          curl -f -L \
+          curl --fail-with-body -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${FLAF_GITHUB_TOKEN}" \

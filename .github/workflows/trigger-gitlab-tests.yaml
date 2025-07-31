@@ -99,8 +99,8 @@ jobs:
 
             console.log('Conditions met. Creating data.');
 
-            let packages = Object.keys(values).filter(key => key.endsWith('_version')).map(key => key.slice(0, -8));
-            let rootPackages = Object.keys(values).filter(key => key.endsWith('_active')).map(key => key.slice(0, -7));
+            let packages = Object.keys(variables).filter(key => key.endsWith('_version')).map(key => key.slice(0, -8));
+            let rootPackages = Object.keys(variables).filter(key => key.endsWith('_active')).map(key => key.slice(0, -7));
             let data = {
               'token': '****',
               'ref': ref
@@ -112,14 +112,14 @@ jobs:
             let workflowNameItems = [];
             let sortedRootPackages = [...rootPackages].sort();
             for (let pkg of sortedRootPackages) {
-              if (values[`${pkg}_active`] === '1') {
-                workflowNameItems.push(`${pkg}=${values[`${pkg}_version`]}`);
+              if (variables[`${pkg}_active`] === '1') {
+                workflowNameItems.push(`${pkg}=${variables[`${pkg}_version`]}`);
               }
             }
             let sortedPackages = [...packages].sort();
             for (let pkg of sortedPackages) {
               if (!rootPackages.includes(pkg)) {
-                workflowNameItems.push(`${pkg}=${values[`${pkg}_version`]}`);
+                workflowNameItems.push(`${pkg}=${variables[`${pkg}_version`]}`);
               }
             }
             data['variables[WORKFLOW_NAME]'] = workflowNameItems.join(' ');

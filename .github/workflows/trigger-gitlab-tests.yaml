@@ -8,12 +8,14 @@ permissions:
   contents: read
 
 jobs:
-  parse-pr-comment:
+  process-trigger-requests:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger GitLab Pipeline
         id: trigger-gitlab-pipeline
         uses: actions/github-script@v6
+        env:
+          FLAF_INTEGRATION_TOKEN: ${{ secrets.FLAF_INTEGRATION_TOKEN }}
         with:
           script: |
             const whitelistUsers = [
@@ -126,7 +128,7 @@ jobs:
               console.log(`\t${key}: ${data[key]}`);
             }
 
-            data['token'] = secrets.FLAF_INTEGRATION_TOKEN;
+            data['token'] = process.env.FLAF_INTEGRATION_TOKEN;
             let formData = new URLSearchParams();
             for (let key in data) {
               formData.append(key, data[key]);
@@ -158,11 +160,13 @@ jobs:
       - name: Post comment
         if: steps.trigger-gitlab-pipeline.send_message == 'true'
         id: post-comment
+        env:
+          FLAF_GITHUB_TOKEN: ${{ secrets.FLAF_GITHUB_TOKEN }}
         run: |
           curl -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.FLAF_GITHUB_TOKEN }}" \
+            -H "Authorization: Bearer ${FLAF_GITHUB_TOKEN}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository_owner }}/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments \
             -d '{"body": "${{ steps.trigger-gitlab-pipeline.outputs.message }}"}'

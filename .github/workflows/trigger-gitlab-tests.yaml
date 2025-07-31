@@ -62,13 +62,13 @@ jobs:
             }
 
             var variables = {
-              "HH_bbWW_version": "main"
-              "HH_bbtautau_version": "main"
-              "H_mumu_version": "main"
-              "FLAF_version": "default"
-              "Corrections_version": "default"
-              "HH_bbWW_active": "1"
-              "HH_bbtautau_active": "1"
+              "HH_bbWW_version": "main",
+              "HH_bbtautau_version": "main",
+              "H_mumu_version": "main",
+              "FLAF_version": "default",
+              "Corrections_version": "default",
+              "HH_bbWW_active": "1",
+              "HH_bbtautau_active": "1",
               "H_mumu_active": "1"
             };
 

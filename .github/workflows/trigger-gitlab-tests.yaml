@@ -54,11 +54,12 @@ jobs:
               return;
             }
 
+            const expectedHeader = '@cms-flaf-bot please test';
             const latestComment = comments[0];
-            if (!(latestComment.body.startsWith('@cms-flaf-bot please test') &&
+            if (!(latestComment.body.startsWith(expectedHeader) &&
                 whitelistUsers.includes(latestComment.user.login))) {
               console.log('Conditions not met. Skipping.');
-              return
+              return;
             }
 
             var variables = {
@@ -78,7 +79,7 @@ jobs:
             var all_ok = true;
             for(var entry in latestComment.body.split('\n')) {
               entry = entry.trim();
-              if(entry.length == 0 || entry.startsWith('@flaf-bot please test')) continue;
+              if(entry.length == 0 || entry.startsWith(expectedHeader)) continue;
               var parsed = false;
               if(entry.startsWith('- ')) {
                 var parts = entry.substring(2).split('=');
@@ -102,7 +103,7 @@ jobs:
 
             if(!all_ok) {
               console.log('Invalid comment format. Skipping.');
-              return;
+              return 1;
             }
 
             console.log('Conditions met. Creating data.');
@@ -181,12 +182,15 @@ jobs:
                   console.log('Comment posted successfully:', data);
                 } catch (error) {
                   console.error('Error posting comment:', error);
+                  return 1;
                 }
               } else {
                 console.log(`Failed to trigger pipeline: ${response.status}`);
                 const responseText = await response.text();
                 console.log(responseText);
+                return 1;
               }
             } catch (error) {
               console.error('Error triggering pipeline:', error);
+              return 1;
             }

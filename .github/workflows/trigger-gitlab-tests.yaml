@@ -31,7 +31,7 @@ jobs:
               "akhter-towsifa"
             ];
 
-            const prNumber = context.payload.issue?.number;
+            const prNumber = context.payload.issue?.pull_request ? context.payload.issue.number : null;
             if (!prNumber) {
               console.log('Not a PR event. Skipping.');
               return;
@@ -40,26 +40,14 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            const commentsResponse = await github.rest.issues.listComments({
-              owner,
-              repo,
-              issue_number: prNumber,
-              sort: 'created',
-              direction: 'asc',
-              per_page: 1,
-            });
-            const comments = commentsResponse.data;
-            if (comments.length === 0) {
-              console.log('No comments found. Skipping.');
-              return;
-            }
+            const commentBody = context.payload.comment.body;
+            const commentAuthor = context.payload.comment.user.login;
 
             const expectedHeader = '@cms-flaf-bot please test';
-            const latestComment = comments[0];
-            console.log(`Latest comment: ${latestComment.body}`);
-            console.log(`Comment author: ${latestComment.user.login}`);
-            if (!(latestComment.body.startsWith(expectedHeader) &&
-                whitelistUsers.includes(latestComment.user.login))) {
+            console.log(`Comment body: ${commentBody}`);
+            console.log(`Comment author: ${commentAuthor}`);
+            if (!(commentBody.startsWith(expectedHeader) &&
+                whitelistUsers.includes(commentAuthor))) {
               console.log('Conditions not met. Skipping.');
               return;
             }
@@ -79,7 +67,7 @@ jobs:
 
             variables["FLAF_version"] = "PR_" + prNumber.toString();
             var all_ok = true;
-            for(var entry in latestComment.body.split('\n')) {
+            for(var entry in commentBody.split('\n')) {
               entry = entry.trim();
               if(entry.length == 0 || entry.startsWith(expectedHeader)) continue;
               var parsed = false;

@@ -67,7 +67,7 @@ jobs:
 
             variables["FLAF_version"] = "PR_" + prNumber.toString();
             var all_ok = true;
-            for(var entry_raw in commentBody.split('\n')) {
+            for(const entry_raw of commentBody.split('\n')) {
               console.log(`Processing entry: ${entry_raw}`);
               const entry = entry_raw.trim();
               if(!entry || entry.length == 0 || entry.startsWith(expectedHeader)) continue;

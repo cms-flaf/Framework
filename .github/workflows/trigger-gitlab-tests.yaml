@@ -45,7 +45,7 @@ jobs:
               repo,
               issue_number: prNumber,
               sort: 'created',
-              direction: 'desc',
+              direction: 'asc',
               per_page: 1,
             });
             const comments = commentsResponse.data;

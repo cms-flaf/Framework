@@ -165,7 +165,7 @@ class Setup:
         if isinstance(path_or_paths, list):
             if not path_or_paths:
                 raise ValueError("List of paths cannot be empty.")
-            path_to_check = path_or_paths[0] # Usa il primo per determinare il tipo di FS
+            path_to_check = path_or_paths[0] # Use the first to determine the FS type
         elif isinstance(path_or_paths, str):
             path_to_check = path_or_paths
         else:

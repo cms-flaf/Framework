@@ -51,7 +51,6 @@ class InputFileTask(Task, law.LocalWorkflow):
                 for input_line in input_files:
                     inputFileTxt.write(input_line+'\n')
         print(f'inputFile for sample {sample_name} is created in {self.output().path}')
-        print()
 
     @staticmethod
     def load_input_files(input_file_list, sample_name, fs=None, return_uri=False):

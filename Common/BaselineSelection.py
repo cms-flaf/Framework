@@ -8,7 +8,7 @@ ana_reco_object_collections = {
     "v12": [ "Electron", "Muon", "Tau", "Jet", "FatJet", "MET", "PuppiMET", "DeepMETResponseTune",
              "DeepMETResolutionTune", "SubJet" ],
     "v14": [ "Electron", "Muon", "Tau", "Jet", "FatJet", "SubJet", "PFMET", "PuppiMET", "DeepMETResponseTune",
-             "DeepMETResolutionTune",  ]
+              "DeepMETResolutionTune"  ]
 }
 deepTauVersions = {"2p1":"2017", "2p5":"2018"}
 

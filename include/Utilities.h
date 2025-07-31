@@ -43,7 +43,6 @@ namespace detail {
     static ROOT::VecOps::RVec<T> Delta(const ROOT::VecOps::RVec<T>& shifted, const ROOT::VecOps::RVec<T>& central) {
       ROOT::VecOps::RVec<T> delta = shifted;
       const size_t n_max = std::min(shifted.size(), central.size());
-      delta.reserve(n_max);
       for (size_t n = 0; n < n_max; ++n)
         delta[n] = DeltaImpl<T>::Delta(shifted[n], central[n]);
       return delta;
@@ -52,7 +51,6 @@ namespace detail {
     static ROOT::VecOps::RVec<T> FromDelta(const ROOT::VecOps::RVec<T>& delta, const ROOT::VecOps::RVec<T>& central) {
       ROOT::VecOps::RVec<T> fromDeltaVec = delta;
       const size_t n_max = std::min(delta.size(), central.size());
-      fromDeltaVec.reserve(n_max);
       for (size_t n = 0; n < n_max; ++n)
         fromDeltaVec[n]=DeltaImpl<T>::FromDelta(delta[n], central[n]);
       return fromDeltaVec;

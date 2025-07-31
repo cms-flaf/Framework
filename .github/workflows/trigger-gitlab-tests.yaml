@@ -56,6 +56,8 @@ jobs:
 
             const expectedHeader = '@cms-flaf-bot please test';
             const latestComment = comments[0];
+            console.log(`Latest comment: ${latestComment.body}`);
+            console.log(`Comment author: ${latestComment.user.login}`);
             if (!(latestComment.body.startsWith(expectedHeader) &&
                 whitelistUsers.includes(latestComment.user.login))) {
               console.log('Conditions not met. Skipping.');

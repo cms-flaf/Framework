@@ -1,0 +1,12 @@
+name: Checkout FLAF submodule
+runs:
+  using: "composite"
+  steps:
+    - name: Fetch FLAF submodule
+      if: ${{ github.repository }} != 'cms-flaf/FLAF'
+      run: |
+        echo "Repository: ${{ github.repository }}"
+        git config --global url."https://github.com/".insteadOf "git@github.com:"
+        git submodule update --init FLAF
+        cd FLAF
+        git checkout main

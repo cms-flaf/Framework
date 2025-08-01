@@ -24,7 +24,7 @@ float GetBinValue(const T& bin, const std::vector<float>& edges) {
     float max_val = *std::max_element(edges.begin(), edges.end());
     if (std::abs(ibin) >= static_cast<int>(edges.size()))
         return std::copysign(max_val, bin);
-    else if (ibin < 0)
+    else if (ibin <= 0)
         return 0.f;
     else
         return edges.at(ibin);
@@ -38,7 +38,7 @@ ROOT::VecOps::RVec<float> GetBinValue(const ROOT::VecOps::RVec<T>& bins, const s
         int ibin = static_cast<int>(bin);
         if (std::abs(ibin) >= static_cast<int>(edges.size()))
             result.push_back(std::copysign(max_val, bin));
-        else if (ibin < 0)
+        else if (ibin <= 0)
             continue;
         else
             result.push_back(edges.at(ibin));
@@ -76,12 +76,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--period', required=True, type=str)
     parser.add_argument('--inDir', required=True, type=str)
+    parser.add_argument('--inFileName', required=False, type=str, default=None)
     parser.add_argument('--outFile', required=True, type=str)
     parser.add_argument('--histConfig', required=True, type=str)
     parser.add_argument('--uncConfig', required=True, type=str) # currently not needed, maybe in future
     parser.add_argument('--customisations', type=str, default=None)
     parser.add_argument('--treeName', required=False, type=str, default="Events")
     parser.add_argument('--channels', type=str, default=None)
+    parser.add_argument('--vars', type=str, default=None)
     parser.add_argument('--furtherCut', type=str, default=None)
     args = parser.parse_args()
 
@@ -89,7 +91,10 @@ if __name__ == "__main__":
 
     analysis_import = (setup.global_params['analysis_import'])
     analysis = importlib.import_module(f'{analysis_import}')
-    rdf = ROOT.RDataFrame(args.treeName, f'{args.inDir}/*.root')
+    inFiles = f'{args.inDir}/*.root'
+    if args.inFileName:
+        inFiles = f'{args.inDir}/{args.inFileName}'
+    rdf = ROOT.RDataFrame(args.treeName, inFiles)
 
     hist_cfg_dict = {}
     with open(args.histConfig, 'r') as f:
@@ -103,9 +108,12 @@ if __name__ == "__main__":
     key_filter_dict = analysis.createKeyFilterDict(setup.global_params, setup.global_params['era'])
     # print(key_filter_dict)
 
+    vars_to_save = setup.global_params["vars_to_save"]
+    if args.vars:
+        vars_to_save = args.vars.split(',')
     outFile = ROOT.TFile(args.outFile, "RECREATE")
     for key in key_filter_dict.keys():
-        for var in setup.global_params["vars_to_save"]:
+        for var in vars_to_save:
             dir_0, dir_1, dir_2 = key
             key_new = key
             filter_to_apply = key_filter_dict[key]

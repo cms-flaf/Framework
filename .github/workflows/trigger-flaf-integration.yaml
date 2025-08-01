@@ -1,4 +1,4 @@
-name: Trigger the flaf_integration pipeline
+name: Trigger the FLAF integration pipeline
 
 on:
   issue_comment:
@@ -10,9 +10,12 @@ permissions:
   issues: write
 
 jobs:
-  process-trigger-requests:
+  process-trigger-request:
     runs-on: ubuntu-latest
     steps:
+      - name: Install js-yaml
+        run: npm install js-yaml
+
       - uses: actions/checkout@v4
 
       - name: Parse comment

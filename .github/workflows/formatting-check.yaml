@@ -13,7 +13,6 @@ jobs:
   formatting-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
       - uses: cms-flaf/FLAF/.github/actions/checkout-flaf@main
 
       - name: Set up Python

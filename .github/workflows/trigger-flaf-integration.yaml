@@ -21,7 +21,7 @@ jobs:
         id: parse_comment
         uses: actions/github-script@v6
         env:
-          CONFIG_PATH: .github/itegration_cfg.yaml
+          CONFIG_PATH: .github/integration_cfg.yaml
           FLAF_INTEGRATION_TOKEN: ${{ secrets.FLAF_INTEGRATION_TOKEN }}
         with:
           script: |

@@ -92,7 +92,8 @@ jobs:
             variables[`${repo}_version`] = `PR_${prNumber}`;
 
             var all_ok = true;
-            for(const entry of relevantLines) {
+            for(let i = 1; i < relevantLines.length; i++) {
+              var entry = relevantLines[i];
               var parsed = false;
               if(entry.startsWith('- ') || entry.startsWith('* ')) {
                 var parts = entry.substring(2).split('=');

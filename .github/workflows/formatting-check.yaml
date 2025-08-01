@@ -13,7 +13,12 @@ jobs:
   formatting-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      - name: Fetch FLAF submodule
+        if: ${{ github.repository }} != 'cms-flaf/FLAF'
+        run: |
+          git submodule update --init FLAF
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -46,11 +51,27 @@ jobs:
 
       - name: Check YAML formatting
         run: |
-          echo "${{ steps.changed-files.outputs.files }}" | tr ' ' '\n' | grep -E '\.(yaml|yml|yamllint)$' | xargs -r yamllint -s -c .yamllint
+          if [ -f ".yamllint" ]; then
+            yamllint_config=".yamllint"
+          elif [ -f "FLAF/.yamllint" ]; then
+            yamllint_config="FLAF/.yamllint"
+          else
+            echo "No yamllint configuration file found."
+            exit 1
+          fi
+          echo "${{ steps.changed-files.outputs.files }}" | tr ' ' '\n' | grep -E '\.(yaml|yml|yamllint)$' | xargs -r yamllint -s -c ${yamllint_config}
 
       - name: Install clang-format
         run: sudo apt-get update && sudo apt-get install clang-format
 
       - name: Check C++ formatting
         run: |
-          echo "${{ steps.changed-files.outputs.files }}" | tr ' ' '\n' | grep -E '\.(cpp|h|hpp|cc)$' | xargs -r clang-format --dry-run --Werror
+          if [ -f ".clang-format" ]; then
+            clang_format_style=".clang-format"
+          elif [ -f "FLAF/.clang-format" ]; then
+            clang_format_style="FLAF/.clang-format"
+          else
+            echo "No clang-format configuration file found."
+            exit 1
+          fi
+          echo "${{ steps.changed-files.outputs.files }}" | tr ' ' '\n' | grep -E '\.(cpp|h|hpp|cc)$' | xargs -r clang-format --dry-run --Werror --style "file:${clang_format_style}"

@@ -4,8 +4,7 @@ on:
   pull_request:
     types: [ "opened", "synchronize", "reopened", "labeled" ]
     branches: [ "main" ]
-    test: [ ]
-  workflow_dispatch:
+    workflow_call:
 
 permissions:
   contents: read

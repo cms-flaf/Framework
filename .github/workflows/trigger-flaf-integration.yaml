@@ -18,6 +18,7 @@ jobs:
       - name: Fetch FLAF submodule
         if: ${{ github.repository }} != 'cms-flaf/FLAF'
         run: |
+          echo "Repository: ${{ github.repository }}"
           git config --global url."https://github.com/".insteadOf "git@github.com:"
           git submodule update --init FLAF
           cd FLAF

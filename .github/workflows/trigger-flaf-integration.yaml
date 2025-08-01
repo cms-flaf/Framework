@@ -153,7 +153,7 @@ jobs:
             core.setOutput("trigger_pipeline", "true");
 
       - name: Trigger FLAF integration pipeline
-        if: steps.parse_comment.outputs.trigger_pipeline == 'true'
+        if: ${{ steps.parse_comment.outputs.trigger_pipeline == 'true' }}
         id: trigger_flaf_integration_pipeline
         uses: actions/github-script@v6
         env:
@@ -208,7 +208,7 @@ jobs:
             }
 
       - name: Post comment
-        if: steps.trigger_flaf_integration_pipeline.outputs.send_message == 'true'
+        if: ${{ steps.trigger_flaf_integration_pipeline.outputs.send_message == 'true' }}
         id: post_comment
         env:
           FLAF_GITHUB_TOKEN: ${{ secrets.FLAF_GITHUB_TOKEN }}

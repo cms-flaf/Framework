@@ -13,10 +13,9 @@ jobs:
   process-trigger-request:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Install js-yaml
         run: npm install js-yaml
-
-      - uses: actions/checkout@v4
 
       - name: Parse comment
         id: parse_comment

@@ -20,6 +20,8 @@ jobs:
         run: |
           git config --global url."https://github.com/".insteadOf "git@github.com:"
           git submodule update --init FLAF
+          cd FLAF
+          git checkout main
 
       - name: Set up Python
         uses: actions/setup-python@v4

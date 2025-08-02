@@ -149,6 +149,7 @@ jobs:
               }
             }
             variables['WORKFLOW_NAME'] = workflowNameItems.join(' ');
+            variables['github_notify_url'] = `https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/comments`;
 
             core.setOutput("gitlab_url", cfg["gitlab_url"]);
             core.setOutput("gitlab_branch", cfg["gitlab_branch"]);

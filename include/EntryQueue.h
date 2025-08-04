@@ -2,14 +2,13 @@
 
 #pragma once
 
+#include <condition_variable>
 #include <mutex>
 #include <queue>
-#include <condition_variable>
 
 namespace analysis {
 
-template<typename Entry>
-class EntryQueue {
+template <typename Entry> class EntryQueue {
 public:
   using Queue = std::queue<Entry>;
   using Mutex = std::mutex;
@@ -17,17 +16,19 @@ public:
   using CondVar = std::condition_variable;
 
 public:
-  explicit EntryQueue(size_t max_size, size_t max_entries = std::numeric_limits<size_t>::max())
-    : max_size_(max_size), max_entries_(max_entries), n_entries_(0), input_available_(true), output_needed_(true)
-  {
-  }
+  explicit EntryQueue(size_t max_size,
+                      size_t max_entries = std::numeric_limits<size_t>::max())
+      : max_size_(max_size), max_entries_(max_entries), n_entries_(0),
+        input_available_(true), output_needed_(true) {}
 
-  bool Push(const Entry& entry)
-  {
+  bool Push(const Entry &entry) {
     {
       Lock lock(mutex_);
-      cond_var_.wait(lock, [&] { return queue_.size() < max_size_ || n_entries_ >= max_entries_ || !output_needed_; });
-      if(n_entries_ >= max_entries_ || !output_needed_)
+      cond_var_.wait(lock, [&] {
+        return queue_.size() < max_size_ || n_entries_ >= max_entries_ ||
+               !output_needed_;
+      });
+      if (n_entries_ >= max_entries_ || !output_needed_)
         return false;
       queue_.push(entry);
       ++n_entries_;
@@ -36,13 +37,13 @@ public:
     return true;
   }
 
-  bool Pop(Entry& entry)
-  {
-    bool entry_is_valid = false;;
+  bool Pop(Entry &entry) {
+    bool entry_is_valid = false;
+    ;
     {
       Lock lock(mutex_);
       cond_var_.wait(lock, [&] { return queue_.size() || !input_available_; });
-      if(!queue_.empty()) {
+      if (!queue_.empty()) {
         entry = queue_.front();
         entry_is_valid = true;
         queue_.pop();
@@ -52,8 +53,7 @@ public:
     return entry_is_valid;
   }
 
-  void SetInputAvailable(bool value)
-  {
+  void SetInputAvailable(bool value) {
     {
       Lock lock(mutex_);
       input_available_ = value;
@@ -61,8 +61,7 @@ public:
     cond_var_.notify_all();
   }
 
-  void SetOutputNeeded(bool value)
-  {
+  void SetOutputNeeded(bool value) {
     {
       Lock lock(mutex_);
       output_needed_ = value;

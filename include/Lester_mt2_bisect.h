@@ -145,48 +145,52 @@ purposes, an ellipse is "singular" iff coeffLamPow3 (see below) is zero.
 
 namespace Lester {
 
-struct EllipseParams {
-  // Constructor for non-degenerate ellipses:
-  /*
+    struct EllipseParams {
+        // Constructor for non-degenerate ellipses:
+        /*
    * Ellipse is represented algebraically by:
    * c_xx x^2 + 2 c_xy x y + c_yy y^2 + 2 c_x x + 2 c_y y + c = 0.
    */
-  EllipseParams(const double c_xx2, const double c_yy2, const double c_xy2,
-                const double c_x2, const double c_y2, const double c2);
-  EllipseParams() {}
-  void setDet();
-  // Consstructor for degenerate ellipse (i.e. a "dot" at (x0,y0) ).
-  EllipseParams(const double x0, const double y0);
-  double lesterFactor(const EllipseParams &e2) const;
-  bool operator==(const EllipseParams &other) const;
+        EllipseParams(const double c_xx2,
+                      const double c_yy2,
+                      const double c_xy2,
+                      const double c_x2,
+                      const double c_y2,
+                      const double c2);
+        EllipseParams() {}
+        void setDet();
+        // Consstructor for degenerate ellipse (i.e. a "dot" at (x0,y0) ).
+        EllipseParams(const double x0, const double y0);
+        double lesterFactor(const EllipseParams &e2) const;
+        bool operator==(const EllipseParams &other) const;
 
-public:
-  // Data
-  double c_xx;
-  double c_yy;
-  double c_xy; // note factor of 2 above
-  double c_x;  // note factor of 2 above
-  double c_y;  // note factor of 2 above
-  double c;
-  double det; // The determinant of the 3x3 conic matrix
-};
+      public:
+        // Data
+        double c_xx;
+        double c_yy;
+        double c_xy;  // note factor of 2 above
+        double c_x;   // note factor of 2 above
+        double c_y;   // note factor of 2 above
+        double c;
+        double det;  // The determinant of the 3x3 conic matrix
+    };
 
-// This is the interface: users should call this function:
-bool ellipsesAreDisjoint(const EllipseParams &e1, const EllipseParams &e2);
+    // This is the interface: users should call this function:
+    bool ellipsesAreDisjoint(const EllipseParams &e1, const EllipseParams &e2);
 
-// This is an implementation thing: users should not call it:
-bool __private_ellipsesAreDisjoint(const double coeffLamPow3,
-                                   const double coeffLamPow2,
-                                   const double coeffLamPow1,
-                                   const double coeffLamPow0);
+    // This is an implementation thing: users should not call it:
+    bool __private_ellipsesAreDisjoint(const double coeffLamPow3,
+                                       const double coeffLamPow2,
+                                       const double coeffLamPow1,
+                                       const double coeffLamPow0);
 
-bool ellipsesAreDisjoint(const EllipseParams &e1, const EllipseParams &e2);
-bool __private_ellipsesAreDisjoint(const double coeffLamPow3,
-                                   const double coeffLamPow2,
-                                   const double coeffLamPow1,
-                                   const double coeffLamPow0);
+    bool ellipsesAreDisjoint(const EllipseParams &e1, const EllipseParams &e2);
+    bool __private_ellipsesAreDisjoint(const double coeffLamPow3,
+                                       const double coeffLamPow2,
+                                       const double coeffLamPow1,
+                                       const double coeffLamPow0);
 
-} // namespace Lester
+}  // namespace Lester
 
 #endif
 
@@ -194,72 +198,85 @@ bool __private_ellipsesAreDisjoint(const double coeffLamPow3,
 #define ASYMM_MT2_BISECT_H
 
 class asymm_mt2_lester_bisect {
-public:
-  static const int MT2_ERROR = -1;
+  public:
+    static const int MT2_ERROR = -1;
 
-  static double
-  get_mT2( // returns asymmetric mT2 (which is >=0), or returns a negative
-           // number (such as MT2_ERROR) in the case of an error.
-      const double mVis1, const double pxVis1, const double pyVis1,
-      const double mVis2, const double pxVis2, const double pyVis2,
-      const double pxMiss, const double pyMiss, const double mInvis1,
-      const double mInvis2,
-      const double desiredPrecisionOnMT2 =
-          0, // This must be non-negative.  If set to zero (default) MT2 will be
-             // calculated to the highest precision available on the machine (or
-             // as close to that as the algorithm permits).  If set to a
-             // positive value, MT2 (note that is MT2, not its square) will be
-             // calculated to within +- desiredPrecisionOnMT2. Note that by
-             // requesting precision of +- 0.01 GeV on an MT2 value of 100 GeV
-             // can result in speedups of a factor of ...
-      const bool useDeciSectionsInitially =
-          true // If true, interval is cut at the 10% point until first
-               // acceptance, which gives factor 3 increase in speed calculating
-               // kinematic min, but 3% slowdown for events in the bulk.  Is on
-               // (true) by default, but can be turned off by setting to false.
-  );
-  static void disableCopyrightMessage(const bool printIfFirst = false);
+    static double get_mT2(  // returns asymmetric mT2 (which is >=0), or returns a negative
+                            // number (such as MT2_ERROR) in the case of an error.
+        const double mVis1,
+        const double pxVis1,
+        const double pyVis1,
+        const double mVis2,
+        const double pxVis2,
+        const double pyVis2,
+        const double pxMiss,
+        const double pyMiss,
+        const double mInvis1,
+        const double mInvis2,
+        const double desiredPrecisionOnMT2 = 0,     // This must be non-negative.  If set to zero (default) MT2 will be
+                                                    // calculated to the highest precision available on the machine (or
+                                                    // as close to that as the algorithm permits).  If set to a
+                                                    // positive value, MT2 (note that is MT2, not its square) will be
+                                                    // calculated to within +- desiredPrecisionOnMT2. Note that by
+                                                    // requesting precision of +- 0.01 GeV on an MT2 value of 100 GeV
+                                                    // can result in speedups of a factor of ...
+        const bool useDeciSectionsInitially = true  // If true, interval is cut at the 10% point until first
+                                                    // acceptance, which gives factor 3 increase in speed calculating
+                                                    // kinematic min, but 3% slowdown for events in the bulk.  Is on
+                                                    // (true) by default, but can be turned off by setting to false.
+    );
+    static void disableCopyrightMessage(const bool printIfFirst = false);
 
-  static double
-  get_mT2_Sq( // returns square of asymmetric mT2 (which is >=0), or returns a
-              // negative number (such as MT2_ERROR) in the case of an error.
-      const double mVis1, const double pxVis1, const double pyVis1,
-      const double mVis2, const double pxVis2, const double pyVis2,
-      const double pxMiss, const double pyMiss, const double mInvis1,
-      const double mInvis2,
-      const double desiredPrecisionOnMT2 =
-          0, // This must be non-negative.  If set to zero (default) MT2 will be
-             // calculated to the highest precision available on the machine (or
-             // as close to that as the algorithm permits).  If set to a
-             // positive value, MT2 (note that is MT2, not its square) will be
-             // calculated to within +- desiredPrecisionOnMT2. Note that by
-             // requesting precision of +- 0.01 GeV on an MT2 value of 100 GeV
-             // can resJult in speedups of a factor of ..
-      const bool useDeciSectionsInitially =
-          true // If true, interval is cut at the 10% point until first
-               // acceptance, which gives factor 3 increase in speed calculating
-               // kinematic min, but 3% slowdown for events in the bulk.  Is on
-               // (true) by default, but can be turned off by setting to false.
-  );
+    static double get_mT2_Sq(  // returns square of asymmetric mT2 (which is >=0), or returns a
+                               // negative number (such as MT2_ERROR) in the case of an error.
+        const double mVis1,
+        const double pxVis1,
+        const double pyVis1,
+        const double mVis2,
+        const double pxVis2,
+        const double pyVis2,
+        const double pxMiss,
+        const double pyMiss,
+        const double mInvis1,
+        const double mInvis2,
+        const double desiredPrecisionOnMT2 = 0,     // This must be non-negative.  If set to zero (default) MT2 will be
+                                                    // calculated to the highest precision available on the machine (or
+                                                    // as close to that as the algorithm permits).  If set to a
+                                                    // positive value, MT2 (note that is MT2, not its square) will be
+                                                    // calculated to within +- desiredPrecisionOnMT2. Note that by
+                                                    // requesting precision of +- 0.01 GeV on an MT2 value of 100 GeV
+                                                    // can resJult in speedups of a factor of ..
+        const bool useDeciSectionsInitially = true  // If true, interval is cut at the 10% point until first
+                                                    // acceptance, which gives factor 3 increase in speed calculating
+                                                    // kinematic min, but 3% slowdown for events in the bulk.  Is on
+                                                    // (true) by default, but can be turned off by setting to false.
+    );
 
-private:
-  static double lestermax(const double x, const double y);
-  static const Lester::EllipseParams
-  helper(const double mSq, // The test parent-mass value (squared)
-         const double mtSq, const double tx,
-         const double ty,   // The visible particle transverse momentum
-         const double mqSq, // The mass of the invisible particle
-         const double pxmiss, const double pymiss);
+  private:
+    static double lestermax(const double x, const double y);
+    static const Lester::EllipseParams helper(const double mSq,  // The test parent-mass value (squared)
+                                              const double mtSq,
+                                              const double tx,
+                                              const double ty,    // The visible particle transverse momentum
+                                              const double mqSq,  // The mass of the invisible particle
+                                              const double pxmiss,
+                                              const double pymiss);
 
-  static void myversion();
+    static void myversion();
 
-  static double MT(double px1, double px2, double py1, double py2, double m1,
-                   double m2);
+    static double MT(double px1, double px2, double py1, double py2, double m1, double m2);
 
-  static std::pair<double, double>
-  ben_findsols(double MT2, double px, double py, double visM, double Ma,
-               double pxb, double pyb, double metx, double mety, double visMb,
-               double Mb);
+    static std::pair<double, double> ben_findsols(double MT2,
+                                                  double px,
+                                                  double py,
+                                                  double visM,
+                                                  double Ma,
+                                                  double pxb,
+                                                  double pyb,
+                                                  double metx,
+                                                  double mety,
+                                                  double visMb,
+                                                  double Mb);
 };
 
 #endif

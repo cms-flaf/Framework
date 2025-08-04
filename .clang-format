@@ -11,7 +11,7 @@ PenaltyExcessCharacter: 100
 AlignAfterOpenBracket: Align
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
-BreakTemplateDeclarations: Yes
+AlwaysBreakTemplateDeclarations: Yes
 ReflowComments: false
 BinPackArguments: false
 BinPackParameters: false

@@ -148,8 +148,7 @@ namespace Lester {
             const double thing2 =
                 -27.0 * c * c + 18.0 * c * a * b + a * a * b * b - 4.0 * a * a * a * c - 4.0 * b * b * b;
             std::cout << (thing1 > 0) << " && " << (thing2 > 0) << " && [[ " << (a >= 0) << " "
-                      << (3.0 * a * c + b * a * a - 4.0 * b * b < 0) << " ] or "
-                      << "[ " << (a < 0) << " ] =("
+                      << (3.0 * a * c + b * a * a - 4.0 * b * b < 0) << " ] or [ " << (a < 0) << " ] = ("
                       << ((a >= 0 /*&& thing1 > 0*/ && 3.0 * a * c + b * a * a - 4.0 * b * b < 0 /*&& thing2 > 0*/) ||
                           (a < 0 /*&& thing1 > 0*/ /*&& thing2 > 0*/))
                       << ")] "

@@ -150,10 +150,10 @@ namespace Lester {
             std::cout << (thing1 > 0) << " && " << (thing2 > 0) << " && [[ " << (a >= 0) << " "
                       << (3.0 * a * c + b * a * a - 4.0 * b * b < 0) << " ] or [ " << (a < 0) << " ] = ("
                       << ((a >= 0 /*&& thing1 > 0*/ && 3.0 * a * c + b * a * a - 4.0 * b * b < 0 /*&& thing2 > 0*/) ||
-                            (a < 0 /*&& thing1 > 0*/ /*&& thing2 > 0*/))
+                          (a < 0 /*&& thing1 > 0*/ /*&& thing2 > 0*/))
                       << ")] "
                       << (((a >= 0 && thing1 > 0 && 3.0 * a * c + b * a * a - 4.0 * b * b < 0 && thing2 > 0) ||
-                            (a < 0 && thing1 > 0 && thing2 > 0)))
+                           (a < 0 && thing1 > 0 && thing2 > 0)))
                       << std::endl;
         }
 #endif

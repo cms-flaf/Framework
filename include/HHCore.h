@@ -189,7 +189,7 @@ std::ostream &operator<<(std::ostream &os, const HTTCand<N> &cand) {
     for (size_t n = 0; n < HTTCand<N>::n_legs; ++n) {
         if (cand.leg_type[n] == Leg::none)
             continue;
-        os << "leg" << n + 1 << ":"
+        os << "leg" << n + 1 << " : "
            << " type=" << static_cast<int>(cand.leg_type[n]) << " index=" << cand.leg_index[n]
            << " (pt,eta,phi,m)=" << cand.leg_p4[n] << " charge=" << cand.leg_charge[n]
            << " rawIso=" << cand.leg_rawIso[n] << "\n";

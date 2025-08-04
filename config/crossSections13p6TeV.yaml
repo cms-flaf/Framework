@@ -735,10 +735,6 @@ WWtoLNu2Q-1Jets:
   reference: XSDB WWtoLNu2Q-1Jets-4FS_TuneCP5_13p6TeV modifiedOn 2024-04-03 20:06:12
   unc: 0.1795
 
-WZZ:
-  crossSec: 0.06206
-  reference: XSDB WZZ_TuneCP5_13p6TeV_amcatnlo-pythia8 modifiedOn 2023-05-26 21:19:28
-  unc: 3.689e-05
 
 ZH_Hbb_Zll:
   crossSec: 9.439e-1 * 0.5824 * 3 * 0.033658

@@ -490,11 +490,11 @@ QCD_PT_3200:
 ST_s_channel_antitop_LNu:
   crossSec: 4.534 * (1-0.6741)
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef#Single_top_quark_t_channel_cross top ratio taken from XSDB, BR taken from W->LNu pdg (t->Wb 100%)
-  unc: +0.059 -0.043 (scale) # These are the combined values, as of 9May2025 they are still not available
+  unc: +0.059 -0.043 (scale)  # These are the combined values, as of 9May2025 they are still not available
 ST_s_channel_top_LNu:
   crossSec: 7.244 * (1-0.6741)
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef#Single_top_quark_t_channel_cross top ratio taken from XSDB, BR taken from W->LNu pdg (t->Wb 100%)
-  unc: +0.059 - 0.043 (scale) # These are the combined values, as of 9May2025 they are still not available
+  unc: +0.059 - 0.043 (scale)  # These are the combined values, as of 9May2025 they are still not available
 ST_t_channel_antitop:
   crossSec: '87.2'
   reference: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SingleTopNNLORef
@@ -600,12 +600,12 @@ VBFHToWWTo2L2Nu_M125:
   unc: +0.5% -0.3% (QCD Scale) +-2.1% (PDF alpha s) +-2.1% (PDF) +-0.5 (alpha s)
 
 WminusH_Hto2Mu_WtoAll:
-  crossSec: 0.5677 * (0.0002176) # 1.457 (total)
+  crossSec: 0.5677 * (0.0002176)  # 1.457 (total)
   reference: https://indico.cern.ch/event/1119741/contributions/4715908/attachments/2383849/4073592/YR4_13p6_VH_update.pdf
   unc: +0.4% -0.7% (QCD scale) ±1.8% (PDF+alphas) ±1.6 (PDF) ±0.9 (alpha s) ; +1.23% -1.2% (theory) +0.97% -0.99% (mq) +0.59% -0.64% (alphas)
 
 WplusH_Hto2Mu_WtoAll:
-  crossSec: 0.8889 * (0.0002176) # 1.457 (total)
+  crossSec: 0.8889 * (0.0002176)  # 1.457 (total)
   reference: https://indico.cern.ch/event/1119741/contributions/4715908/attachments/2383849/4073592/YR4_13p6_VH_update.pdf
   unc: +0.4% -0.7% (QCD scale) ±1.8% (PDF+alphas) ±1.6 (PDF) ±0.9 (alpha s) ; +1.23% -1.2% (theory) +0.97% -0.99% (mq) +0.59% -0.64% (alphas)
 

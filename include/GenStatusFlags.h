@@ -137,13 +137,13 @@ public:
 
   // this particle is the last copy of the particle in the chain with the same
   // pdg id (and therefore is more likely, but not guaranteed, to carry the
-  //final physical momentum)
+  // final physical momentum)
   bool isLastCopy() const { return flags[kIsLastCopy]; }
   void setIsLastCopy(bool b) { flags[kIsLastCopy] = b; }
 
   // this particle is the last copy of the particle in the chain with the same
   // pdg id before QED or QCD FSR (and therefore is more likely, but not
-  //guaranteed, to carry the momentum after ISR)
+  // guaranteed, to carry the momentum after ISR)
   bool isLastCopyBeforeFSR() const { return flags[kIsLastCopyBeforeFSR]; }
   void setIsLastCopyBeforeFSR(bool b) { flags[kIsLastCopyBeforeFSR] = b; }
 

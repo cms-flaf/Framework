@@ -1,22 +1,22 @@
 GLOBAL:
   era: Run3_2022
-  luminosity: 7980.4 # pb-1
+  luminosity: 7980.4  # pb-1
   fs_nanoAOD:
   - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/skim_2025_v1/Run3_2022'
   # - 'T2_CH_CERN:/store/group/phys_higgs/HLepRare/skim_2024_v2/Run3_2022'
   nano_version: v14
-  crossSectionsFile : FLAF/config/crossSections13p6TeV.yaml
+  crossSectionsFile: FLAF/config/crossSections13p6TeV.yaml
   use_stitching: false
   met_type: PFMET
-  MET_flags: #https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#Run_3_2022_and_2023_data_and_MC
-    - Flag_goodVertices
-    - Flag_globalSuperTightHalo2016Filter
-    - Flag_EcalDeadCellTriggerPrimitiveFilter
-    - Flag_BadPFMuonFilter
-    - Flag_BadPFMuonDzFilter
-    - Flag_hfNoisyHitsFilter
-    - Flag_eeBadScFilter
-    - Flag_ecalBadCalibFilter
+  MET_flags:  # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#Run_3_2022_and_2023_data_and_MC
+  - Flag_goodVertices
+  - Flag_globalSuperTightHalo2016Filter
+  - Flag_EcalDeadCellTriggerPrimitiveFilter
+  - Flag_BadPFMuonFilter
+  - Flag_BadPFMuonDzFilter
+  - Flag_hfNoisyHitsFilter
+  - Flag_eeBadScFilter
+  - Flag_ecalBadCalibFilter
   lumiFile: /eos/user/c/cmsdqm/www/CAF/certification/Collisions22/Cert_Collisions2022_355100_362760_Golden.json
 
 ############## Data ##############
@@ -214,20 +214,19 @@ DYto2L_M_10to50_amcatnloFXFX:
   miniAOD: /DYto2L-2Jets_MLL-10to50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
   sampleType: DY
   isReference: True
-  crossSection: DYto2L_M_10to50_amcatnloFXFX
 DYto2L_M_50_amcatnloFXFX:
-  crossSection: DYto2L_M_50_amcatnloFXFX
+  # crossSection: DYto2L_M_50_amcatnloFXFX
+  crossSection: DY_NNLO_QCD+NLO_EW
   generator: amcatnloFXFX
   miniAOD: /DYto2L-2Jets_MLL-50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
   sampleType: DY
   isReference: True
-  crossSection: DY_NNLO_QCD+NLO_EW
 DYto2L_M_50_amcatnloFXFX_ext1:
-  crossSection: DYto2L_M_50_amcatnloFXFX
+  # crossSection: DYto2L_M_50_amcatnloFXFX
+  crossSection: DY_NNLO_QCD+NLO_EW
   generator: amcatnloFXFX
   miniAOD: /DYto2L-2Jets_MLL-50_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5_ext1-v1/MINIAODSIM
   sampleType: DY
-  crossSection: DY_NNLO_QCD+NLO_EW
 
 ############## DYto2L_M-50_nJ ##############
 DYto2L_M_50_0J_amcatnloFXFX:
@@ -235,19 +234,16 @@ DYto2L_M_50_0J_amcatnloFXFX:
   generator: amcatnloFXFX
   miniAOD: /DYto2L-2Jets_MLL-50_0J_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
   sampleType: DY
-  crossSection: DYto2L_M_50_0J_amcatnloFXFX
 DYto2L_M_50_1J_amcatnloFXFX:
   crossSection: DYto2L_M_50_1J_amcatnloFXFX
   generator: amcatnloFXFX
   miniAOD: /DYto2L-2Jets_MLL-50_1J_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
   sampleType: DY
-  crossSection: DYto2L_M_50_1J_amcatnloFXFX
 DYto2L_M_50_2J_amcatnloFXFX:
   crossSection: DYto2L_M_50_2J_amcatnloFXFX
   generator: amcatnloFXFX
   miniAOD: /DYto2L-2Jets_MLL-50_2J_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
   sampleType: DY
-  crossSection: DYto2L_M_50_2J_amcatnloFXFX
 
 ############## DYto2L_M_*_PTLL ##############
 DYto2L_M_50_PTLL_40to100_1J_amcatnloFXFX:
@@ -859,11 +855,6 @@ VBFHtoTauTau_M125:
   generator: powheg
   miniAOD: /VBFHtoTauTau_M125_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
   sampleType: H
-VBFHtoWWto2L2Nu_M125:
-  crossSection: VBFHtoWWto2L2Nu_M125
-  generator: powheg
-  miniAOD: /VBFHto2Wto2L2Nu_M-125_TuneCP5_13p6TeV_powheg-jhugen752-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
-  sampleType: H
 
 ############## V ##############
 WtoMuNu_M_200:
@@ -998,17 +989,6 @@ WWto4Q_powheg_ext1:
   miniAOD: /WWto4Q_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5_ext1-v2/MINIAODSIM
   sampleType: VV
 
-WWtoLNu2Q_powheg:
-  crossSection: WWtoLNu2Q-1Jets
-  generator: powheg
-  miniAOD: /WWtoLNu2Q-1Jets-4FS_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
-  sampleType: VV
-
-WWto4Q_powheg:
-  crossSection: WWto4Q-1Jets
-  generator: powheg
-  miniAOD: /WWto4Q-1Jets-4FS_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
-  sampleType: VV
 
 WZ:
   crossSection: WZ
@@ -1044,23 +1024,10 @@ WZtoLNu2Q_powheg_ext1:
   miniAOD: /WZtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5_ext1-v2/MINIAODSIM
   sampleType: VV
 
-
-WZto3LNu_powheg:
-  crossSection: WZto3LNu_powheg
-  generator: powheg
-  miniAOD: /WZto3LNu-1Jets-4FS_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
-  sampleType: VV
-
 WZto3LNu_powheg:
   crossSection: WZtoL3Nu_powheg
   generator: powheg
   miniAOD: /WZtoL3Nu-1Jets-4FS_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
-  sampleType: VV
-
-WZtoLNu2Q_powheg:
-  crossSection: WZtoLNu2Q_powheg
-  generator: powheg
-  miniAOD: /WZtoLNu2Q-1Jets-4FS_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
   sampleType: VV
 
 ZZ:
@@ -1111,12 +1078,6 @@ ZZto2Nu2Q_powheg_ext1:
   crossSection: ZZto2Nu2Q_powheg
   generator: powheg
   miniAOD: /ZZto2Nu2Q_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5_ext1-v2/MINIAODSIM
-  sampleType: VV
-
-ZZto2L2Q_powheg:
-  crossSection: ZZto2L2Q_powheg
-  generator: powheg
-  miniAOD: /ZZto2L2Q-1Jets_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22MiniAODv4-130X_mcRun3_2022_realistic_v5-v2/MINIAODSIM
   sampleType: VV
 
 ############## VVV ##############

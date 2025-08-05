@@ -69,6 +69,7 @@ class Task(law.Task):
     @property
     def fs_nanoAOD(self):
         return self.setup.get_fs("nanoAOD")
+        return self.setup.get_fs("nanoAOD")
 
     @property
     def fs_anaCache(self):
@@ -86,17 +87,21 @@ class Task(law.Task):
     @property
     def fs_anaCacheTuple(self):
         return self.setup.get_fs("anaCacheTuple")
+        return self.setup.get_fs("anaCacheTuple")
 
     @property
     def fs_nnCacheTuple(self):
+        return self.setup.get_fs("nnCacheTuple")
         return self.setup.get_fs("nnCacheTuple")
 
     @property
     def fs_histograms(self):
         return self.setup.get_fs("histograms")
+        return self.setup.get_fs("histograms")
 
     @property
     def fs_plots(self):
+        return self.setup.get_fs("plots")
         return self.setup.get_fs("plots")
 
     def ana_path(self):

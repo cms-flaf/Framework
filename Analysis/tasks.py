@@ -47,11 +47,8 @@ import importlib
 unc_cfg_dict = None
 
 
-
-
 def load_unc_config(unc_cfg):
     global unc_cfg_dict
-    with open(unc_cfg, "r") as f:
     with open(unc_cfg, "r") as f:
         unc_cfg_dict = yaml.safe_load(f)
     return unc_cfg_dict
@@ -79,7 +76,6 @@ def getYear(period):
     return year_dict[period]
 
 
-
 def parseVarEntry(var_entry):
     if type(var_entry) == str:
         var_name = var_entry
@@ -91,10 +87,6 @@ def parseVarEntry(var_entry):
         need_cache = var_entry.get("need_cache", False)
     return var_name, need_cache
 
-
-def GetSamples(
-    samples, backgrounds, signals=["GluGluToRadion", "GluGluToBulkGraviton"]
-):
 
 def GetSamples(
     samples, backgrounds, signals=["GluGluToRadion", "GluGluToBulkGraviton"]

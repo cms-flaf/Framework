@@ -24,7 +24,25 @@ using RVecB = ROOT::VecOps::RVec<bool>;
 using RVecB = ROOT::VecOps::RVec<bool>;
 
 namespace analysis {
-  typedef std::variant<int,float,bool, unsigned long,unsigned long long,long,unsigned int, unsigned char, char, short, RVecI, RVecF,RVecUC,RVecC, RVecS, RVecUL, RVecULL, RVecB> MultiType;
+    typedef std::variant<int,
+                         float,
+                         bool,
+                         unsigned long,
+                         unsigned long long,
+                         long,
+                         unsigned int,
+                         unsigned char,
+                         char,
+                         short,
+                         RVecI,
+                         RVecF,
+                         RVecUC,
+                         RVecC,
+                         RVecS,
+                         RVecUL,
+                         RVecULL,
+                         RVecB>
+        MultiType;
 
     struct Entry {
         std::vector<MultiType> var_values;

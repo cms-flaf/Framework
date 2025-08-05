@@ -34,7 +34,26 @@ using RVecULL = ROOT::VecOps::RVec<unsigned long long>;
 using RVecSh = ROOT::VecOps::RVec<short>;
 
 namespace analysis {
-typedef std::variant<int,float,bool,short, unsigned long,unsigned long long,long long, long,unsigned int, RVecI, RVecF,RVecUC,RVecUL, RVecULL, RVecSh, RVecB, double, unsigned char, char> MultiType; // Removed kin_fit::FitResults from the variant
+    typedef std::variant<int,
+                         float,
+                         bool,
+                         short,
+                         unsigned long,
+                         unsigned long long,
+                         long long,
+                         long,
+                         unsigned int,
+                         RVecI,
+                         RVecF,
+                         RVecUC,
+                         RVecUL,
+                         RVecULL,
+                         RVecSh,
+                         RVecB,
+                         double,
+                         unsigned char,
+                         char>
+        MultiType;  // Removed kin_fit::FitResults from the variant
 
     struct Entry {
         std::vector<MultiType> var_values;

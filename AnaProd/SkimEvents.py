@@ -7,15 +7,11 @@ ROOT.gROOT.SetBatch(True)
 ROOT.EnableThreadSafety()
 
 
-
-
-
 if __name__ == "__main__":
     sys.path.append(os.environ["ANALYSIS_PATH"])
 
 import FLAF.Common.Utilities as Utilities
 from FLAF.RunKit.run_tools import ps_call
-
 
 
 def createVoidTree(file_name, tree_name):
@@ -27,6 +23,7 @@ def createVoidTree(file_name, tree_name):
 def create_file(file_name, times=None):
     with open(file_name, "w"):
         os.utime(file_name, times)
+
 
 def ListToVector(list, type="string"):
     vec = ROOT.std.vector(type)()

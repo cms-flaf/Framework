@@ -36,6 +36,7 @@ namespace analysis {
     typedef std::variant<int,
                          float,
                          bool,
+                         short,
                          unsigned long,
                          unsigned long long,
                          long long,
@@ -47,8 +48,10 @@ namespace analysis {
                          RVecUL,
                          RVecULL,
                          RVecSh,
+                         RVecB,
                          double,
-                         unsigned char>
+                         unsigned char,
+                         char>
         MultiType;  // Removed kin_fit::FitResults from the variant
 
     struct Entry {

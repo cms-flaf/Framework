@@ -271,6 +271,22 @@ def load_module(module_path):
     return module
 
 
+def getCustomisationSplit(customisations):
+    customisation_dict = {}
+    if customisations is None or len(customisations) == 0:
+        return {}
+    if type(customisations) == str:
+        customisations = customisations.split(";")
+    if type(customisations) != list:
+        raise RuntimeError(f"Invalid type of customisations: {type(customisations)}")
+    for customisation in customisations:
+        substrings = customisation.split("=")
+        if len(substrings) != 2:
+            raise RuntimeError("len of substring is not 2!")
+        customisation_dict[substrings[0]] = substrings[1]
+    return customisation_dict
+
+
 # generic function allowing to choose CRC type
 # now chosen: CRC-16-CCITT (TRUE)
 # needed temporarly until fastcrc is compatible with cmsEnv def or anatuple producer will be fully independent on cmsEnv.

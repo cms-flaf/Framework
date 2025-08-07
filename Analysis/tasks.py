@@ -103,6 +103,428 @@ def GetSamples(
     return samples_to_consider
 
 
+class HistTupleProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
+    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 2)
+
+    def workflow_requires(self):
+        merge_organization_complete = AnaTupleFileListTask.req(
+            self, branches=()
+        ).complete()
+        if not merge_organization_complete:
+            req_dict = {
+                "AnaTupleFileListTask": AnaTupleFileListTask.req(
+                    self,
+                    branches=(),
+                    max_runtime=AnaTupleFileListTask.max_runtime._default,
+                    n_cpus=AnaTupleFileListTask.n_cpus._default,
+                ),
+                "AnaTupleMergeTask": AnaTupleMergeTask.req(
+                    self,
+                    branches=(),
+                    max_runtime=AnaTupleMergeTask.max_runtime._default,
+                    n_cpus=AnaTupleMergeTask.n_cpus._default,
+                ),
+            }
+            # Get all the producers to require for this dummy branch
+            producer_set = set()
+            var_produced_by = self.setup.var_producer_map
+            for var_name in self.global_params["vars_to_plot"]:
+                need_cache = True if var_name in var_produced_by else False
+                producer_to_run = (
+                    var_produced_by[var_name] if var_name in var_produced_by else None
+                )
+                producer_set.add(producer_to_run)
+            req_dict["AnalysisCacheTask"] = [
+                AnalysisCacheTask.req(
+                    self,
+                    branches=(),
+                    customisations=self.customisations,
+                    producer_to_run=producer_name,
+                )
+                for producer_name in list(producer_set)
+                if producer_name is not None
+            ]
+            return req_dict
+
+        branch_set = set()
+        branch_set_cache = set()
+        producer_set = set()
+        for idx, (
+            sample_name,
+            br,
+            need_cache_global,
+            producer_list,
+            input_index,
+        ) in self.branch_map.items():
+            branch_set.add(br)
+            if need_cache_global:
+                branch_set_cache.add(br)
+                for producer_name in (p for p in producer_list if p is not None):
+                    producer_set.add(producer_name)
+        reqs = {}
+        # Idk if this is still needed, but in doubt I leave it here
+        isbbtt = "HH_bbtautau" in self.global_params["analysis_config_area"].split("/")
+
+        if len(branch_set) > 0:
+            reqs["anaTuple"] = AnaTupleMergeTask.req(
+                self,
+                branches=tuple(branch_set),
+                customisations=self.customisations,
+                max_runtime=AnaTupleMergeTask.max_runtime._default,
+                n_cpus=AnaTupleMergeTask.n_cpus._default,
+            )
+        if len(branch_set_cache) > 0:
+            if isbbtt:
+                reqs["anaCacheTuple"] = AnaCacheTupleTask.req(
+                    self,
+                    branches=tuple(branch_set_cache),
+                    customisations=self.customisations,
+                )
+            else:
+                reqs["analysisCache"] = []
+                for producer_name in (p for p in producer_set if p is not None):
+                    reqs["analysisCache"].append(
+                        AnalysisCacheTask.req(
+                            self,
+                            branches=tuple(branch_set_cache),
+                            customisations=self.customisations,
+                            producer_to_run=producer_name,
+                        )
+                    )
+        return reqs
+
+    def requires(self):
+        sample_name, prod_br, need_cache_global, producer_list, input_index = (
+            self.branch_data
+        )
+        deps = []
+
+        isbbtt = "HH_bbtautau" in self.global_params["analysis_config_area"].split("/")
+
+        deps.append(
+            AnaTupleMergeTask.req(
+                self,
+                max_runtime=AnaTupleMergeTask.max_runtime._default,
+                branch=prod_br,
+                branches=(prod_br,),
+                customisations=self.customisations,
+            )
+        )
+        if need_cache_global:
+            if isbbtt:
+                deps.append(
+                    AnaCacheTupleTask.req(
+                        self,
+                        max_runtime=AnaCacheTupleTask.max_runtime._default,
+                        branch=prod_br,
+                        branches=(prod_br,),
+                        customisations=self.customisations,
+                    )
+                )
+            else:
+                for producer_name in (p for p in producer_list if p is not None):
+                    deps.append(
+                        AnalysisCacheTask.req(
+                            self,
+                            max_runtime=AnalysisCacheTask.max_runtime._default,
+                            branch=prod_br,
+                            branches=(prod_br,),
+                            customisations=self.customisations,
+                            producer_to_run=producer_name,
+                        )
+                    )
+        return deps
+
+    def create_branch_map(self):
+        merge_organization_complete = AnaTupleFileListTask.req(
+            self, branches=()
+        ).complete()
+        if not merge_organization_complete:
+            self.cache_branch_map = False
+            if not hasattr(self, "_branches_backup"):
+                self._branches_backup = copy.deepcopy(self.branches)
+            return {0: ()}
+        self.cache_branch_map = True
+        if hasattr(self, "_branches_backup"):
+            self.branches = self._branches_backup
+
+        # map indicating which variable needs which cache producer
+        var_produced_by = self.setup.var_producer_map
+
+        n = 0
+        branches = {}
+        anaProd_branch_map = AnaTupleMergeTask.req(
+            self, branch=-1, branches=()
+        ).create_branch_map()
+        samples_to_consider = GetSamples(
+            self.samples, self.setup.backgrounds, self.global_params["signal_types"]
+        )
+        # var_list = []
+        need_cache_list = []
+        need_cache_global = False
+        producer_list = []
+
+        for var_name in self.global_params[
+            "vars_to_save"
+        ]:  # this will be different than vars to plot
+            need_cache = True if var_name in var_produced_by else False
+            producer_to_run = var_produced_by.get(var_name, None)
+            need_cache_list.append(need_cache)
+            producer_list.append(producer_to_run)
+        for prod_br, (
+            sample_name,
+            sample_type,
+            input_file_list,
+            output_file_list,
+        ) in anaProd_branch_map.items():
+            if sample_name not in samples_to_consider:
+                continue
+            for input_index in range(len(output_file_list)):
+                need_cache_global = any(
+                    need_cache_list
+                )  # If at least one variable needs cache, then we need to run the cache producer
+                branches[n] = (
+                    sample_name,
+                    prod_br,
+                    need_cache_global,
+                    producer_list,
+                    input_index,
+                )
+                n += 1
+        return branches
+
+    def output(self):
+        if len(self.branch_data) == 0:
+            return self.local_target("dummy.txt")
+        sample_name, prod_br, need_cache_global, producer_list, input_index = (
+            self.branch_data
+        )
+        input = self.input()[0][input_index]
+        outFileName = os.path.basename(input.path)
+        output_path = os.path.join(
+            "histTuples", self.version, self.period, sample_name, outFileName
+        )
+        return self.remote_target(output_path, fs=self.fs_HistTuple)
+
+    def run(self):
+        sample_name, prod_br, need_cache_global, producer_list, input_index = (
+            self.branch_data
+        )
+        input_file = self.input()[0][input_index]
+        customisation_dict = getCustomisationSplit(self.customisations)
+        channels = (
+            customisation_dict["channels"]
+            if "channels" in customisation_dict.keys()
+            else self.global_params["channelSelection"]
+        )
+        # Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
+        if type(channels) == list:
+            channels = ",".join(channels)
+
+        print(f"input file is {input_file.path}")
+        histTupleDef = os.path.join(self.ana_path(), self.global_params["histTupleDef"])
+        unc_config = os.path.join(
+            self.ana_path(), "config", self.period, f"weights.yaml"
+        )
+        HistTupleProducer = os.path.join(
+            self.ana_path(), "FLAF", "Analysis", "HistTupleProducer.py"
+        )
+        outFile = self.output().path
+        print(f"output file is {outFile}")
+        compute_unc_histograms = (
+            customisation_dict["compute_unc_histograms"] == "True"
+            if "compute_unc_histograms" in customisation_dict.keys()
+            else self.global_params.get("compute_unc_histograms", False)
+        )
+        job_home, remove_job_home = self.law_job_home()
+
+        print(f"producer list is {producer_list}")
+        output = self.output()
+        # for  producer_name in producer_list:
+        #     print(f"producer name is {producer_name}")
+        with input_file.localize("r") as local_input:
+            tmpFile = os.path.join(
+                job_home, f"HistTupleProducerTask_{input_index}.root"
+            )
+            print(f"tmpfile is {tmpFile}")
+            HistTupleProducer_cmd = [
+                "python3",
+                HistTupleProducer,
+                "--inFile",
+                local_input.path,
+                "--outFile",
+                tmpFile,
+                "--dataset",
+                sample_name,
+                "--histTupleDef",
+                histTupleDef,
+                "--period",
+                self.period,
+                "--channels",
+                channels,
+            ]
+            if compute_unc_histograms:
+                HistTupleProducer_cmd.extend(
+                    [
+                        "--compute_rel_weights",
+                        "True",
+                        "--compute_unc_variations",
+                        "True",
+                    ]
+                )  # should be split?
+            # here go the customisations (to make more general to any analysis, they will be defined in the histTupleDef.py)
+            if self.customisations:
+                HistTupleProducer_cmd.extend([f"--customisations", self.customisations])
+            if need_cache_global:
+                anaCache_file = self.input()[ana_cache_input_counter][input_index]
+                ana_cache_input_counter += (
+                    1  # Index to the next ana cache input for next time
+                )
+                with anaCache_file.localize("r") as local_anacache:
+                    HistTupleProducer_cmd.extend(["--cacheFile", local_anacache.path])
+            ps_call(HistTupleProducer_cmd, verbose=1)
+            with output.localize("w") as local_output:
+                out_local_path = local_output.path
+                shutil.move(tmpFile, out_local_path)
+        if remove_job_home:
+            shutil.rmtree(job_home)
+
+
+class HistFromNtupleProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
+    n_cpus = copy_param(HTCondorWorkflow.n_cpus, 2)
+
+    def workflow_requires(self):
+        branch_set = set()
+        branches_required = {}
+        for br_idx, (prod_br_list, sample_names) in self.branch_map.items():
+            branch_set.update(prod_br_list)
+        branches = tuple(branch_set)
+        deps = {
+            "HistTupleProducerTask": HistTupleProducerTask.req(
+                self, branches=branches, customisations=self.customisations
+            )
+        }
+        return deps
+
+    def requires(self):
+        prod_br_list, sample_name = self.branch_data
+        reqs = [
+            HistTupleProducerTask.req(
+                self,
+                max_runtime=HistTupleProducerTask.max_runtime._default,
+                branch=prod_br,
+                branches=(prod_br,),
+                customisations=self.customisations,
+            )
+            for prod_br in prod_br_list
+        ]
+        return reqs
+
+    def create_branch_map(self):
+        branches = {}
+        prod_br_list = []
+        current_sample = None
+        n = 0
+
+        HistTupleBranchMap = HistTupleProducerTask.req(
+            self, branches=()
+        ).create_branch_map()
+
+        for prod_br, (
+            histTuple_sample_name,
+            histTuple_prod_br,
+            need_cache_global,
+            producer_list,
+            input_index,
+        ) in HistTupleBranchMap.items():
+            if histTuple_sample_name != current_sample:
+                if current_sample is not None:
+                    # salva il gruppo precedente
+                    branches[n] = (prod_br_list, current_sample)
+                    n += 1
+                # inizia nuovo gruppo
+                prod_br_list = [prod_br]
+                current_sample = histTuple_sample_name
+            else:
+                prod_br_list.append(prod_br)
+
+        # salva l'ultimo gruppo
+        if prod_br_list:
+            branches[n] = (prod_br_list, current_sample)
+
+        return branches
+
+    def output(self):
+        if len(self.branch_data) == 0:
+            return self.local_target("dummy.txt")
+        prod_br, sample_name = self.branch_data
+        output_path = os.path.join(
+            "hists", self.version, self.period, f"{sample_name}.root"
+        )
+        return self.remote_target(output_path, fs=self.fs_HistTuple)
+
+    def run(self):
+        prod_br, sample_name = self.branch_data
+        # input_file = self.input()[0][prod_br]
+        job_home, remove_job_home = self.law_job_home()
+        customisation_dict = getCustomisationSplit(self.customisations)
+        compute_unc_histograms = False  # tmp #customisation_dict['compute_unc_histograms']=='True' if 'compute_unc_histograms' in customisation_dict.keys() else self.global_params.get('compute_unc_histograms', False)
+        channels = (
+            customisation_dict["channels"]
+            if "channels" in customisation_dict.keys()
+            else self.global_params["channelSelection"]
+        )
+
+        # Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
+        if type(channels) == list:
+            channels = ",".join(channels)
+        HistFromNtupleProducer = os.path.join(
+            self.ana_path(), "FLAF", "Analysis", "HistProducerFromNTuple.py"
+        )
+        with contextlib.ExitStack() as stack:
+
+            local_inputs = [
+                stack.enter_context((inp).localize("r")).path for inp in self.input()
+            ]
+
+            tmpFile = os.path.join(job_home, f"HistFromNtuple.root")
+
+            HistFromNtupleProducer_cmd = [
+                "python3",
+                HistFromNtupleProducer,
+                "--period",
+                self.period,
+                "--outFile",
+                tmpFile,
+                "--channels",
+                channels,
+            ]
+            if compute_unc_histograms:
+                HistFromNtupleProducer_cmd.extend(
+                    [
+                        "--compute_rel_weights",
+                        "True",
+                        "--compute_unc_variations",
+                        "True",
+                    ]
+                )  # should be split?
+            # here go the customisations (to make more general to any analysis, they will be defined in the histTupleDef.py)
+            if self.customisations:
+                HistFromNtupleProducer_cmd.extend(
+                    [f"--customisations", self.customisations]
+                )
+            HistFromNtupleProducer_cmd.extend(local_inputs)
+            ps_call(HistFromNtupleProducer_cmd, verbose=1)
+
+            with (self.output()).localize("w") as tmp_local_file:
+                out_local_path = tmp_local_file.path
+                shutil.move(tmpFile, out_local_path)
+        if remove_job_home:
+            shutil.rmtree(job_home)
+
+
 class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
     max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 2)

@@ -96,7 +96,6 @@ def createHistTuple(
     inFile,
     cacheFile,
     treeName,
-    outFile,
     setup,
     hist_cfg_dict,
     unc_cfg_dict,
@@ -234,8 +233,6 @@ if __name__ == "__main__":
     parser.add_argument("--outFile", required=True, type=str)
     parser.add_argument("--cacheFile", required=False, type=str, default=None)
     parser.add_argument("--dataset", required=True, type=str)
-    parser.add_argument("--histConfig", required=True, type=str)
-    parser.add_argument("--uncConfig", required=True, type=str)
     parser.add_argument("--histTupleDef", required=True, type=str)
     parser.add_argument("--compute_unc_variations", type=bool, default=False)
     parser.add_argument("--compute_rel_weights", type=bool, default=False)
@@ -286,12 +283,12 @@ if __name__ == "__main__":
         df_empty = True
     dont_create_HistTuple = key_not_exist or df_empty
 
-    hist_cfg_dict = {}
-    with open(args.histConfig, "r") as f:
-        hist_cfg_dict = yaml.safe_load(f)
-    unc_cfg_dict = {}
-    with open(args.uncConfig, "r") as f:
-        unc_cfg_dict = yaml.safe_load(f)
+    # sample_cfg_dict = setup.samples
+    # global_cfg_dict = setup.global_params
+
+    unc_cfg_dict = setup.weights_config
+    hist_cfg_dict = setup.hists
+    # print(hist_cfg_dict)
 
     histTupleDef = Utilities.load_module(args.histTupleDef)
     if not dont_create_HistTuple:
@@ -308,7 +305,6 @@ if __name__ == "__main__":
             args.inFile,
             args.cacheFile,
             treeName,
-            args.outFile,
             setup,
             hist_cfg_dict,
             unc_cfg_dict,

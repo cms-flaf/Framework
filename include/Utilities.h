@@ -8,7 +8,8 @@
 #include <tuple>
 #include <typeindex>
 #include <typeinfo>
-#include <variant>#include <ROOT/RVec.hxx>
+#include <variant>
+#include <ROOT/RVec.hxx>
 
 using RVecF = ROOT::VecOps::RVec<float>;
 using RVecI = ROOT::VecOps::RVec<int>;

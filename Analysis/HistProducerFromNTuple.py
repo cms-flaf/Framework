@@ -8,7 +8,6 @@ import numpy as np
 if __name__ == "__main__":
     sys.path.append(os.environ["ANALYSIS_PATH"])
 
-from FLAF.Analysis.HistHelper import *
 from FLAF.Common.HistHelper import *
 import FLAF.Common.Utilities as Utilities
 from FLAF.Common.Setup import Setup
@@ -87,16 +86,10 @@ if __name__ == "__main__":
     import yaml
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("inputFiles", nargs="+", type=str)
     parser.add_argument("--period", required=True, type=str)
-    parser.add_argument("--inDir", required=True, type=str)
-    parser.add_argument("--inFileName", required=False, type=str, default=None)
     parser.add_argument("--outFile", required=True, type=str)
-    parser.add_argument("--histConfig", required=True, type=str)
-    parser.add_argument(
-        "--uncConfig", required=True, type=str
-    )  # currently not needed, maybe in future
     parser.add_argument("--customisations", type=str, default=None)
-    parser.add_argument("--treeName", required=False, type=str, default="Events")
     parser.add_argument("--channels", type=str, default=None)
     parser.add_argument("--vars", type=str, default=None)
     parser.add_argument("--furtherCut", type=str, default=None)
@@ -105,17 +98,24 @@ if __name__ == "__main__":
     setup = Setup.getGlobal(
         os.environ["ANALYSIS_PATH"], args.period, args.customisations
     )
-
+    unc_cfg_dict = setup.weights_config
     analysis_import = setup.global_params["analysis_import"]
     analysis = importlib.import_module(f"{analysis_import}")
-    inFiles = f"{args.inDir}/*.root"
-    if args.inFileName:
-        inFiles = f"{args.inDir}/{args.inFileName}"
-    rdf = ROOT.RDataFrame(args.treeName, inFiles)
+    all_infiles = [fileName for fileName in args.inputFiles]
+    inFiles = Utilities.ListToVector(all_infiles)
 
-    hist_cfg_dict = {}
-    with open(args.histConfig, "r") as f:
-        hist_cfg_dict = yaml.safe_load(f)
+    customisations_dict = {}
+    if args.customisations:
+        customisations_dict = getCustomisationSplit(args.customisations)
+        setup.global_params.update(customisations_dict)
+
+    treeName = setup.global_params[
+        "treeName"
+    ]  # treeName should be inside global params if not in customisations
+
+    rdf = ROOT.RDataFrame(treeName, inFiles)
+
+    hist_cfg_dict = setup.hists
 
     channels = setup.global_params["channelSelection"]
     if args.channels:
@@ -127,7 +127,15 @@ if __name__ == "__main__":
     key_filter_dict = analysis.createKeyFilterDict(
         setup.global_params, setup.global_params["era"]
     )
-    # print(key_filter_dict)
+
+    furtherCut = None
+    further_cuts = []
+    # two different possibilities of getting further cuts
+    if args.furtherCut:
+        furtherCut.extend(args.furtherCut.split(","))
+
+    if "furtherCut" in setup.global_params.keys() and setup.global_params["furtherCut"]:
+        further_cuts.extend(setup.global_params["furtherCut"])
 
     vars_to_save = setup.global_params["vars_to_save"]
     if args.vars:
@@ -138,9 +146,6 @@ if __name__ == "__main__":
             dir_0, dir_1, dir_2 = key
             key_new = key
             filter_to_apply = key_filter_dict[key]
-            further_cuts = []
-            if args.furtherCut is not None:
-                further_cuts = args.furtherCut.split(",")
             if further_cuts:
                 for further_cut in further_cuts:
                     filter_to_apply_further = filter_to_apply + f" && {further_cut}"

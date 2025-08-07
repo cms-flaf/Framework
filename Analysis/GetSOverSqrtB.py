@@ -41,7 +41,7 @@ all_masses = [
     3000,
 ]
 
-from Analysis.HistHelper import *
+from Common.HistHelper import *
 
 
 def GetHisto(channel, category, inFile, sample_name, uncSource, scale):

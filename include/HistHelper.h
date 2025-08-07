@@ -80,7 +80,7 @@ namespace analysis {
         return entries;
     }
 
-    static std::map<unsigned long long, std::shared_ptr<Entry>> &GetCacheEntriesMap(const std::string &cache_name) {
+    static std::map<unsigned long long, std::shared_ptr<Entry>>& GetCacheEntriesMap(const std::string& cache_name) {
         static std::map<std::string, std::map<unsigned long long, std::shared_ptr<Entry>>> cache_entries;
         return cache_entries[cache_name];
     }
@@ -128,7 +128,7 @@ namespace analysis {
                 df_in
                     .Define(
                         entry_name,
-                        [=](const Args &...args) {
+                        [=](const Args&... args) {
                             auto cache_entry = std::make_shared<Entry>(var_names.size());
                             int index = 0;
                             (void)std::initializer_list<int>{(cache_entry->Add(index++, args), 0)...};
@@ -137,7 +137,7 @@ namespace analysis {
                         var_names)
                     .Define(
                         map_name,
-                        [&](const std::shared_ptr<Entry> &cache_entry) {
+                        [&](const std::shared_ptr<Entry>& cache_entry) {
                             const auto idx = cache_entry->GetValue<unsigned long long>(0);
                             if (GetCacheEntriesMap(map_name).find(idx) != GetCacheEntriesMap(map_name).end()) {
                                 if (checkDuplicates) {

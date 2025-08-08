@@ -26,71 +26,121 @@ def create_file(file_name, times=None):
         os.utime(file_name, times)
 
 
+# def DefineBinnedColumn(dfw, hist_cfg_dict, var, weight_name, unc, scale):
+#     axis_name = f"{var}_axis_{unc}_{scale}"
+#     func_name = f"get_{var}_bin_{unc}_{scale}"
+#     hist_name = f"{var}_hist_{unc}_{scale}"
+
+#     if isinstance(hist_cfg_dict[var]["x_bins"], list):
+#         edges = hist_cfg_dict[var]["x_bins"]
+#         edges_cpp = "{" + ",".join(map(str, edges)) + "}"
+#         nbins = len(edges) - 1
+
+#         ROOT.gInterpreter.Declare(
+#             f"""
+#             #include <vector>
+#             #include "TH1F.h"
+#             #include "ROOT/RVec.hxx"
+
+#             std::vector<double> {axis_name}_edges = {edges_cpp};
+#             static TH1F* {hist_name} = new TH1F("{hist_name}", "{hist_name}", {nbins}, {axis_name}_edges.data());
+
+#             int {func_name}(double x, double weight) {{
+#                 {hist_name}->Fill(x, weight);
+#                 return {hist_name}->GetXaxis()->FindBin(x) - 1;
+#             }}
+
+#             template<typename T>
+#             ROOT::VecOps::RVec<int> {func_name}(ROOT::VecOps::RVec<T> xvec, T weight) {{
+#                 ROOT::VecOps::RVec<int> out;
+#                 for (auto& x : xvec) {{
+#                     {hist_name}->Fill(x, weight);
+#                     out.push_back({hist_name}->GetXaxis()->FindBin(x) - 1);
+#                 }}
+#                 return out;
+#             }}
+#         """
+#         )
+#     else:
+#         n_bins, bin_range = hist_cfg_dict[var]["x_bins"].split("|")
+#         start, stop = bin_range.split(":")
+
+#         ROOT.gInterpreter.Declare(
+#             f"""
+#             #include <vector>
+#             #include "TH1F.h"
+#             #include "ROOT/RVec.hxx"
+
+#             static TH1F* {hist_name} = new TH1F("{hist_name}", "{hist_name}", {n_bins}, {start}, {stop});
+
+#             int {func_name}(double x, double weight) {{
+#                 {hist_name}->Fill(x, weight);
+#                 return {hist_name}->GetXaxis()->FindBin(x) - 1;
+#             }}
+
+#             template<typename T>
+#             ROOT::VecOps::RVec<int> {func_name}(ROOT::VecOps::RVec<T> xvec, double weight) {{
+#                 ROOT::VecOps::RVec<int> out(xvec.size());
+#                 for (int n = 0; n < xvec.size(); n++) {{
+#                     out[n] = ({func_name}(xvec[n], weight));
+#                 }}
+#                 return out;
+#             }}
+#         """
+#         )
+
+#     dfw.df = dfw.df.Define(f"{var}_bin", f"{func_name}({var}, {weight_name})")
+
 def DefineBinnedColumn(dfw, hist_cfg_dict, var, weight_name, unc, scale):
-    axis_name = f"{var}_axis_{unc}_{scale}"
-    func_name = f"get_{var}_bin_{unc}_{scale}"
-    hist_name = f"{var}_hist_{unc}_{scale}"
+    # Recupera la configurazione dei bin
+    x_bins = hist_cfg_dict[var]["x_bins"]
 
-    if isinstance(hist_cfg_dict[var]["x_bins"], list):
-        edges = hist_cfg_dict[var]["x_bins"]
+    # Genera un nome di funzione univoco
+    func_name = f"get_{var}_bin"
+
+    # Definizione dell'asse per i bin, comune a scalare e vettoriale
+    axis_definition = ""
+
+    if isinstance(x_bins, list):
+        # Bin a larghezza variabile
+        edges = x_bins
+        n_bins = len(edges) - 1
         edges_cpp = "{" + ",".join(map(str, edges)) + "}"
-        nbins = len(edges) - 1
-
-        ROOT.gInterpreter.Declare(
-            f"""
-            #include <vector>
-            #include "TH1F.h"
-            #include "ROOT/RVec.hxx"
-
-            std::vector<double> {axis_name}_edges = {edges_cpp};
-            static TH1F* {hist_name} = new TH1F("{hist_name}", "{hist_name}", {nbins}, {axis_name}_edges.data());
-
-            int {func_name}(double x, double weight) {{
-                {hist_name}->Fill(x, weight);
-                return {hist_name}->GetXaxis()->FindBin(x) - 1;
-            }}
-
-            template<typename T>
-            ROOT::VecOps::RVec<int> {func_name}(ROOT::VecOps::RVec<T> xvec, T weight) {{
-                ROOT::VecOps::RVec<int> out;
-                for (auto& x : xvec) {{
-                    {hist_name}->Fill(x, weight);
-                    out.push_back({hist_name}->GetXaxis()->FindBin(x) - 1);
-                }}
-                return out;
-            }}
-        """
-        )
+        axis_definition = f"static const double bins[] = {edges_cpp}; static const TAxis axis({n_bins}, bins);"
     else:
-        n_bins, bin_range = hist_cfg_dict[var]["x_bins"].split("|")
+        # Bin a larghezza fissa
+        n_bins, bin_range = x_bins.split("|")
         start, stop = bin_range.split(":")
+        axis_definition = f"static const TAxis axis({n_bins}, {start}, {stop});"
 
-        ROOT.gInterpreter.Declare(
-            f"""
-            #include <vector>
-            #include "TH1F.h"
-            #include "ROOT/RVec.hxx"
+    # Dichiarazione della funzione C++ per il calcolo del bin
+    ROOT.gInterpreter.Declare(
+        f"""
+        #include "ROOT/RVec.hxx"
+        #include "TAxis.h"
 
-            static TH1F* {hist_name} = new TH1F("{hist_name}", "{hist_name}", {n_bins}, {start}, {stop});
+        // Funzione per il tipo scalare
+        int {func_name}(double x) {{
+            {axis_definition}
+            return axis.FindFixBin(x) - 1;
+        }}
 
-            int {func_name}(double x, double weight) {{
-                {hist_name}->Fill(x, weight);
-                return {hist_name}->GetXaxis()->FindBin(x) - 1;
+        // Funzione per il tipo vettoriale
+        template<typename T>
+        ROOT::VecOps::RVec<int> {func_name}(ROOT::VecOps::RVec<T> xvec) {{
+            {axis_definition}
+            ROOT::VecOps::RVec<int> out(xvec.size());
+            for (size_t i = 0; i < xvec.size(); ++i) {{
+                out[i] = axis.FindFixBin(xvec[i]) - 1;
             }}
-
-            template<typename T>
-            ROOT::VecOps::RVec<int> {func_name}(ROOT::VecOps::RVec<T> xvec, double weight) {{
-                ROOT::VecOps::RVec<int> out(xvec.size());
-                for (int n = 0; n < xvec.size(); n++) {{
-                    out[n] = ({func_name}(xvec[n], weight));
-                }}
-                return out;
-            }}
+            return out;
+        }}
         """
-        )
+    )
 
-    dfw.df = dfw.df.Define(f"{var}_bin", f"{func_name}({var}, {weight_name})")
-
+    # Applica la funzione al DataFrame, usando la versione vettoriale se la colonna è un RVec
+    # La logica di RDataFrame sceglie automaticamente la versione giusta
+    dfw.df = dfw.df.Define(f"{var}_bin", f"{func_name}({var})")
 
 def createHistTuple(
     inFile,

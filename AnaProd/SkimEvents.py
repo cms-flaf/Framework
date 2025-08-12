@@ -11,12 +11,18 @@ if __name__ == "__main__":
     sys.path.append(os.environ["ANALYSIS_PATH"])
 
 import FLAF.Common.Utilities as Utilities
+from FLAF.RunKit.run_tools import ps_call
 
 
 def createVoidTree(file_name, tree_name):
     df = ROOT.RDataFrame(0)
     df = df.Define("test", "return true;")
     df.Snapshot(tree_name, file_name, {"test"})
+
+
+def create_file(file_name, times=None):
+    with open(file_name, "w"):
+        os.utime(file_name, times)
 
 
 def ListToVector(list, type="string"):

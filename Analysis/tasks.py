@@ -6,7 +6,6 @@ import luigi
 import threading
 import copy
 import shutil
-import numpy as np
 
 
 from FLAF.RunKit.run_tools import ps_call
@@ -1037,11 +1036,9 @@ class AnalysisCacheTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                     input_file = self.input()[0][idx]
                     local_cache_files = ""
                     if len(self.input()) > 1:
-                        # Need to make np array to get correct slice
-                        np_inputs = np.array(self.input())
                         local_cache_files = [
-                            stack.enter_context(inp.localize("r")).path
-                            for inp in np_inputs[1:, idx]
+                            stack.enter_context(inp[idx].localize("r")).path
+                            for inp in self.input()[1:]
                         ]
 
                     print(f"Task has cache input files {local_cache_files}")

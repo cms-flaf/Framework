@@ -39,6 +39,7 @@ class InputFileTask(Task, law.LocalWorkflow):
         branches = {}
         for sample_id, sample_name in self.iter_samples():
             branches[sample_id] = sample_name
+        print(branches)
         return branches
 
     def output(self):
@@ -47,12 +48,26 @@ class InputFileTask(Task, law.LocalWorkflow):
 
     def run(self):
         sample_name = self.branch_data
+        folder_name = sample_name
+        for suffix in ["nanoEE", "nanoMuMu", "nanoTauTau"]:
+            if sample_name.endswith(suffix):
+                folder_name = sample_name[:-(len(suffix) + 1)]  # remove '_' + suffix
+                break
         print(f'Creating inputFile for sample {sample_name} into {self.output().path}')
         with self.output().localize("w") as out_local_file:
             input_files = []
-            for file in natural_sort(self.fs_nanoAOD.listdir(sample_name)):
+            # problema: la cartella si chiama come il sample ma senza un nanoEE alla fine
+            # quindi il come del sample nel caso di DY va dato senza la finale e poi i file vanno presi con nanoEE_0.root ecc..
+            # if "DY" in sample_name: print(natural_sort(self.fs_nanoAOD.listdir("DYto2L_M_10to50_amcatnloFXFX")))
+            for file in natural_sort(self.fs_nanoAOD.listdir(folder_name)):
                 if file.endswith(".root"):
-                    input_files.append(file)
+                    if sample_name != folder_name:
+                        suffix = sample_name[len(folder_name)+1:]  # get the suffix after the underscore
+                        if file.startswith(f"{suffix}"):
+                            input_files.append(file)
+                    else:
+                        input_files.append(file)
+            print(folder_name, sample_name,input_files)
             with open(out_local_file.path, 'w') as inputFileTxt:
                 for input_line in input_files:
                     inputFileTxt.write(input_line+'\n')

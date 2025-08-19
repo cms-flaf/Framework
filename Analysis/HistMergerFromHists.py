@@ -44,6 +44,20 @@ def checkFile(inFileRoot, channels, qcdRegions, categories):
     return True
 
 
+def fill_all_hists_dict(items_dict, all_hists_dict_sampletype_def, unc_source="Central", scale="Central"):
+    """
+    Riempie all_hists_dict[sample_type] usando items_dict già caricato.
+    """
+    for key_tuple, hist_map in items_dict.items():
+        for var, var_hist in hist_map.items():
+            if var not in all_hists_dict_sampletype_def:
+                all_hists_dict_sampletype_def[var] = {}
+            final_key = (key_tuple, (unc_source, scale))
+            if final_key not in all_hists_dict_sampletype_def[var]:
+                all_hists_dict_sampletype_def[var][final_key] = []
+            all_hists_dict_sampletype_def[var][final_key].append(var_hist)
+
+
 def MergeHistogramsPerType(all_hists_dict):
     old_hist_dict = all_hists_dict.copy()
     all_hists_dict.clear()
@@ -71,7 +85,6 @@ def GetBTagWeightDict(
 ):
     all_hists_dict_1D = {}
     for sample_type in all_hists_dict.keys():
-        # print(sample_type)
         all_hists_dict_1D[sample_type] = {}
         for key_name, histogram in all_hists_dict[sample_type].items():
             (key_1, key_2) = key_name
@@ -104,7 +117,6 @@ def GetBTagWeightDict(
                     or cat.startswith("baseline")
                 ):
                     ratio = 1
-                # print(f"for cat {cat} setting ratio is {ratio}")
                 histogram.Scale(ratio)
             else:
                 print(
@@ -112,7 +124,6 @@ def GetBTagWeightDict(
                 )
 
             all_hists_dict_1D[sample_type][key_name] = histogram
-            # print(sample_type, key_name, histogram.Integral(0, histogram.GetNbinsX()+1))
     return all_hists_dict_1D
 
 
@@ -123,6 +134,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--inDir", required=True, type=str)
     parser.add_argument("--outDir", required=True, type=str)
+    parser.add_argument("--vars", required=True, type=str)
     parser.add_argument("--period", required=True, type=str)
     parser.add_argument("--uncSource", required=False, type=str, default="Central")
     parser.add_argument("--channels", required=False, type=str, default="")
@@ -142,9 +154,8 @@ if __name__ == "__main__":
 
     all_samples_dict = bckg_cfg_dict.copy()
     all_samples_dict.update(sig_cfg_dict)
-    data_dict = {"data": {"sampleType": "data"}}
-    all_samples_dict.update(data_dict)  # add data to the samples dict
-    # data_dict = {"data": {"sampleType": "data"}} if needed other custom dict need to think how to include it. --> maybe in config?
+    data_dict = {"data": {"sampleType": "data"}} # if needed other custom dict need to think how to include it. --> maybe in config?
+    all_samples_dict.update(data_dict)
 
     uncNameTypes = GetUncNameTypes(unc_cfg_dict)
 
@@ -228,70 +239,21 @@ if __name__ == "__main__":
         if not checkFile(inFile, channels, custom_regions, all_categories):
             print(f"{sample_name} has void file")
             ignore_samples.append(sample_name)
-            inFileRoot.Close()
+            inFile.Close()
             continue
+        inFile.Close()
         sample_type = all_samples_dict[sample_name]["sampleType"]
         if sample_type not in all_hists_dict.keys():
             all_hists_dict[sample_type] = {}
 
-        for channel in channels:
-            dir_0 = inFile.Get(channel)
-            for region in custom_regions:
-                dir_1 = dir_0.Get(region)
-                for cat in all_categories:
-                    dir_2 = dir_1.Get(cat)
-                    for var in global_cfg_dict["vars_to_save"]:
-                        if not dir_2.GetListOfKeys().Contains(var):
-                            print(f"var {var} not found in {inFile_path}, skipping")
-                            continue
-                        full_name = f"{var}"
-                        if custom_variables.keys():
-                            for condition in custom_variables.keys():
-                                if condition and var not in custom_variables[key]:
-                                    continue
-                        if var not in all_hists_dict[sample_type].keys():
-                            all_hists_dict[sample_type][var] = {}
-                        if args.uncSource != "Central":
-                            full_name += f"_{args.uncSource}"
-                            for scale in scales:
-                                full_name += f"_{scale}"
-                                var_hist = dir_2.Get(full_name)
-                                var_hist.SetDirectory(0)
-                                if (
-                                    channel,
-                                    region,
-                                    cat,
-                                    var,
-                                    args.uncSource,
-                                    scale,
-                                ) not in all_hists_dict[sample_type][var].keys():
-                                    all_hists_dict[sample_type][var][
-                                        (
-                                            (channel, region, cat),
-                                            (args.uncSource, scale),
-                                        )
-                                    ] = []
-                                all_hists_dict[sample_type][var][
-                                    ((channel, region, cat), (args.uncSource, scale))
-                                ].append(var_hist)
-                        else:
-                            var_hist = dir_2.Get(full_name)
-                            var_hist.SetDirectory(0)
-                            if (channel, region, cat) not in all_hists_dict[
-                                sample_type
-                            ][var].keys():
-                                all_hists_dict[sample_type][var][
-                                    ((channel, region, cat), ("Central", "Central"))
-                                ] = []
-                            all_hists_dict[sample_type][var][
-                                ((channel, region, cat), ("Central", "Central"))
-                            ].append(var_hist)
+        all_items = load_all_items(inFile_path)
+        fill_all_hists_dict(all_items, all_hists_dict[sample_type]) # to add: , unc_source="Central", scale="Central"
 
     MergeHistogramsPerType(all_hists_dict)
 
     # here there should be the custom applications - e.g. GetBTagWeightDict, AddQCDInHistDict, etc.
     # analysis.ApplyMergeCustomisations() # --> here go the QCD and bTag functions
-    """
+    '''
     if global_cfg_dict["ApplyBweight"] == True:
         all_hists_dict_1D = GetBTagWeightDict(
             args.var, all_hists_dict, categories, boosted_categories, boosted_variables
@@ -311,24 +273,17 @@ if __name__ == "__main__":
             scales,
             wantNegativeContributions=False,
         )
-    """
-
+    '''
+    vars_to_select = args.vars.split(",")
     for var in all_hists_dict.keys():
+        if vars_to_select and var not in vars_to_select: continue
         outFileName = os.path.join(args.outDir, f"{var}.root")
         outFile = ROOT.TFile(outFileName, "RECREATE")
         for sample_type in all_hists_dict[var].keys():
             for key in all_hists_dict[var][sample_type].keys():
-                (
-                    (
-                        channel,
-                        region,
-                        cat,
-                    ),
-                    (uncName, uncScale),
-                ) = key
+                (key_dir,(uncName, uncScale)) = key
                 # here there can be some custom requirements - e.g. regions / categories to not merge, samples to ignore
-                dirStruct = (channel, region, cat)
-                dir_name = "/".join(dirStruct)
+                dir_name = "/".join(key_dir)
                 dir_ptr = Utilities.mkdir(outFile, dir_name)
                 hist = all_hists_dict[var][sample_type][key]
                 hist_name = sample_type

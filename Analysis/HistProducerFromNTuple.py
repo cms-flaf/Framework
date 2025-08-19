@@ -1,9 +1,9 @@
-import ROOT
-import yaml
-import importlib
+import argparse
 import os
 import sys
-import numpy as np
+import importlib
+import ROOT
+import yaml
 
 if __name__ == "__main__":
     sys.path.append(os.environ["ANALYSIS_PATH"])
@@ -11,6 +11,8 @@ if __name__ == "__main__":
 from FLAF.Common.HistHelper import *
 import FLAF.Common.Utilities as Utilities
 from FLAF.Common.Setup import Setup
+from FLAF.RunKit.run_tools import ps_call
+
 
 ROOT.gInterpreter.Declare(
     """
@@ -64,26 +66,26 @@ def SaveHist(key, outFile, histogram, hist_name):
     dir_ptr.WriteTObject(histogram.GetValue(), hist_name, "Overwrite")
 
 
-def GetHist(rdf, hist_cfg_dict, var, filter_to_apply):
+def GetBinValues(rdf, hist_cfg_dict, var):
     edges_vector = GetBinVec(hist_cfg_dict, var)
-    histo = (
-        rdf.Filter(filter_to_apply)
-        .Define(
-            f"edges_vector",
+    rdf = (rdf.Define(
+            f"{var}_edges_vector",
             f"""
                         std::vector<float> edges_vector({edges_vector}); return edges_vector;
                         """,
         )
-        .Define(f"{var}_values", f"GetBinValue({var}_bin, edges_vector)")
-        .Histo1D(GetModel(hist_cfg_dict, f"{var}"), f"{var}_values", "weight_for_hists")
+        .Define(f"{var}", f"GetBinValue({var}_bin, {var}_edges_vector)")
     )
+    return rdf
+
+def GetHist(rdf, var, filter_to_apply):
+    histo = rdf.Filter(filter_to_apply).Histo1D(GetModel(hist_cfg_dict, f"{var}"), f"{var}", "weight_for_hists")
     return histo
 
 
+
+
 if __name__ == "__main__":
-    import argparse
-    import os
-    import yaml
 
     parser = argparse.ArgumentParser()
     parser.add_argument("inputFiles", nargs="+", type=str)
@@ -104,55 +106,106 @@ if __name__ == "__main__":
     all_infiles = [fileName for fileName in args.inputFiles]
     inFiles = Utilities.ListToVector(all_infiles)
 
+    # Customisations
     customisations_dict = {}
     if args.customisations:
         customisations_dict = getCustomisationSplit(args.customisations)
         setup.global_params.update(customisations_dict)
 
-    treeName = setup.global_params[
-        "treeName"
-    ]  # treeName should be inside global params if not in customisations
-
+    # Tree name
+    treeName = setup.global_params["treeName"]
     rdf = ROOT.RDataFrame(treeName, inFiles)
 
     hist_cfg_dict = setup.hists
 
+    # Channels
     channels = setup.global_params["channelSelection"]
     if args.channels:
         channels = (
-            args.channels.split(",") if type(args.channels) == str else args.channels
+            args.channels.split(",") if isinstance(args.channels, str) else args.channels
         )
     setup.global_params["channels_to_consider"] = channels
 
+    # Key filter dictionary
     key_filter_dict = analysis.createKeyFilterDict(
         setup.global_params, setup.global_params["era"]
     )
 
-    furtherCut = None
-    further_cuts = []
-    # two different possibilities of getting further cuts
+    # Further cuts
+    further_cuts = {}
     if args.furtherCut:
-        furtherCut.extend(args.furtherCut.split(","))
+        furtherCut = args.furtherCut.split(",")
+    if "further_cuts" in setup.global_params.keys() and setup.global_params["further_cuts"].keys():
+        further_cuts = setup.global_params["further_cuts"]
+    print("[DEBUG] further_cuts:", further_cuts)
 
-    if "furtherCut" in setup.global_params.keys() and setup.global_params["furtherCut"]:
-        further_cuts.extend(setup.global_params["furtherCut"])
-
+    # Vars to save
     vars_to_save = setup.global_params["vars_to_save"]
     if args.vars:
         vars_to_save = args.vars.split(",")
-    outFile = ROOT.TFile(args.outFile, "RECREATE")
-    for key in key_filter_dict.keys():
-        for var in vars_to_save:
-            dir_0, dir_1, dir_2 = key
-            key_new = key
-            filter_to_apply = key_filter_dict[key]
-            if further_cuts:
-                for further_cut in further_cuts:
-                    filter_to_apply_further = filter_to_apply + f" && {further_cut}"
-                    histo = GetHist(rdf, hist_cfg_dict, var, filter_to_apply_further)
-                    key_new = key + (further_cut)
-                    SaveHist(key_new, outFile, histo, var)
 
+    # ------------------------
+    # Pre-calcolo variabili e cut
+    # ------------------------
+    column_names = set(rdf.GetColumnNames())
+    vars_needed = set(vars_to_save)
+
+    if further_cuts:
+        for var_for_cut, (var_cut, _) in further_cuts.items():
+            vars_needed.add(var_cut)
+
+    for var in vars_needed:
+        if var not in column_names:
+            print(f"[DEBUG] Definisco variabile: {var}")
+            rdf = GetBinValues(rdf, hist_cfg_dict, var)
+            column_names.add(var)
+
+    if further_cuts:
+        for further_cut_name, (var_for_cut, cut_expr) in further_cuts.items():
+            if further_cut_name not in column_names:
+                print(f"[DEBUG] Definisco cut: {further_cut_name} = {cut_expr}")
+                rdf = rdf.Define(further_cut_name, cut_expr)
+                column_names.add(further_cut_name)
+
+    # ------------------------
+    # Generazione file temporanei per variabile
+    # ------------------------
+    tmp_fileNames = []
+
+    for var in vars_to_save:
+        tmp_file = f"tmp_{var}.root"
+        tmp_fileNames.append(tmp_file)
+        tmp_outFile = ROOT.TFile(tmp_file, "RECREATE")
+
+        booked_hists = []
+        for key, filter_to_apply in key_filter_dict.items():
+            if further_cuts:
+                for further_cut_name in further_cuts.keys():
+                    filter_to_apply_further = f"{filter_to_apply} && {further_cut_name}"
+                    histo = GetHist(rdf, var, filter_to_apply_further)
+                    booked_hists.append((key + (further_cut_name,), histo, var))
             else:
-                histo = GetHist(rdf, hist_cfg_dict, var, filter_to_apply)
-                SaveHist(key_new, outFile, histo, var)
+                histo = GetHist(rdf, var, filter_to_apply)
+                booked_hists.append((key, histo, var))
+
+        # Calcolo e salvataggio per questa variabile
+        for key, histo, var_name in booked_hists:
+            histo.GetValue()  # forza la valutazione
+            SaveHist(key, tmp_outFile, histo, var_name)
+
+        tmp_outFile.Close()
+        print(f"[DEBUG] Salvato file temporaneo: {tmp_file}")
+
+    # ------------------------
+    # Unione con hadd
+    # ------------------------
+    hadd_str = f"hadd -f -j -O {args.outFile} " + " ".join(tmp_fileNames)
+    print(f"[DEBUG] hadd_str is {hadd_str}")
+    ps_call([hadd_str], True)
+
+    # Rimozione temporanei
+    for f in tmp_fileNames:
+        os.remove(f)
+        print(f"[DEBUG] Rimosso file temporaneo: {f}")
+
+    print(f"[INFO] File finale salvato in {args.outFile}")

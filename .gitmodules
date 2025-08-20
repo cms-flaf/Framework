@@ -1,6 +1,4 @@
-[submodule "RunKit"]
-	path = RunKit
-	url = git@github.com:kandrosov/RunKit.git
+
 [submodule "PlotKit"]
 	path = PlotKit
 	url = git@github.com:kandrosov/PlotKit.git

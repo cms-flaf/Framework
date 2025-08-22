@@ -240,8 +240,8 @@ if __name__ == "__main__":
     sample_types_to_merge = (
         list(global_cfg_dict["sample_types_to_merge"])
         if not setup.phys_model
-        else list(setup.phys_model["backgrounds"])
-    )  # Only merge backgrounds, not signals
+        else list(set([samp["process_name"] for key, samp in setup.samples.items()])) # With new processes, this is redundant since the phys_model already lists the samples and their datasets
+    )
     scales = list(global_cfg_dict["scales"])
     files_separated = {}
     all_histograms = {}
@@ -292,7 +292,6 @@ if __name__ == "__main__":
         )
         # print(all_histograms.keys())
         inFileRoot.Close()
-        print(f"Got histograms for {sample_name} of type {sample_type}")
 
         if sample_name == "data":
             all_samples_types["data"] = ["data"]
@@ -304,7 +303,6 @@ if __name__ == "__main__":
                 if sample_key not in all_samples_types.keys():
                     all_samples_types[sample_key] = []
                 all_samples_types[sample_key].append(sample_name)
-        print("So running list of all_samples_types is ", all_samples_types)
 
     # for key in all_histograms.keys():
     #     print(key, len(all_histograms[key]))

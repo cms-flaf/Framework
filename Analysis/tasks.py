@@ -232,7 +232,8 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         samples_to_consider = GetSamples(
             self.samples, self.setup.backgrounds, self.global_params["signal_types"]
         )
-        samples_to_consider = self.samples.keys()
+        samples_to_consider = list(self.samples.keys())
+        samples_to_consider.append('data')
         var_list = []
         need_cache_list = []
         producer_list = []
@@ -331,7 +332,7 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         unc_config = os.path.join(
             self.ana_path(), "config", self.period, f"weights.yaml"
         )
-        process_group = self.samples[sample_name]["process_group"]
+        process_group = self.samples[sample_name]["process_group"] if sample_name != "data" else "data"
         HistProducerFile = os.path.join(
             self.ana_path(), "FLAF", "Analysis", "HistProducerFile.py"
         )

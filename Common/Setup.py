@@ -2,6 +2,7 @@ import os
 import re
 import yaml
 import json
+import copy
 
 from FLAF.RunKit.envToJson import get_cmsenv
 from FLAF.RunKit.law_wlcg import WLCGFileSystem
@@ -98,7 +99,8 @@ def select_processes(samples, phys_model, processes):
             new_samples[data_name] = samples[data_name]
             new_samples[data_name]["process_name"] = data_process
             new_samples[data_name]["process_group"] = "data"
-            selected_processes.append(sig_name)
+            selected_processes.append(data_name)
+
     return new_samples, selected_processes
 
 
@@ -223,7 +225,52 @@ class Setup:
 
             phys_model_name = self.global_params.get("phys_model", "BaseModel")
             self.phys_model = phys_models.get(phys_model_name)
-            self.processes = processes
+            self.processes = {}
+            for key, item in processes.items():
+                if item.get('is_meta_process', False):
+                    new_process_names_for_model = []
+                    meta_setup = item['meta_setup']
+                    dataset_name_pattern = meta_setup["dataset_name_pattern"]
+                    candidates = {}
+                    for dataset in item["datasets"]:
+                        cand_key = re.match(dataset_name_pattern, dataset).groups()
+                        if len(cand_key) != len(meta_setup["parameters"]):
+                            raise RuntimeError(
+                                f"Dataset '{dataset}' does not match pattern '{dataset_name_pattern}'."
+                            )
+                        if not cand_key in candidates:
+                            candidates[cand_key] = []
+                        candidates[cand_key].append(dataset)
+                    for i, (cand_key, datasets) in enumerate(candidates.items()):
+                        new_process = copy.deepcopy(item)
+                        proc_name = meta_setup["process_name"]
+                        plot_name = meta_setup["name_pattern"]
+                        for i, param in enumerate(meta_setup["parameters"]):
+                            proc_name = proc_name.replace(
+                                f"${{{param}}}", str(cand_key[i])
+                            )
+                            plot_name = proc_name.replace(
+                                f"${{{param}}}", str(cand_key[i])
+                            )
+                        new_process["process_name"] = proc_name
+                        new_process["datasets"] = datasets
+                        new_process["name"] = plot_name
+                        new_process["to_plot"] = int(cand_key[0]) in new_process["meta_setup"]["to_plot"]
+                        new_process["plot_color"] = new_process["meta_setup"]["plot_color"][i]
+                        del new_process["meta_setup"]
+                        del new_process["is_meta_process"]
+                        self.processes[proc_name] = new_process
+                        new_process_names_for_model.append(proc_name)
+
+                    for group in self.phys_model:
+                        if key in self.phys_model[group]:
+                            key_index = self.phys_model[group].index(key)
+                            for new_process_name in reversed(new_process_names_for_model):
+                                self.phys_model[group].insert(key_index, new_process_name)
+                            self.phys_model[group].remove(key)
+
+                else:
+                    self.processes[key] = item
 
         # create payload -> what producer delivers it
         # will be used to check if cache is needed
@@ -389,7 +436,6 @@ class Setup:
     @property
     def backgrounds(self):
         if self.backgrounds_ is None:
-            print("Loading backgrounds from ", self.background_config_path)
             with open(self.background_config_path, "r") as f:
                 self.backgrounds_ = yaml.safe_load(f)
         return self.backgrounds_

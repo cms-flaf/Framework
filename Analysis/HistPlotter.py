@@ -258,17 +258,23 @@ if __name__ == "__main__":
                 del inputs_cfg_dict[input_dict_idx]
 
     all_samples_dict = {}
-    all_samples_dict["data"] = {"process_name": "data", "process_group": "data", "plot_name": "data", "plot_color": "kBlack"}
+    all_samples_dict["data"] = {
+        "process_name": "data",
+        "process_group": "data",
+        "plot_name": "data",
+        "plot_color": "kBlack",
+    }
     for sample_name in setup.samples.keys():
         process_name = setup.samples[sample_name]["process_name"]
         process_group = setup.samples[sample_name]["process_group"]
-        if process_group == "data": continue
+        if process_group == "data":
+            continue
         all_samples_key = (
             process_name if process_group == "backgrounds" else sample_name
         )
         all_samples_key = process_name
 
-        if setup.processes[process_name].get('to_plot', True):
+        if setup.processes[process_name].get("to_plot", True):
             all_samples_dict[all_samples_key] = {}
             all_samples_dict[all_samples_key]["process_name"] = process_name
             all_samples_dict[all_samples_key]["process_group"] = process_group
@@ -405,7 +411,11 @@ if __name__ == "__main__":
             continue  # to be fixed
 
         sample_histname = GetHistName(
-            sample_process_name, sample_process_group, "Central", "Central", global_cfg_dict
+            sample_process_name,
+            sample_process_group,
+            "Central",
+            "Central",
+            global_cfg_dict,
         )
         if sample_histname not in dir_1.GetListOfKeys():
             print(f"ERRORE: {sample_histname} non è nelle keys")

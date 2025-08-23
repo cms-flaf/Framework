@@ -229,7 +229,11 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         anaProd_branch_map = AnaTupleMergeTask.req(
             self, branch=-1, branches=()
         ).create_branch_map()
-        samples_to_consider = [ key for key in self.samples.keys() if self.samples[key]["process_group"] != "data" ]
+        samples_to_consider = [
+            key
+            for key in self.samples.keys()
+            if self.samples[key]["process_group"] != "data"
+        ]
         samples_to_consider.append("data")
         var_list = []
         need_cache_list = []
@@ -329,7 +333,11 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         unc_config = os.path.join(
             self.ana_path(), "config", self.period, f"weights.yaml"
         )
-        process_group = self.samples[sample_name]["process_group"] if sample_name != "data" else "data"
+        process_group = (
+            self.samples[sample_name]["process_group"]
+            if sample_name != "data"
+            else "data"
+        )
         HistProducerFile = os.path.join(
             self.ana_path(), "FLAF", "Analysis", "HistProducerFile.py"
         )
@@ -475,7 +483,11 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             self, branch=-1, branches=()
         ).create_branch_map()
         all_samples = {}
-        samples_to_consider = [ key for key in self.samples.keys() if self.samples[key]["process_group"] != "data" ]
+        samples_to_consider = [
+            key
+            for key in self.samples.keys()
+            if self.samples[key]["process_group"] != "data"
+        ]
         samples_to_consider.append("data")
         for n_branch, (
             sample_name,
@@ -717,7 +729,11 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         samples_to_consider = GetSamples(
             self.samples, self.setup.backgrounds, self.global_params["signal_types"]
         )
-        samples_to_consider = [ key for key in self.samples.keys() if self.samples[key]["process_group"] != "data" ]
+        samples_to_consider = [
+            key
+            for key in self.samples.keys()
+            if self.samples[key]["process_group"] != "data"
+        ]
         samples_to_consider.append("data")
         for sample_name in samples_to_consider:
             print(sample_name)

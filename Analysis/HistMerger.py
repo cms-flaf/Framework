@@ -240,7 +240,9 @@ if __name__ == "__main__":
     sample_types_to_merge = (
         list(global_cfg_dict["sample_types_to_merge"])
         if not setup.phys_model
-        else list(set([samp["process_name"] for key, samp in setup.samples.items()])) # With new processes, this is redundant since the phys_model already lists the samples and their datasets
+        else list(
+            set([samp["process_name"] for key, samp in setup.samples.items()])
+        )  # With new processes, this is redundant since the phys_model already lists the samples and their datasets
     )
     scales = list(global_cfg_dict["scales"])
     files_separated = {}
@@ -273,7 +275,9 @@ if __name__ == "__main__":
         #     if sample_name == "data"
         #     else sample_cfg_dict[sample_name]["sampleType"]
         # )
-        sample_cfg_dict["data"] = {"process_name": "data"} # Data isn't actually in config dict, but just add it here to keep working format
+        sample_cfg_dict["data"] = {
+            "process_name": "data"
+        }  # Data isn't actually in config dict, but just add it here to keep working format
         sample_type = (
             sample_cfg_dict[sample_name]["sampleType"]
             if not setup.phys_model

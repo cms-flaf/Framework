@@ -229,11 +229,8 @@ class HistProducerFileTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         anaProd_branch_map = AnaTupleMergeTask.req(
             self, branch=-1, branches=()
         ).create_branch_map()
-        samples_to_consider = GetSamples(
-            self.samples, self.setup.backgrounds, self.global_params["signal_types"]
-        )
-        samples_to_consider = list(self.samples.keys())
-        samples_to_consider.append('data')
+        samples_to_consider = [ key for key in self.samples.keys() if self.samples[key]["process_group"] != "data" ]
+        samples_to_consider.append("data")
         var_list = []
         need_cache_list = []
         producer_list = []
@@ -478,10 +475,8 @@ class HistProducerSampleTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             self, branch=-1, branches=()
         ).create_branch_map()
         all_samples = {}
-        samples_to_consider = GetSamples(
-            self.samples, self.setup.backgrounds, self.global_params["signal_types"]
-        )
-        samples_to_consider = self.samples.keys()
+        samples_to_consider = [ key for key in self.samples.keys() if self.samples[key]["process_group"] != "data" ]
+        samples_to_consider.append("data")
         for n_branch, (
             sample_name,
             prod_br,
@@ -722,11 +717,10 @@ class MergeTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         samples_to_consider = GetSamples(
             self.samples, self.setup.backgrounds, self.global_params["signal_types"]
         )
-        samples_to_consider = self.samples.keys()
-        for sample_name in self.samples.keys():
+        samples_to_consider = [ key for key in self.samples.keys() if self.samples[key]["process_group"] != "data" ]
+        samples_to_consider.append("data")
+        for sample_name in samples_to_consider:
             print(sample_name)
-            if sample_name not in samples_to_consider:
-                continue
             output_path_hist_prod_sample = os.path.join(
                 self.version, self.period, "split", var, f"{sample_name}.root"
             )

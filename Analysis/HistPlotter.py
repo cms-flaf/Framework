@@ -258,29 +258,17 @@ if __name__ == "__main__":
                 del inputs_cfg_dict[input_dict_idx]
 
     all_samples_dict = {}
+    all_samples_dict["data"] = {"process_name": "data", "process_group": "data", "plot_name": "data", "plot_color": "kBlack"}
     for sample_name in setup.samples.keys():
         process_name = setup.samples[sample_name]["process_name"]
         process_group = setup.samples[sample_name]["process_group"]
+        if process_group == "data": continue
         all_samples_key = (
             process_name if process_group == "backgrounds" else sample_name
         )
-        if process_group == "signals":
-            print(setup.processes[process_name]["datasets_to_plot"])
-            if (
-                sample_name
-                not in setup.processes[process_name]["datasets_to_plot"].keys()
-            ):
-                continue
-            all_samples_dict[all_samples_key] = {}
-            all_samples_dict[all_samples_key]["process_name"] = process_name
-            all_samples_dict[all_samples_key]["process_group"] = process_group
-            all_samples_dict[all_samples_key]["plot_name"] = setup.processes[
-                process_name
-            ]["datasets_to_plot"][sample_name]["name"]
-            all_samples_dict[all_samples_key]["plot_color"] = setup.processes[
-                process_name
-            ]["datasets_to_plot"][sample_name]["color"]
-        else:
+        all_samples_key = process_name
+
+        if setup.processes[process_name].get('to_plot', True):
             all_samples_dict[all_samples_key] = {}
             all_samples_dict[all_samples_key]["process_name"] = process_name
             all_samples_dict[all_samples_key]["process_group"] = process_group
@@ -290,6 +278,33 @@ if __name__ == "__main__":
             all_samples_dict[all_samples_key]["plot_color"] = setup.processes[
                 process_name
             ]["color"]
+
+        # if process_group == "signals":
+        #     print(setup.processes[process_name]["datasets_to_plot"])
+        #     if (
+        #         sample_name
+        #         not in setup.processes[process_name]["datasets_to_plot"].keys()
+        #     ):
+        #         continue
+        #     all_samples_dict[all_samples_key] = {}
+        #     all_samples_dict[all_samples_key]["process_name"] = process_name
+        #     all_samples_dict[all_samples_key]["process_group"] = process_group
+        #     all_samples_dict[all_samples_key]["plot_name"] = setup.processes[
+        #         process_name
+        #     ]["datasets_to_plot"][sample_name]["name"]
+        #     all_samples_dict[all_samples_key]["plot_color"] = setup.processes[
+        #         process_name
+        #     ]["datasets_to_plot"][sample_name]["color"]
+        # else:
+        #     all_samples_dict[all_samples_key] = {}
+        #     all_samples_dict[all_samples_key]["process_name"] = process_name
+        #     all_samples_dict[all_samples_key]["process_group"] = process_group
+        #     all_samples_dict[all_samples_key]["plot_name"] = setup.processes[
+        #         process_name
+        #     ]["name"]
+        #     all_samples_dict[all_samples_key]["plot_color"] = setup.processes[
+        #         process_name
+        #     ]["color"]
 
     # for sample_name in bckg_cfg_dict.keys():
     #     if "sampleType" not in bckg_cfg_dict[sample_name].keys():
@@ -390,7 +405,7 @@ if __name__ == "__main__":
             continue  # to be fixed
 
         sample_histname = GetHistName(
-            sample_name, sample_process_group, "Central", "Central", global_cfg_dict
+            sample_process_name, sample_process_group, "Central", "Central", global_cfg_dict
         )
         if sample_histname not in dir_1.GetListOfKeys():
             print(f"ERRORE: {sample_histname} non è nelle keys")
@@ -400,19 +415,19 @@ if __name__ == "__main__":
             print(f"ERRORE: {sample_histname} non è un istogramma")
         obj.SetDirectory(0)
 
-        if sample_name in hists_to_plot_unbinned.keys():
-            print(hists_to_plot_unbinned[sample_name])
+        if sample_process_name in hists_to_plot_unbinned.keys():
+            print(hists_to_plot_unbinned[sample_process_name])
 
-        if sample_name not in hists_to_plot_unbinned.keys():
-            hists_to_plot_unbinned[sample_name] = (
+        if sample_process_name not in hists_to_plot_unbinned.keys():
+            hists_to_plot_unbinned[sample_process_name] = (
                 obj,
                 sample_plot_name,
                 sample_plot_color,
                 sample_process_group,
             )
         else:
-            hists_to_plot_unbinned[sample_name][0].Add(
-                hists_to_plot_unbinned[sample_name], obj
+            hists_to_plot_unbinned[sample_process_name][0].Add(
+                hists_to_plot_unbinned[sample_process_name], obj
             )
     hists_to_plot_binned = {}
     for hist_key, (

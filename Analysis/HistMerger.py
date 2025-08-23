@@ -273,6 +273,7 @@ if __name__ == "__main__":
         #     if sample_name == "data"
         #     else sample_cfg_dict[sample_name]["sampleType"]
         # )
+        sample_cfg_dict["data"] = {"process_name": "data"} # Data isn't actually in config dict, but just add it here to keep working format
         sample_type = (
             sample_cfg_dict[sample_name]["sampleType"]
             if not setup.phys_model

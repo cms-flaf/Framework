@@ -232,6 +232,7 @@ class Setup:
                     meta_setup = item['meta_setup']
                     dataset_name_pattern = meta_setup["dataset_name_pattern"]
                     candidates = {}
+                    plot_color_idx = 0 # Used for indexing signal 'to_plot' colors
                     for dataset in item["datasets"]:
                         cand_key = re.match(dataset_name_pattern, dataset).groups()
                         if len(cand_key) != len(meta_setup["parameters"]):
@@ -241,7 +242,7 @@ class Setup:
                         if not cand_key in candidates:
                             candidates[cand_key] = []
                         candidates[cand_key].append(dataset)
-                    for i, (cand_key, datasets) in enumerate(candidates.items()):
+                    for cand_key, datasets in candidates.items():
                         new_process = copy.deepcopy(item)
                         proc_name = meta_setup["process_name"]
                         plot_name = meta_setup["name_pattern"]
@@ -256,7 +257,10 @@ class Setup:
                         new_process["datasets"] = datasets
                         new_process["name"] = plot_name
                         new_process["to_plot"] = int(cand_key[0]) in new_process["meta_setup"]["to_plot"]
-                        new_process["plot_color"] = new_process["meta_setup"]["plot_color"][i]
+                        new_process["color"] = "kBlack"
+                        if new_process["to_plot"]:
+                            new_process["color"] = new_process["meta_setup"]["plot_color"][plot_color_idx]
+                            plot_color_idx += 1
                         del new_process["meta_setup"]
                         del new_process["is_meta_process"]
                         self.processes[proc_name] = new_process

@@ -388,14 +388,15 @@ class HistTupleProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
 
 
 class HistFromNtupleProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
-    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 5.0)
+    max_runtime = copy_param(HTCondorWorkflow.max_runtime, 10.0)
     n_cpus = copy_param(HTCondorWorkflow.n_cpus, 2)
 
     def workflow_requires(self):
         branch_set = set()
         branches_required = {}
-        for br_idx, (prod_br_list, sample_names) in self.branch_map.items():
-            branch_set.update(prod_br_list)
+        for br_idx, (var, prod_br_list, sample_names) in self.branch_map.items():
+            if var == self.global_params["vars_to_save"][0]:
+                branch_set.update(prod_br_list)
         branches = tuple(branch_set)
         deps = {
             "HistTupleProducerTask": HistTupleProducerTask.req(
@@ -405,8 +406,10 @@ class HistFromNtupleProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         return deps
 
     def requires(self):
-        prod_br_list, sample_name = self.branch_data
-        reqs = [
+        var, prod_br_list, sample_name = self.branch_data
+        reqs = []
+        # if var == self.global_params["vars_to_save"][0]:
+        reqs.append(
             HistTupleProducerTask.req(
                 self,
                 max_runtime=HistTupleProducerTask.max_runtime._default,
@@ -415,7 +418,7 @@ class HistFromNtupleProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 customisations=self.customisations,
             )
             for prod_br in prod_br_list
-        ]
+        )
         return reqs
 
     def create_branch_map(self):
@@ -427,67 +430,68 @@ class HistFromNtupleProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         HistTupleBranchMap = HistTupleProducerTask.req(
             self, branches=()
         ).create_branch_map()
+        for var_name in self.global_params["vars_to_save"]:
+            for prod_br, (
+                histTuple_sample_name,
+                histTuple_prod_br,
+                need_cache_global,
+                producer_list,
+                input_index,
+            ) in HistTupleBranchMap.items():
+                if histTuple_sample_name != current_sample:
+                    if current_sample is not None:
+                        # salva il gruppo precedente
+                        branches[n] = (var_name, prod_br_list, current_sample)
+                        n += 1
+                    # inizia nuovo gruppo
+                    prod_br_list = [prod_br]
+                    current_sample = histTuple_sample_name
+                else:
+                    prod_br_list.append(prod_br)
 
-        for prod_br, (
-            histTuple_sample_name,
-            histTuple_prod_br,
-            need_cache_global,
-            producer_list,
-            input_index,
-        ) in HistTupleBranchMap.items():
-            if histTuple_sample_name != current_sample:
-                if current_sample is not None:
-                    # salva il gruppo precedente
-                    branches[n] = (prod_br_list, current_sample)
-                    n += 1
-                # inizia nuovo gruppo
-                prod_br_list = [prod_br]
-                current_sample = histTuple_sample_name
-            else:
-                prod_br_list.append(prod_br)
-
-        # salva l'ultimo gruppo
-        if prod_br_list:
-            branches[n] = (prod_br_list, current_sample)
-        print(branches)
+            # salva l'ultimo gruppo
+            if prod_br_list:
+                branches[n] = (var_name, prod_br_list, current_sample)
+                n += 1
         return branches
 
     def output(self):
         if len(self.branch_data) == 0:
             return self.local_target("dummy.txt")
-        prod_br, sample_name = self.branch_data
+        var, prod_br, sample_name = self.branch_data
         output_path = os.path.join(
-            "hists", self.version, self.period, f"{sample_name}.root"
+            "hists", self.version, self.period, var, f"{sample_name}.root"
         )
         return self.remote_target(output_path, fs=self.fs_HistTuple)
 
     def run(self):
-        prod_br, sample_name = self.branch_data
-        # input_file = self.input()[0][prod_br]
+        var, prod_br, sample_name = self.branch_data
         job_home, remove_job_home = self.law_job_home()
         customisation_dict = getCustomisationSplit(self.customisations)
-        compute_unc_histograms = False  # tmp #customisation_dict['compute_unc_histograms']=='True' if 'compute_unc_histograms' in customisation_dict.keys() else self.global_params.get('compute_unc_histograms', False)
         channels = (
             customisation_dict["channels"]
             if "channels" in customisation_dict.keys()
             else self.global_params["channelSelection"]
         )
-
         # Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
         if type(channels) == list:
             channels = ",".join(channels)
+        # bbww does not use a deepTauVersion
+        compute_unc_histograms = (
+            customisation_dict["compute_unc_histograms"] == "True"
+            if "compute_unc_histograms" in customisation_dict.keys()
+            else self.global_params.get("compute_unc_histograms", False)
+        )
         HistFromNtupleProducer = os.path.join(
             self.ana_path(), "FLAF", "Analysis", "HistProducerFromNTuple.py"
         )
-        input_list_remote_target = [inp for inp in self.input()]
-
+        input_list_remote_target = [inp for inp in self.input()[0]]
         with contextlib.ExitStack() as stack:
-
             local_inputs = [
-                stack.enter_context((inp).localize("r")).path for inp in self.input()
+                stack.enter_context((inp).localize("r")).path for inp in self.input()[0]
             ]
 
-            tmpFile = os.path.join(job_home, f"HistFromNtuple.root")
+            tmpFile = os.path.join(job_home, f"HistFromNtuple_{var}.root")
 
             HistFromNtupleProducer_cmd = [
                 "python3",
@@ -498,33 +502,36 @@ class HistFromNtupleProducerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
                 tmpFile,
                 "--channels",
                 channels,
+                "--var",
+                var,
             ]
             if compute_unc_histograms:
                 HistFromNtupleProducer_cmd.extend(
-                    [
-                        "--compute_rel_weights",
-                        "True",
-                        "--compute_unc_variations",
-                        "True",
-                    ]
-                )  # should be split?
-            # here go the customisations (to make more general to any analysis, they will be defined in the histTupleDef.py)
+                        [
+                            "--compute_rel_weights",
+                            "True",
+                            "--compute_unc_variations",
+                            "True",
+                        ]
+                    )
             if self.customisations:
                 HistFromNtupleProducer_cmd.extend(
                     [f"--customisations", self.customisations]
                 )
+
+
             HistFromNtupleProducer_cmd.extend(local_inputs)
             ps_call(HistFromNtupleProducer_cmd, verbose=1)
 
-            with (self.output()).localize("w") as tmp_local_file:
-                out_local_path = tmp_local_file.path
-                shutil.move(tmpFile, out_local_path)
+        with (self.output()).localize("w") as tmp_local_file:
+            out_local_path = tmp_local_file.path
+            shutil.move(tmpFile, out_local_path)
 
-        delete_after_merge = True
+        delete_after_merge = False # var == self.global_config["vars_to_save"][-1] --> find more robust condition
         if delete_after_merge:
             print(f"Finished HistogramProducer, lets delete remote targets")
             for remote_target in input_list_remote_target:
-                print(remote_target)
+                # print(remote_target)
                 remote_target.remove()
                 with remote_target.localize("w") as tmp_local_file:
                     tmp_local_file.touch()  # Create a dummy to avoid dependency crashes
@@ -568,7 +575,7 @@ class HistMergerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
         ]
         return reqs
 
-    def create_branch_map(self):
+    def create_branch_map(self): # TO BE FIXED!!
         return {0:""}
         # merge_organization_complete = AnaTupleFileListTask.req(
         #     self, branches=()
@@ -652,12 +659,6 @@ class HistMergerTask(Task, HTCondorWorkflow, law.LocalWorkflow):
             if "channels" in customisation_dict.keys()
             else self.global_params["channelSelection"]
         )
-        vars_to_save_list = (
-                customisation_dict["vars_to_save"]
-            if "vars_to_save" in customisation_dict.keys()
-            else self.global_params["vars_to_save"]
-        )
-        vars_to_save = ','.join(vars_to_save_list)
 
         # Channels from the yaml are a list, but the format we need for the ps_call later is 'ch1,ch2,ch3', basically join into a string separated by comma
         if type(channels) == list:

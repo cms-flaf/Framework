@@ -44,32 +44,28 @@ def checkFile(inFileRoot, channels, qcdRegions, categories):
     return True
 
 
-def fill_all_hists_dict(items_dict, all_hists_dict_sampletype_def, unc_source="Central", scale="Central"):
-    """
-    Riempie all_hists_dict[sample_type] usando items_dict già caricato.
-    """
+def fill_all_hists_dict(items_dict, all_hist_dict_per_var_and_sampletype, var_input, unc_source="Central", scale="Central"):
     for key_tuple, hist_map in items_dict.items():
         for var, var_hist in hist_map.items():
-            if var not in all_hists_dict_sampletype_def:
-                all_hists_dict_sampletype_def[var] = {}
+            if var != var_input : print(f"var from hist map is {var} while var from hist dict is {var_input}")
             final_key = (key_tuple, (unc_source, scale))
-            if final_key not in all_hists_dict_sampletype_def[var]:
-                all_hists_dict_sampletype_def[var][final_key] = []
-            all_hists_dict_sampletype_def[var][final_key].append(var_hist)
+            if final_key not in all_hist_dict_per_var_and_sampletype:
+                all_hist_dict_per_var_and_sampletype[final_key] = []
+            all_hist_dict_per_var_and_sampletype[final_key].append(var_hist)
 
 
 def MergeHistogramsPerType(all_hists_dict):
     old_hist_dict = all_hists_dict.copy()
     all_hists_dict.clear()
-    for sample_type in old_hist_dict.keys():
-        if sample_type == "data":
-            print(f"DURING MERGE HISTOGRAMS, sample_type is data")
-        for var in old_hist_dict[sample_type].keys():
-            if var not in all_hists_dict.keys():
-                all_hists_dict[var] = {}
+    for var in old_hist_dict.keys():
+        if var not in all_hists_dict.keys():
+            all_hists_dict[var] = {}
+        for sample_type in old_hist_dict[var].keys():
+            if sample_type == "data":
+                print(f"DURING MERGE HISTOGRAMS, sample_type is data")
             if sample_type not in all_hists_dict[var].keys():
                 all_hists_dict[var][sample_type] = {}
-            for key_name, histlist in old_hist_dict[sample_type][var].items():
+            for key_name, histlist in old_hist_dict[var][sample_type].items():
                 final_hist = histlist[0]
                 objsToMerge = ROOT.TList()
                 for hist in histlist[1:]:
@@ -134,8 +130,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--inDir", required=True, type=str)
     parser.add_argument("--outDir", required=True, type=str)
-    parser.add_argument("--vars", required=True, type=str)
     parser.add_argument("--period", required=True, type=str)
+    parser.add_argument("--vars", required=False, type=str,default="all")
     parser.add_argument("--uncSource", required=False, type=str, default="Central")
     parser.add_argument("--channels", required=False, type=str, default="")
 
@@ -164,7 +160,7 @@ if __name__ == "__main__":
 
     categories = list(global_cfg_dict["categories"])
 
-    # this part is analysis dependent. Need to be put in proper place
+    # ----> this part is analysis dependent. Need to be put in proper place <-----
     # boosted categories and QCD regions --> e.g. for hmm no boosted categories and no QCD regions but muMu mass regions
     # instead, better to define custom categories/regions
     # boosted_categories = list(
@@ -219,35 +215,44 @@ if __name__ == "__main__":
     all_hists_dict = {}
     regions = []
     # file structure : channel - region - category - varName_unc (if not central, else only varName)
-    for sample_name in all_samples_dict.keys():
-        if unc_exception.keys():
-            for unc_condition in unc_exception.keys():
-                if unc_condition and args.uncSource in unc_exception[key]:
-                    continue
-        inFile_path = os.path.join(args.inDir, f"{sample_name}.root")
-        if not os.path.exists(inFile_path):
-            print(
-                f"input file for sample {sample_name} (with path= {inFile_path}) does not exist, skipping"
-            )
-            continue
-        inFile = ROOT.TFile.Open(inFile_path, "READ")
-        if inFile.IsZombie():
+    vars_to_select = [v for v in global_cfg_dict["vars_to_save"]]
+    # if args.vars=="all":
+        # vars_to_select = []
+    if args.vars != 'all' and args.vars is not None:
+        vars_to_select = args.vars.split(",")
+    for var in vars_to_select:
+        if var not in all_hists_dict.keys():
+            all_hists_dict[var] = {}
+        for sample_name in all_samples_dict.keys():
+            if unc_exception.keys():
+                for unc_condition in unc_exception.keys():
+                    if unc_condition and args.uncSource in unc_exception[key]:
+                        continue
+            inFile_path = os.path.join(args.inDir, var, f"{sample_name}.root")
+            if not os.path.exists(inFile_path):
+                print(
+                    f"input file for sample {sample_name} (with path= {inFile_path}) does not exist, skipping"
+                )
+                continue
+            inFile = ROOT.TFile.Open(inFile_path, "READ")
+            if inFile.IsZombie():
+                inFile.Close()
+                os.remove(inFile_path)
+                ignore_samples.append(sample_name)
+                raise RuntimeError(f"{inFile_path} is Zombie")
+            if not checkFile(inFile, channels, custom_regions, all_categories):
+                print(f"{sample_name} has void file")
+                ignore_samples.append(sample_name)
+                inFile.Close()
+                continue
             inFile.Close()
-            os.remove(inFile_path)
-            ignore_samples.append(sample_name)
-            raise RuntimeError(f"{inFile_path} is Zombie")
-        if not checkFile(inFile, channels, custom_regions, all_categories):
-            print(f"{sample_name} has void file")
-            ignore_samples.append(sample_name)
-            inFile.Close()
-            continue
-        inFile.Close()
-        sample_type = all_samples_dict[sample_name]["sampleType"]
-        if sample_type not in all_hists_dict.keys():
-            all_hists_dict[sample_type] = {}
+            sample_type = all_samples_dict[sample_name]["sampleType"]
+            if sample_type not in all_hists_dict[var].keys():
+                all_hists_dict[var][sample_type] = {}
 
-        all_items = load_all_items(inFile_path)
-        fill_all_hists_dict(all_items, all_hists_dict[sample_type]) # to add: , unc_source="Central", scale="Central"
+            all_items = load_all_items(inFile_path)
+            # print(all_items)
+            fill_all_hists_dict(all_items, all_hists_dict[var][sample_type], var) # to add: , unc_source="Central", scale="Central"
 
     MergeHistogramsPerType(all_hists_dict)
 
@@ -274,10 +279,13 @@ if __name__ == "__main__":
             wantNegativeContributions=False,
         )
     '''
-    vars_to_select = args.vars.split(",")
+
     for var in all_hists_dict.keys():
         if vars_to_select and var not in vars_to_select: continue
-        outFileName = os.path.join(args.outDir, f"{var}.root")
+        outDir_var = os.path.join(args.outDir, var)
+        os.makedirs(outDir_var, exist_ok=True)
+        fileName = f"{var}_{args.uncSource}.root"
+        outFileName = os.path.join(outDir_var, fileName)
         outFile = ROOT.TFile(outFileName, "RECREATE")
         for sample_type in all_hists_dict[var].keys():
             for key in all_hists_dict[var][sample_type].keys():

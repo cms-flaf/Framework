@@ -17,6 +17,7 @@ from FLAF.Common.Setup import Setup
 import importlib
 from FLAF.RunKit.run_tools import ps_call
 from FLAF.Common.HistHelper import *
+from FLAF.Common.Utilities import getCustomisationSplit
 
 # ROOT.EnableImplicitMT(1)
 ROOT.EnableThreadSafety()
@@ -200,24 +201,25 @@ def createHistTuple(
 
                 if treeName_shift in inFile_keys:
                     # Cache dataframe se disponibile
-                    df_cache = None
+                    df_shift_cache = None
                     if cacheFile:
-                        df_cache = ROOT.RDataFrame(treeName_shift, cacheFile)
-                    print(col_names_central)
+                        df_shift_cache = ROOT.RDataFrame(treeName_shift, cacheFile)
+
                     # Costruzione del dataframe wrapper
-                    dfw = histTupleDef.GetDfw(
+                    dfw_shift = histTupleDef.GetDfw(
                         ROOT.RDataFrame(treeName_shift, inFile),
-                        df_cache,
+                        df_shift_cache,
                         setup.global_params,
                         shift,
                         col_names_central,
                         col_types_central,
                         f"cache_map_{unc}{scale}_{shift}",
                     )
+                    final_weight_name="weight_Central"
 
                     # Definizione pesi
                     histTupleDef.DefineWeightForHistograms(
-                        dfw,
+                        dfw_shift,
                         unc,
                         scale,
                         sample_type,
@@ -226,16 +228,16 @@ def createHistTuple(
                         setup.global_params,
                         final_weight_name,
                     )
-
+                    dfw_shift.colToSave.append(final_weight_name)
                     # Aggiunta colonne
-                    dfw.colToSave.append(final_weight_name)
+                    # dfw.colToSave.append("weight_Central")
                     for var in vars_to_save:
-                        dfw.df = dfw.df.Define(f"{var}_bin", f"get_{var}_bin({var})")
-                        dfw.colToSave.append(f"{var}_bin")
-                    dfw.colToSave.extend(additional_vars)
+                        dfw_shift.df = dfw_shift.df.Define(f"{var}_bin", f"get_{var}_bin({var})")
+                        dfw_shift.colToSave.append(f"{var}_bin")
+                    dfw_shift.colToSave.extend(additional_vars)
 
                     # Conversione lista → ROOT::VecOps::RVec
-                    varToSave = Utilities.ListToVector(dfw.colToSave)
+                    varToSave = Utilities.ListToVector(dfw_shift.colToSave)
 
                     # Output temporaneo
                     tmp_fileName = f"{treeName_shift}.root"
@@ -243,7 +245,7 @@ def createHistTuple(
 
                     # Snapshot
                     snaps.append(
-                        dfw.df.Snapshot(
+                        dfw_shift.df.Snapshot(
                             treeName_shift,
                             tmp_fileName,
                             varToSave,
@@ -282,16 +284,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     setup = Setup.getGlobal(
-        os.environ["ANALYSIS_PATH"], args.period, args.customisations
+        os.environ["ANALYSIS_PATH"], args.period, ""
     )
 
-    customisations_dict = {}
-    if args.customisations:
-        customisations_dict = getCustomisationSplit(args.customisations)
-        setup.global_params.update(customisations_dict)
     treeName = setup.global_params[
         "treeName"
     ]  # treeName should be inside global params if not in customisations
+
     channels = setup.global_params["channelSelection"]
     setup.global_params["channels_to_consider"] = (
         args.channels.split(",")
@@ -319,18 +318,13 @@ if __name__ == "__main__":
         df_empty = True
     dont_create_HistTuple = key_not_exist or df_empty
 
-    # sample_cfg_dict = setup.samples
-    # global_cfg_dict = setup.global_params
 
     unc_cfg_dict = setup.weights_config
     hist_cfg_dict = setup.hists
-    # print(hist_cfg_dict)
+
 
     histTupleDef = Utilities.load_module(args.histTupleDef)
     if not dont_create_HistTuple:
-        # if os.path.isdir(args.outDir):
-        #     shutil.rmtree(args.outDir)
-        # os.makedirs(args.outDir, exist_ok=True)
         snapshotOptions = ROOT.RDF.RSnapshotOptions()
         snapshotOptions.fOverwriteIfExists = False
         snapshotOptions.fLazy = True
@@ -352,21 +346,13 @@ if __name__ == "__main__":
             histTupleDef,
             inFile_keys
         )
-        # if args.test : print(f'outFileName is {args.outFile}')
         if tmp_fileNames:
-            hadd_str = f"hadd -f -j -O {args.outFile} "  # -f209
+            hadd_str = f"hadd -f209 -j -O {args.outFile} "
             hadd_str += " ".join(f for f in tmp_fileNames)
             print(f"hadd_str is {hadd_str}")
             ps_call([hadd_str], True)
-            # if args.test : print(f'hadd_str is {hadd_str}')
-            # try: ps_call([hadd_str], True)
-            # except:
-            # create_file(args.outFile)
-            # if args.test : print(f"args.outFile is {args.outFile}")
-            # print(syst_files_to_merge)
             if os.path.exists(args.outFile) and len(tmp_fileNames) != 0:
-                for file_syst in tmp_fileNames:  # + [outFileCentralName]:
-                    # if args.test : print(file_syst)
+                for file_syst in tmp_fileNames:
                     if file_syst == args.outFile:
                         continue
                     os.remove(file_syst)
